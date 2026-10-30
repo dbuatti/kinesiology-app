@@ -1,24 +1,23 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { 
-  ChevronRight, 
-  ChevronLeft, 
-  AlertTriangle, 
-  CheckCircle2, 
-  History, 
-  Info, 
-  X, 
-  Wind, 
-  RefreshCw, 
+import {
+  ChevronRight,
+  ChevronLeft,
+  AlertTriangle,
+  CheckCircle2,
+  History,
+  Info,
+  X,
+  Wind,
+  RefreshCw,
   Plus,
-  Layers,
   Eye,
   Brain,
   Fingerprint,
-  Hand
+  Hand,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -147,7 +146,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
                     className={cn(
                       "px-2 py-1 rounded-md text-[10px] font-medium transition-all",
                       currentLayer.site === tag 
-                        ? "bg-primary/10 text-primary border border-primary/30" 
+                        ? "bg-primary/10 text-primary-strong border border-primary/30" 
                         : "bg-muted text-muted-foreground hover:bg-muted/80 border border-transparent"
                     )}
                   >
@@ -481,7 +480,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
   const currentIndex = stepOrder.indexOf(currentStep);
 
   return (
-    <div className="py-4 space-y-4">
+    <div className="py-4 max-w-[600px] mx-auto space-y-4">
       <div className="relative">
         <div className="flex items-center justify-between mb-3 mt-4">
           <div>
@@ -542,7 +541,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
               <AlertTriangle size={12} className="text-muted-foreground" />
               <span className="text-xs text-foreground">Site: <strong>{currentLayer.site}</strong></span>
             </div>
-            <Badge className="bg-primary/10 text-primary border-none text-[10px]">
+            <Badge className="bg-primary/10 text-primary-strong border-none text-[10px]">
               Layer {layers.length + 1}
             </Badge>
           </div>

@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-
 import { AuthProvider, useAuth } from "./components/AuthProvider";
 import { ModeProvider } from "./components/ModeProvider";
 import { ThemeProvider } from "./components/theme-provider";
+import ThemeColorSync from "./components/ThemeColorSync";
 import { Loader2 } from "lucide-react";
 import { BrandMark } from "./components/layout/BrandMark";
 import ScrollToTop from "./components/shared/ScrollToTop";
@@ -299,9 +300,10 @@ const App = () => (
       <TooltipProvider>
         <AuthProvider>
           <ModeProvider>
+            <ThemeColorSync />
             <Toaster />
             <Sonner position="top-center" />
-            <Analytics />
+            {import.meta.env.PROD && <Analytics />}
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <ScrollToTop />
               <AppRoutes />

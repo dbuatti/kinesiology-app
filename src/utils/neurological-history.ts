@@ -33,7 +33,7 @@ const arabicToRoman: Record<string, string> = {
  */
 const getCanonicalName = (name: string): string => {
   // Recursively strip any (L), (R), or (Bilateral) suffixes
-  let clean = name
+  const clean = name
     .replace(/\s*\([LR]\)/gi, '')
     .replace(/\s*\(Bilateral\)/gi, '')
     .trim();

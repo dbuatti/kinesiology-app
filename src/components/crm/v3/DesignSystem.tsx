@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Target, Zap, GitBranch, ClipboardCheck, CheckCircle2, Activity, ChevronRight } from "lucide-react";
+import { Target, Zap, GitBranch, ClipboardCheck, Activity } from "lucide-react";
 
 /**
  * Strict Design System for PEACE Clinical Workflow
@@ -186,7 +186,7 @@ export const PhaseRail = ({
                 isActive
                   ? "border-primary bg-primary text-primary-foreground"
                   : isCompleted
-                  ? "border-success/30 bg-success/10 text-success"
+                  ? "border-success/30 bg-success/10 text-success-strong"
                   : "border-border text-muted-foreground group-hover:border-primary/40 group-hover:text-primary"
               )}
             >
@@ -288,9 +288,9 @@ export const AlertBanner = ({
   className?: string;
 }) => {
   const variants = {
-    warning: "border-warning/20 bg-warning/5 text-warning",
-    info: "border-primary/20 bg-primary/5 text-primary",
-    success: "border-success/20 bg-success/5 text-success",
+    warning: "border-warning/20 bg-warning/5 text-warning-strong",
+    info: "border-primary/20 bg-primary/5 text-primary-strong",
+    success: "border-success/20 bg-success/5 text-success-strong",
   };
   return (
     <div className={cn("flex items-start gap-3 rounded-xl px-4 py-3", variants[variant], className)}>

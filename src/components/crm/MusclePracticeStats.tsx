@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, Dumbbell, TrendingUp, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { fetchMusclePracticeStats, MuscleStat } from "@/utils/muscle-stats";

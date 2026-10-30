@@ -7,21 +7,19 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { PrimitiveReflex } from "@/data/primitive-reflex-data";
-import { 
-  Baby, 
-  Zap, 
-  Info, 
-  ShieldAlert, 
-  PlayCircle,
+import {
+  Baby,
+  Zap,
+  Info,
+  ShieldAlert,
   Sparkles,
   CheckCircle2,
   Workflow,
   ListChecks,
-  ArrowRight,
   Eye,
   Move,
   Clock,
-  Activity
+  Activity,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

@@ -19,9 +19,7 @@ const at = (daysAgo: number, hour = 9) => {
 
 const iso = (minutesAgo: number) => new Date(Date.now() - minutesAgo * 60_000).toISOString();
 
-/** Live session clock: started 62 minutes ago, so the timer reads mid-session
-    instead of hours into overtime (the demo is a review surface, not a test
-    of the overtime state). */
+/** Live session clock: started 47 minutes ago */
 const startedMinutesAgo = (minutes: number) => new Date(Date.now() - minutes * 60_000);
 
 export const demoAppointment = (): AppointmentWithClient => ({
@@ -63,7 +61,7 @@ export const demoAppointment = (): AppointmentWithClient => ({
   harmonic_rocking_notes: "2 minutes; settled.",
   t1_reset_notes: "T1 reset, left.",
   diaphragm_reset_notes: "Four rounds, six breaths.",
-  vagus_nerve_notes: null,
+  vagus_nerve_notes: "Vagus reset — 3 rounds, HRV up.",
 
   // Align / Correct
   priority_pattern: JSON.stringify({
@@ -71,10 +69,16 @@ export const demoAppointment = (): AppointmentWithClient => ({
       "Psoas (R)": "Inhibited",
       "Diaphragm": "Inhibited",
       "Transverse abdominis (L)": "Inhibited",
+      "Glute Max (L)": "Hypertonic",
+      "Upper Trapezius (R)": "Hypertonic",
     },
     primitiveReflexes: {
       "Fear Paralysis Reflex": "Inhibited",
-      "Babinski": "Inhibited",
+      "Babinski Reflex (L)": "Inhibited",
+      "Babinski Reflex (R)": "Inhibited",
+    },
+    cranialNerves: {
+      "CN III (R)": "Inhibited",
     },
     brainZones: {
       "Cerebellum (R)": "Inhibited",
@@ -84,7 +88,7 @@ export const demoAppointment = (): AppointmentWithClient => ({
       "muscles|Glute Max (L)": "priority",
     },
   }),
-  modes_balances: "Psoas (R) — GV16 hold + stretch + fork, re-test strong.",
+  modes_balances: "Psoas (R) — GV16 hold + stretch + fork, re-test strong.\nGlute Max (L) — Neurolymphatic + spindle, re-test strong.\nFear Paralysis — ESR + temporal tap, re-test clear.",
 
   // Embed
   session_north_star: "Sleep through the night; wake rested.",
@@ -112,7 +116,7 @@ export const demoAppointment = (): AppointmentWithClient => ({
       harmonic: true,
       t1: true,
       diaphragm: true,
-      vagus: false,
+      vagus: true,
     },
     priority_pathway: "Mechanoreceptor (Unconscious)",
     corrections: [
@@ -121,21 +125,45 @@ export const demoAppointment = (): AppointmentWithClient => ({
         summary: "Psoas (R) — GV16 hold + stretch + fork, re-test strong.",
         timestamp: iso(18),
       },
+      {
+        pathway: "Mechanoreceptor (Unconscious)",
+        summary: "Glute Max (L) — Neurolymphatic + spindle, re-test strong.",
+        timestamp: iso(14),
+      },
+      {
+        pathway: "Mechanoreceptor (Unconscious)",
+        summary: "Upper Trapezius (R) — Spindle assist, re-test strong.",
+        timestamp: iso(10),
+      },
+      {
+        pathway: "Nociceptive (Physiological)",
+        summary: "Fear Paralysis — ESR + temporal tap, re-test clear.",
+        timestamp: iso(7),
+      },
+      {
+        pathway: "Mechanoreceptor (Unconscious)",
+        summary: "Diaphragm — NL + vibration, re-test strong.",
+        timestamp: iso(4),
+      },
     ],
-    cleared_findings: ["muscles-Glute Max (L)"],
+    cleared_findings: [
+      "muscles-Glute Max (L)",
+      "muscles-Upper Trapezius (R)",
+      "reflexes-Fear Paralysis Reflex",
+    ],
     protocol_logs: {
       mechanoreceptor: {
-        steps: [1, 2, 3, 4],
+        steps: [1, 2, 3, 4, 5],
         values: {
           confirmation: "Afferent facilitates",
           region: "Right sacroiliac",
           ligament: "Long posterior sacroiliac",
           stretch: "Hip flexion + internal rotation",
+          nociceptive: "Mechanical pressure on PSIS",
+          physiological: "Spindle cell activation",
           corrected: true,
           retest: "Locks",
         },
-        // One archived correction so the manual's "logged this session" and
-        // the multi-entry list have something real to show.
         entries: [
           {
             id: "demo-entry-mechano-1",
@@ -144,14 +172,77 @@ export const demoAppointment = (): AppointmentWithClient => ({
               region: "Left ankle",
               ligament: "Anterior talofibular",
               stretch: "Plantarflexion + inversion",
+              nociceptive: "Mechanical pressure on ATFL",
+              physiological: "GTO activation",
               corrected: true,
               retest: "Locks",
             },
             steps: [1, 2, 3, 4, 5],
             savedAt: iso(23),
           },
+          {
+            id: "demo-entry-mechano-2",
+            values: {
+              confirmation: "Afferent facilitates",
+              region: "Right sacroiliac",
+              ligament: "Long posterior sacroiliac",
+              stretch: "Hip flexion + internal rotation",
+              nociceptive: "Mechanical pressure on PSIS",
+              physiological: "Spindle cell activation",
+              corrected: true,
+              retest: "Locks",
+            },
+            steps: [1, 2, 3, 4, 5],
+            savedAt: iso(16),
+          },
+          {
+            id: "demo-entry-mechano-3",
+            values: {
+              confirmation: "Afferent facilitates",
+              region: "Right shoulder",
+              ligament: "Coracohumeral",
+              stretch: "Extension + external rotation",
+              nociceptive: "Mechanical pressure on CHL",
+              physiological: "GTO activation",
+              corrected: true,
+              retest: "Locks",
+            },
+            steps: [1, 2, 3, 4, 5],
+            savedAt: iso(11),
+          },
         ],
-        updatedAt: iso(14),
+        updatedAt: iso(8),
+      },
+      nociceptive: {
+        steps: [1, 2, 3, 4, 5],
+        values: {
+          confirmation: "Pain referral pattern",
+          region: "Frontal lobe",
+          ligament: "N/A — cranial suture",
+          stretch: "Temporal tap + ESR",
+          nociceptive: "Emotional trigger: overwhelm",
+          physiological: "Temporal suture release",
+          corrected: true,
+          retest: "Locks",
+        },
+        entries: [
+          {
+            id: "demo-entry-nocio-1",
+            values: {
+              confirmation: "Pain referral pattern",
+              region: "Frontal lobe",
+              ligament: "N/A — cranial suture",
+              stretch: "Temporal tap + ESR",
+              nociceptive: "Emotional trigger: overwhelm",
+              physiological: "Temporal suture release",
+              corrected: true,
+              retest: "Locks",
+            },
+            steps: [1, 2, 3, 4, 5],
+            savedAt: iso(7),
+          },
+        ],
+        updatedAt: iso(7),
       },
     },
   },

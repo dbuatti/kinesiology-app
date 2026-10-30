@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Layers, Sparkles, Users, Calendar, Database } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";

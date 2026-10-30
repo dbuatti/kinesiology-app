@@ -1,10 +1,5 @@
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BrainReflexPoint } from "@/data/brain-reflex-data";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -121,13 +116,13 @@ const BrainReflexModal = ({
                 <p className="text-xs font-medium text-muted-foreground">References</p>
                 <div className="flex gap-2">
                   {primaryUrl && (
-                    <img src={primaryUrl} alt="Primary" className="w-20 h-14 rounded object-cover border border-border" />
+                    <img loading="lazy" decoding="async" src={primaryUrl} alt="Primary" className="w-20 h-14 rounded object-cover border border-border" />
                   )}
                   {secondaryUrl && (
-                    <img src={secondaryUrl} alt="Secondary" className="w-20 h-14 rounded object-cover border border-border" />
+                    <img loading="lazy" decoding="async" src={secondaryUrl} alt="Secondary" className="w-20 h-14 rounded object-cover border border-border" />
                   )}
                   {tertiaryUrl && (
-                    <img src={tertiaryUrl} alt="Tertiary" className="w-20 h-14 rounded object-cover border border-border" />
+                    <img loading="lazy" decoding="async" src={tertiaryUrl} alt="Tertiary" className="w-20 h-14 rounded object-cover border border-border" />
                   )}
                 </div>
               </div>

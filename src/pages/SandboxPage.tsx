@@ -1,30 +1,25 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  Fingerprint, 
-  Target, 
-  ShieldAlert, 
-  ArrowRight, 
-  Plus, 
-  Clock, 
-  CheckCircle2, 
+import {
+  Fingerprint,
+  Target,
+  ShieldAlert,
+  ArrowRight,
+  CheckCircle2,
   Trash2,
-  Sparkles, 
-  Brain, 
-  Zap, 
-  History, 
-  Loader2, 
-  Lightbulb, 
-  ChevronRight, 
-  Layers, 
-  Wand2, 
-  TrendingUp, 
-  Info, 
-  ArrowDownWideNarrow, 
-  Calendar, 
-  LayoutGrid, 
-  PlayCircle,
+  Sparkles,
+  Brain,
+  Zap,
+  History,
+  Loader2,
+  ChevronRight,
+  Layers,
+  Wand2,
+  TrendingUp,
+  Info,
+  ArrowDownWideNarrow,
+  Calendar,
   RefreshCw,
   Archive,
   CheckCircle,
@@ -33,12 +28,11 @@ import {
   Check,
   X,
   ArrowRightLeft,
-  ArrowLeft
+  ArrowLeft,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AppLayout from "@/components/crm/AppLayout";
 
@@ -110,7 +104,7 @@ interface SandboxPageProps {
 
 const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
   const navigate = useNavigate();
-  const { isPrivate } = usePrivacyMode();
+  usePrivacyMode();
   const [backlog, setBacklog] = useState<any[]>([]);
   const [sessionCounts, setSessionCounts] = useState<Record<string, number>>({});
   const [drafts, setDrafts] = useState<Record<string, boolean>>({});
@@ -191,7 +185,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
   const handlePrioritize = async () => {
     setIsPrioritizing(true);
     try {
-      const { data, error } = await supabase.functions.invoke('prioritize-backlog');
+      const { error } = await supabase.functions.invoke('prioritize-backlog');
       if (error) throw error;
       showSuccess("AI has re-analyzed and prioritized your active map.");
       fetchData();
@@ -491,7 +485,6 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {!isNested && (
         <>
-
 
           <PageHeader 
             title="Identity Map"

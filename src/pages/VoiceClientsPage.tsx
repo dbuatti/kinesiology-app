@@ -7,17 +7,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
- Search, Plus, Mic, Mail, Phone, ExternalLink, Users,
- ChevronDown, ChevronRight, CheckCheck, Square, Loader2,
- Calendar, CalendarPlus, Music, MessageCircle, Trash2, RotateCcw, ArrowLeft
+  Search,
+  Plus,
+  Mic,
+  Mail,
+  Phone,
+  ExternalLink,
+  Users,
+  ChevronDown,
+  ChevronRight,
+  CheckCheck,
+  Square,
+  Loader2,
+  CalendarPlus,
+  Trash2,
+  RotateCcw,
+  ArrowLeft,
 } from "lucide-react";
 import {
- Dialog,
- DialogContent,
- DialogHeader,
- DialogTitle,
- DialogDescription,
- DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
@@ -71,7 +84,6 @@ const VoiceClientsPage = () => {
  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
  const [selectedIds, setSelectedIds] = useState<string[]>([]);
  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
- const [loggingContact, setLoggingContact] = useState<string | null>(null);
   const [simpleBookOpen, setSimpleBookOpen] = useState(false);
   const [simpleBookStudentId, setSimpleBookStudentId] = useState<string | null>(null);
 
@@ -440,8 +452,19 @@ const VoiceClientsPage = () => {
  return (
  <div key={cfg.key} className={cn("rounded-xl border overflow-hidden transition-all", cfg.bg, cfg.border)}>
  <div
- className="flex items-center gap-3 p-4 cursor-pointer select-none"
+ role="button"
+ tabIndex={0}
+ aria-expanded={!isCollapsed}
+ aria-label={`${cfg.label} — ${cfg.count} students`}
+ className="flex items-center gap-3 p-4 cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 rounded-t-xl"
  onClick={() => toggleCollapse(collapsedKey)}
+ onKeyDown={(e) => {
+   if (e.target !== e.currentTarget) return;
+   if (e.key === "Enter" || e.key === " ") {
+     e.preventDefault();
+     toggleCollapse(collapsedKey);
+   }
+ }}
  >
  <div className={cn("w-2 h-2 rounded-full shrink-0", cfg.color)} />
  <div className="flex-1 min-w-0">
@@ -467,7 +490,12 @@ const VoiceClientsPage = () => {
  {allSelected ? "Deselect All" : "Select All"}
  </button>
  )}
- <button className="text-muted-foreground hover:text-foreground transition-colors p-1">
+ <button
+ onClick={() => toggleCollapse(collapsedKey)}
+ aria-label={isCollapsed ? "Expand group" : "Collapse group"}
+ aria-expanded={!isCollapsed}
+ className="text-muted-foreground hover:text-foreground transition-colors p-1"
+ >
  {isCollapsed ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
  </button>
  </div>

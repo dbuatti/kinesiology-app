@@ -1,8 +1,16 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  History, Calendar, Target, FlaskConical, 
-  Activity, Brain, Heart, Zap, ExternalLink, Move
+import {
+  History,
+  Calendar,
+  Target,
+  FlaskConical,
+  Activity,
+  Brain,
+  Heart,
+  Zap,
+  ExternalLink,
+  Move,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";

@@ -48,8 +48,8 @@ export const MUSCLE_STATUSES: MuscleStatus[] = [
 
 export const PRIMARY_14_MUSCLES = [
   'Supraspinatus', 'Teres Major', 'Pectoralis Major (Clavicular)', 'Latissimus Dorsi', 
-  'Subscapularis', 'Quadriceps Group', 'Peroneus', 'Psoas', 'Gluteus Medius', 
-  'Teres Minor', 'Anterior Deltoid', 'Pectoralis Major (Sternal)', 'Serratus Anterior', 'Middle Trapezius'
+  'Subscapularis', 'Quadriceps Group', 'Peroneus Longus', 'Psoas', 'Gluteus Medius', 
+  'Teres Minor', 'Deltoids (Anterior)', 'Pectoralis Major (Sternal)', 'Serratus Anterior', 'Middle Trapezius'
 ];
 
 // Muscles that are tested on the midline and don't need L/R separation
@@ -127,7 +127,6 @@ export const MUSCLE_GROUPS: Record<string, string[]> = {
     'Tibialis Anterior',
     'Tibialis Posterior',
     'Peroneus Longus',
-    'Fibularis Longus',
     'Flexor Hallucis Longus',
     'Extensor Hallucis Longus',
     'Flexor Digitorum Longus',

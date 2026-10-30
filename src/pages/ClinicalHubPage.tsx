@@ -5,12 +5,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { QuickSessionDialog } from "@/components/crm/QuickSessionDialog";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useIpadMode } from "@/hooks/use-ipad-mode";
 import {
-  Activity, FileText, BookMarked, Plus, Loader2, Zap, Clock, User, Calendar, Tablet
+  Activity,
+  FileText,
+  BookMarked,
+  Plus,
+  Loader2,
+  Zap,
+  Clock,
+  User,
+  Calendar,
+  Tablet,
 } from "lucide-react";
 import { format, isToday, differenceInMinutes } from "date-fns";
 import FooterLinks from "@/components/crm/FooterLinks";
@@ -146,7 +159,7 @@ const ClinicalHubPage = () => {
               className={cn(
                 "flex items-center gap-2 px-3 h-9 rounded-xl text-[11px] font-bold border transition-colors shrink-0",
                 ipadMode
-                  ? "bg-primary/10 border-primary/30 text-primary"
+                  ? "bg-primary/10 border-primary/30 text-primary-strong"
                   : "border-border text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
               title={ipadMode ? "Exit iPad Mode — restore the sidebar" : "Enter iPad Mode — no sidebar, straight to the hub"}
@@ -161,7 +174,7 @@ const ClinicalHubPage = () => {
         <div className="mb-10">
           <button
             onClick={() => setQuickSessionOpen(true)}
-            className="group w-full flex items-center justify-center gap-2.5 h-14 rounded-xl border border-dashed border-foreground/15 bg-card/50 text-[14px] font-medium text-muted-foreground transition-all hover:border-primary/40 hover:bg-primary/[0.04] hover:text-primary"
+            className="group w-full flex items-center justify-center gap-2.5 h-14 rounded-xl border border-dashed border-foreground/15 bg-card/50 text-[14px] font-medium text-muted-foreground transition-all hover:border-primary/40 hover:bg-primary/[0.04] hover:text-primary-strong"
           >
             <Plus size={20} />
             <span className="font-semibold text-sm">New session</span>

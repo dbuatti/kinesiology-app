@@ -92,26 +92,6 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
         </div>
       )}
 
-      {/* Completed summary strip */}
-      {(() => {
-        const chips: string[] = [];
-        if (appointment.bolt_score != null) chips.push(`BOLT ${appointment.bolt_score}s`);
-        if (appointment.coherence_score != null) chips.push(`Coherence ${appointment.coherence_score}`);
-        if (appointment.sagittal_plane_notes || appointment.frontal_plane_notes || appointment.transverse_plane_notes) chips.push("COGS ✓");
-        if (appointment.fakuda_notes || appointment.sharpened_rhombergs_notes || appointment.frontal_lobe_notes || appointment.righting_reflex_notes) chips.push("Neuro ✓");
-        // Quick-assess counts are intentionally omitted — too noisy for a summary strip.
-        if (chips.length === 0) return null;
-        return (
-          <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
-            {chips.map((c, i) => (
-              <span key={i} className="rounded-lg border border-border/60 bg-muted/40 px-2 py-0.5 font-medium tabular-nums">
-                {c}
-              </span>
-            ))}
-          </div>
-        );
-      })()}
-
       {/* Sub-tab bar */}
       <div className="-mx-1 overflow-x-auto no-scrollbar">
         <div className="mx-auto flex w-max items-center gap-0.5 rounded-xl border border-border/60 bg-muted/40 p-1">

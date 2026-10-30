@@ -13,7 +13,6 @@ import {
   Lightbulb,
   List,
   Printer,
-  Search,
   Shield,
   Sparkles,
   Target,
@@ -432,7 +431,7 @@ const TraumaClearingProtocol = () => {
       <section className="mb-8">
         <SectionTitle icon={Eye} color="bg-card">Process Diagram</SectionTitle>
         <div className="rounded-xl overflow-hidden bg-muted border border-border shadow-inner flex items-center justify-center p-4">
-          <img
+          <img loading="lazy" decoding="async"
             src="/images/FNH - Trauma Clearing Process.png"
             alt="Trauma Clearing Process Diagram"
             className="max-w-full h-auto rounded-lg"

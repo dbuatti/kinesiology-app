@@ -3,12 +3,24 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  ClipboardCheck, RefreshCw, CheckCircle2, Loader2, ShieldCheck,
-  CalendarPlus, Plus, Calendar, Target, Zap,
-  FileText, Brain, Dumbbell, Baby, X, ExternalLink
+  ClipboardCheck,
+  RefreshCw,
+  CheckCircle2,
+  Loader2,
+  ShieldCheck,
+  CalendarPlus,
+  Plus,
+  Calendar,
+  Target,
+  Zap,
+  FileText,
+  Brain,
+  Dumbbell,
+  Baby,
+  X,
+  ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { safeParse } from "@/utils/safe-json";
 import { showSuccess, showError } from "@/utils/toast";
@@ -31,11 +43,13 @@ import {
 } from "@/components/crm/pathway-reflex-stim-data";
 import { PhaseHeader, PhasePanel, SectionHeading, PhaseEmptyState } from "@/components/crm/v2/PhaseComponents";
 import {
-  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
 import AppointmentForm from "@/components/crm/AppointmentForm";
 import CompactAvailabilityPicker from "@/components/crm/CompactAvailabilityPicker";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";

@@ -1,5 +1,5 @@
 import type { MouseEvent } from 'react';
-import { Check, ArrowDown, ArrowUp, Zap, Minus } from 'lucide-react';
+import { ArrowDown, ArrowUp, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type AssessmentStatus = 'Normotonic' | 'Inhibited' | 'Hypertonic' | null;
@@ -48,9 +48,9 @@ export const AssessmentItem = ({
       className={cn(
         "flex items-center justify-between p-1.5 rounded-md border transition-all cursor-pointer group",
         status === 'Inhibited'
-          ? "bg-destructive/8 border-destructive/25"
+          ? "bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-800"
           : status === 'Hypertonic'
-            ? "bg-amber-500/8 border-amber-500/25"
+            ? "bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800"
             : "hover:bg-muted/50 border-transparent"
       )}
       onClick={handleCycle}
@@ -60,9 +60,9 @@ export const AssessmentItem = ({
         <div className={cn(
           "w-4 h-4 border flex items-center justify-center transition-all shrink-0 rounded-sm",
           status === 'Inhibited'
-            ? "bg-amber-500 border-amber-500 text-primary-foreground"
+            ? "bg-rose-500 border-rose-500 text-white"
             : status === 'Hypertonic'
-              ? "bg-rose-600 border-rose-600 text-primary-foreground"
+              ? "bg-amber-500 border-amber-500 text-white"
               : "border-border group-hover:border-foreground bg-background"
         )}>
           {status === 'Inhibited' && <ArrowDown size={10} strokeWidth={4} />}
@@ -72,8 +72,8 @@ export const AssessmentItem = ({
         <div className="flex flex-col min-w-0">
           <span className={cn(
             "text-[10px] font-bold truncate",
-            status === 'Inhibited' && "text-amber-600 dark:text-amber-300",
-            status === 'Hypertonic' && "text-destructive",
+            status === 'Inhibited' && "text-rose-600 dark:text-rose-300",
+            status === 'Hypertonic' && "text-amber-600 dark:text-amber-300",
             !status && "text-muted-foreground"
           )}>
             {side ? `${side}: ${name}` : name}
@@ -95,8 +95,8 @@ export const AssessmentItem = ({
       {status && (
         <span className={cn(
           "text-[7px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-sm shrink-0",
-          status === 'Inhibited' && "bg-amber-500/15 text-amber-600 dark:text-amber-300",
-          status === 'Hypertonic' && "bg-destructive/15 text-destructive"
+          status === 'Inhibited' && "bg-rose-500/15 text-rose-600 dark:text-rose-300",
+          status === 'Hypertonic' && "bg-amber-500/15 text-amber-600 dark:text-amber-300"
         )}>
           {status === 'Inhibited' ? '↓ Inhib' : '↑ Hyper'}
         </span>

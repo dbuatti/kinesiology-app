@@ -1,46 +1,60 @@
 
 import { useState, useMemo, useEffect } from 'react'; import type { MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { format, formatDistanceToNow, differenceInMonths, addWeeks, startOfWeek, addDays, endOfDay, parseISO, getISOWeek } from "date-fns";
+import { format, formatDistanceToNow, differenceInMonths, addDays, parseISO, getISOWeek } from "date-fns";
 import {
- Mail, Phone, CalendarPlus, Clock, CreditCard, ArrowRight,
- Check, X, Trash2, Loader2, Send, RefreshCw, AlertTriangle, Flame,
- MoreHorizontal, CalendarPlus as CalendarPlusIcon, Edit2, Users,
- MessageSquare, CheckCircle2, Copy, Sparkles, ArrowUpRight, PhoneCall,
- MessageCircle, Calendar, Smile, ChevronRight as ChevronRightIcon, CalendarCheck2,
- ExternalLink
+  Mail,
+  Phone,
+  CreditCard,
+  ArrowRight,
+  Check,
+  X,
+  Loader2,
+  Send,
+  RefreshCw,
+  AlertTriangle,
+  Flame,
+  MoreHorizontal,
+  CalendarPlus as CalendarPlusIcon,
+  Edit2,
+  Users,
+  MessageSquare,
+  CheckCircle2,
+  Copy,
+  ArrowUpRight,
+  PhoneCall,
+  MessageCircle,
+  Calendar,
+  Smile,
+  ChevronRight as ChevronRightIcon,
+  CalendarCheck2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
- Dialog,
- DialogContent,
- DialogDescription,
- DialogHeader,
- DialogTitle,
- DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
- DropdownMenu,
- DropdownMenuContent,
- DropdownMenuItem,
- DropdownMenuTrigger,
- DropdownMenuSeparator,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import {
- Popover,
- PopoverContent,
- PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { PRACTICE_TIMEZONE } from "@/utils/practice-time";
@@ -475,7 +489,11 @@ function AvailabilityPopover({
  <div className="p-3 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
  <div className="flex items-center justify-between">
  <p className="text-xs font-medium text-muted-foreground/60">Send via</p>
- <button onClick={onClose} className="text-muted-foreground/60 hover:text-muted-foreground">
+ <button
+ onClick={onClose}
+ aria-label="Close send menu"
+ className="text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+ >
  <X size={13} />
  </button>
  </div>
@@ -611,7 +629,7 @@ export const ClientRow = ({
  e.stopPropagation();
  setSyncingNotion(true);
  try {
- const { data, error } = await supabase.functions.invoke('sync-to-notion', {
+ const { error } = await supabase.functions.invoke('sync-to-notion', {
  body: {
  clientId: client.id,
  origin: window.location.origin

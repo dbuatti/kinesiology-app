@@ -11,11 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   ArrowRight,
   ArrowLeft,
-  RotateCcw,
   CheckCircle2,
-  Fingerprint,
   Sparkles,
-  Brain,
   Zap,
   Loader2,
   History,
@@ -23,19 +20,15 @@ import {
   FileText,
   Trash2,
   Clock,
-  AlertCircle,
   ShieldCheck,
   RefreshCw,
   Info,
-  ChevronRight,
   Wand2,
   Quote,
-  ArrowRightLeft
+  ArrowRightLeft,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
 import IdentityShiftingReport from './IdentityShiftingReport';
 import JournalRefresher from './JournalRefresher';
 import BacklogSelector from './BacklogSelector';
@@ -119,7 +112,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
   };
 
   const checkForDraft = async (id: string) => {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('identity_shifting_sessions')
       .select('*')
       .eq('backlog_id', id)
@@ -618,7 +611,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         <div className="p-3 rounded-xl border border-border bg-card space-y-3">
           <p className="text-sm font-medium text-center leading-relaxed">"Do you think you might feel yourself being <span className="text-chart-primary">"{formData.identity}"</span> in the future?"</p>
           <div className="flex gap-3 justify-center">
-            <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in the future`)} className="flex-1 h-8 rounded-lg border-destructive bg-destructive/10 text-destructive font-semibold text-[11px]">Yes</Button>
+            <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in the future`)} className="flex-1 h-8 rounded-lg border-destructive bg-destructive/10 text-destructive-strong font-semibold text-[11px]">Yes</Button>
             <Button variant="outline" onClick={() => handlePhase3Check(false, '')} className="flex-1 h-8 rounded-lg border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-[11px]">No</Button>
           </div>
         </div>
@@ -626,7 +619,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         <div className="p-3 rounded-xl border border-border bg-card space-y-3">
           <p className="text-sm font-medium text-center leading-relaxed">"Is there any scenario in which you might still feel yourself being <span className="text-chart-primary">"{formData.identity}"</span>?"</p>
           <div className="flex gap-3 justify-center">
-            <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in that scenario`)} className="flex-1 h-8 rounded-lg border-destructive bg-destructive/10 text-destructive font-semibold text-[11px]">Yes</Button>
+            <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in that scenario`)} className="flex-1 h-8 rounded-lg border-destructive bg-destructive/10 text-destructive-strong font-semibold text-[11px]">Yes</Button>
             <Button variant="outline" onClick={() => handlePhase3Check(false, '')} className="flex-1 h-8 rounded-lg border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-[11px]">No</Button>
           </div>
         </div>

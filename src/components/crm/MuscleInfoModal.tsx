@@ -11,12 +11,12 @@ import { getMuscleInfo } from "@/data/muscle-info-data";
 import { getChannelByName } from "@/data/tcm-channel-data";
 import { VAGUS_ASSOCIATIONS } from "@/data/vagus-data";
 import { isMeridianPeakNow } from "@/utils/crm-utils";
-import { 
-  Dumbbell, 
-  Activity, 
-  Zap, 
-  Info, 
-  Heart, 
+import {
+  Dumbbell,
+  Activity,
+  Zap,
+  Info,
+  Heart,
   Apple,
   Move,
   Brain,
@@ -34,7 +34,7 @@ import {
   Plus,
   Target,
   ImageIcon,
-  Sparkles
+  Sparkles,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -183,7 +183,7 @@ const MuscleImageZone = ({
       
       {currentUrl ? (
         <>
-          <img 
+          <img loading="lazy" decoding="async" 
             key={currentUrl} 
             src={currentUrl} 
             alt="Muscle Reference" 
@@ -242,7 +242,7 @@ const SectionHeader = ({ icon: Icon, title, color }: { icon: any, title: string,
 const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProps) => {
   const [currentTime, setCurrentTime] = useState(new Date().getHours());
   const [customImages, setCustomImages] = useState<{ primaryUrl: string | null, secondaryUrl: string | null }>({ primaryUrl: null, secondaryUrl: null });
-  const [loadingImages, setLoadingImages] = useState(false);
+  const [, setLoadingImages] = useState(false);
 
   useEffect(() => {
     if (open && muscleName) {

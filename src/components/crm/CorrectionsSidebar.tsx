@@ -1,6 +1,5 @@
 import type { ComponentType } from "react";
 import { cn } from "@/lib/utils";
-import { Activity } from "lucide-react";
 
 export interface CorrectionsSidebarItem {
   id: string;
@@ -19,7 +18,7 @@ interface CorrectionsSidebarProps {
 
 const CorrectionsSidebar = ({ items, activeId, setActiveId, tabAccent }: CorrectionsSidebarProps) => {
   return (
-    <aside className="w-48 shrink-0 self-start max-h-full border-r border-border p-3 space-y-1 overflow-y-auto">
+    <aside className="w-44 shrink-0 self-start max-h-full border-r border-border/60 p-2.5 space-y-0.5 overflow-y-auto">
       {items.map((item, i) => {
         const Icon = item.icon;
         const isActive = activeId === item.id;
@@ -29,8 +28,8 @@ const CorrectionsSidebar = ({ items, activeId, setActiveId, tabAccent }: Correct
             {showGroup && (
               <p
                 className={cn(
-                  "px-3 pb-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/50",
-                  i === 0 ? "pt-0" : "pt-3"
+                  "px-2.5 pb-1 text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground/40",
+                  i === 0 ? "pt-0" : "pt-2.5"
                 )}
               >
                 {item.group}
@@ -39,13 +38,13 @@ const CorrectionsSidebar = ({ items, activeId, setActiveId, tabAccent }: Correct
             <button
               onClick={() => setActiveId(item.id)}
               className={cn(
-                "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all text-xs font-medium",
+                "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all text-[11px] font-medium",
                 isActive
                   ? tabAccent
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
               )}
             >
-              <Icon size={16} className="shrink-0" />
+              <Icon size={14} className="shrink-0" />
               <span className="truncate">{item.label}</span>
             </button>
           </div>

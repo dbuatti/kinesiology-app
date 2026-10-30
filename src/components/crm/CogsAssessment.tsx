@@ -3,7 +3,7 @@ import { useState } from "react";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 import { Button } from "@/components/ui/button";
-import { Move, Save, Loader2, RotateCcw, Zap, RefreshCw, Eye, ArrowUpDown, RotateCw, BookOpen } from "lucide-react";
+import { Move, Save, Loader2, RotateCcw, ArrowUpDown, RotateCw, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";

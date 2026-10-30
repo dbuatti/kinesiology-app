@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Loader2, LayoutGrid, List, Users, AlertCircle, RefreshCw, TrendingUp, ArrowUpDown } from "lucide-react";
+import { Plus, Search, LayoutGrid, List, Users, AlertCircle, RefreshCw, TrendingUp, ArrowUpDown } from "lucide-react";
+import { EmptyState } from "@/components/shared/PageState";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -14,7 +14,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import HubTabs from "@/components/shared/HubTabs";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -25,7 +25,6 @@ import {
 import ClientForm from "@/components/crm/ClientForm";
 import AppointmentForm from "@/components/crm/AppointmentForm";
 import { Client } from "@/types/crm";
-import AppLayout from "@/components/crm/AppLayout";
 import { cn } from "@/lib/utils";
 import PageHeader from "@/components/shared/PageHeader";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
@@ -410,25 +409,29 @@ export function ClientsTool() {
             />
           )
         ) : clients.length === 0 ? (
-          <div className="text-center py-32 bg-muted/30 rounded-2xl border-2 border-dashed border-border">
-            <div className="mx-auto w-20 h-20 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-xl">
-               <Users className="text-muted-foreground" size={32} />
-            </div>
-            <p className="text-foreground font-semibold text-xl">No clients yet</p>
-            <p className="text-muted-foreground mt-2 mb-8 font-medium">Add your first client to start building your clinical database.</p>
-            <Button className="h-12 px-8 bg-primary hover:bg-primary/90 rounded-2xl font-bold text-primary-foreground" onClick={() => setOpen(true)}>
-              <Plus size={18} className="mr-2" /> Add First Client
-            </Button>
-          </div>
+          <EmptyState
+            icon={Users}
+            title="No clients yet"
+            hint="Add your first client to start building your clinical database."
+            className="rounded-xl border border-dashed border-border bg-muted/20 py-20"
+            action={
+              <Button className="h-10 rounded-lg px-4 text-sm font-medium" onClick={() => setOpen(true)}>
+                <Plus size={16} className="mr-1.5" /> Add first client
+              </Button>
+            }
+          />
         ) : (
-          <div className="text-center py-32 bg-muted/30 rounded-2xl border-2 border-dashed border-border">
-            <div className="mx-auto w-20 h-20 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-xl">
-               <Search className="text-muted-foreground" size={32} />
-            </div>
-            <p className="text-foreground font-semibold text-xl">No clients match "{search}"</p>
-            <p className="text-muted-foreground mt-2 mb-8 font-medium">Try a different name, email, or suburb.</p>
-            <Button variant="outline" className="h-12 px-8 border-border hover:bg-card rounded-2xl font-bold" onClick={() => { setSearch(""); }}>Clear Search</Button>
-          </div>
+          <EmptyState
+            icon={Search}
+            title={`No clients match "${search}"`}
+            hint="Try a different name, email, or suburb."
+            className="rounded-xl border border-dashed border-border bg-muted/20 py-20"
+            action={
+              <Button variant="outline" className="h-10 rounded-lg px-4 text-sm font-medium" onClick={() => setSearch("")}>
+                Clear search
+              </Button>
+            }
+          />
         )}
       </div>
 

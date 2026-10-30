@@ -39,7 +39,7 @@ const VideoLibrary = () => {
                 <div className="flex items-center gap-3">
                   <div className={cn(
                     "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                    video.isPrimary ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                    video.isPrimary ? "bg-primary/10 text-primary-strong" : "bg-muted text-muted-foreground"
                   )}>
                     {video.isPrimary ? <GraduationCap size={20} /> : <Youtube size={20} />}
                   </div>

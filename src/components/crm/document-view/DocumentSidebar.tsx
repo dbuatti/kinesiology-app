@@ -1,9 +1,18 @@
 
 import { cn } from '@/lib/utils';
 import {
-  Compass, ShieldCheck, List, Zap, ClipboardCheck,
-  Brain, Heart, ArrowDownCircle, ArrowUpCircle,
-  Droplets, Wind, Sparkles
+  Compass,
+  ShieldCheck,
+  List,
+  Zap,
+  ClipboardCheck,
+  Brain,
+  Heart,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Droplets,
+  Wind,
+  Sparkles,
 } from 'lucide-react';
 
 interface DocumentSidebarProps {
@@ -40,7 +49,7 @@ export const CORRECTIONS_GUIDE = [
   {
     title: "Diaphragm Reset",
     icon: Wind,
-    accentClass: "bg-primary/5 dark:bg-primary/30 text-primary dark:text-blue-300 border-primary/20 dark:border-blue-800/40",
+    accentClass: "bg-primary/5 dark:bg-primary/30 text-primary-strong dark:text-blue-300 border-primary/20 dark:border-blue-800/40",
     dotClass: "bg-primary/50",
     steps: [
       "Challenge tender points either side of sternum at xiphoid process.",

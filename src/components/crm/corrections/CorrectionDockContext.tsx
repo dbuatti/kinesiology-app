@@ -13,7 +13,7 @@ export interface InhibitionPathway {
   notes?: string;
 }
 
-export type InhibitionPathwayStatus = "inhibited" | "clear" | "priority" | "primary_priority";
+export type InhibitionPathwayStatus = "inhibited" | "hypertonic" | "clear" | "priority" | "primary_priority";
 
 export interface InhibitionPathwayState {
   pathway: InhibitionPathway;
@@ -143,12 +143,18 @@ export const CorrectionDockProvider = ({
   priorityPattern,
   protocolLogs = EMPTY_LOGS,
   onLogProtocol,
+  initialInhibitionPathway,
+  initialInhibitionPathwayState,
+  onInhibitionPathwayChange,
   children,
 }: {
   appointmentId?: string;
   priorityPattern?: Record<string, any>;
   protocolLogs?: Record<string, ProtocolLog>;
   onLogProtocol?: (processId: string, patch: ProtocolLogPatch) => void;
+  initialInhibitionPathway?: any;
+  initialInhibitionPathwayState?: Record<string, any>;
+  onInhibitionPathwayChange?: (pathway: any, state: Record<string, any>) => void;
   children: ReactNode;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -160,10 +166,10 @@ export const CorrectionDockProvider = ({
    * "Mechanoreceptor › Right sacroiliac" and the save lands on that pathway —
    * or, with no pathway selected, on the process itself.
    */
-  const [inhibitionPathway, setInhibitionPathway] = useState<InhibitionPathwayState | null>(null);
+  const [inhibitionPathway, setInhibitionPathway] = useState<InhibitionPathwayState | null>(initialInhibitionPathway ?? null);
   const [inhibitionPathwayState, setInhibitionPathwayState] = useState<
     Record<string, InhibitionPathwayState>
-  >({});
+  >(initialInhibitionPathwayState ?? {});
 
   /**
    * Extract inhibited pathways from the appointment's priority_pattern so the
@@ -177,7 +183,8 @@ export const CorrectionDockProvider = ({
     const muscles = priorityPattern.muscles;
     if (muscles && typeof muscles === "object") {
       for (const [key, val] of Object.entries(muscles)) {
-        if (String(val).toLowerCase() === "inhibited") {
+        const valLower = String(val).toLowerCase();
+        if (valLower === "inhibited" || valLower === "hypertonic" || valLower === "priority" || valLower === "primary_priority" || valLower === "primary priority") {
           const sideMatch = key.match(/\s*\((L|R)\)\s*$/);
           const side = sideMatch ? (sideMatch[1] as "L" | "R") : "midline";
           const name = sideMatch ? key.slice(0, sideMatch.index).trim() : key;
@@ -189,7 +196,7 @@ export const CorrectionDockProvider = ({
               side,
               notes: name,
             },
-            status: "inhibited",
+            status: valLower === "hypertonic" ? "hypertonic" : valLower === "priority" ? "priority" : valLower === "primary_priority" || valLower === "primary priority" ? "primary_priority" : "inhibited",
           });
         }
       }
@@ -199,7 +206,8 @@ export const CorrectionDockProvider = ({
     const reflexes = priorityPattern.primitiveReflexes;
     if (reflexes && typeof reflexes === "object") {
       for (const [key, val] of Object.entries(reflexes)) {
-        if (String(val).toLowerCase() === "inhibited") {
+        const valLower = String(val).toLowerCase();
+        if (valLower === "inhibited" || valLower === "hypertonic" || valLower === "priority" || valLower === "primary_priority" || valLower === "primary priority") {
           const sideMatch = key.match(/\s*\((L|R)\)\s*$/);
           const side = sideMatch ? (sideMatch[1] as "L" | "R") : "midline";
           const name = sideMatch ? key.slice(0, sideMatch.index).trim() : key;
@@ -211,7 +219,7 @@ export const CorrectionDockProvider = ({
               side,
               notes: name,
             },
-            status: "inhibited",
+            status: valLower === "hypertonic" ? "hypertonic" : valLower === "priority" ? "priority" : valLower === "primary_priority" || valLower === "primary priority" ? "primary_priority" : "inhibited",
           });
         }
       }
@@ -221,7 +229,8 @@ export const CorrectionDockProvider = ({
     const nerves = priorityPattern.cranialNerves;
     if (nerves && typeof nerves === "object") {
       for (const [key, val] of Object.entries(nerves)) {
-        if (String(val).toLowerCase() === "inhibited") {
+        const valLower = String(val).toLowerCase();
+        if (valLower === "inhibited" || valLower === "hypertonic" || valLower === "priority" || valLower === "primary_priority" || valLower === "primary priority") {
           const sideMatch = key.match(/\s*\((L|R)\)\s*$/);
           const side = sideMatch ? (sideMatch[1] as "L" | "R") : "midline";
           const name = sideMatch ? key.slice(0, sideMatch.index).trim() : key;
@@ -233,7 +242,7 @@ export const CorrectionDockProvider = ({
               side,
               notes: name,
             },
-            status: "inhibited",
+            status: valLower === "hypertonic" ? "hypertonic" : valLower === "priority" ? "priority" : valLower === "primary_priority" || valLower === "primary priority" ? "primary_priority" : "inhibited",
           });
         }
       }
@@ -294,16 +303,21 @@ export const CorrectionDockProvider = ({
   /** Record a pathway status (inhibited / clear / etc.) for a given processId. */
   const setInhibitionStatus = useCallback<CorrectionDockContextValue["setInhibitionStatus"]>(
     (processId, pathway, status, priorityStep) => {
-      setInhibitionPathwayState((prev) => ({
-        ...prev,
-        [processId]: {
-          pathway,
-          status,
-          priorityStep: priorityStep ?? null,
-        },
-      }));
+      setInhibitionPathwayState((prev) => {
+        const next = {
+          ...prev,
+          [processId]: {
+            pathway,
+            status,
+            priorityStep: priorityStep ?? null,
+          },
+        };
+        // Persist to appointment metadata
+        onInhibitionPathwayChange?.(inhibitionPathway, next);
+        return next;
+      });
     },
-    []
+    [onInhibitionPathwayChange, inhibitionPathway]
   );
 
   /** Clear the inhibition pathway record for a processId. */
@@ -321,8 +335,10 @@ export const CorrectionDockProvider = ({
   const selectInhibitionPathway = useCallback<CorrectionDockContextValue["selectInhibitionPathway"]>(
     (state) => {
       setInhibitionPathway(state);
+      // Persist to appointment metadata
+      onInhibitionPathwayChange?.(state, inhibitionPathwayState);
     },
-    []
+    [onInhibitionPathwayChange, inhibitionPathwayState]
   );
 
   const logProtocol = useCallback<CorrectionDockContextValue["logProtocol"]>(

@@ -4,12 +4,9 @@ import { PRIMITIVE_REFLEXES, PrimitiveReflex } from "@/data/primitive-reflex-dat
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { 
-  Search, 
-  Zap, 
-  Info, 
-  Activity, 
-  Sparkles,
+import {
+  Search,
+  Zap,
   Baby,
   PlayCircle,
   ShieldAlert,
@@ -19,15 +16,9 @@ import {
   X,
   Loader2,
   Plus,
-  Target,
-  ImageIcon,
-  ShieldCheck,
-  ArrowRight,
   Clock,
-  Brain,
   Maximize2,
-  LayoutGrid,
-  FileText
+  FileText,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -174,7 +165,7 @@ const ReflexImageZone = ({
       
       {currentUrl ? (
         <>
-          <img 
+          <img loading="lazy" decoding="async" 
             key={currentUrl} 
             src={currentUrl} 
             alt="Reflex Reference" 
@@ -225,7 +216,7 @@ const PrimitiveReflexReference = () => {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | 'All'>('All');
   const [customizations, setCustomizations] = useState<Record<string, ReflexImageData>>({});
-  const [loadingImages, setLoadingImages] = useState(true);
+  const [, setLoadingImages] = useState(true);
   const [selectedReflex, setSelectedReflex] = useState<PrimitiveReflex | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 

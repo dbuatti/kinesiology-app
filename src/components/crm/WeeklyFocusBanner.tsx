@@ -5,11 +5,7 @@ import { getWeeklyFocus } from '@/utils/weekly-focus';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from '@/components/ui/button';
 import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
 import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';

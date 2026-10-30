@@ -1,14 +1,17 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Zap, Target, Brain, Activity, 
-  CheckCircle2, XCircle, RefreshCw, 
-  HelpCircle, Sparkles, ShieldAlert,
-  ChevronRight, ChevronLeft, Lightbulb,
-  Trophy, Award
+import {
+  Target,
+  CheckCircle2,
+  XCircle,
+  RefreshCw,
+  Sparkles,
+  ShieldAlert,
+  ChevronLeft,
+  Trophy,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MECHANO_CASES, MechanoCase } from '@/data/mechano-cases-data';

@@ -2,11 +2,21 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/crm/AppLayout';
 import PageHeader from '@/components/shared/PageHeader';
-import { SITE_MAP, type PageAudit } from '@/utils/site-audit';
+import { SITE_MAP } from '@/utils/site-audit';
 import {
-  FileText, Printer, Copy, Check, ChevronRight, ShieldCheck,
-  Info, Search, CheckCircle2, XCircle, Database, Route, AlertTriangle,
-  Loader2, RefreshCw, Activity, ArrowLeft
+  FileText,
+  Printer,
+  Copy,
+  Check,
+  ShieldCheck,
+  Search,
+  CheckCircle2,
+  XCircle,
+  Database,
+  AlertTriangle,
+  Loader2,
+  RefreshCw,
+  ArrowLeft,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

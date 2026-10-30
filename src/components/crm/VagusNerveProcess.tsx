@@ -4,23 +4,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { 
-  Play, 
-  Pause, 
-  RotateCcw, 
-  CheckCircle2, 
-  Activity, 
-  Zap, 
-  Search, 
-  Brain, 
-  Heart, 
-  Wind, 
-  RefreshCw, 
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  CheckCircle2,
+  Activity,
+  Zap,
+  Search,
+  Brain,
+  Heart,
+  Wind,
+  RefreshCw,
   Trash2,
   ChevronDown,
   Sparkles,
   MousePointer2,
-  Hand
+  Hand,
 } from 'lucide-react';
 import EditableField from '@/components/shared/EditableField';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
@@ -29,11 +29,7 @@ import { VAGUS_ASSOCIATIONS, VAGAL_FUNCTIONS, HAND_REFLEXOLOGY, VAGAL_GLANDS } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { showSuccess } from '@/utils/toast';
 import MuscleInfoModal from "./MuscleInfoModal";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface VagusNerveProcessProps {
   appointmentId: string;

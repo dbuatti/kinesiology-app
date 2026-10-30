@@ -3,9 +3,7 @@ import { useMemo } from "react";
 import { PRELIMINARY_MUSCLES, MIDLINE_MUSCLES } from "@/data/muscle-data";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Zap,
-} from "lucide-react";
+import { Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { getMuscleInfo } from "@/data/muscle-info-data";
@@ -47,8 +45,8 @@ const MuscleTestItem = ({
   return (
     <div className={cn(
       "p-2 px-3 rounded-xl border transition-all",
-      isInhibited ? "bg-amber-50 border-amber-200" :
-      isHypertonic ? "bg-rose-50 border-rose-200" :
+      isInhibited ? "bg-rose-50 border-rose-200" :
+      isHypertonic ? "bg-amber-50 border-amber-200" :
       "border-border bg-card"
     )}>
       <div className="flex items-center justify-between gap-4">
@@ -68,56 +66,68 @@ const MuscleTestItem = ({
         </div>
 
         <div className="flex items-center gap-3 shrink-0 print:hidden">
-          <div className="flex items-center gap-2 border-r border-border pr-2">
-            <span className="text-[7px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Inhib</span>
+          <div className="flex items-center gap-1.5 border-r border-border pr-2">
+            <span className="text-[8px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider">Inhib</span>
             {isLateralized ? (
-              <div className="flex items-center gap-1.5">
-                <Checkbox
-                  id={`prelim-inhib-l-${name}`}
-                  checked={statusL === 'Inhibited'}
-                  onCheckedChange={(checked) => onUpdate(name, checked ? 'Inhibited' : 'Clear', 'L')}
-                  className="h-3.5 w-3.5 border-muted-foreground rounded-none"
-                />
-                <Checkbox
-                  id={`prelim-inhib-r-${name}`}
-                  checked={statusR === 'Inhibited'}
-                  onCheckedChange={(checked) => onUpdate(name, checked ? 'Inhibited' : 'Clear', 'R')}
-                  className="h-3.5 w-3.5 border-muted-foreground rounded-none"
-                />
+              <div className="flex items-center gap-1">
+                <div className="flex flex-col items-center gap-0.5">
+                  <Checkbox
+                    id={`prelim-inhib-l-${name}`}
+                    checked={statusL === 'Inhibited'}
+                    onCheckedChange={(checked) => onUpdate(name, checked ? 'Inhibited' : 'Clear', 'L')}
+                    className="h-4 w-4 border-rose-400 rounded-sm data-[state=checked]:bg-rose-500 data-[state=checked]:border-rose-500"
+                  />
+                  <span className="text-[7px] font-bold text-muted-foreground/50">L</span>
+                </div>
+                <div className="flex flex-col items-center gap-0.5">
+                  <Checkbox
+                    id={`prelim-inhib-r-${name}`}
+                    checked={statusR === 'Inhibited'}
+                    onCheckedChange={(checked) => onUpdate(name, checked ? 'Inhibited' : 'Clear', 'R')}
+                    className="h-4 w-4 border-rose-400 rounded-sm data-[state=checked]:bg-rose-500 data-[state=checked]:border-rose-500"
+                  />
+                  <span className="text-[7px] font-bold text-muted-foreground/50">R</span>
+                </div>
               </div>
             ) : (
               <Checkbox
                 id={`prelim-inhib-mid-${name}`}
                 checked={statusMidline === 'Inhibited'}
                 onCheckedChange={(checked) => onUpdate(name, checked ? 'Inhibited' : 'Clear')}
-                className="h-3.5 w-3.5 border-muted-foreground rounded-none"
+                className="h-4 w-4 border-rose-400 rounded-sm data-[state=checked]:bg-rose-500 data-[state=checked]:border-rose-500"
               />
             )}
           </div>
 
-          <div className="flex items-center gap-2 border-r border-border pr-2">
-            <span className="text-[7px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Hyper</span>
+          <div className="flex items-center gap-1.5 border-r border-border pr-2">
+            <span className="text-[8px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Hyper</span>
             {isLateralized ? (
-              <div className="flex items-center gap-1.5">
-                <Checkbox
-                  id={`prelim-hyper-l-${name}`}
-                  checked={statusL === 'Hypertonic'}
-                  onCheckedChange={(checked) => onUpdate(name, checked ? 'Hypertonic' : 'Clear', 'L')}
-                  className="h-3.5 w-3.5 border-amber-400 rounded-none data-[state=checked]:bg-amber-500"
-                />
-                <Checkbox
-                  id={`prelim-hyper-r-${name}`}
-                  checked={statusR === 'Hypertonic'}
-                  onCheckedChange={(checked) => onUpdate(name, checked ? 'Hypertonic' : 'Clear', 'R')}
-                  className="h-3.5 w-3.5 border-amber-400 rounded-none data-[state=checked]:bg-amber-500"
-                />
+              <div className="flex items-center gap-1">
+                <div className="flex flex-col items-center gap-0.5">
+                  <Checkbox
+                    id={`prelim-hyper-l-${name}`}
+                    checked={statusL === 'Hypertonic'}
+                    onCheckedChange={(checked) => onUpdate(name, checked ? 'Hypertonic' : 'Clear', 'L')}
+                    className="h-4 w-4 border-amber-400 rounded-sm data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+                  />
+                  <span className="text-[7px] font-bold text-muted-foreground/50">L</span>
+                </div>
+                <div className="flex flex-col items-center gap-0.5">
+                  <Checkbox
+                    id={`prelim-hyper-r-${name}`}
+                    checked={statusR === 'Hypertonic'}
+                    onCheckedChange={(checked) => onUpdate(name, checked ? 'Hypertonic' : 'Clear', 'R')}
+                    className="h-4 w-4 border-amber-400 rounded-sm data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
+                  />
+                  <span className="text-[7px] font-bold text-muted-foreground/50">R</span>
+                </div>
               </div>
             ) : (
               <Checkbox
                 id={`prelim-hyper-mid-${name}`}
                 checked={statusMidline === 'Hypertonic'}
                 onCheckedChange={(checked) => onUpdate(name, checked ? 'Hypertonic' : 'Clear')}
-                className="h-3.5 w-3.5 border-amber-400 rounded-none data-[state=checked]:bg-amber-500"
+                className="h-4 w-4 border-amber-400 rounded-sm data-[state=checked]:bg-amber-500 data-[state=checked]:border-amber-500"
               />
             )}
           </div>
@@ -228,7 +238,7 @@ const IntrinsicMusclesAssessment = ({ findings, onSave, syncIntrinsicToMuscles }
             variant="ghost"
             size="sm"
             onClick={async () => { await onSave(JSON.stringify({})); }}
-            className="h-7 text-[10px] font-medium text-destructive hover:bg-destructive/10 rounded-lg"
+            className="h-7 text-[10px] font-medium text-destructive-strong hover:bg-destructive/10 rounded-lg"
           >
             Clear All Findings
           </Button>

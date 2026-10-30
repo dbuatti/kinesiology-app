@@ -1,15 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  ChevronDown, 
-  Layers, 
-  Fingerprint, 
-  Target, 
+import {
+  ChevronDown,
+  Fingerprint,
+  Target,
   ShieldAlert,
-  Search,
   Loader2,
-  Check
+  Check,
 } from "lucide-react";
 import {
   DropdownMenu,

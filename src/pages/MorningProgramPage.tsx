@@ -10,28 +10,24 @@ import HeartMathBreathing from '@/components/crm/HeartMathBreathing';
 import PractitionerVitals from '@/components/crm/PractitionerVitals';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Sun, 
-  Coffee, 
-  Wind, 
-  Activity, 
-  CheckCircle2, 
-  RotateCcw, 
+import {
+  Sun,
+  Coffee,
+  Wind,
+  Activity,
+  CheckCircle2,
+  RotateCcw,
   Sparkles,
   Info,
-  ArrowRight,
   ShieldCheck,
   Zap,
-  Brain,
   Target,
-  ChevronRight,
   Play,
-  Lock
+  Lock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format, isToday } from 'date-fns';
+import { isToday } from 'date-fns';
 import { showSuccess } from '@/utils/toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -63,7 +59,10 @@ const MorningProgramPage = () => {
         } else {
           localStorage.removeItem(STORAGE_KEY);
         }
-      } catch (e) {}
+      } catch {
+        // Corrupt or pre-versioned payload — fall back to a fresh day.
+        localStorage.removeItem(STORAGE_KEY);
+      }
     }
   }, []);
 
@@ -101,12 +100,10 @@ const MorningProgramPage = () => {
     localStorage.removeItem(STORAGE_KEY);
   };
 
-  const progress = (completedTasks.length / RITUAL_STEPS.length) * 100;
 
   return (
     <AppLayout>
       <div className="w-full py-6 animate-in fade-in duration-700 space-y-6">
-
 
         <PageHeader
           icon={Sun}
@@ -182,7 +179,7 @@ const MorningProgramPage = () => {
                         variant="ghost" 
                         size="sm" 
                         onClick={(e) => { e.stopPropagation(); setRitualMode(step.id); }}
-                        className="h-8 px-3 rounded-lg text-[11px] font-semibold text-primary hover:bg-primary/10"
+                        className="h-8 px-3 rounded-lg text-[11px] font-semibold text-primary-strong hover:bg-primary/10"
                       >
                         <Play size={12} className="mr-1.5 fill-current" /> Launch
                       </Button>

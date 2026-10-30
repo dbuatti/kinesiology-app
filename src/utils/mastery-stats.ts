@@ -119,7 +119,10 @@ export async function fetchMasteryStats(): Promise<MasteryStat[]> {
             }
           });
         });
-      } catch (e) {}
+      } catch {
+        // One appointment's stored metadata can be malformed; skip its
+        // contribution rather than dropping the whole stats table.
+      }
     }
 
     TECHNIQUES.forEach(tech => {

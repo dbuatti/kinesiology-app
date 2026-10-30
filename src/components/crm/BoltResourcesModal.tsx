@@ -8,16 +8,16 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  BookOpen, 
-  Clock, 
-  Target, 
-  AlertCircle, 
+import {
+  BookOpen,
+  Clock,
+  Target,
+  AlertCircle,
   CheckCircle2,
   Wind,
   Timer,
   TrendingUp,
-  PlayCircle
+  PlayCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -32,7 +32,6 @@ interface BoltResourcesModalProps {
 const BoltResourcesModal = ({ open, onOpenChange, currentScore, onStartBolt }: BoltResourcesModalProps) => {
   const hasScore = currentScore !== null && currentScore !== undefined;
   const needsImprovement = hasScore && currentScore < 25;
-  const isOnTrack = hasScore && currentScore >= 25 && currentScore < 40;
   const isOptimal = hasScore && currentScore >= 40;
   const progress = hasScore ? Math.min(100, Math.round((currentScore / 40) * 100)) : 0;
 

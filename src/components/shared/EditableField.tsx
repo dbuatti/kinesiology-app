@@ -178,7 +178,7 @@ const EditableField = ({
  </p>
  )}
  {isPrivate && isSensitive && (
- <Badge variant="outline" className="h-4 px-2 text-[7px] font-semibold uppercase border-border text-destructive/70 bg-destructive/10/50">
+ <Badge variant="outline" className="h-4 px-2 text-[7px] font-semibold uppercase border-border text-destructive-strong bg-destructive/10">
  <EyeOff size={8} className="mr-1" /> Private
  </Badge>
  )}
@@ -231,17 +231,18 @@ const EditableField = ({
  <Sparkles size={12} className="text-primary/70" /> Quick Tags:
  </div>
  {SMART_CHIPS.map(chip => (
- <button
+ <Button
  key={chip}
- type="button"
+ variant="outline"
+ size="sm"
  onClick={(e) => {
  e.stopPropagation();
  handleChipClick(chip);
  }}
- className="px-3 py-1 rounded-xl bg-muted hover:bg-primary/80 hover:text-primary-foreground text-[11px] font-semibold text-muted-foreground transition-all hover:scale-[1.03] active:scale-95"
+ className="text-[11px] font-semibold text-muted-foreground hover:bg-primary/80 hover:text-primary-foreground transition-all hover:scale-[1.03] active:scale-95"
  >
  {chip}
- </button>
+ </Button>
  ))}
  </div>
  </div>

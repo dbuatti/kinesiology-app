@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Sparkles, Heart, CheckCircle2, ShieldCheck } from "lucide-react";
 import PublicIntakeForm from "@/components/crm/PublicIntakeForm";
-import { cn } from "@/lib/utils";
 
 const OnboardingPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -60,7 +59,7 @@ const OnboardingPage = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
         <Card className="max-w-md w-full border shadow-3xl rounded-2xl p-8 text-center bg-card">
-          <div className="w-16 h-16 bg-destructive/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-destructive">
+          <div className="w-16 h-16 bg-destructive/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-destructive-strong">
             <Sparkles size={32} />
           </div>
           <h2 className="text-2xl font-serif font-bold text-foreground mb-2">Link Expired or Invalid</h2>
@@ -120,7 +119,7 @@ const OnboardingPage = () => {
           <CardHeader className="p-10 md:p-16 pb-0">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 shadow-sm">
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary-strong flex items-center justify-center shrink-0 shadow-sm">
                   <Heart size={24} className="fill-current" />
                 </div>
                 <CardTitle className="text-2xl font-serif font-bold text-foreground">Personal Details</CardTitle>

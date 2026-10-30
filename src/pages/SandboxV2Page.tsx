@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,7 +6,11 @@ import PeaceWizard from "@/components/crm/v2/PeaceWizard";
 import AppointmentV2DocView from "@/components/crm/v2/AppointmentV2DocView";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -15,7 +19,13 @@ import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import { safeParse, safeStringify } from "@/utils/safe-json";
 import {
-  ArrowLeft, Activity, FileText, Maximize2, Minimize2, Save, Database
+  ArrowLeft,
+  Activity,
+  FileText,
+  Maximize2,
+  Minimize2,
+  Save,
+  Database,
 } from "lucide-react";
 import FooterLinks from "@/components/crm/FooterLinks";
 
@@ -250,7 +260,7 @@ const SandboxV2Page = () => {
                     className={cn(
                       "flex items-center gap-1 px-2 h-7 text-[11px] font-bold transition-colors rounded-md",
                       isActive
-                        ? "bg-primary/10 text-primary"
+                        ? "bg-primary/10 text-primary-strong"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     )}
                   >
@@ -368,7 +378,7 @@ const SandboxV2Page = () => {
                         className={cn(
                           "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
                           selectedClientId === c.id
-                            ? "bg-primary/10 text-primary font-semibold"
+                            ? "bg-primary/10 text-primary-strong font-semibold"
                             : "hover:bg-muted text-foreground"
                         )}
                       >
@@ -409,7 +419,7 @@ const SandboxV2Page = () => {
                 <p className="text-xs font-medium text-muted-foreground mb-2">Data to save</p>
                 <div className="flex flex-wrap gap-1">
                   {filled.map(s => (
-                    <span key={s} className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary">{s}</span>
+                    <span key={s} className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary-strong">{s}</span>
                   ))}
                 </div>
               </div>

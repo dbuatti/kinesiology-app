@@ -142,7 +142,7 @@ const ReflexImageZone = ({
       
       {currentUrl ? (
         <>
-          <img 
+          <img loading="lazy" decoding="async" 
             key={currentUrl} 
             src={currentUrl} 
             alt="Reflex Reference" 

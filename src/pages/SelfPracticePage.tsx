@@ -6,11 +6,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
- Heart, Activity, FlaskConical, Brain, Plus, 
- Calendar, Clock, TrendingUp, ArrowRight, 
- Zap, Info, History, Sparkles, CheckCircle2, Target, Move, Footprints,
- LayoutDashboard, Trash2, Loader2
+import {
+  Heart,
+  Activity,
+  FlaskConical,
+  Brain,
+  Plus,
+  TrendingUp,
+  ArrowRight,
+  Zap,
+  Info,
+  History,
+  Sparkles,
+  CheckCircle2,
+  Target,
+  Move,
+  LayoutDashboard,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 import { format, isToday, startOfToday, differenceInDays } from "date-fns";
 import { Link, useSearchParams } from "react-router-dom";
@@ -42,12 +55,14 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  if (!user) return;
 
  // 1. Find or create the "Self" client record
- let { data: client, error: clientError } = await supabase
+ const selfLookup = await supabase
  .from('clients')
  .select('*')
  .eq('user_id', user.id)
  .eq('is_practitioner', true)
  .single();
+ let client = selfLookup.data;
+ const clientError = selfLookup.error;
 
  if (clientError && clientError.code === 'PGRST116') {
  const { data: newClient, error: createError } = await supabase
@@ -205,7 +220,6 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  return (
  <>
  <div className={cn("space-y-6", nested && "p-5 sm:p-6 lg:p-8")}>
-
 
  <PageHeader
  icon={Heart}

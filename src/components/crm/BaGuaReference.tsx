@@ -1,7 +1,7 @@
 
-import React, { useState } from "react";
-import { BAGUA_PROFILES, BaGuaProfile } from "@/data/bagua-data";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useState } from "react";
+import { BAGUA_PROFILES } from "@/data/bagua-data";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

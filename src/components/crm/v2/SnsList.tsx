@@ -1,12 +1,19 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import {
-  Droplets, Heart, Zap, Wind, Activity,
-  Timer, Play, Pause, RotateCcw,
-  CheckCircle2, Check
+  Droplets,
+  Heart,
+  Zap,
+  Wind,
+  Activity,
+  Timer,
+  Play,
+  Pause,
+  RotateCcw,
+  CheckCircle2,
+  Check,
 } from "lucide-react";
 import { safeParse } from "@/utils/safe-json";
 

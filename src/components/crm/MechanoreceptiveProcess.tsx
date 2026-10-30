@@ -2,16 +2,16 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-  Brain, 
-  Activity, 
-  ChevronRight, 
-  ChevronLeft, 
-  CheckCircle2, 
-  Zap, 
-  RefreshCw, 
+import {
+  Brain,
+  Activity,
+  ChevronRight,
+  ChevronLeft,
+  CheckCircle2,
+  Zap,
+  RefreshCw,
   Info,
-  Move
+  Move,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -104,7 +104,7 @@ const MechanoreceptiveProcess = ({
   };
 
   return (
-    <div className="py-4 space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+    <div className="py-4 max-w-[600px] mx-auto space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
 
       <div className="mb-4">
         <p className="text-xs text-muted-foreground mb-2">{stepNames[step]}</p>
@@ -205,7 +205,7 @@ const MechanoreceptiveProcess = ({
 
           <div className="space-y-2">
             <p className="text-xs font-medium text-muted-foreground">Joint</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {JOINT_GROUPS.flatMap(g => g.joints).map(j => (
                 <Button key={j} variant="outline" size="sm" className={cn("rounded-md text-xs font-medium", joint === j ? "border-primary bg-primary/10" : "border-border")} onClick={() => setJoint(j)}>
                   {j}
@@ -231,7 +231,7 @@ const MechanoreceptiveProcess = ({
               <div className="grid grid-cols-2 gap-2">
                 {(ligamentImages[jointToCategoryMap[joint]] || []).slice(0, 2).map((url, i) => url && (
                   <div key={i} className="aspect-video rounded-lg overflow-hidden border border-border">
-                    <img src={url} alt="Ligament reference" className="w-full h-full object-cover" />
+                    <img loading="lazy" decoding="async" src={url} alt="Ligament reference" className="w-full h-full object-cover" />
                   </div>
                 ))}
               </div>

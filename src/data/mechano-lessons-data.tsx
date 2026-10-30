@@ -1,17 +1,16 @@
 import type { ReactNode } from 'react';
-import { 
-  Shield, 
-  Link as LinkIcon, 
-  Compass, 
-  Heart, 
-  ArrowRightLeft, 
-  Move, 
-  Smile, 
-  CheckCircle, 
-  ChevronRight, 
+import {
+  Shield,
+  Compass,
+  Heart,
+  ArrowRightLeft,
+  Move,
+  Smile,
+  CheckCircle,
+  ChevronRight,
   Lightbulb,
   Layers,
-  Activity
+  Activity,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

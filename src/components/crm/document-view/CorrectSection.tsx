@@ -2,9 +2,7 @@
 import { useMemo, useState, useEffect, useRef } from 'react'; import type { ReactNode } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Zap, ExternalLink, Info, CheckCircle2, Brain, Activity, Heart, ShieldAlert, Droplets, ArrowDownCircle, ArrowUpCircle, Layers, Copy, Check, History, Trash2 } from 'lucide-react';
-import DocInput from './DocInput';
 import { cn } from '@/lib/utils';
-import { AFFERENT_PATHWAYS, EFFERENT_PATHWAYS } from '@/data/pathway-logic-data';
 import { Button } from '@/components/ui/button';
 import { showSuccess, showError } from '@/utils/toast';
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
@@ -19,24 +17,6 @@ interface CorrectSectionProps {
   onTogglePatternItem: (category: string, name: string, nextStatus: string, side?: 'L' | 'R') => void;
   appointment: any;
 }
-
-const NOCICEPTIVE_PROTOCOL = {
-  id: 'Nociceptive',
-  label: 'Nociceptive Threat',
-  direction: 'Afferent (Bottom-Up)',
-  icon: ShieldAlert,
-  color: 'text-orange-500',
-  description: 'Clearing threat from scars, old injuries, or specific movements via the spinothalamic tract to the thalamus.',
-  protocols: [
-    'Identify the known site (scar, old injury, impact, or surgical site).',
-    'Confirm nociception: compression over site down-regulates the signal momentarily (5-10s), muscle locks.',
-    'Distinguish from mechano: stretch = mechanoreception, light/crude touch = nociception.',
-    'Client holds thalamus point (Bl9/occipitalis) + practitioner re-applies the aggravating stimulus.',
-    'Stack collateral inputs: look at the site + breathe fast (sympathetics) + think of the suffering.',
-    'Tuning fork + rocking to integrate (piezoelectric reset).',
-    'Reassess: site no longer inhibits, associated muscle restored.'
-  ]
-};
 
 // Helper to parse a logged correction string back into wizard fields
 const parseCorrectionString = (str: string) => {
@@ -258,18 +238,6 @@ Correction Method: ${method}`;
     updateMetadataFields({ wizard_finding: localFinding });
   };
 
-  // Find active protocol based on selection
-  const activeProtocol = useMemo(() => {
-    if (!metadata.wizard_system) return null;
-    
-    if (metadata.wizard_system === 'Nociceptive') {
-      return NOCICEPTIVE_PROTOCOL;
-    }
-
-    const allPathways = [...AFFERENT_PATHWAYS, ...EFFERENT_PATHWAYS];
-    return allPathways.find(p => p.id.toLowerCase().includes(metadata.wizard_system.toLowerCase()) || metadata.wizard_system.toLowerCase().includes(p.id.toLowerCase()));
-  }, [metadata.wizard_system]);
-
   const handleLogCorrection = async () => {
     if (!metadata.wizard_finding) {
       showError("Please select a target finding first.");
@@ -314,7 +282,10 @@ Correction Method: ${method}`;
               category = cat;
             }
           });
-        } catch (e) {}
+        } catch {
+          // Malformed pattern — keep the default category rather than
+          // failing the correction log.
+        }
       }
 
       onTogglePatternItem(category, baseName, 'Clear', side);

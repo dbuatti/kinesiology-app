@@ -5,7 +5,10 @@ import { showError, showSuccess } from "@/utils/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import ClientEmailThread from "./ClientEmailThread";
@@ -13,14 +16,34 @@ import type { PersonOption } from "@/lib/people";
 import ClientPicker from "./ClientPicker";
 import { voiceStudentIdFor, isVoiceStudentId, emailFromVoiceStudentId } from "@/lib/voice-student-id";
 import {
-  buildInboxPeople, FOLLOW_UP_AFTER_DAYS, TIME_HINTS,
-  type InboundMessage, type SentMessage, type ManualSend, type ContactInfo, type ContactMark,
-  type InboxPerson, type PersonStatus,
+  buildInboxPeople,
+  FOLLOW_UP_AFTER_DAYS,
+  TIME_HINTS,
+  type InboundMessage,
+  type SentMessage,
+  type ManualSend,
+  type ContactInfo,
+  type ContactMark,
+  type InboxPerson,
+  type PersonStatus,
 } from "@/lib/inbox-conversations";
 import { VoiceStudentOption } from "@/types/assistant";
 import { fetchContactMarks, saveContactMark } from "@/lib/inbox-marks";
 import {
-  Loader2, RefreshCw, Mic, Brain, PenSquare, X, Search, Check, CalendarCheck, ChevronDown, RotateCcw, Reply, Send, CalendarPlus,
+  Loader2,
+  RefreshCw,
+  Mic,
+  Brain,
+  PenSquare,
+  X,
+  Search,
+  Check,
+  CalendarCheck,
+  ChevronDown,
+  RotateCcw,
+  Reply,
+  Send,
+  CalendarPlus,
 } from "lucide-react";
 
 interface Props {

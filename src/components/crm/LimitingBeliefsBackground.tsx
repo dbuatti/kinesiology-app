@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Brain, Sparkles, AlertCircle, ArrowRight, Info, MessageSquare, Target, ShieldAlert } from "lucide-react";
 
 const LimitingBeliefsBackground = () => {
@@ -120,7 +120,7 @@ const LimitingBeliefsBackground = () => {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
-            { title: "Identity Statements", pattern: "I am...", example: "I am not good enough", color: "bg-primary/5 text-primary border-primary/20" },
+            { title: "Identity Statements", pattern: "I am...", example: "I am not good enough", color: "bg-primary/5 text-primary-strong border-primary/20" },
             { title: "Generalizations", pattern: "People will...", example: "People will always let me down", color: "bg-purple-50 text-purple-700 border-purple-100" },
             { title: "Causality", pattern: "If I... then...", example: "If I succeed, I'll be alone", color: "bg-emerald-50 text-emerald-700 border-emerald-100" },
             { title: "Necessity", pattern: "I must / I can't...", example: "I can't show any weakness", color: "bg-amber-50 text-amber-700 border-amber-100" },

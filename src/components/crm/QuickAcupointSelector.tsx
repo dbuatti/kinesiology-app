@@ -1,6 +1,4 @@
 
-import { ACUPOINTS } from '@/data/acupoint-data';
-import { Badge } from '@/components/ui/badge';
 import { Sparkles, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

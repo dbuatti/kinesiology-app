@@ -15,8 +15,6 @@ import {
   nextMuscleState,
   parseMuscleKey,
   muscleMatches,
-  muscleMidlineKey,
-  muscleSideKey,
   type MuscleGridState,
 } from "./muscle-grid-data";
 import {
@@ -29,7 +27,6 @@ import {
   primitiveSideKey,
   cranialStimKey,
   cranialSideKey,
-  cranialNerveInhibKey,
   isLateralStim,
   primitiveReflexMatches,
   cranialLineMatches,
@@ -69,6 +66,7 @@ export function PathwayReflexStimGrid({
   const [query, setQuery] = useState("");
   const [view, setView] = useState<'board' | 'summary'>('board');
   const [touchMode, setTouchMode] = useState(false);
+  const [showOnlyInhibited, setShowOnlyInhibited] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
   const touchStartX = useRef<number | null>(null);
@@ -391,6 +389,19 @@ export function PathwayReflexStimGrid({
             )}
           </div>
           <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setShowOnlyInhibited(!showOnlyInhibited)}
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 h-11 rounded-lg text-xs font-semibold border transition-colors cursor-pointer",
+                showOnlyInhibited
+                  ? "bg-chart-destructive/10 border-chart-destructive/30 text-chart-destructive"
+                  : "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+              )}
+              title="Show only inhibited/marked pathways"
+            >
+              <StimXMark className="w-3.5 h-3.5" /> Inhibited only
+            </button>
             {q && (
               <button
                 type="button"
@@ -447,7 +458,7 @@ export function PathwayReflexStimGrid({
                 className={`h-11 px-3 text-xs font-medium uppercase tracking-wider rounded-lg ${
                   confirmClear
                     ? "text-white"
-                    : "text-destructive hover:bg-destructive/10"
+                    : "text-destructive-strong hover:bg-destructive/10"
                 }`}
                 title="Erase all marked Xs (returns every reflex/nerve to its natural, unmarked state)"
               >
@@ -580,6 +591,7 @@ export function PathwayReflexStimGrid({
                 activeTab={activeTab}
                 muscleState={muscleState}
                 onMuscleToggle={handleMuscleToggle}
+                showOnlyInhibited={showOnlyInhibited}
               />
             </div>
           )}

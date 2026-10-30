@@ -1,26 +1,26 @@
-import { useState, useMemo, useCallback, useRef, type DragEvent } from 'react';
+import { useState, useMemo, useCallback, type DragEvent } from 'react';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
- AlertTriangle,
- CheckCircle2,
- Sparkles,
- Info,
- User,
- CalendarDays,
- ArrowRight,
- RefreshCw,
- Loader2,
- DollarSign,
- GripVertical,
- Undo2,
- Save,
- ListChecks,
- Coffee,
- LayoutGrid,
- Lock,
- Unlock,
+  AlertTriangle,
+  CheckCircle2,
+  Sparkles,
+  Info,
+  User,
+  CalendarDays,
+  ArrowRight,
+  RefreshCw,
+  Loader2,
+  DollarSign,
+  GripVertical,
+  Undo2,
+  Save,
+  ListChecks,
+  Coffee,
+  LayoutGrid,
+  Lock,
+  Unlock,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -143,7 +143,6 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
   const [pendingSaves, setPendingSaves] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
   const [isLocked, setIsLocked] = useState(() => localStorage.getItem('timetable_locked') === 'true');
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showApplyConfirm, setShowApplyConfirm] = useState(false);
 
  const activeClients = useMemo(() => {
@@ -457,7 +456,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  onDrop={e => handleDrop(e, week, day, slot)}
  className={cn(
  "p-1.5 border-r border-border/20 last:border-r-0 min-w-[120px] h-[82px] align-top transition-colors duration-100",
- cell.hasConflict && !isOver ? "bg-chart-destructive/10/40 " : "",
+ cell.hasConflict && !isOver ? "bg-chart-destructive/10 " : "",
  isOver ? "bg-primary/5 ring-2 ring-inset ring-primary/50" : "",
  isDragging && isEmpty && !isOver ? "bg-muted/20" : "",
  )}
@@ -489,12 +488,12 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  isLocked ? "cursor-default" : "cursor-grab active:cursor-grabbing",
  isBeingDragged ? "opacity-25 scale-95" : (!isLocked ? "hover:shadow-md hover:scale-[1.02]" : ""),
  cell.hasConflict
- ? "bg-destructive/10 text-destructive border-destructive/20"
+ ? "bg-destructive/10 text-destructive-strong border-destructive/20"
  : isMoved
  ? "bg-muted text-muted-foreground border-border "
  : isManual
  ? "bg-chart-primary/10 text-violet-700 border-violet-200 "
- : "bg-primary/8 text-primary border-primary/15 "
+ : "bg-primary/8 text-primary-strong border-primary/15 "
  )}
  title={`${client.name} · $${client.standard_rate ?? 50}/session — drag to move`}
  >
@@ -691,7 +690,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  <CardContent className="p-5 space-y-2">
  <div className="flex items-center justify-between">
  <span className="text-xs font-medium text-muted-foreground">{label}</span>
- <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+ <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary-strong flex items-center justify-center">
  <DollarSign size={14} />
  </div>
  </div>
@@ -743,7 +742,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  {/* Auto-resolve proposed moves */}
  {isOptimized && optimizedData.proposedMoves.length > 0 && (
  <Card className="border border-border shadow-sm rounded-xl bg-card border border-border overflow-hidden animate-in slide-in-from-top-4 duration-500">
- <CardHeader className="p-6 pb-4 bg-chart-emerald/10/50 border-b border-border ">
+ <CardHeader className="p-6 pb-4 bg-chart-emerald/10 border-b border-border ">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div className="space-y-1">
  <CardTitle className="text-base font-semibold text-emerald-900 flex items-center gap-2">

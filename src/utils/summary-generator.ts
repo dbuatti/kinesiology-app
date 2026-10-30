@@ -148,7 +148,7 @@ export const generateAICasePrompt = (client: any, appointments: any[]): string =
   const latestApp = appointments[0];
   if (!latestApp) return "No session data available for analysis.";
 
-  let prompt = `I am a Kinesiology practitioner analyzing a client case. Please provide clinical insights based on the following data:
+  const prompt = `I am a Kinesiology practitioner analyzing a client case. Please provide clinical insights based on the following data:
 
 CLIENT PROFILE:
 - Name: ${client.name}

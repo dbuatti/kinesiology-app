@@ -2,8 +2,20 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { format, isTomorrow } from "date-fns";
 import {
-  ArrowUpRight, CalendarDays, Wallet, TrendingUp, CircleDollarSign, Mail, PencilLine, UserRoundCheck,
-  ShieldAlert, Sun, Wind, StickyNote, ExternalLink, Check,
+  ArrowUpRight,
+  CalendarDays,
+  Wallet,
+  TrendingUp,
+  CircleDollarSign,
+  Mail,
+  PencilLine,
+  UserRoundCheck,
+  ShieldAlert,
+  Sun,
+  Wind,
+  StickyNote,
+  ExternalLink,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -12,7 +24,12 @@ import Scratchpad from "@/components/crm/Scratchpad";
 import { useCountUp } from "@/hooks/use-count-up";
 import { itemStart, type CalendarItem } from "@/lib/calendarItems";
 import {
-  practiceOf, PRACTICE_LABEL, hasTime, itemHref, itemName, type Practice,
+  practiceOf,
+  PRACTICE_LABEL,
+  hasTime,
+  itemHref,
+  itemName,
+  type Practice,
 } from "@/lib/today";
 
 const money = (n: number) => `$${Math.round(n).toLocaleString("en-AU")}`;

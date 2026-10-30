@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play, Square, RotateCcw, Save, Loader2, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -78,7 +78,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
   const getScoreColor = (score: number) => {
     if (score >= 40) return 'text-success';
     if (score >= 25) return 'text-primary';
-    return 'text-warning';
+    return 'text-warning-strong';
   };
 
   const getScoreLabel = (score: number) => {
@@ -111,9 +111,9 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
         {!isRunning && displayTime > 0 && (
           <span className={cn(
             "text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded",
-            displayTime >= 40 ? "bg-success/10 text-success" :
-            displayTime >= 25 ? "bg-primary/10 text-primary" :
-            "bg-warning/10 text-warning"
+            displayTime >= 40 ? "bg-success/10 text-success-strong" :
+            displayTime >= 25 ? "bg-primary/10 text-primary-strong" :
+            "bg-warning/10 text-warning-strong"
           )}>
             {getScoreLabel(displayTime)}
           </span>

@@ -1,19 +1,17 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Eye, 
-  Activity, 
-  ChevronRight, 
-  ChevronLeft, 
-  CheckCircle2, 
-  Zap, 
-  RefreshCw, 
+import {
+  Eye,
+  Activity,
+  ChevronRight,
+  ChevronLeft,
+  CheckCircle2,
+  RefreshCw,
   Sparkles,
   Info,
-  Move,
-  Target
+  Target,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import CalibrationTimer from './CalibrationTimer';
@@ -102,7 +100,7 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
         <div className="space-y-6">
           <StepHeader title="1. Localize Canal / Position" sub="Which head position triggers the inhibition?" />
           
-          <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl text-xs text-primary space-y-2 mb-4">
+          <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl text-xs text-primary-strong space-y-2 mb-4">
             <p className="font-semibold uppercase tracking-wider flex items-center gap-2">
               <Info size={14} /> Diagnostic Note:
             </p>
@@ -264,7 +262,7 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
           </div>
           <div className="grid grid-cols-1 gap-4">
             <Button className="h-12 rounded-md bg-primary hover:bg-primary/90 text-xl font-semibold shadow-sm" onClick={handleFinish}>Pathway is Clear <CheckCircle2 size={24} className="ml-2" /></Button>
-            <Button variant="outline" className="h-12 rounded-md border-2 border-warning/30 text-warning hover:bg-primary/5 font-medium text-lg" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
+            <Button variant="outline" className="h-12 rounded-md border-2 border-warning/30 text-warning-strong hover:bg-primary/5 font-medium text-lg" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
           </div>
           <Button variant="ghost" onClick={goBack} className="w-full h-10 rounded-md"><ChevronLeft size={18} className="mr-2" /> Back</Button>
         </div>

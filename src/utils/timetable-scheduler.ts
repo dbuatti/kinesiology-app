@@ -4,11 +4,7 @@
 // timezone anchored — see src/utils/practice-time.ts. Dates stay true instants
 // so persistence (slot_start ISO) is never shifted.
 
-import {
-  practiceMinuteOfDay,
-  practiceWeekday,
-  practiceWeekKey,
-} from "@/utils/practice-time";
+import { practiceMinuteOfDay, practiceWeekday, practiceWeekKey } from "@/utils/practice-time";
 
 // Pure, UI-independent logic for the Timetable Simulator. Given a set of
 // selected clients (with whatever past-session history they have — often just
@@ -429,7 +425,6 @@ function fmtMinutes(m: number): string {
  */
 export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
   const { clients, openSlots, busyBlocks } = input;
-  const minScore = input.minScore ?? 0.05;
 
   const taken = new Set(input.takenSlotStarts ?? []);
   const freeSlots = openSlots.filter((s) => !taken.has(slotKey(s)) && !overlapsBusy(s, busyBlocks));
@@ -457,7 +452,6 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     return slot.eventDurationMin === nearest;
   };
   const preBufOf = (c: SchedulerClient) => c.preBufferMin ?? 0;
-  const postBufOf = (c: SchedulerClient) => c.postBufferMin ?? (c.kind === "fnh" ? 30 : 0);
 
   // Group instances by base client.
   const groups = new Map<string, { rep: SchedulerClient; instances: SchedulerClient[] }>();

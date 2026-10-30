@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Square, RotateCcw, Wind, Timer, Trophy, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';

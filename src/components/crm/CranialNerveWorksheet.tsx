@@ -1,6 +1,5 @@
 
 import { CRANIAL_NERVES } from '@/data/cranial-nerve-data';
-import { cn } from '@/lib/utils';
 
 interface NerveCheckGroup {
   left?: string[];

@@ -1,15 +1,14 @@
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { 
-  GraduationCap, 
-  Brain, 
-  Zap, 
-  Activity, 
-  Layers, 
-  Target, 
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  GraduationCap,
+  Brain,
+  Zap,
+  Activity,
+  Layers,
+  Target,
   Sparkles,
-  ArrowRight
+  ArrowRight,
 } from 'lucide-react';
 import { QuizCategory } from '@/utils/quiz-engine';
 import { cn } from '@/lib/utils';

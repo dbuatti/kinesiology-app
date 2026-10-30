@@ -14,15 +14,32 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import { 
-  Search, User, Calendar, Target, Zap, Clock, Trash2, 
-  UserPlus, CalendarPlus, Upload, Settings, Layers, 
-  ShieldCheck, Mic, Sparkles, Activity, BookOpen,
-  Fingerprint, Heart, Brain, LayoutDashboard, CalendarDays, Users, Mail
+import {
+  Search,
+  User,
+  Calendar,
+  Target,
+  Zap,
+  Clock,
+  Trash2,
+  UserPlus,
+  CalendarPlus,
+  Settings,
+  Layers,
+  ShieldCheck,
+  Mic,
+  Sparkles,
+  Activity,
+  BookOpen,
+  Heart,
+  Brain,
+  LayoutDashboard,
+  CalendarDays,
+  Users,
+  Mail,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 interface SearchResult {
   type: "client" | "appointment" | "procedure" | "action" | "channel" | "page" | "mode";

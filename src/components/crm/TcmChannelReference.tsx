@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from "react";
-import { TCM_CHANNELS, TcmChannel, TcmElement } from "@/data/tcm-channel-data";
+import { useState, useEffect } from "react";
+import { TCM_CHANNELS, TcmElement } from "@/data/tcm-channel-data";
 import { ACUPOINTS } from "@/data/acupoint-data";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

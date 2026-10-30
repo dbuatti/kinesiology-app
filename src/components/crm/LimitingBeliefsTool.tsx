@@ -42,11 +42,6 @@ const CYCLE_LETTERS: Record<number, string> = { 0: 'A', 1: 'B', 2: 'C', 3: 'D', 
 // Checkpoints after each A-E cycle
 const CHECKPOINTS = ['f', 'g', 'h'] as const;
 type CheckpointId = typeof CHECKPOINTS[number];
-const CHECKPOINT_QUESTIONS: Record<CheckpointId, string> = {
-  f: 'Does the original belief still feel true?',
-  g: 'Do you see yourself believing this in the future?',
-  h: 'Is there any scenario where this belief might still feel true?',
-};
 
 interface RoundData {
   responses: Record<number, string>;
@@ -78,7 +73,6 @@ const LimitingBeliefsTool = () => {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const current = rounds[activeRound];
-  const allCycleFilled = CYCLE_IDS.every(i => current.responses[i]?.trim().length > 0);
 
   const buildDissolveLog = useCallback(() => ({
     responses: current.responses,

@@ -1,13 +1,16 @@
 
 import type { ElementType } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { 
-  GitBranch, Sparkles, Brain, Activity, CheckCircle2, 
-  Zap, Info, List, RefreshCw, Eye, Dumbbell, Link as LinkIcon,
-  Workflow, Lightbulb, ShieldAlert, Baby, ShieldCheck, ArrowRight
+import {
+  GitBranch,
+  Brain,
+  Activity,
+  Zap,
+  Workflow,
+  Baby,
+  ShieldCheck,
+  ArrowRight,
 } from 'lucide-react';
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import MotorControlHierarchy from './MotorControlHierarchy';
 
 const SectionHeader = ({ icon: Icon, title, color }: { icon: ElementType, title: string, color: string }) => (

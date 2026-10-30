@@ -422,13 +422,42 @@ export function PrimitiveReflexAssessment({
 
       {(() => {
         const TRACKS = [
-          { num: 1, label: 'Track 1 — Sagittal / Brainstem', desc: 'FPR → Moro → Startle → TLR → STNR' },
+          { num: 1, label: 'Track 1 — Sagittal / Brainstem', desc: 'Moro → Startle → TLR → STNR → FPR' },
           { num: 2, label: 'Track 2 — Unilateral / Gait', desc: 'ATNR → Spinal Galant → Rooting → Palmar → Babinski' },
           { num: 3, label: 'Track 3 — Global Override', desc: 'Tendon Guard' },
         ];
+        // Split TLR and STNR into Flexion/Extension variants
+        const expandedReflexes = sortedReflexes.flatMap(r => {
+          if (r.id === 'tlr') {
+            return [
+              { ...r, id: 'tlr-flexion', name: 'TLR (Flexion)' },
+              { ...r, id: 'tlr-extension', name: 'TLR (Extension)' },
+            ];
+          }
+          if (r.id === 'stnr') {
+            return [
+              { ...r, id: 'stnr-flexion', name: 'STNR (Flexion)' },
+              { ...r, id: 'stnr-extension', name: 'STNR (Extension)' },
+            ];
+          }
+          return [r];
+        });
+        const TRACK1_ORDER = ['moro', 'startle', 'tlr-flexion', 'tlr-extension', 'stnr-flexion', 'stnr-extension', 'fear-paralysis'];
         const trackGroups = TRACKS.map(t => ({
           ...t,
-          reflexes: sortedReflexes.filter(r => r.track === t.num),
+          reflexes: expandedReflexes
+            .filter(r => r.track === t.num)
+            .sort((a, b) => {
+              if (t.num === 1) {
+                const ai = TRACK1_ORDER.indexOf(a.id);
+                const bi = TRACK1_ORDER.indexOf(b.id);
+                if (ai === -1 && bi === -1) return 0;
+                if (ai === -1) return 1;
+                if (bi === -1) return -1;
+                return ai - bi;
+              }
+              return 0;
+            }),
         }));
         const noTrack = sortedReflexes.filter(r => !r.track);
 

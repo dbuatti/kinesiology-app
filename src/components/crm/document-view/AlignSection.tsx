@@ -1,9 +1,5 @@
 
-import { useState, useMemo, type ReactNode } from 'react';
-import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
-import { CRANIAL_NERVES } from '@/data/cranial-nerve-data';
-import { MUSCLE_GROUPS } from '@/data/muscle-data';
-import { getMuscleInfo } from '@/data/muscle-info-data';
+import { useState, useMemo } from 'react';
 import { Baby, Zap, Dumbbell, Brain, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -31,15 +27,6 @@ const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ComponentType
   cranialNerves: { label: 'Cranial Nerves', icon: Zap },
   brainZones: { label: 'Brain Zones', icon: Brain },
 };
-
-const muscleDesc = (name: string) => {
-  const info = getMuscleInfo(name);
-  return info.meridian || undefined;
-};
-
-const SubHeader = ({ id, children }: { id?: string; children: ReactNode }) => (
-  <h3 id={id} className="text-xs font-medium text-muted-foreground mb-4 mt-10 border-l-4 border-border pl-3 scroll-mt-24">{children}</h3>
-);
 
 const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway }: AlignSectionProps) => {
   const [showOnlyPriority, setShowOnlyPriority] = useState(false);
@@ -206,7 +193,7 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
                         <div className={cn(
                           "w-5 h-5 rounded flex items-center justify-center shrink-0",
                           isPriority ? "bg-chart-emerald text-primary-foreground" :
-                          "bg-destructive/15 text-destructive"
+                          "bg-destructive/15 text-destructive-strong"
                         )}>
                           <Icon size={11} />
                         </div>
@@ -244,7 +231,7 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
                         {onSetPriorityPathway && (
                           <button
                             onClick={() => handleSetPathway(finding)}
-                            className="px-2 py-1 rounded text-[11px] font-bold border border-border text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all"
+                            className="px-2 py-1 rounded text-[11px] font-bold border border-border text-muted-foreground hover:bg-primary/10 hover:text-primary-strong hover:border-primary/30 transition-all"
                           >
                             Set 1°
                           </button>

@@ -1,15 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import LigamentImageUploader from './LigamentImageUploader';
-
-interface LigamentImageData {
-  category: string;
-  image_index: number;
-  image_url: string | null;
-}
 
 const LIGAMENT_CATEGORIES = {
   spinal: { title: "Spinal Ligaments", count: 2 },

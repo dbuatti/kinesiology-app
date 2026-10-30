@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { showError, showSuccess } from '@/utils/toast';
 import { Loader2, Mail, Lock, ShieldCheck } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 
 const Login = () => {
   const { session } = useAuth();
@@ -17,8 +16,15 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   if (session) return <Navigate to="/" replace />;
+
+  const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const passwordTooShort = isSignUp && password.length > 0 && password.length < 8;
+  // Keep the button alive as soon as both fields have content: a disabled
+  // button that never explains itself is worse than one that answers.
+  const canSubmit = email.trim().length > 0 && password.length > 0 && !passwordTooShort && !loading;
 
   const handleGoogleLogin = async () => {
     try {
@@ -36,6 +42,21 @@ const Login = () => {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
+
+    if (!emailLooksValid) {
+      setFormError("Enter a valid email address.");
+      return;
+    }
+    if (isSignUp && password.length < 8) {
+      setFormError("Use at least 8 characters for your password.");
+      return;
+    }
+    if (password.length < 6) {
+      setFormError("Enter your password to continue.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -55,7 +76,9 @@ const Login = () => {
         showSuccess("Welcome back!");
       }
     } catch (error: any) {
-      showError(error.message || "An error occurred during authentication");
+      const message = error?.message || "An error occurred during authentication";
+      setFormError(message);
+      showError(message);
     } finally {
       setLoading(false);
     }
@@ -86,6 +109,7 @@ const Login = () => {
               variant="outline" 
               className="w-full h-11 border-border hover:bg-muted flex items-center justify-center gap-3 rounded-xl font-medium text-sm transition-all"
               onClick={handleGoogleLogin}
+              disabled={loading}
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -117,7 +141,9 @@ const Login = () => {
               </div>
             </div>
 
-            <form onSubmit={handleAuth} className="space-y-5">
+            {/* noValidate: the inline messages below are the single, styled
+                source of truth — no competing native bubble on iPad Safari. */}
+            <form onSubmit={handleAuth} noValidate className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-xs font-medium ml-1 text-muted-foreground">Email Address</Label>
                 <div className="relative">
@@ -125,10 +151,15 @@ const Login = () => {
                   <Input
                     id="email"
                     type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    spellCheck={false}
                     placeholder="name@example.com"
+                    aria-invalid={email.length > 0 && !emailLooksValid}
                     className="pl-11 h-11 rounded-xl border-border bg-background"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => { setEmail(e.target.value); setFormError(null); }}
                     required
                   />
                 </div>
@@ -140,18 +171,33 @@ const Login = () => {
                   <Input
                     id="password"
                     type="password"
+                    autoComplete={isSignUp ? "new-password" : "current-password"}
                     placeholder="••••••••"
+                    aria-invalid={passwordTooShort}
+                    aria-describedby={passwordTooShort ? "password-hint" : undefined}
                     className="pl-11 h-11 rounded-xl border-border bg-background"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => { setPassword(e.target.value); setFormError(null); }}
                     required
                   />
                 </div>
+                {passwordTooShort && (
+                  <p id="password-hint" className="ml-1 text-[12px] font-medium text-destructive-strong">
+                    At least 8 characters, please.
+                  </p>
+                )}
               </div>
-              <Button 
-                type="submit" 
-                className="w-full bg-primary hover:bg-primary/90 h-11 rounded-xl font-medium text-sm shadow-sm" 
-                disabled={loading}
+
+              {formError && (
+                <p role="alert" className="rounded-lg border border-destructive/25 bg-destructive/10 px-3 py-2 text-[12px] font-medium text-destructive-strong">
+                  {formError}
+                </p>
+              )}
+              <Button
+                type="submit"
+                aria-busy={loading}
+                className="w-full bg-primary hover:bg-primary/90 h-11 rounded-xl font-medium text-sm shadow-sm"
+                disabled={!canSubmit}
               >
                 {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                 {isSignUp ? "Create Account" : "Sign In"}

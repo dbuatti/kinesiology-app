@@ -3,10 +3,9 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, AlertCircle, ArrowRight, Mail, CheckCircle2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { showSuccess, showError } from "@/utils/toast";
 
 const OnboardingLookupPage = () => {
   const [searchParams] = useSearchParams();
@@ -47,8 +46,13 @@ const OnboardingLookupPage = () => {
 
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!manualEmail) return;
-    performLookup(manualEmail);
+    const email = manualEmail.trim();
+    if (!email) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("That doesn't look like an email address — please check it and try again.");
+      return;
+    }
+    performLookup(email);
   };
 
   return (
@@ -73,26 +77,32 @@ const OnboardingLookupPage = () => {
           ) : (
             <form onSubmit={handleManualSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground ml-1">
+                <label htmlFor="booking-email" className="text-xs font-medium text-muted-foreground ml-1">
                   Enter your booking email
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-                  <Input 
+                  <Input
+                    id="booking-email"
                     type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    spellCheck={false}
                     placeholder="email@example.com"
+                    aria-invalid={!!error}
                     className="h-14 pl-12 rounded-2xl border-2 border-border focus:border-chart-primary transition-all text-lg font-medium"
                     value={manualEmail}
-                    onChange={(e) => setManualEmail(e.target.value)}
+                    onChange={(e) => { setManualEmail(e.target.value); setError(null); }}
                     required
                   />
                 </div>
               </div>
 
               {error && (
-                <div className="p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-1">
-                  <AlertCircle className="text-rose-500 shrink-0 mt-0.5" size={16} />
-                  <p className="text-xs text-rose-700 font-medium leading-relaxed">{error}</p>
+                <div role="alert" className="p-4 bg-destructive/5 border border-destructive/15 rounded-2xl flex items-start gap-3 animate-in fade-in slide-in-from-top-1">
+                  <AlertCircle className="text-destructive-strong shrink-0 mt-0.5" size={16} />
+                  <p className="text-xs text-destructive-strong font-medium leading-relaxed">{error}</p>
                 </div>
               )}
 

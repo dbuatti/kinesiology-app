@@ -6,14 +6,9 @@ import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { showSuccess, showError } from "@/utils/toast";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 
 interface CoherenceAssessmentProps {
@@ -147,7 +142,7 @@ const CoherenceAssessment = ({
           <div className={cn(
             "p-4 flex items-center justify-between cursor-pointer transition-all duration-300",
             isOpen ? "bg-muted/50" : "hover:bg-muted/30",
-            calculatedScore && !isOpen && (isCoherent ? "bg-success/5/10" : "bg-destructive/5/10"),
+            calculatedScore && !isOpen && (isCoherent ? "bg-success/10" : "bg-destructive/10"),
             appointmentId === "temp" && "hidden"
           )}>
             <div className="flex items-center gap-4">
@@ -261,7 +256,7 @@ const CoherenceAssessment = ({
                   </Button>
                 )}
                 {hasSavedData && (
-                  <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="text-destructive hover:bg-destructive/10 h-10 px-3 rounded-md">
+                  <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="text-destructive-strong hover:bg-destructive/10 h-10 px-3 rounded-md">
                     <RotateCcw size={14} />
                   </Button>
                 )}

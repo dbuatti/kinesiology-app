@@ -1,6 +1,6 @@
 
 import SectionCard from "@/components/shared/SectionCard";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { StickyNote, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";

@@ -1,30 +1,18 @@
 
-import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Activity, 
-  Brain, 
-  Zap, 
-  Info, 
-  Target, 
-  Move, 
-  RefreshCw, 
-  Search,
-  ChevronRight,
-  Sparkles,
-  ShieldCheck,
-  Workflow,
+import {
+  Activity,
+  Brain,
+  Zap,
   ImageIcon,
   List,
   CheckCircle2,
-  FileText,
   Layers,
-  Dumbbell,
-  ArrowRight,
   ShieldAlert,
-  Printer
+  Printer,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MechanoreceptiveProcess from "./MechanoreceptiveProcess";
@@ -39,7 +27,7 @@ interface MechanoreceptiveAssessmentProps {
 const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveAssessmentProps) => {
   const [showWizard, setShowWizard] = useState(false);
   const [actionTableOpen, setActionTableOpen] = useState(false);
-  const [ligamentModalOpen, setLigamentModalOpen] = useState(false);
+  const [, setLigamentModalOpen] = useState(false);
   const [ligamentImages, setLigamentImages] = useState<Record<string, (string | null)[]>>({});
 
   useEffect(() => {
@@ -235,7 +223,7 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
             </CardHeader>
             <CardContent className="p-6 pt-0">
               <div className="aspect-square rounded-none overflow-hidden bg-card/5 border border-primary-foreground/10 flex items-center justify-center p-4">
-                <img 
+                <img loading="lazy" decoding="async" 
                   src="/images/mechanoreceptive/homunculus.png" 
                   alt="Homunculus" 
                   className="max-w-full h-auto opacity-80"

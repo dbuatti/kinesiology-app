@@ -3,7 +3,6 @@ import { ACUPOINTS } from "@/data/acupoint-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
-import { QUIZ_IMAGES } from "@/data/quiz-image-data";
 import { PRIMARY_EMOTIONS, SIGNS_OF_SHIFT } from "@/data/emotion-data";
 
 export type QuestionType = 'mcq' | 'fill-in-the-blank' | 'image' | 'flashcard';
@@ -280,20 +279,6 @@ const generatePriorityLogicQuestion = (): Question => {
     options: getRandomOptions(scenario.a, scenarios.map(s => s.a)),
     correctAnswer: scenario.a,
     explanation: scenario.e
-  };
-};
-
-const generateImageQuestion = (): Question => {
-  const image = QUIZ_IMAGES[Math.floor(Math.random() * QUIZ_IMAGES.length)];
-  return {
-    id: `image-${image.id}`,
-    type: 'image',
-    category: image.category,
-    question: image.question,
-    options: image.options,
-    correctAnswer: image.correctAnswer,
-    explanation: image.explanation,
-    imageUrl: image.url
   };
 };
 

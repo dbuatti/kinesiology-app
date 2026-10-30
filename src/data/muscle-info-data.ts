@@ -60,7 +60,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     brainstemControl: 'Medulla, Midbrain',
     clinicalIndications: 'Lower back pain, hip instability, shallow breathing, fear/anxiety patterns.',
     function: 'Hip flexion, trunk rotation, stabilizes lumbar spine.',
-    meridian: 'Kidney',
+    meridian: 'Liver',
     myotome: 'L2, L3',
     nerveSupply: 'Lumbar Plexus (L1-L3)',
     organGland: 'Kidney',
@@ -146,7 +146,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   },
   'Biceps': {
     name: 'Biceps',
-    meridian: 'Stomach',
+    meridian: 'Pericardium',
     testingPosition: 'Elbow flexion with supination. Short head: more direct flexion resistance. Long head: abduct the arm slightly and apply extension pressure at the elbow to target the biarticular fibers.',
     videoUrl: "https://embed-ssl.wistia.com/deliveries/006270ae8c685161a8a2c55053ee0fd5ecf69b18.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2167503394"
@@ -181,7 +181,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   },
   'Pectoralis Major (Clavicular)': {
     name: 'Pectoralis Major (Clavicular)',
-    meridian: 'Stomach',
+    meridian: 'Lung',
     testingPosition: 'Arm flexed to 90°, horizontal adduction.',
     videoUrl: "https://embed-ssl.wistia.com/deliveries/8dc68372fa942300d450b03ec8487454cacb02c7.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2166647725"
@@ -288,7 +288,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   'Flexor Digitorum Brevis': {
     name: 'Flexor Digitorum Brevis',
     brainstemControl: 'Medulla',
-    meridian: 'Spleen',
+    meridian: 'Liver',
     myotome: 'L5, S1',
     nerveSupply: 'Medial Plantar Nerve (L5-S1)',
     testingPosition: 'Flex the lateral four toes at the PIP joints against resistance.',
@@ -297,7 +297,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   'Levator Scapula': {
     name: 'Levator Scapula',
     brainstemControl: 'Pons, Cerebellum',
-    meridian: 'Gall Bladder',
+    meridian: 'Small Intestine',
     myotome: 'C2-C5',
     nerveSupply: 'Dorsal Scapular Nerve (C3-C5)',
     testingPosition: 'Client seated. Rotate head toward the side being tested, then slightly rotate chin away. Elevate the shoulder. Practitioner pushes down on the shoulder and attempts to separate the scapula from the neck.',
@@ -306,7 +306,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   'Scalenes': {
     name: 'Scalenes',
     brainstemControl: 'Medulla',
-    meridian: 'Large Intestine',
+    meridian: 'Stomach',
     myotome: 'C3-C7',
     nerveSupply: 'Cervical Plexus (C3-C7)',
     testingPosition: 'Client seated. For anterior scalenes: head slightly extended and rotated away, pressure downward and slightly across. For medial: more lateral pressure. For posterior: pressure over the shoulder toward the opposite hip.',
@@ -315,7 +315,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   'Neck Extensors': {
     name: 'Neck Extensors',
     brainstemControl: 'Medulla, Midbrain',
-    meridian: 'Bladder',
+    meridian: 'Stomach',
     myotome: 'C1-C8',
     nerveSupply: 'Cervical and Upper Thoracic Spinal Nerves',
     testingPosition: 'Client seated. Drop the head back into extension. Practitioner applies forward pressure. To isolate one side, slightly rotate the head toward that side and apply pressure straight forward.',
@@ -333,7 +333,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   'Pec Minor': {
     name: 'Pec Minor',
     brainstemControl: 'Pons, Cerebellum',
-    meridian: 'Pericardium',
+    meridian: 'Lung',
     myotome: 'C7, C8, T1',
     nerveSupply: 'Medial Pectoral Nerve (C8-T1)',
     testingPosition: 'Client seated. Arm adducted and slightly flexed, reaching toward the opposite hip. Practitioner applies pressure into abduction and extension. Uses a long lever to activate the short strong muscle.',
@@ -342,7 +342,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   'Deltoids (Anterior)': {
     name: 'Deltoids (Anterior)',
     brainstemControl: 'Pons, Cerebellum',
-    meridian: 'Stomach',
+    meridian: 'Lung',
     myotome: 'C5, C6',
     nerveSupply: 'Axillary Nerve (C5-C6)',
     testingPosition: 'Client seated. Arm flexed forward to 90°, elbow straight. Practitioner applies pressure into extension. For isolated anterior deltoid testing, keep the arm straight as an indicator style test.',
@@ -351,7 +351,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   'Deltoids (Middle)': {
     name: 'Deltoids (Middle)',
     brainstemControl: 'Pons, Cerebellum',
-    meridian: 'Stomach',
+    meridian: 'Large Intestine',
     myotome: 'C5, C6',
     nerveSupply: 'Axillary Nerve (C5-C6)',
     testingPosition: 'Client seated. Arm abducted to 90° with elbow straight. Practitioner applies pressure into adduction.',
@@ -360,7 +360,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   'Deltoids (Posterior)': {
     name: 'Deltoids (Posterior)',
     brainstemControl: 'Pons, Cerebellum',
-    meridian: 'Small Intestine',
+    meridian: 'San Jiao',
     myotome: 'C5, C6',
     nerveSupply: 'Axillary Nerve (C5-C6)',
     testingPosition: 'Client seated. Arm extended back with palm down. Practitioner applies pressure forward. Palm-up variant tests more mid-trapezius involvement.',
@@ -378,7 +378,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   'Lower Trapezius': {
     name: 'Lower Trapezius',
     brainstemControl: 'Medulla (CN XI)',
-    meridian: 'Pericardium',
+    meridian: 'Spleen',
     myotome: 'C3, C4',
     nerveSupply: 'Accessory Nerve (CN XI) and C3-C4',
     testingPosition: 'Client seated. Arm raised to approximately 150° in the scapular plane (not full 180°). Practitioner applies pressure forward and downward. Palpate the lower fibers below the scapular spine.',
@@ -387,7 +387,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   'Quadratus Lumborum': {
     name: 'Quadratus Lumborum',
     brainstemControl: 'Pons, Cerebellum',
-    meridian: 'Bladder',
+    meridian: 'Kidney',
     myotome: 'T12-L3',
     nerveSupply: 'Lumbar Plexus (T12-L3)',
     testingPosition: 'Client seated. Side bend away from the side being tested. Practitioner applies pressure through the ribcage into further side bending. Often presents hypertonic. Can also test supine with leg length check.',
@@ -396,7 +396,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   'Gluteus Minimus': {
     name: 'Gluteus Minimus',
     brainstemControl: 'Pons, Cerebellum',
-    meridian: 'Gall Bladder',
+    meridian: 'Pericardium',
     myotome: 'L5',
     nerveSupply: 'Superior Gluteal Nerve (L4-S1)',
     testingPosition: 'Client seated. Leg slightly abducted and internally rotated. Practitioner applies pressure into adduction. Differentiate from glute medius by the internal rotation component.',
@@ -405,7 +405,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   'Piriformis': {
     name: 'Piriformis',
     brainstemControl: 'Pons, Cerebellum',
-    meridian: 'Bladder',
+    meridian: 'Gall Bladder',
     myotome: 'L5, S1, S2',
     nerveSupply: 'Nerve to Piriformis (L5-S2)',
     testingPosition: 'Client seated. Hip externally rotated. Practitioner brings the leg across the midline into adduction. Often hypertonic. Relates to the adrenal medulla indicator pattern.',
@@ -414,7 +414,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   'Adductors': {
     name: 'Adductors',
     brainstemControl: 'Pons, Cerebellum',
-    meridian: 'Kidney',
+    meridian: 'Pericardium',
     myotome: 'L2-L4',
     nerveSupply: 'Obturator Nerve (L2-L4)',
     testingPosition: 'Client supine, leg slightly abducted. Practitioner applies pressure into further abduction. For gravitational testing: client holds the leg adducted while practitioner pushes outward. Avoid gripping through the Achilles (rich mechanoreceptor).',
@@ -423,7 +423,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   'Gastrocnemius': {
     name: 'Gastrocnemius',
     brainstemControl: 'Pons, Cerebellum',
-    meridian: 'Bladder',
+    meridian: 'San Jiao',
     myotome: 'L5, S1, S2',
     nerveSupply: 'Tibial Nerve (L5-S2)',
     testingPosition: 'Client prone, knee slightly bent (unlocked), foot in neutral. Practitioner applies pressure into dorsiflexion. Be aware of hand position: touching the muscle belly can create a false lock. Test through the forefoot or calcaneus instead.',
@@ -441,7 +441,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   'Tibialis Posterior': {
     name: 'Tibialis Posterior',
     brainstemControl: 'Medulla',
-    meridian: 'Kidney',
+    meridian: 'Gall Bladder',
     myotome: 'L5, S1',
     nerveSupply: 'Tibial Nerve (L5-S1)',
     testingPosition: 'Client seated. Foot in plantar flexion and inversion (point and rotate in). Practitioner applies pressure into eversion. The foot movement involves a swinging arc rather than a straight pull.',
@@ -459,7 +459,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   'Flexor Hallucis Longus': {
     name: 'Flexor Hallucis Longus',
     brainstemControl: 'Medulla',
-    meridian: 'Kidney',
+    meridian: 'San Jiao',
     myotome: 'L5, S1, S2',
     nerveSupply: 'Tibial Nerve (L5-S2)',
     testingPosition: 'Client seated or supine. Flex the big toe downward. Practitioner pushes the big toe up into extension. Because of the short lever, use minimal pressure.',
@@ -484,7 +484,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   },
   'Subscapularis': {
     name: 'Subscapularis',
-    meridian: 'Circulation',
+    meridian: 'Pericardium',
     myotome: 'C5, C6',
     nerveSupply: 'Subscapular Nerve (C5-C7)',
     testingPosition: 'Client seated, arm internally rotated with hand behind back. Practitioner applies pressure into external rotation.',
@@ -492,7 +492,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   },
   'Teres Major': {
     name: 'Teres Major',
-    meridian: 'Small Intestine',
+    meridian: 'Governing',
     myotome: 'C5-C7',
     nerveSupply: 'Lower Subscapular Nerve (C5-C7)',
     testingPosition: 'Client seated, arm adducted and internally rotated. Practitioner applies pressure into abduction and external rotation.',
@@ -500,7 +500,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   },
   'Teres Minor': {
     name: 'Teres Minor',
-    meridian: 'Small Intestine',
+    meridian: 'San Jiao',
     myotome: 'C5, C6',
     nerveSupply: 'Axillary Nerve (C5-C6)',
     testingPosition: 'Client seated, arm abducted to 90° with elbow flexed. Practitioner applies pressure into internal rotation.',
@@ -508,7 +508,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   },
   'Infraspinatus': {
     name: 'Infraspinatus',
-    meridian: 'Small Intestine',
+    meridian: 'San Jiao',
     myotome: 'C5, C6',
     nerveSupply: 'Suprascapular Nerve (C5-C6)',
     testingPosition: 'Client seated, arm at side with elbow bent to 90°. Practitioner applies pressure into internal rotation.',
@@ -516,7 +516,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   },
   'Rhomboids': {
     name: 'Rhomboids',
-    meridian: 'Lung',
+    meridian: 'Liver',
     myotome: 'C5',
     nerveSupply: 'Dorsal Scapular Nerve (C4-C5)',
     testingPosition: 'Client seated, arm abducted to 90° with palm down. Practitioner applies pressure forward while palpating the rhomboid belly between the scapula and spine.',
@@ -580,7 +580,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   },
   'Sartorius': {
     name: 'Sartorius',
-    meridian: 'Spleen',
+    meridian: 'San Jiao',
     myotome: 'L2, L3',
     nerveSupply: 'Femoral Nerve (L2-L4)',
     testingPosition: 'Client seated or supine, hip flexed, abducted, and externally rotated with knee flexed. Practitioner applies pressure into extension and adduction.',
@@ -588,7 +588,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   },
   'Gracilis': {
     name: 'Gracilis',
-    meridian: 'Kidney',
+    meridian: 'Liver',
     myotome: 'L2-L4',
     nerveSupply: 'Obturator Nerve (L2-L4)',
     testingPosition: 'Client supine, leg adducted with knee extended. Practitioner applies pressure into abduction.',
@@ -596,7 +596,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
   },
   'Soleus': {
     name: 'Soleus',
-    meridian: 'Bladder',
+    meridian: 'San Jiao',
     myotome: 'L5, S1, S2',
     nerveSupply: 'Tibial Nerve (L5-S2)',
     testingPosition: 'Client prone or seated, knee bent to 90° to eliminate gastrocnemius. Practitioner applies pressure into dorsiflexion.',
@@ -634,14 +634,6 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     testingPosition: 'Client seated. Extend the lateral four toes. Practitioner applies pressure into toe flexion.',
     description: 'Extends the lateral four toes and assists in ankle dorsiflexion. Part of the anterior compartment.'
   },
-  'Fibularis Longus': {
-    name: 'Fibularis Longus',
-    meridian: 'Gall Bladder',
-    myotome: 'L5, S1',
-    nerveSupply: 'Superficial Peroneal Nerve (L4-S1)',
-    testingPosition: 'Client seated. Evert the foot. Practitioner applies pressure into inversion. (Same muscle as Peroneus Longus — modern anatomical name.)',
-    description: 'Lateral compartment muscle that everts the foot. Also known as Peroneus Longus. Essential for lateral ankle stability.'
-  }
 };
 
 export const getMuscleInfo = (name: string): MuscleInfo => {

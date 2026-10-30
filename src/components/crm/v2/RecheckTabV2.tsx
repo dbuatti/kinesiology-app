@@ -12,9 +12,7 @@ import { BRAIN_REFLEX_POINTS, type BrainReflexPoint } from "@/data/brain-reflex-
 import { AppointmentWithClient } from "@/types/crm";
 import { CATEGORY_LABELS } from "@/components/crm/v2/categoryConstants";
 import { getInhibitedFindings } from "@/components/crm/v2/v2-utils";
-import {
-  Search, HelpCircle, Route, CheckCircle2, RotateCcw
-} from "lucide-react";
+import { Search, HelpCircle, Route, CheckCircle2 } from "lucide-react";
 
 interface RecheckItemData {
   name: string;
@@ -40,10 +38,10 @@ interface RecheckTabV2Props {
 type Action = 'carry_forward' | 'resolved' | 'unsure';
 
 const CATEGORY_COLORS: Record<string, string> = {
-  primitiveReflexes: 'bg-primary/10 text-primary border-primary/20',
+  primitiveReflexes: 'bg-primary/10 text-primary-strong border-primary/20',
   cranialNerves: 'bg-muted text-muted-foreground border-border',
-  muscles: 'bg-destructive/10 text-destructive border-destructive/20',
-  brainZones: 'bg-success/10 text-success border-success/20',
+  muscles: 'bg-destructive/10 text-destructive-strong border-destructive/20',
+  brainZones: 'bg-success/10 text-success-strong border-success/20',
 };
 
 const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, saveField, onJumpToPhase }: RecheckTabV2Props) => {
@@ -177,7 +175,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
           className={cn(
             "h-8 px-3 rounded-md text-[11px] font-semibold border transition-all",
             onlyInhibited
-              ? "bg-destructive/10 text-destructive border-destructive/20"
+              ? "bg-destructive/10 text-destructive-strong border-destructive/20"
               : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
           )}
         >
@@ -225,13 +223,13 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
                   <span className={cn(
                     "text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border",
                     item.status === 'Hypertonic'
-                      ? "bg-warning/10 text-warning border-warning/20"
-                      : "bg-destructive/10 text-destructive border-destructive/20"
+                      ? "bg-warning/10 text-warning-strong border-warning/20"
+                      : "bg-destructive/10 text-destructive-strong border-destructive/20"
                   )}>
                     {item.status === 'Inhibition' ? 'Inhib' : item.status}
                   </span>
                   {item.wasPriority && (
-                    <span className="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary-strong border border-primary/20">
                       Prio
                     </span>
                   )}
@@ -266,7 +264,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
                 </div>
               )}
               {act === 'unsure' && (
-                <div className="flex items-center gap-2 text-xs font-medium text-warning">
+                <div className="flex items-center gap-2 text-xs font-medium text-warning-strong">
                   <HelpCircle size={13} /> Flagged as Unsure
                 </div>
               )}
@@ -283,7 +281,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
                     size="sm"
                     variant="outline"
                     title="Choose this finding as the correction pathway and open Correct"
-                    className="h-7 px-3 rounded-md text-[11px] font-semibold border-primary/20 text-primary hover:bg-primary/5"
+                    className="h-7 px-3 rounded-md text-[11px] font-semibold border-primary/20 text-primary-strong hover:bg-primary/5"
                   >
                     <Route size={11} className="mr-1" /> Set Pathway
                   </Button>
@@ -301,7 +299,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
                     onClick={() => handleAction(item, 'unsure')}
                     disabled={isSaving}
                     label="Unsure"
-                    className="text-warning border-warning/20 hover:bg-warning/10"
+                    className="text-warning-strong border-warning/20 hover:bg-warning/10"
                   />
                 </div>
               )}

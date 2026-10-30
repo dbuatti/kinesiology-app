@@ -256,7 +256,7 @@ const SUBCORTICAL_POINTS: BrainReflexPoint[] = [
     category: 'Subcortical',
     acupoint: 'GV17',
     location: 'GV17 — External occipital protuberance itself, on the midline at the back of the skull',
-    lateralization: 'Ipsilateral',
+    lateralization: 'Bilateral',
     functions: [
       'Relay station between cerebrum and cerebellum',
       'Regulation of breathing rhythm (pneumotaxic centre)',
@@ -396,7 +396,7 @@ const SUBCORTICAL_POINTS: BrainReflexPoint[] = [
     category: 'Subcortical',
     acupoint: 'GV26',
     location: 'GV26 — Philtrum, the midline groove between the base of the nose and the upper lip',
-    lateralization: 'Ipsilateral',
+    lateralization: 'Bilateral',
     functions: [
       'Visual and auditory reflex coordination',
       'Dopamine production (substantia nigra)',

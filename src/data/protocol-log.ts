@@ -22,6 +22,21 @@ export interface ProtocolLog {
   steps?: number[];
   values?: Record<string, unknown>;
   updatedAt?: string;
+  /**
+   * Corrections already completed for this process, newest last.
+   *
+   * The sheet always edits one live entry (`values`/`steps`). "Add another"
+   * moves that entry in here and clears the form, so a session that corrects
+   * three ligaments keeps all three instead of only the last.
+   */
+  entries?: ProtocolEntry[];
+}
+
+export interface ProtocolEntry {
+  id: string;
+  values: Record<string, unknown>;
+  steps?: number[];
+  savedAt: string;
 }
 
 /** A write is either a plain patch or a function of the freshest log. */
@@ -284,10 +299,6 @@ export const EYE_POSITIONS: EyePosition[] = [
   },
 ];
 
-const EYE_NOTES: Record<string, string> = Object.fromEntries(
-  EYE_POSITIONS.map((eye) => [eye.label, `${eye.cue} — ${eye.desc}`])
-);
-
 const METHOD = ["Tap 3–5s", "Hold + intention", "TL + tuning fork"];
 
 export const BRAIN_ZONES: Record<BrainCategory, string[]> = {
@@ -314,6 +325,33 @@ export const BRAIN_ZONES: Record<BrainCategory, string[]> = {
     "Hypothalamus",
   ],
 };
+
+/**
+ * Zones whose reflex point sits on the midline, so a correction there has no
+ * side to choose.
+ *
+ * The test is the point, not the anatomy: a zone is lateralised exactly when
+ * the points used to check it are bilateral.
+ *
+ *   Cerebellum   GV16  — suboccipital hollow, midline
+ *   Pons         GV17  — external occipital protuberance, midline
+ *   Midbrain     GV26  — philtrum, midline
+ *   Hypothalamus Bregma / GV20 — crown, midline
+ *
+ * Everything else is checked bilaterally and therefore logs a side —
+ * Medulla (GB12, bilateral), Thalamus (BL9, bilateral), Basal Ganglia (GB9,
+ * bilateral), Hippocampus and the Limbic crescent (bilateral hand placement).
+ */
+export const MIDLINE_BRAIN_ZONES: readonly string[] = [
+  "Cerebellum",
+  "Pons",
+  "Midbrain",
+  "Hypothalamus",
+];
+
+export const isMidlineZone = (name?: string | null): boolean =>
+  !!name && MIDLINE_BRAIN_ZONES.includes(name);
+
 
 /** One brain zone is never enough: every pathway carries a second zone. */
 const brainZoneFields = (primary: BrainCategory): ProtocolField[] => [
@@ -688,10 +726,60 @@ export const allowedValuesFor = (field: ProtocolField, parentValue: unknown): st
 export const organPairFor = (emotion: unknown): OrganOption[] =>
   EMOTION_ORGANS[String(emotion)] ?? [];
 
+export const hasValue = (value: unknown) =>
+  Array.isArray(value) ? value.length > 0 : value !== null && value !== undefined && value !== "";
+
+/**
+ * One line per answered field, in the order the practitioner works through
+ * them. Used by the log bar and by the list of saved corrections, so both
+ * always describe the same data the same way.
+ */
+export const summariseValues = (
+  processId: string,
+  values: Record<string, unknown> = {}
+): string[] => {
+  const fields = PROTOCOL_FIELDS[processId] ?? [];
+  const parts: string[] = [];
+
+  for (const field of fields) {
+    const value = values[field.id];
+    if (!hasValue(value)) continue;
+
+    if (field.kind === "toggle") {
+      parts.push(field.label);
+      continue;
+    }
+    if (field.kind === "zone") {
+      const zone = formatZone(isZoneValue(value) ? value : null);
+      if (zone) parts.push(zone);
+      continue;
+    }
+    if (Array.isArray(value)) {
+      parts.push(value.map(String).join(" / "));
+      continue;
+    }
+    if (typeof value === "boolean") {
+      if (value) parts.push(field.label);
+      continue;
+    }
+    parts.push(String(value));
+  }
+
+  return parts;
+};
+
 /** Human-readable one-liner for a logged zone, e.g. "R · Limbic System". */
 export const formatZone = (zone?: ZoneValue | null) => {
   if (!zone?.name) return null;
-  const side = zone.side === "R" ? "R" : zone.side === "L" ? "L" : "";
+  // Midline structures never carry a side — including older logs written
+  // before the picker knew better.
+  const side = isMidlineZone(zone.name)
+    ? ""
+    : zone.side === "R"
+      ? "R"
+      : zone.side === "L"
+        ? "L"
+        : "";
   return `${side ? `${side} · ` : ""}${zone.name}`;
 };
 

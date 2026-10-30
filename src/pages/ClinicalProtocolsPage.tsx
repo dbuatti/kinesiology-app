@@ -11,12 +11,24 @@ import MechanoreceptiveAssessment from "@/components/crm/MechanoreceptiveAssessm
 import HeartWallProtocol from "@/components/crm/HeartWallProtocol";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ChevronLeft, Brain, Loader2, Zap, Heart, 
-  Activity, Shield, Dumbbell, RefreshCw,
-  Eye, EyeOff, Save,
-  Settings2, Sparkles, Globe, ExternalLink,
-  ClipboardCheck
+import {
+  ChevronLeft,
+  Brain,
+  Loader2,
+  Zap,
+  Heart,
+  Activity,
+  Shield,
+  Dumbbell,
+  RefreshCw,
+  Eye,
+  EyeOff,
+  Save,
+  Settings2,
+  Sparkles,
+  Globe,
+  ExternalLink,
+  ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -55,7 +67,7 @@ export default function ClinicalProtocolsPage() {
     const saved = localStorage.getItem(SHOW_IMAGES_KEY);
     return saved !== null ? JSON.parse(saved) : true;
   });
-  const [rememberSettings, setRememberSettings] = useState(() => {
+  const [rememberSettings] = useState(() => {
     const saved = localStorage.getItem(REMEMBER_KEY);
     return saved !== null ? JSON.parse(saved) : true;
   });

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { EventPricing } from "@/hooks/useEventPricing";
 
-interface DraftRow extends EventPricing {}
+type DraftRow = EventPricing;
 
 // Only show real bookable services — filters out the generic Cal.com event types
 // (15 Min Meeting, Secret Meeting, IT 1:1, etc.) that get pulled in by Sync.

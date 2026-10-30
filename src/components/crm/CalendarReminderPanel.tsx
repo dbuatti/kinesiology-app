@@ -153,19 +153,6 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
     fetchStats();
   }, [session?.user?.id]);
 
-  const getStatusColor = () => {
-    if (stats.failed > 0) return "destructive";
-    if (stats.sent > 0) return "default";
-    return "secondary";
-  };
-
-  const getStatusIcon = () => {
-    if (isSending) return <Loader2 className="h-4 w-4 animate-spin" />;
-    if (stats.failed > 0) return <AlertCircle className="h-4 w-4" />;
-    if (stats.sent > 0) return <CheckCircle className="h-4 w-4" />;
-    return <Bell className="h-4 w-4" />;
-  };
-
   const pending = Math.max(0, stats.total - stats.sent);
 
   return (

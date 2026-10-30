@@ -1,12 +1,12 @@
 
 import type { ReactNode } from 'react';
-import { 
-  Search, 
-  Undo2, 
-  Redo2, 
-  Printer, 
-  Type, 
-  PaintRoller, 
+import {
+  Search,
+  Undo2,
+  Redo2,
+  Printer,
+  Type,
+  PaintRoller,
   ChevronDown,
   Bold,
   Italic,
@@ -23,7 +23,7 @@ import {
   IndentDecrease,
   IndentIncrease,
   RemoveFormatting,
-  ChevronUp
+  ChevronUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

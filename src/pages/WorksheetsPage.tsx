@@ -2,8 +2,17 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Lightbulb, Zap, Target, Brain, Activity, LayoutGrid, FileText,
-  DollarSign, Compass, ArrowLeft, BookOpen,
+  Lightbulb,
+  Zap,
+  Target,
+  Brain,
+  Activity,
+  LayoutGrid,
+  FileText,
+  DollarSign,
+  Compass,
+  ArrowLeft,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

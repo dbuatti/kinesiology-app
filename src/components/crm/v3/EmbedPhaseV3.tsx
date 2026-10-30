@@ -2,10 +2,23 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
-  ClipboardCheck, RefreshCw, CheckCircle2, Loader2, ShieldCheck,
+  ClipboardCheck,
+  RefreshCw,
+  CheckCircle2,
+  Loader2,
+  ShieldCheck,
   RotateCcw,
-  CalendarPlus, Plus, Calendar, Target, FileText, Brain, Dumbbell, Baby, Zap,
-  X, ExternalLink,
+  CalendarPlus,
+  Plus,
+  Calendar,
+  Target,
+  FileText,
+  Brain,
+  Dumbbell,
+  Baby,
+  Zap,
+  X,
+  ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -30,7 +43,12 @@ import {
   cranialStimKey,
 } from "@/components/crm/pathway-reflex-stim-data";
 import {
-  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import AppointmentForm from "@/components/crm/AppointmentForm";
 import CompactAvailabilityPicker from "@/components/crm/CompactAvailabilityPicker";
@@ -39,7 +57,6 @@ import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
 import {
   Card,
   Section,
-  PrimaryButton,
   SecondaryButton,
   StatusBadge,
   EmptyState,
@@ -217,7 +234,7 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
           {data.stims.map((s) => (
             <span
               key={s.key}
-              className="inline-flex items-center gap-1 rounded-md border border-destructive/20 bg-destructive/10 py-1 pl-2 pr-1 text-[10px] font-medium text-destructive"
+              className="inline-flex items-center gap-1 rounded-md border border-destructive/20 bg-destructive/10 py-1 pl-2 pr-1 text-[10px] font-medium text-destructive-strong"
             >
               {s.side && <span className="font-semibold">{s.side}</span>}
               <span className="max-w-[200px] truncate leading-snug">{s.label}</span>
@@ -439,7 +456,7 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
                       disabled={!!clearingId}
                       aria-label={`Mark ${item.name} clear`}
                       title="Mark clear"
-                      className="h-10 shrink-0 rounded-md border border-success/25 bg-success/10 px-2.5 text-xs font-semibold text-success hover:bg-success/20 sm:px-3"
+                      className="h-10 shrink-0 rounded-md border border-success/25 bg-success/10 px-2.5 text-xs font-semibold text-success-strong hover:bg-success/20 sm:px-3"
                     >
                       {isClearing ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} className="sm:mr-2" />}
                       <span className="hidden sm:inline">Mark clear</span>
@@ -482,14 +499,14 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
                   return (
                     <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl border border-success/20 bg-success/[0.04] p-2">
                       <div className="flex min-w-0 flex-1 items-center gap-2">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-success/10 text-success">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-success/10 text-success-strong">
                           <Icon size={14} />
                         </div>
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                             <p className="text-xs font-medium leading-snug text-foreground">{item.name}</p>
                             {item.side && (
-                              <span className="rounded-md border border-success/20 bg-success/10 px-1 py-0 text-[10px] font-medium text-success">
+                              <span className="rounded-md border border-success/20 bg-success/10 px-1 py-0 text-[10px] font-medium text-success-strong">
                                 {item.side}
                               </span>
                             )}
@@ -539,7 +556,7 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
                   <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">SNS resets</p>
                   <div className="flex flex-wrap gap-1">
                     {snsDone.map(label => (
-                      <span key={label} className="inline-flex items-center gap-1 rounded-full border border-success/20 bg-success/[0.07] px-2 py-1 text-[10px] font-medium text-success">
+                      <span key={label} className="inline-flex items-center gap-1 rounded-full border border-success/20 bg-success/[0.07] px-2 py-1 text-[10px] font-medium text-success-strong">
                         <CheckCircle2 size={9} /> {label}
                       </span>
                     ))}

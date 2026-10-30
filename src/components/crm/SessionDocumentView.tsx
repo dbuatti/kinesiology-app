@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { format } from 'date-fns';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -15,17 +15,13 @@ import {
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
 import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
 import { useSessionDocumentState } from '@/hooks/useSessionDocumentState';
 import { QuickSessionDialog } from './QuickSessionDialog';
 
 // Modular Sub-components
-import DocumentSidebar, { OUTLINE_ITEMS } from './document-view/DocumentSidebar';
+import DocumentSidebar, {  } from './document-view/DocumentSidebar';
 import DocumentRightSidebar from './document-view/DocumentRightSidebar';
 import DocumentHeader from './document-view/DocumentHeader';
 import PreliminarySection from './document-view/PreliminarySection';
@@ -86,7 +82,6 @@ const SessionDocumentView = ({
     lastSaved,
     openGuides,
     activeSection,
-    loadingMuscles,
     currentTime,
     activeTimerDuration,
     timeLeft,
@@ -100,7 +95,6 @@ const SessionDocumentView = ({
     brainZoneOptions,
     currentMuscleTests,
     unifiedPattern,
-    inhibitedFindings,
     handleTogglePatternItem
   } = useSessionDocumentState({
     appointment,

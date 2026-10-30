@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import {
   getTokenSimilarity,
   normalizeName,
   normalizeEmail,
-  normalizePhone
+  normalizePhone,
 } from "@/utils/duplicate-detector";
 import MergeConflictDialog from "./MergeConflictDialog";
 import ManualMergeForm from "./ManualMergeForm";

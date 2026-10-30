@@ -3,10 +3,13 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Move, Zap, RefreshCw, 
-  Lightbulb, 
-  ChevronRight, Loader2
+import {
+  Move,
+  Zap,
+  RefreshCw,
+  Lightbulb,
+  ChevronRight,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';

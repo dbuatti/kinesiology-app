@@ -21,7 +21,7 @@ const Chip = ({ chip }: { chip: GridSummaryChip }) => (
 
 const MUSCLE_CHIP_STYLES: Record<MuscleGridState, string> = {
   Hypotonic: "bg-sky-500/15 text-sky-700 border-sky-500/25",
-  Inhibited: "bg-chart-destructive/15 text-chart-destructive border-chart-destructive/25",
+  Inhibited: "bg-rose-500/15 text-rose-700 border-rose-500/25",
   Hypertonic: "bg-amber-500/15 text-amber-700 border-amber-500/25",
 };
 

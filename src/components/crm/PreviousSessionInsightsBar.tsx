@@ -1,11 +1,17 @@
 
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  ChevronDown, ChevronUp, History, FlaskConical, 
-  Target, Calendar, Clock, Sparkles,
-  AlertTriangle
+import {
+  ChevronDown,
+  ChevronUp,
+  History,
+  FlaskConical,
+  Target,
+  Calendar,
+  Clock,
+  Sparkles,
+  AlertTriangle,
 } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";

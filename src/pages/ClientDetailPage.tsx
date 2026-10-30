@@ -6,13 +6,43 @@ import { getClientRollups } from "@/utils/crm-utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  ArrowLeft, Mail, Phone, MapPin,
-  Loader2, Briefcase, Heart, Baby,
-  Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Brain,
-  LayoutDashboard, History, ArrowRight, Sparkles, Plus, Link as LinkIcon,
-  Zap, Send, ShieldCheck, ExternalLink, RefreshCw, ShieldAlert, Info, User, CreditCard, LayoutGrid,
-  CalendarClock, Mic, Table2, Stethoscope, Bot
+import {
+  ArrowLeft,
+  Mail,
+  Phone,
+  MapPin,
+  Loader2,
+  Briefcase,
+  Heart,
+  Baby,
+  Activity,
+  Edit3,
+  Trash2,
+  MoreHorizontal,
+  FlaskConical,
+  TrendingUp,
+  Brain,
+  LayoutDashboard,
+  History,
+  ArrowRight,
+  Sparkles,
+  Plus,
+  Link as LinkIcon,
+  Zap,
+  Send,
+  ShieldCheck,
+  ExternalLink,
+  RefreshCw,
+  ShieldAlert,
+  Info,
+  User,
+  CreditCard,
+  LayoutGrid,
+  CalendarClock,
+  Mic,
+  Table2,
+  Stethoscope,
+  Bot,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -93,8 +123,8 @@ const ClientDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [appOpen, setAppOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [aiCopying, setAiCopying] = useState(false);
-  const [linkCopying, setLinkCopying] = useState(false);
+  const [, setAiCopying] = useState(false);
+  const [, setLinkCopying] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [syncingKit, setSyncingKit] = useState(false);
@@ -294,7 +324,7 @@ const ClientDetailPage = () => {
     if (!client) return;
     setSyncingNotion(true);
     try {
-      const { data, error } = await supabase.functions.invoke('sync-to-notion', {
+      const { error } = await supabase.functions.invoke('sync-to-notion', {
         body: {
           clientId: client.id,
           origin: window.location.origin
@@ -372,7 +402,7 @@ const ClientDetailPage = () => {
     if (!client) return;
     setSyncingKit(true);
     try {
-      const { data, error } = await supabase.functions.invoke('sync-to-kit', {
+      const { error } = await supabase.functions.invoke('sync-to-kit', {
         body: { record: client }
       });
       if (error) throw error;

@@ -1,8 +1,7 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Check, Trash2, Loader, Copy, Save } from 'lucide-react';
+import { Check, Loader, Copy, Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 const WhereYourValueBeginsWorksheet = ({ submissionId, onComplete, onBack }) => {
   const [userId, setUserId] = useState<string | null>(null);
@@ -66,7 +65,6 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onComplete, onBack }) => 
     };
     init();
   }, [userId, submissionId]);
-
 
   useEffect(() => {
     if (!userId || !localId) return;

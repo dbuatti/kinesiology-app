@@ -1,6 +1,5 @@
 
-import { appointmentRowIsPaid } from "@/lib/calendarItems";
-import { useState, useEffect, useMemo, type ElementType } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { setPersonClosed } from "@/lib/people";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,10 +34,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group";
-import {
   Search,
   Filter,
   ArrowUpDown,
@@ -48,9 +43,7 @@ import {
   DollarSign,
   Users,
   Calendar,
-  Percent,
   Sparkles,
-  ArrowRight,
   CheckCircle2,
   AlertCircle,
   Clock,
@@ -65,24 +58,15 @@ import {
   Target,
   Loader2,
   Wand2,
-  CalendarDays,
-  Mic2,
-  Building2,
-  Theater,
-  Music2,
-  Brain,
-  Zap,
-  Edit3,
   Columns,
   Inbox,
 } from "lucide-react";
-import { format, formatDistanceToNow, differenceInMonths, startOfWeek, endOfWeek, startOfMonth } from "date-fns";
+import { formatDistanceToNow, startOfWeek, endOfWeek, startOfMonth } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
 import QuickBookDialog from "@/components/crm/QuickBookDialog";
 import { ClientRow } from "@/components/crm/settings/ClientRow";
 import TimetableVisualizer from "@/components/crm/settings/TimetableVisualizer";
 import RoadmapTasks from "@/components/crm/settings/RoadmapTasks";
-
 
 interface ClientWithAppointments extends Client {
   appointments: Appointment[];
@@ -776,33 +760,7 @@ export function ClientAuditTool({
     ? clients.reduce((acc, c) => acc + (c.standard_rate ?? 50), 0) / clients.length
     : 0;
 
-  // Total Revenue from paid appointments
-  const totalRevenue = clients.reduce((acc, c) => {
-    const paidApps = c.appointments.filter(app => appointmentRowIsPaid(app));
-    const clientPaidSum = paidApps.reduce((sum, app) => sum + (Number(app.price_amount) || 0), 0);
-    return acc + clientPaidSum;
-  }, 0);
-
-  // Free Session Ratio
-  const totalSessions = clients.reduce((acc, c) => acc + c.appointments.length, 0);
-  const freeSessions = clients.reduce((acc, c) => {
-    const freeApps = c.appointments.filter(app => Number(app.price_amount) === 0 || app.price_amount === null);
-    return acc + freeApps.length;
-  }, 0);
-  const freeSessionRatio = totalSessions > 0 ? (freeSessions / totalSessions) * 100 : 0;
-
   // Projected Monthly Revenue
-  const totalSessionsLast90Days = clients.reduce((acc, c) => {
-    const recentApps = c.appointments.filter(app => {
-      const appDate = new Date(app.date);
-      const diffDays = (now.getTime() - appDate.getTime()) / (1000 * 60 * 60 * 24);
-      return diffDays >= 0 && diffDays <= 90;
-    });
-    return acc + recentApps.length;
-  }, 0);
-
-  const dynamicMonthlyFrequency = totalSessionsLast90Days / 3;
-  
   const projectedMonthlyRevenue = clients.reduce((acc, c) => {
     const recentAppsCount = c.appointments.filter(app => {
       const appDate = new Date(app.date);
@@ -834,34 +792,6 @@ export function ClientAuditTool({
       return ![0, 30, 50, 70, 80, 90, 100, 120, 150].includes(rate);
     }).length,
   };
-
-  const maxDistributionCount = Math.max(...Object.values(rateDistribution), 1);
-
-  // Monthly Revenue Data for Chart (last 6 months)
-  const monthlyRevenueData = useMemo(() => {
-    const months: Record<string, { label: string; revenue: number; sessions: number }> = {};
-    const nowDate = new Date();
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(nowDate.getFullYear(), nowDate.getMonth() - i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const label = d.toLocaleDateString("en-AU", { month: "short", timeZone: "Australia/Melbourne" });
-      months[key] = { label, revenue: 0, sessions: 0 };
-    }
-    clients.forEach(c => {
-      c.appointments.forEach(app => {
-        if (!appointmentRowIsPaid(app)) return;
-        const appDate = new Date(app.date);
-        const key = `${appDate.getFullYear()}-${String(appDate.getMonth() + 1).padStart(2, '0')}`;
-        if (months[key]) {
-          months[key].revenue += Number(app.price_amount) || 0;
-          months[key].sessions += 1;
-        }
-      });
-    });
-    return Object.values(months);
-  }, [clients]);
-
-  const maxMonthlyRevenue = Math.max(...monthlyRevenueData.map(m => m.revenue), 1);
 
   // Simulator Calculations
   const currentProjectedRevenue = totalActiveClients * averageSessionRate * simulatorFrequency;
@@ -988,7 +918,7 @@ export function ClientAuditTool({
   }, [clients, isSandboxActive, globalSimRate, globalSimFrequency, clientOverrides]);
 
   // Weekly & monthly revenue — uses price_amount when set, falls back to client standard_rate
-  const { thisWeekRevenue, thisWeekSessions, thisMonthRevenue, thisMonthSessions, daysLeftInWeek } = useMemo(() => {
+  const { thisWeekRevenue, thisWeekSessions } = useMemo(() => {
     const now = new Date();
     const weekStart  = startOfWeek(now, { weekStartsOn: 1 });
     const weekEnd    = endOfWeek(now, { weekStartsOn: 1 });
@@ -1456,7 +1386,7 @@ export function ClientAuditTool({
                         onClick={() => setCompactRows(prev => !prev)}
                         className={cn(
                           "rounded-xl border-border/60 bg-muted/30 hover:bg-muted/50",
-                          compactRows && "bg-primary/10 border-primary/30 text-primary"
+                          compactRows && "bg-primary/10 border-primary/30 text-primary-strong"
                         )}
                         title={compactRows ? "Compact view" : "Normal view"}
                       >

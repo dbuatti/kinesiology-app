@@ -1,18 +1,17 @@
 
 import { Fragment } from 'react';
-import { 
-  Wind, 
-  Eye, 
-  Baby, 
-  Move, 
-  RotateCcw, 
-  RefreshCw, 
-  Footprints, 
+import {
+  Wind,
+  Eye,
+  Baby,
+  Move,
+  RotateCcw,
+  RefreshCw,
+  Footprints,
   Zap,
   TrendingUp,
-  ArrowRight
+  ArrowRight,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 const LADDER_STEPS = [
   { label: "Breath", icon: Wind, sub: "Moro Activation" },

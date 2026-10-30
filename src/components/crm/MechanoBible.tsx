@@ -1,25 +1,22 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  BookOpen, 
-  Move, 
-  Zap, 
-  Activity, 
-  Brain, 
-  Shield, 
+import {
+  BookOpen,
+  Move,
+  Zap,
+  Activity,
+  Brain,
+  Shield,
   Link as LinkIcon,
-  Dumbbell,
   Layers,
-  Info,
   CheckCircle2,
-  ArrowRight,
   Compass,
   Lightbulb,
   Sparkles,
   Search,
-  List
+  List,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -189,7 +186,7 @@ const MechanoBible = () => {
                 <CardContent className="p-6 space-y-4">
                   <div className="flex justify-between items-start">
                     <h5 className="font-semibold text-foreground text-lg">{ex.title}</h5>
-                    <Badge className="bg-primary/5 text-primary border-none text-[10px] font-semibold uppercase">{ex.logic}</Badge>
+                    <Badge className="bg-primary/5 text-primary-strong border-none text-[10px] font-semibold uppercase">{ex.logic}</Badge>
                   </div>
                   
                   <div className="p-3 bg-muted/50 rounded-xl border border-border/50">

@@ -25,7 +25,7 @@ const ImageQuestion: FC<ImageQuestionProps> = ({
     <div className="space-y-6">
       <div className="overflow-hidden rounded-2xl border-2 border-border/50 dark:border-border shadow-sm">
         <AspectRatio ratio={16 / 9}>
-          <img
+          <img loading="lazy" decoding="async"
             src={imageUrl}
             alt="Quiz visual"
             className="h-full w-full object-cover"

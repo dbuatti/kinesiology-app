@@ -1,12 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Zap,
   Brain,
-  Heart,
   Activity,
-  Eye,
-  Droplets,
   Target,
   CheckCircle2,
   Lightbulb,
@@ -14,10 +11,9 @@ import {
   ArrowUp,
   ArrowDown,
   ShieldCheck,
-  BookOpen,
   MessageCircle,
   RefreshCw,
-  Search
+  Search,
 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 import { AFFERENT_PATHWAYS, EFFERENT_PATHWAYS, CORRECTION_METHODS } from "@/data/pathway-logic-data";

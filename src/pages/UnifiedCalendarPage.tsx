@@ -1,21 +1,47 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, ExternalLink, Mic, User, RotateCcw, Plus, BookOpen, Search, CheckCircle2, CreditCard, Circle, Gift, Bell
+  ArrowLeft,
+  Calendar as CalendarIcon,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  ExternalLink,
+  Mic,
+  User,
+  RotateCcw,
+  Plus,
+  BookOpen,
+  Search,
+  CheckCircle2,
+  CreditCard,
+  Circle,
+  Gift,
+  Bell,
 } from "lucide-react";
 import {
-  format, addMonths, subMonths, addWeeks, subWeeks, startOfMonth, endOfMonth,
-  startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays,
-  eachDayOfInterval, isToday, parseISO, setHours, setMinutes
+  format,
+  addMonths,
+  subMonths,
+  addWeeks,
+  subWeeks,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  isSameMonth,
+  isSameDay,
+  eachDayOfInterval,
+  isToday,
+  parseISO,
+  setHours,
+  setMinutes,
 } from "date-fns";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -26,11 +52,7 @@ import {
 import AppLayout from "@/components/crm/AppLayout";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import PageHeader from "@/components/shared/PageHeader";
-import WeeklyTimeGrid, {
-  CalendarEvent,
-  calcSummary,
-  EarningsPanel,
-} from "@/components/crm/WeeklyTimeGrid";
+import WeeklyTimeGrid, { CalendarEvent, calcSummary, EarningsPanel } from "@/components/crm/WeeklyTimeGrid";
 import WeekByWeekOverview from "@/components/crm/WeekByWeekOverview";
 import BookingsList, { type BookingListItem } from "@/components/crm/BookingsList";
 import SimpleBookDialog from "@/components/crm/SimpleBookDialog";
@@ -45,7 +67,10 @@ import { showSuccess, showError } from "@/utils/toast";
 import { useAuth } from "@/components/AuthProvider";
 import { convertVoiceToAppointment } from "@/utils/voiceToFnh";
 import {
-  buildCalendarItems, parseStartTime, fetchVoiceLessons, fetchKinesiologyAppts, fetchVoiceBookings,
+  buildCalendarItems,
+  fetchVoiceLessons,
+  fetchKinesiologyAppts,
+  fetchVoiceBookings,
   type CalendarItem,
 } from "@/lib/calendarItems";
 
@@ -416,7 +441,6 @@ const UnifiedCalendarPage = () => {
       return count;
     }, [calendarItems, monthStart, monthEnd]);
 
-
   const weeklyEvents: CalendarEvent[] = useMemo(() => {
   const ws = startOfWeek(weekStart);
   const we = endOfWeek(weekStart);
@@ -479,7 +503,7 @@ const UnifiedCalendarPage = () => {
  title="Calendar"
  subtitle="Kinesiology appointments and voice lessons at a glance."
   icon={CalendarIcon}
-  iconClassName="bg-primary/10 text-primary"
+  iconClassName="bg-primary/10 text-primary-strong"
   actions={
 <div className="flex flex-wrap gap-2 items-center">
   <Popover>
@@ -700,7 +724,7 @@ const UnifiedCalendarPage = () => {
    className={cn(
    "w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold",
    isCurrentDay
-   ? "bg-primary/10 text-primary "
+   ? "bg-primary/10 text-primary-strong "
    : "text-muted-foreground"
    )}
    >
@@ -960,7 +984,7 @@ const UnifiedCalendarPage = () => {
     <DialogContent className="sm:max-w-[440px] rounded-2xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col bg-background">
       <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary-strong flex items-center justify-center shadow-sm">
             <User size={20} />
           </div>
           <div>
@@ -1021,7 +1045,7 @@ const UnifiedCalendarPage = () => {
       <DialogContent className="sm:max-w-[480px] rounded-2xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col bg-background">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary-strong flex items-center justify-center shadow-sm">
               <Plus size={20} />
             </div>
             <div>

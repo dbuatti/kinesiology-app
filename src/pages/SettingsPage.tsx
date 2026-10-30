@@ -29,7 +29,7 @@ const CardLink = ({ to, icon: Icon, title, desc, badge }: { to: string; icon: an
         <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground flex items-center gap-2">
             {title}
-            {badge && <Badge className="bg-primary/10 text-primary border-none text-[10px] font-semibold">{badge}</Badge>}
+            {badge && <Badge className="bg-primary/10 text-primary-strong border-none text-[10px] font-semibold">{badge}</Badge>}
           </p>
           <p className="text-[10px] text-muted-foreground font-medium">{desc}</p>
         </div>
@@ -41,7 +41,6 @@ const CardLink = ({ to, icon: Icon, title, desc, badge }: { to: string; icon: an
 
 const SettingsPage = () => {
   const navigate = useNavigate();
-  const intakeFormUrl = `${window.location.origin}/onboarding/welcome`;
   const intakeDirectUrl = `${window.location.origin}/onboarding/{clientId}`;
 
   const copyToClipboard = async (text: string) => {
@@ -86,7 +85,7 @@ const SettingsPage = () => {
             <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
               <div className="p-8">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary-strong flex items-center justify-center">
                     <ClipboardList size={20} />
                   </div>
                   <div>
@@ -159,7 +158,7 @@ const SettingsPage = () => {
             {/* Integration Status Overview */}
             <div className="bg-card rounded-xl border border-border shadow-sm p-8 space-y-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary-strong flex items-center justify-center">
                   <Globe size={20} />
                 </div>
                 <div>
@@ -242,7 +241,7 @@ const SettingsPage = () => {
             <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
               <div className="p-8">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-destructive/10 text-destructive-strong flex items-center justify-center">
                     <Bug size={20} />
                   </div>
                   <div>

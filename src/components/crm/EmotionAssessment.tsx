@@ -1,11 +1,7 @@
 
 import { useState, useEffect } from "react";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChevronDown, Heart, Zap, List, Layers, Info, RotateCcw } from "lucide-react";
@@ -153,7 +149,7 @@ const EmotionAssessment = ({
                       setShowResetConfirm(true);
                     }}
                     disabled={isSaving}
-                    className="border-destructive/20 text-destructive hover:bg-destructive/5 h-8 px-3"
+                    className="border-destructive/20 text-destructive-strong hover:bg-destructive/5 h-8 px-3"
                   >
                     <RotateCcw size={16} className="mr-1" />
                     Reset

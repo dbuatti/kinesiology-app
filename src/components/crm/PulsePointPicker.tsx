@@ -1,6 +1,5 @@
 
 import { cn } from "@/lib/utils";
-import { ROW_DATA } from "@/data/emotion-code-data";
 
 interface PulsePointPickerProps {
   selectedRow: number | null;

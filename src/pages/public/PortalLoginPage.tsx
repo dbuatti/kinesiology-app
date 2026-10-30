@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { showError } from "@/utils/toast";
 import { Loader2, Mail, CheckCircle2 } from "lucide-react";
 
@@ -13,12 +13,19 @@ export default function PortalLoginPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (session) return <Navigate to="/portal" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    const address = email.trim();
+    if (!address) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)) {
+      setError("That doesn't look like an email address — please check it.");
+      return;
+    }
+    setError(null);
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOtp({
@@ -28,7 +35,9 @@ export default function PortalLoginPage() {
       if (error) throw error;
       setSent(true);
     } catch (err: any) {
-      showError(err.message || "Couldn't send the login link.");
+      const message = err?.message || "Couldn't send the login link.";
+      setError(message);
+      showError(message);
     } finally {
       setLoading(false);
     }
@@ -61,18 +70,30 @@ export default function PortalLoginPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground ml-1">
+                <label htmlFor="portal-email" className="text-xs font-medium text-muted-foreground ml-1">
                   Your email
                 </label>
                 <Input
+                  id="portal-email"
                   type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  autoCapitalize="none"
+                  spellCheck={false}
                   placeholder="you@example.com"
+                  aria-invalid={!!error}
+                  aria-describedby={error ? "portal-email-error" : undefined}
                   className="h-12 text-base"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => { setEmail(e.target.value); setError(null); }}
                   required
                   disabled={loading}
                 />
+                {error && (
+                  <p id="portal-email-error" role="alert" className="ml-1 text-[12px] font-medium text-destructive-strong">
+                    {error}
+                  </p>
+                )}
               </div>
               <Button type="submit" disabled={loading} className="w-full h-12 rounded-xl font-bold">
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}

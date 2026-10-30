@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { HeartWallSession, HeartWallLayer, HeartWallLayerStatus } from "@/types/crm";
+import { HeartWallSession, HeartWallLayer } from "@/types/crm";
 import { showError } from "@/utils/toast";
 
 interface Row {

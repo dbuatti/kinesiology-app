@@ -1,11 +1,27 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Zap, ExternalLink, Clock, Target, ShieldAlert, Activity, Brain, Heart, Home, Sparkles, CreditCard, CheckCircle2, Wallet, Smartphone, Loader2, QrCode, ChevronDown, DollarSign,
-  MessageSquare, Info, AlertCircle, Lightbulb, Layers, Play, Check
+import {
+  Zap,
+  ExternalLink,
+  Clock,
+  Target,
+  ShieldAlert,
+  Activity,
+  Home,
+  CreditCard,
+  CheckCircle2,
+  Wallet,
+  Loader2,
+  QrCode,
+  ChevronDown,
+  DollarSign,
+  MessageSquare,
+  Lightbulb,
+  Layers,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import EditableField from "@/components/shared/EditableField";
@@ -17,16 +33,8 @@ import { showError, showSuccess } from "@/utils/toast";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AppointmentContextCardsProps {
   appointment: AppointmentWithClient;

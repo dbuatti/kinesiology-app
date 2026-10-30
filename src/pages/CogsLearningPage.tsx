@@ -1,7 +1,6 @@
 
-import { BookOpen, Move, ArrowUpDown, RotateCw, Brain, Eye, Link as LinkIcon } from 'lucide-react';
+import { Move, ArrowUpDown, RotateCw, Brain, Eye } from 'lucide-react';
 import AppLayout from '@/components/crm/AppLayout';
-
 
 // Content only (no AppLayout) — also rendered as a Library pane.
 export function CogsLearningTool() {

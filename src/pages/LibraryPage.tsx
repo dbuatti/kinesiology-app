@@ -1,9 +1,30 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
-  GraduationCap, Trophy, BookOpen, Shield, Wind, Workflow, Dumbbell, Baby, Zap,
-  Brain, ImageIcon, Youtube, Clock, RefreshCw, Layers, Target,
-  Heart, Calculator, Move, Printer, Activity, Eye, BookMarked, ShieldCheck, FileText,
+  GraduationCap,
+  Trophy,
+  Shield,
+  Wind,
+  Workflow,
+  Dumbbell,
+  Baby,
+  Zap,
+  Brain,
+  ImageIcon,
+  Youtube,
+  Clock,
+  RefreshCw,
+  Layers,
+  Target,
+  Heart,
+  Calculator,
+  Move,
+  Printer,
+  Activity,
+  Eye,
+  BookMarked,
+  ShieldCheck,
+  FileText,
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -177,7 +198,7 @@ const LibraryPage = () => {
                     className="spotlight group flex items-center gap-3 rounded-xl border border-border bg-card px-3.5 py-3 text-left shadow-xs transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:border-foreground/15 hover:shadow-md"
                   >
                     {x.icon && (
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/[0.07] text-primary">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/[0.07] text-primary-strong">
                         <x.icon size={16} />
                       </span>
                     )}

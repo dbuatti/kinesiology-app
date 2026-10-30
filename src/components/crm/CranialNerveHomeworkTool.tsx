@@ -1,20 +1,18 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Calculator, 
-  Clock, 
-  Zap, 
-  Info, 
-  RefreshCw, 
-  CheckCircle2, 
-  Calendar, 
+import {
+  Calculator,
+  Clock,
+  Zap,
+  Info,
+  RefreshCw,
+  Calendar,
   TrendingUp,
   Baby,
-  Brain
+  Brain,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -111,7 +109,7 @@ const CranialNerveHomeworkTool = () => {
               <div className="grid grid-cols-1 gap-3">
                 {[
                   { week: 1, val: week1Value, label: "70% Threshold", color: "bg-indigo-50 border-indigo-100 text-indigo-700" },
-                  { week: 2, val: week2Value, label: "Double Week 1", color: "bg-primary/5 border-primary/20 text-primary" },
+                  { week: 2, val: week2Value, label: "Double Week 1", color: "bg-primary/5 border-primary/20 text-primary-strong" },
                   { week: 3, val: week3Value, label: "Double Week 2", color: "bg-emerald-50 border-emerald-100 text-emerald-700" }
                 ].map((w) => (
                   <div key={w.week} className={cn("p-4 rounded-2xl border-2 flex items-center justify-between", w.color)}>

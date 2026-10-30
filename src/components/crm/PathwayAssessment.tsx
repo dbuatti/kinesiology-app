@@ -2,15 +2,22 @@
 import { useState, useMemo } from 'react';
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Button } from "@/components/ui/button";
-import { 
-  Brain, Zap, Activity, Dumbbell, Layers, ImageIcon, Baby, 
-  Trash2, RefreshCw, Search, ListChecks 
+import {
+  Brain,
+  Zap,
+  Activity,
+  Dumbbell,
+  Layers,
+  ImageIcon,
+  Baby,
+  Trash2,
+  RefreshCw,
+  ListChecks,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Nuclei } from '@/utils/brainstem-logic';
@@ -181,7 +188,7 @@ const PathwayAssessment = ({
                   title: "Clear all findings?",
                   description: "This will remove all assessment findings for this session."
                 })}
-                className="h-9 font-medium text-[10px] text-destructive hover:bg-destructive/10 rounded-xl border border-border"
+                className="h-9 font-medium text-[10px] text-destructive-strong hover:bg-destructive/10 rounded-xl border border-border"
               >
                 <Trash2 size={14} className="mr-2" /> Clear All
               </Button>

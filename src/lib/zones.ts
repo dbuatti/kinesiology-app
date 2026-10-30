@@ -11,9 +11,25 @@
 // sync in MainLayout, breadcrumbs, and ⌘K zone switching. Edit here, not in
 // those components.
 import {
-  LayoutDashboard, CalendarDays, Activity, Users, Mail, UserRoundCheck, Bot,
-  Wallet, ClipboardList, CalendarRange, Megaphone, Sunrise, MessageSquare, Heart,
-  Brain, BookOpen, FileText, ShieldAlert, type LucideIcon,
+  LayoutDashboard,
+  CalendarDays,
+  Activity,
+  Users,
+  Mail,
+  UserRoundCheck,
+  Bot,
+  Wallet,
+  ClipboardList,
+  CalendarRange,
+  Megaphone,
+  Sunrise,
+  MessageSquare,
+  Heart,
+  Brain,
+  BookOpen,
+  FileText,
+  ShieldAlert,
+  type LucideIcon,
 } from "lucide-react";
 
 export type Zone = "practice" | "business" | "growth";

@@ -11,8 +11,18 @@ import TodayTimeline, { type TimelineEntry } from "@/components/crm/TodayTimelin
 import { DayStats, TodayList, NeedsYou, ComingUp, PracticeRow, type NeedLine } from "@/components/today/TodaySections";
 import { itemStart, unpaidItems, sumAmount } from "@/lib/calendarItems";
 import {
-  loadTodayItems, splitToday, loadTodayGoals, loadRepliesWaiting, loadFollowUps, loadPencilled, loadClinicalAlerts,
-  practiceOf, hasTime, itemEnd, itemHref, itemName,
+  loadTodayItems,
+  splitToday,
+  loadTodayGoals,
+  loadRepliesWaiting,
+  loadFollowUps,
+  loadPencilled,
+  loadClinicalAlerts,
+  practiceOf,
+  hasTime,
+  itemEnd,
+  itemHref,
+  itemName,
 } from "@/lib/today";
 
 // Morning Program progress lives in localStorage (see MorningProgramPage).

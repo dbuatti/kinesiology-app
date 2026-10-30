@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { cn } from "@/lib/utils";
 import { Baby, Zap, Brain, Dumbbell } from "lucide-react";
 import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
@@ -112,9 +112,9 @@ const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = t
             <span
               className={cn(
                 "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider",
-                tone === "success" && "bg-success/10 text-success",
-                tone === "primary" && "bg-primary/10 text-primary",
-                tone === "warning" && "bg-warning/10 text-warning"
+                tone === "success" && "bg-success/10 text-success-strong",
+                tone === "primary" && "bg-primary/10 text-primary-strong",
+                tone === "warning" && "bg-warning/10 text-warning-strong"
               )}
             >
               {displayStatus}

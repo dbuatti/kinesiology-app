@@ -1,17 +1,16 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
+import { useState } from 'react';
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Brain, 
+import {
   Sparkles,
   HelpCircle,
-  ChevronRight, 
-  ChevronLeft, 
+  ChevronRight,
+  ChevronLeft,
   RotateCcw,
   CheckCircle2,
-  Lightbulb
+  Lightbulb,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MECHANO_FLASHCARDS } from '@/data/mechano-quiz-data';

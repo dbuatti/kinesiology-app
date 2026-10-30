@@ -41,7 +41,7 @@ const AppearanceSettings = () => {
                 className={cn(
                   "flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all font-bold text-xs",
                   isActive
-                    ? "border-primary bg-primary/5 text-primary shadow-sm"
+                    ? "border-primary bg-primary/5 text-primary-strong shadow-sm"
                     : "border-border bg-muted/30 text-muted-foreground hover:border-primary/40 hover:text-foreground hover:bg-muted/60"
                 )}
               >

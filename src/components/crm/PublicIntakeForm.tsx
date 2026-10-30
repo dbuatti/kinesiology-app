@@ -11,7 +11,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -229,7 +228,10 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
         await supabase.functions.invoke('sync-to-kit', {
           body: { record: { ...clientPayload, id: clientId } }
         });
-      } catch (_) {}
+      } catch (err) {
+        // Kit is a secondary CRM mirror — the intake itself already saved.
+        console.warn('sync-to-kit failed for intake', clientId, err);
+      }
 
       setSyncStatus('stripe');
       try {
@@ -240,7 +242,10 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             clientData: { ...clientPayload, stripe_customer_id: (initialData as any)?.stripe_customer_id }
           }
         });
-      } catch (_) {}
+      } catch (err) {
+        // Same for Stripe: never block a submitted intake on a mirror.
+        console.warn('stripe customer sync failed for intake', clientId, err);
+      }
 
       setSyncStatus('done');
       onSuccess();
@@ -276,21 +281,6 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
         </label>
       ))}
     </div>
-  );
-
-  const RadioGroupField = ({ field, options, label }: { field: any; options: string[]; label?: string }) => (
-    <RadioGroup
-      value={field.value}
-      onValueChange={field.onChange}
-      className="flex flex-wrap gap-2"
-    >
-      {options.map((opt) => (
-        <div key={opt} className="flex items-center gap-2">
-          <RadioGroupItem value={opt} id={`${field.name}-${opt}`} />
-          <label htmlFor={`${field.name}-${opt}`} className="text-sm cursor-pointer">{label ? (opt === "true" ? "Yes" : opt === "false" ? "No" : opt) : opt}</label>
-        </div>
-      ))}
-    </RadioGroup>
   );
 
   return (

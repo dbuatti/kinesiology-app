@@ -4,18 +4,16 @@ import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from "@/data/brain-reflex-data"
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  Hand, 
+import {
+  Hand,
   PlayCircle,
   CheckCircle2,
   Brain,
-  Search
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { safeParse } from "@/utils/safe-json";
 
 interface ZoneTestItemProps {
@@ -96,7 +94,7 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
             variant="ghost" 
             size="sm" 
             onClick={() => isLateralized ? (onUpdate('brainZones', point.name, 'Clear', 'L'), onUpdate('brainZones', point.name, 'Clear', 'R')) : onUpdate('brainZones', point.name, 'Clear')}
-            className="h-5 px-2 text-[7px] font-semibold text-success hover:bg-success/10 rounded-md"
+            className="h-5 px-2 text-[7px] font-semibold text-success-strong hover:bg-success/10 rounded-md"
           >
             <CheckCircle2 size={10} className="mr-1" /> Clear
           </Button>
@@ -126,7 +124,7 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
           <div className="lg:col-span-4">
             {showImage && imageUrl ? (
               <div className="aspect-video border border-border p-1 rounded-lg bg-muted/50 overflow-hidden">
-                <img src={imageUrl} alt="Reference" className="w-full h-full object-cover rounded-md opacity-80" />
+                <img loading="lazy" decoding="async" src={imageUrl} alt="Reference" className="w-full h-full object-cover rounded-md opacity-80" />
               </div>
             ) : showImage && (
               <div className="h-full min-h-[60px] border border-dashed border-border rounded-xl flex items-center justify-center text-muted-foreground/30 bg-muted/20">

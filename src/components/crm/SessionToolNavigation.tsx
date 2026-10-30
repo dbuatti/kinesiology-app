@@ -1,23 +1,19 @@
-
-import { useState, useEffect } from 'react'; import type { ElementType } from 'react';
+ import type { ElementType } from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  Heart, 
-  Dumbbell, 
-  Footprints, 
-  History, 
-  Activity, 
-  Zap, 
-  Wrench, 
-  FileText, 
-  Clock, 
-  UserCircle, 
-  BookOpen, 
+import {
+  Heart,
+  Dumbbell,
+  Footprints,
+  History,
+  Activity,
+  Wrench,
+  FileText,
+  Clock,
+  UserCircle,
+  BookOpen,
   ChevronDown,
   Brain,
   LayoutGrid,
-  Maximize2,
-  Minimize2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link, useLocation, useNavigate } from 'react-router-dom';

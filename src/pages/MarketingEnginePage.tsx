@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,12 +8,21 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
- Mic, Brain, Target, Laptop, AlertTriangle, Lightbulb, 
- CheckCircle2, Workflow, Clock, Sparkles, Link as LinkIcon, Send,
- BookOpen, Wand2, Copy, Check, User, Activity, History, Mail,
- Trophy, ArrowRight, Star, ExternalLink, MessageSquare, Code,
- EyeOff, Volume2, Heart, Quote
+import {
+  Mic,
+  Target,
+  Sparkles,
+  BookOpen,
+  Wand2,
+  Copy,
+  Check,
+  Trophy,
+  ArrowRight,
+  Star,
+  MessageSquare,
+  Code,
+  Heart,
+  Quote,
 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 
@@ -140,7 +149,6 @@ Please provide the final output ready to be reviewed.`;
  title="Marketing Engine"
  subtitle="Transform clinical wins and raw thoughts into distribution-ready assets for your Kit newsletter."
  icon={Mic}
-
 
  actions={
  // No "Back" button — this is a tab within the Business Hub, reached via

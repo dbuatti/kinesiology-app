@@ -1,21 +1,18 @@
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  ShieldAlert, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  MapPin, 
-  User,
+import {
+  ShieldAlert,
+  Mail,
+  Phone,
+  Calendar,
+  MapPin,
   ArrowRight,
   CheckCircle2,
-  AlertCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { cn } from '@/lib/utils';
 
 interface DataIntegrityCheckProps {
   clients: any[];
@@ -72,14 +69,14 @@ const DataIntegrityCheck = ({ clients }: DataIntegrityCheckProps) => {
           {clientsWithMissingData.map((client) => (
             <div key={client.id} className="p-6 border-b border-border hover:bg-muted/20 transition-colors flex items-center justify-between group">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary-strong flex items-center justify-center font-semibold">
                   {client.name.charAt(0)}
                 </div>
                 <div>
                   <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{client.name}</p>
                   <div className="flex flex-wrap gap-2 mt-1.5">
                     {client.missingFields.map((field: any) => (
-                      <span key={field.label} className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-destructive bg-destructive/5 px-2 py-0.5 rounded-md border border-destructive/20">
+                      <span key={field.label} className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-destructive-strong bg-destructive/5 px-2 py-0.5 rounded-md border border-destructive/20">
                         <field.icon size={8} /> Missing {field.label}
                       </span>
                     ))}
@@ -87,7 +84,7 @@ const DataIntegrityCheck = ({ clients }: DataIntegrityCheckProps) => {
                 </div>
               </div>
               <Link to={`/clients/${client.id}`}>
-                <Button variant="ghost" size="icon" className="rounded-xl hover:bg-primary/10 hover:text-primary">
+                <Button variant="ghost" size="icon" className="rounded-xl hover:bg-primary/10 hover:text-primary-strong">
                   <ArrowRight size={18} />
                 </Button>
               </Link>

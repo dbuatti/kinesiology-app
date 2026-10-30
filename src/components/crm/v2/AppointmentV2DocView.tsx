@@ -1,10 +1,13 @@
 import { useState, useCallback, useRef, useEffect, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowLeft, Printer, Target, Copy, Check
+  ArrowLeft,
+  Printer,
+  Target,
+  Copy,
+  Check,
 } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 import PathwayFindingsList from "@/components/crm/PathwayFindingsList";
 import CheckItem from "@/components/crm/document-view/CheckItem";
 import { ShowingLog, type CorrectionEntry } from "@/components/crm/ShowingLog";
@@ -250,7 +253,13 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
                     appointment.issue ? `Concern: ${appointment.issue}` : "",
                     appointment.notes ? `Notes: ${appointment.notes}` : "",
                   ].filter(Boolean);
-                  try { await navigator.clipboard.writeText(parts.join("\\n\\n")); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch {}
+                  try {
+                    await navigator.clipboard.writeText(parts.join("\\n\\n"));
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 1500);
+                  } catch {
+                    // Clipboard blocked by the browser — nothing to recover.
+                  }
                 }}
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? "Copied" : "Copy all"}

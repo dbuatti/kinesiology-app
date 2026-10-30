@@ -3,22 +3,22 @@ import { useState, useEffect } from "react";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Sparkles, 
-  Compass, 
-  Target, 
-  Wind, 
-  Printer, 
-  ChevronLeft, 
-  ChevronRight, 
-  Brain, 
-  Shield, 
-  CheckCircle2, 
-  RotateCcw, 
-  Clock, 
+import {
+  Sparkles,
+  Compass,
+  Target,
+  Wind,
+  Printer,
+  ChevronLeft,
+  ChevronRight,
+  Brain,
+  Shield,
+  CheckCircle2,
+  RotateCcw,
+  Clock,
   Zap,
   Save,
-  Share2
+  Share2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -109,7 +109,7 @@ const InteractiveIntentionWorksheet = () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           setUserId(user.id);
-          const { data, error } = await supabase
+          const { data } = await supabase
             .from('north_star_intentions')
             .select('form_data')
             .eq('user_id', user.id)

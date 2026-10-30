@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Progress } from "@/components/ui/progress";
 import { Activity, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -54,12 +53,6 @@ const PracticeSimulator = ({
   onStartCorrectionTimer,
   onRetest
 }: PracticeSimulatorProps) => {
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
   return (
     <Card className="border border-border shadow-lg rounded-2xl bg-card overflow-hidden">
       <CardHeader className="bg-muted/50 border-b border-border p-6">

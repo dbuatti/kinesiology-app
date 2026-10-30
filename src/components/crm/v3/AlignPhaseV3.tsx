@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { GitBranch, Target, Route, Star, BookMarked, ArrowRight, SearchX, RotateCcw } from "lucide-react";
+import { Target, Route, Star, BookMarked, ArrowRight, SearchX, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { safeParse } from "@/utils/safe-json";
 import { CATEGORY_LABELS, CATEGORY_ICONS } from "@/components/crm/v2/categoryConstants";
@@ -176,7 +176,7 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
           <Card padding="comfortable" className="border-primary/25 bg-primary/[0.05]">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary-strong">
                   <Target size={17} strokeWidth={2} />
                 </div>
                 <div className="min-w-0">
@@ -267,7 +267,7 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
                     <div className="flex min-w-0 items-center gap-3">
                       <div className={cn(
                         'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl',
-                        isPriority ? 'bg-primary/10 text-primary' : 'bg-muted/60 text-muted-foreground'
+                        isPriority ? 'bg-primary/10 text-primary-strong' : 'bg-muted/60 text-muted-foreground'
                       )}>
                         {Icon && <Icon size={16} />}
                       </div>
@@ -412,16 +412,5 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
     </Section>
   );
 };
-
-/** Count of Ease notes present — used for the stepper's e1 status. */
-function metadataSnippets(appointment: { lymphatic_notes?: string | null; harmonic_rocking_notes?: string | null; t1_reset_notes?: string | null; diaphragm_reset_notes?: string | null; vagus_nerve_notes?: string | null }): number {
-  return [
-    appointment.lymphatic_notes,
-    appointment.harmonic_rocking_notes,
-    appointment.t1_reset_notes,
-    appointment.diaphragm_reset_notes,
-    appointment.vagus_nerve_notes,
-  ].filter(Boolean).length;
-}
 
 export default AlignPhaseV3;

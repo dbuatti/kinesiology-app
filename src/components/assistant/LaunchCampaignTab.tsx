@@ -2,9 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from "@/utils/toast";
 import {
-  CampaignConfig, DEFAULT_CAMPAIGN_CONFIG, CampaignSegment,
-  computeCampaignAudience, proposeRecurringSlot, computeFirstRegularDate,
-  SEGMENT_LABELS, SEGMENT_TEMPLATE_PROMPT,
+  CampaignConfig,
+  DEFAULT_CAMPAIGN_CONFIG,
+  CampaignSegment,
+  computeCampaignAudience,
+  proposeRecurringSlot,
+  computeFirstRegularDate,
+  SEGMENT_LABELS,
+  SEGMENT_TEMPLATE_PROMPT,
 } from "@/lib/launchCampaign";
 import { DraftEmail } from "@/types/assistant";
 import { Button } from "@/components/ui/button";

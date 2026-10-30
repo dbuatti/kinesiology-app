@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import { cn } from "@/lib/utils";
-import { Clock, Activity, ArrowRight } from "lucide-react";
+import { Activity, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";

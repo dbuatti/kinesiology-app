@@ -7,7 +7,11 @@
 import { format, startOfWeek, endOfWeek, addDays } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  loadCalendarItems, itemStart, parseStartTime, UNPAID_LOOKBACK_DAYS, type CalendarItem,
+  loadCalendarItems,
+  itemStart,
+  parseStartTime,
+  UNPAID_LOOKBACK_DAYS,
+  type CalendarItem,
 } from "@/lib/calendarItems";
 import { buildInboxPeople, type InboxPerson } from "@/lib/inbox-conversations";
 import { fetchContactMarks } from "@/lib/inbox-marks";

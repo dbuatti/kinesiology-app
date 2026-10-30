@@ -13,11 +13,7 @@ import { RotateCcw, Printer, ChevronDown, ChevronUp, Loader2 } from "lucide-reac
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import FooterLinks from "@/components/crm/FooterLinks";
-import {
- Collapsible,
- CollapsibleContent,
- CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 // Docs Components
 import DocsHeader from "@/components/docs/DocsHeader";
@@ -220,17 +216,17 @@ const PracticeNotes = () => {
  <div className="grid grid-cols-3 gap-4 mt-4">
  {images.primary && (
  <div className="aspect-video border border-border p-0.5 rounded-sm overflow-hidden bg-muted">
- <img src={images.primary} alt="Primary" className="w-full h-full object-cover" />
+ <img loading="lazy" decoding="async" src={images.primary} alt="Primary" className="w-full h-full object-cover" />
  </div>
  )}
  {images.secondary && (
  <div className="aspect-video border border-border p-0.5 rounded-sm overflow-hidden bg-muted">
- <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover" />
+ <img loading="lazy" decoding="async" src={images.secondary} alt="Secondary" className="w-full h-full object-cover" />
  </div>
  )}
  {images.tertiary && (
  <div className="aspect-video border border-border p-0.5 rounded-sm overflow-hidden bg-muted">
- <img src={images.tertiary} alt="Tertiary" className="w-full h-full object-cover" />
+ <img loading="lazy" decoding="async" src={images.tertiary} alt="Tertiary" className="w-full h-full object-cover" />
  </div>
  )}
  </div>
@@ -572,7 +568,7 @@ const PracticeNotes = () => {
  <div className="space-y-4">
  <h3 className="text-xs font-medium text-muted-foreground mb-2">Organ Pulse Points</h3>
  <div className="border border-foreground/20 p-1">
- <img 
+ <img loading="lazy" decoding="async" 
  src="/images/pulse-points.png" 
  alt="Organ Pulse Points Reference" 
  className="w-full h-auto"
@@ -585,7 +581,7 @@ const PracticeNotes = () => {
  <div className="space-y-4">
  <h3 className="text-xs font-medium text-muted-foreground mb-2">Eye Accessing Cues (NLP)</h3>
  <div className="border border-foreground/20 p-1">
- <img 
+ <img loading="lazy" decoding="async" 
  src="/images/eye-modes.png" 
  alt="Eye Accessing Cues Reference" 
  className="w-full h-auto"

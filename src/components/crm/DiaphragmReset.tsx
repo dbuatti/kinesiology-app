@@ -1,14 +1,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChevronDown, Wind, Info, ListChecks, RotateCcw, Loader2, Timer, Play, Pause } from "lucide-react";
+import { ChevronDown, Wind, Info, ListChecks, RotateCcw, Timer, Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";

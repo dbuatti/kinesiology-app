@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { CRANIAL_NERVES } from '@/data/cranial-nerve-data';
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from '@/lib/utils';
@@ -7,7 +7,7 @@ import { Zap } from 'lucide-react';
 
 const CranialNervePrintable = () => {
   const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -48,7 +48,7 @@ const CranialNervePrintable = () => {
 
     return (
       <div className="border border-foreground/20 p-2 flex flex-col h-full break-inside-avoid bg-card">
-        <div className="flex items-start justify-between mb-1.5 border-b border-foreground/20/10 pb-1 min-h-[28px]">
+        <div className="flex items-start justify-between mb-1.5 border-b border-foreground/10 pb-1 min-h-[28px]">
           <div className="flex flex-col">
             <h4 className="font-semibold text-[10px] uppercase leading-none">{nerve.name}</h4>
             <p className="text-[7px] font-bold text-muted-foreground uppercase mt-0.5">{nerve.latinName}</p>
@@ -65,14 +65,14 @@ const CranialNervePrintable = () => {
         
         <div className="relative aspect-[2/1] bg-muted/50 border border-border/50 mb-2 overflow-hidden flex items-center justify-center shrink-0">
           {images?.primary ? (
-            <img src={images.primary} alt={nerve.name} className="w-full h-full object-cover" />
+            <img loading="lazy" decoding="async" src={images.primary} alt={nerve.name} className="w-full h-full object-cover" />
           ) : (
             <Zap size={16} className="text-muted-foreground/60" />
           )}
           
           {images?.secondary && (
             <div className="absolute bottom-0.5 right-0.5 w-[22%] aspect-square border border-primary-foreground/20 shadow-sm overflow-hidden bg-card">
-              <img src={images.secondary} alt="Inset" className="w-full h-full object-cover" />
+              <img loading="lazy" decoding="async" src={images.secondary} alt="Inset" className="w-full h-full object-cover" />
             </div>
           )}
         </div>

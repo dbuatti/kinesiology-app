@@ -4,10 +4,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-  Play, Square, RotateCcw, Save, Loader2, 
-  Heart, Brain, Activity, FlaskConical, Check, Sparkles,
-  Footprints, Scale, Hand, RefreshCw, Info, AlertCircle
+import {
+  RotateCcw,
+  Save,
+  Loader2,
+  Brain,
+  Activity,
+  Footprints,
+  Hand,
+  RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { showSuccess, showError } from '@/utils/toast';

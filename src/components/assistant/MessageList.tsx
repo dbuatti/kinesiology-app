@@ -5,7 +5,7 @@ import MessageBubble from "./MessageBubble";
 import DraftEmailCard from "./DraftEmailCard";
 import BookingProposalCard from "./BookingProposalCard";
 import { Button } from "@/components/ui/button";
-import { Bot, Sparkles, RotateCcw, Loader2 } from "lucide-react";
+import { Sparkles, RotateCcw, Loader2 } from "lucide-react";
 
 interface Props {
   messages: AssistantMessage[];

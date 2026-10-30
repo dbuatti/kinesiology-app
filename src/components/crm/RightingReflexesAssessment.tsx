@@ -2,7 +2,7 @@
 	import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, EyeOff, Save, Loader2, RotateCcw, Zap, Activity, RefreshCw, CheckCircle2, ArrowRightLeft } from "lucide-react";
+import { Eye, EyeOff, Loader2, RotateCcw, Zap, Activity, RefreshCw, CheckCircle2, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
@@ -12,7 +12,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { safeParse } from "@/utils/safe-json";
 
 interface RightingReflexesAssessmentProps {
@@ -304,7 +303,7 @@ const RightingReflexesAssessment = ({
               {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Save Notes"}
             </Button>
             {(initialNotes || currentStatus) && (
-              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-10 px-4 rounded-md border-destructive/20 text-destructive hover:bg-destructive/5">
+              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-10 px-4 rounded-md border-destructive/20 text-destructive-strong hover:bg-destructive/5">
                 <RotateCcw size={16} />
               </Button>
             )}

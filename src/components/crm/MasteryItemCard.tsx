@@ -2,15 +2,18 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { 
-  Dumbbell, Baby, Brain, Zap, 
-  TrendingUp, Clock, CheckCircle2, 
-  AlertCircle, Sparkles, PlayCircle, ExternalLink 
+import {
+  Dumbbell,
+  Baby,
+  Brain,
+  Zap,
+  TrendingUp,
+  Clock,
+  PlayCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MasteryStat } from "@/utils/mastery-stats";
 import { formatDistanceToNow } from "date-fns";
-import { Button } from "@/components/ui/button";
 
 interface MasteryItemCardProps {
   stat: MasteryStat;

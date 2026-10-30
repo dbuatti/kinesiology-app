@@ -20,7 +20,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, User, Activity, ShieldAlert, CheckCircle2, CalendarPlus, Stethoscope } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { Client } from "@/types/crm";
-import { cn } from "@/lib/utils";
 import { parseClientJournal, stringifyClientJournal } from "@/utils/journal-helper";
 
 const formSchema = z.object({

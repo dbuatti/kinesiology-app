@@ -1,17 +1,14 @@
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  CalendarClock, 
-  History, 
-  CalendarPlus, 
+import {
+  CalendarClock,
+  History,
+  CalendarPlus,
   ArrowRight,
-  Clock,
-  AlertCircle,
   CheckCircle2,
-  User
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format, differenceInDays, isAfter, isBefore } from 'date-fns';
@@ -84,7 +81,7 @@ const FollowUpTracker = ({ clients }: FollowUpTrackerProps) => {
           {clientsNeedingFollowUp.map((client) => (
             <div key={client.id} className="p-6 border-b border-border hover:bg-muted/20 transition-colors flex items-center justify-between group">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-destructive/10 text-destructive-strong flex items-center justify-center font-semibold">
                   {client.name.charAt(0)}
                 </div>
                 <div>
@@ -95,7 +92,7 @@ const FollowUpTracker = ({ clients }: FollowUpTrackerProps) => {
                     </span>
                     <span className={cn(
                       "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md",
-                      client.daysSinceLast! > 14 ? "bg-destructive/10 text-destructive" : "bg-amber-100 text-amber-600"
+                      client.daysSinceLast! > 14 ? "bg-destructive/10 text-destructive-strong" : "bg-amber-100 text-amber-600"
                     )}>
                       {client.daysSinceLast} Days Ago
                     </span>
@@ -109,7 +106,7 @@ const FollowUpTracker = ({ clients }: FollowUpTrackerProps) => {
                   </Button>
                 </Link>
                 <Link to={`/clients/${client.id}`}>
-                  <Button variant="ghost" size="icon" className="rounded-xl hover:bg-destructive/10 hover:text-destructive">
+                  <Button variant="ghost" size="icon" className="rounded-xl hover:bg-destructive/10 hover:text-destructive-strong">
                     <ArrowRight size={18} />
                   </Button>
                 </Link>

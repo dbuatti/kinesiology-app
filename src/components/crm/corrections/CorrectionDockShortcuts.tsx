@@ -6,7 +6,8 @@ import { useCorrectionDock } from "./CorrectionDockContext";
  * while the client is on the table — matches the existing "N" for notes.
  */
 const CorrectionDockShortcuts = () => {
-  const { isOpen, openDock, closeDock, toggleDock } = useCorrectionDock();
+  // Esc is handled inside the dock itself, which knows how deep you are.
+  const { openDock, toggleDock } = useCorrectionDock();
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -25,25 +26,22 @@ const CorrectionDockShortcuts = () => {
       switch (e.key.toLowerCase()) {
         case "a":
           e.preventDefault();
-          openDock({ tab: "afferent" });
+          openDock({ tab: "afferent", view: "folder" });
           break;
         case "e":
           e.preventDefault();
-          openDock({ tab: "efferent" });
+          openDock({ tab: "efferent", view: "folder" });
           break;
         case "m":
           e.preventDefault();
           toggleDock();
-          break;
-        case "escape":
-          if (isOpen) closeDock();
           break;
       }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isOpen, openDock, closeDock, toggleDock]);
+  }, [openDock, toggleDock]);
 
   return null;
 };

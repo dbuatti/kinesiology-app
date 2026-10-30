@@ -1,12 +1,12 @@
 
 import { cn } from '@/lib/utils';
-import { 
-  Brain, 
-  Activity, 
-  Dumbbell, 
-  Footprints, 
+import {
+  Brain,
+  Activity,
+  Dumbbell,
+  Footprints,
   LayoutGrid,
-  User
+  User,
 } from 'lucide-react';
 
 interface MuscleRegionFilterProps {

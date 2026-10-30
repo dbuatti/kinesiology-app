@@ -1,10 +1,6 @@
 import { CranialNerve } from "@/data/cranial-nerve-data";
 import { cn } from "@/lib/utils";
-import {
-  describeNerveStims,
-  describePrimitiveStims,
-  MarkedStim,
-} from "./pathway-reflex-stim-data";
+import { describeNerveStims, describePrimitiveStims, MarkedStim } from "./pathway-reflex-stim-data";
 
 interface StimResultsSummaryProps {
   kind: "nerve" | "reflex";

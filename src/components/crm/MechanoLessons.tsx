@@ -3,50 +3,27 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { 
-  Brain, 
-  Activity, 
-  Sparkles, 
-  BookOpen, 
-  CheckCircle2, 
-  ChevronRight, 
-  ChevronLeft, 
-  HelpCircle, 
-  Lightbulb, 
-  Shield, 
-  Link as LinkIcon, 
-  Layers, 
-  Compass, 
-  PlayCircle, 
-  CheckCircle,
-  Smile,
-  Heart,
+import {
+  CheckCircle2,
+  ChevronLeft,
+  HelpCircle,
+  Lightbulb,
+  Compass,
+  PlayCircle,
   Zap,
-  RefreshCw,
-  Target,
   Upload,
   X,
   Loader2,
   ImageIcon,
-  Maximize2,
-  ArrowRightLeft,
-  Move,
-  Volume2,
-  AlertCircle,
-  Check,
-  Play,
-  Pause,
-  XCircle
+  XCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 
 // Modular Imports
-import { lessons, Lesson } from '@/data/mechano-lessons-data';
+import { lessons } from '@/data/mechano-lessons-data';
 import { anatomyStructures, sandboxActions } from '@/data/mechano-anatomy-data';
-import ReflexImageZone from './ReflexImageZone';
 import AnatomyModel from './AnatomyModel';
 import PracticeSimulator from './PracticeSimulator';
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
@@ -55,7 +32,6 @@ interface MechanoLessonsProps {
   activeSubTab?: 'lessons' | 'anatomy' | 'sandbox';
 }
 
-const LESSON_URL = "https://share.descript.com/view/gDxcvRrEKGw?t=448.630353&autoplay=1";
 const BUCKET_NAME = 'ligament-images';
 
 const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
@@ -639,7 +615,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
 
                       {imageSourceMode === 'sourced' ? (
                         <div className="aspect-video rounded-xl overflow-hidden border border-border bg-muted/50 flex items-center justify-center relative group/img">
-                          <img src={currentStructure.defaultImageUrl} alt={currentStructure.name} className="w-full h-full object-cover" />
+                          <img loading="lazy" decoding="async" src={currentStructure.defaultImageUrl} alt={currentStructure.name} className="w-full h-full object-cover" />
                           <div className="absolute bottom-2 right-2 bg-foreground/60 backdrop-blur-md text-primary-foreground text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md">
                             Sourced Reference
                           </div>
@@ -669,7 +645,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                           />
                           {customImageUrl ? (
                             <>
-                              <img src={customImageUrl} alt={currentStructure.name} className="w-full h-full object-cover" />
+                              <img loading="lazy" decoding="async" src={customImageUrl} alt={currentStructure.name} className="w-full h-full object-cover" />
                               <div className="absolute inset-0 bg-foreground/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                 <div className="flex flex-col items-center gap-2">
                                   <div className="flex gap-2">

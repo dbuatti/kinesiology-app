@@ -1,15 +1,27 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  GraduationCap, Brain, Zap, Activity, 
-  Target, BookOpen, Trophy, Sparkles,
-  ChevronRight, LayoutGrid, ListChecks,
-  ShieldCheck, Workflow, Lightbulb, CheckCircle2,
-  Book, HelpCircle, ArrowRightLeft, RefreshCw,
-  Layers, Compass, CheckCircle
+import {
+  GraduationCap,
+  Brain,
+  Zap,
+  Activity,
+  Target,
+  BookOpen,
+  Trophy,
+  Sparkles,
+  ChevronRight,
+  LayoutGrid,
+  ListChecks,
+  Lightbulb,
+  CheckCircle2,
+  ArrowRightLeft,
+  RefreshCw,
+  Layers,
+  Compass,
+  CheckCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import DailyMechanoChallenge from './DailyMechanoChallenge';

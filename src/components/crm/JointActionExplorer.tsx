@@ -1,11 +1,18 @@
 
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { 
-  Move, Zap, RefreshCw, 
-  Search, ChevronRight,
-  Lightbulb, Brain, Activity, Info,
-  GraduationCap, CheckCircle2, XCircle, Play, RotateCcw
+import {
+  Move,
+  Zap,
+  RefreshCw,
+  Search,
+  ChevronRight,
+  Lightbulb,
+  Brain,
+  Activity,
+  GraduationCap,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';

@@ -1,12 +1,15 @@
 
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { 
- Calendar, Clock, User, Droplets,
- Copy, Check, History, MoreHorizontal, Star, Play, AlertTriangle, Trash2, Brain, PanelRightClose, PanelRightOpen, ClipboardList
+import { Card } from "@/components/ui/card";
+import {
+  Calendar,
+  Copy,
+  Check,
+  AlertTriangle,
+  Brain,
+  PanelRightClose,
+  PanelRightOpen,
 } from "lucide-react";
 import { format, subDays } from "date-fns";
 import { showSuccess } from "@/utils/toast";
@@ -15,21 +18,7 @@ import EditableField from "@/components/shared/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer";
 import AppLayout from "@/components/crm/AppLayout";
 import PeaceWizard from "@/components/crm/v2/PeaceWizard";
-import { calculateAge, getStarSign } from "@/utils/crm-utils";
-import {
- Select,
- SelectContent,
- SelectItem,
- SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
-import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
-import {
- DropdownMenu,
- DropdownMenuContent,
- DropdownMenuItem,
- DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { calculateAge } from "@/utils/crm-utils";
 
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -154,7 +143,6 @@ const DemoSessionPage = () => {
  </Alert>
 
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-
 
  <div className="flex items-center gap-2">
  <Button 

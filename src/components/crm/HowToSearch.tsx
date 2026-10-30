@@ -273,7 +273,7 @@ const HowToSearch = () => {
         variant="ghost"
         size="sm"
         onClick={() => setOpen(true)}
-        className="rounded-xl text-muted-foreground shrink-0 h-8 px-2.5 gap-1.5"
+        className="rounded-lg text-muted-foreground shrink-0 h-7 px-2.5 gap-1.5 text-[10.5px]"
         title="How-to search (⌘⇧K or ?)"
       >
         <Search size={14} /> <span className="hidden text-xs xl:inline">How-to</span>

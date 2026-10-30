@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Search, Loader2, ListOrdered, ExternalLink, User, Calendar, AlertCircle, RefreshCw, ArrowLeft, Music } from "lucide-react";
+import { LoadingState, EmptyState, ErrorState } from "@/components/shared/PageState";
+import { Search, ListOrdered, ExternalLink, User, Calendar, ArrowLeft, Music } from "lucide-react";
 import { voiceTimeDuration, parseVoiceTime } from "@/utils/availability";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,7 +29,6 @@ import { format } from "date-fns";
 
 const APPOINTMENT_TAGS = ["Kinesiology", "Community Kinesiology", "Consultation", "Initial Session", "Follow-up", "Quick Session"];
 const APPOINTMENT_STATUSES = ["Scheduled", "Completed", "Cancelled", "No Show"];
-const VOICE_STATUSES = ["booked", "paid", "cancelled", "rescheduled"];
 
 type SourceType = "all" | "kinesiology" | "voice";
 
@@ -226,26 +226,15 @@ const AllAppointmentsPage = () => {
         </div>
 
         {error ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
-              <AlertCircle size={28} className="text-destructive" />
-            </div>
-            <p className="text-destructive font-semibold text-sm">{error}</p>
-            <Button variant="outline" size="sm" onClick={() => { setError(null); setLoading(true); }} className="rounded-xl text-xs gap-2">
-              <RefreshCw size={14} /> Retry
-            </Button>
-          </div>
+          <ErrorState message={error} onRetry={() => { setError(null); setLoading(true); }} />
         ) : loading ? (
-          <div className="flex items-center justify-center py-20 text-muted-foreground gap-2">
-            <Loader2 className="h-5 w-5 animate-spin" />
-            Loading appointments…
-          </div>
+          <LoadingState label="Loading appointments…" />
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-            <ListOrdered className="h-12 w-12 mb-3 opacity-30" />
-            <p className="text-lg font-medium">No appointments found</p>
-            <p className="text-sm">{search ? "Try a different search term." : "No appointments match the selected filters."}</p>
-          </div>
+          <EmptyState
+            icon={ListOrdered}
+            title="No appointments found"
+            hint={search ? "Try a different search term." : "No appointments match the selected filters."}
+          />
         ) : (
           <div className="rounded-xl border bg-card overflow-hidden">
             <Table>
@@ -301,7 +290,7 @@ const AllAppointmentsPage = () => {
                     <TableCell>{statusBadge(a.status, a.source)}</TableCell>
                     <TableCell className="hidden lg:table-cell">
                       {a.tag && (
-                        <Badge variant="secondary" className={`text-xs ${a.source === "voice" ? "bg-destructive/10 text-destructive border-destructive/20" : ""}`}>
+                        <Badge variant="secondary" className={`text-xs ${a.source === "voice" ? "bg-destructive/10 text-destructive-strong border-destructive/20" : ""}`}>
                           {a.source === "voice" ? <Music size={10} className="mr-1" /> : null}
                           {a.tag}
                         </Badge>

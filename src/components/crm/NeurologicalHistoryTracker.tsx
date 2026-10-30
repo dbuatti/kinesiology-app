@@ -1,22 +1,20 @@
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  History, 
-  CheckCircle2, 
-  XCircle, 
-  Minus, 
-  TrendingUp, 
-  Brain, 
-  Zap, 
-  Baby, 
-  Dumbbell,
-  ArrowRight,
-  Info
+import {
+  History,
+  CheckCircle2,
+  XCircle,
+  Minus,
+  TrendingUp,
+  Brain,
+  Zap,
+  Baby,
+  Info,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { processNeurologicalHistory, FindingHistory } from '@/utils/neurological-history';
+import { processNeurologicalHistory } from '@/utils/neurological-history';
 import { format } from 'date-fns';
 
 interface NeurologicalHistoryTrackerProps {

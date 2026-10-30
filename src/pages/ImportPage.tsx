@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { importAppointmentsFromCSV } from '@/utils/data-importer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Upload, CheckCircle, XCircle, FileText, AlertCircle, Info } from 'lucide-react';
+import { Loader2, Upload, CheckCircle, FileText, AlertCircle, Info } from 'lucide-react';
 import { showSuccess, showError } from '@/utils/toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

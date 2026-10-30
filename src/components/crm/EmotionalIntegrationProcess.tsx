@@ -1,25 +1,18 @@
 
-import React, { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
-import { 
-  Heart, 
-  ChevronRight, 
-  ChevronLeft, 
-  CheckCircle2, 
-  Zap, 
-  RefreshCw, 
-  Clock,
+import {
+  Heart,
+  ChevronRight,
+  ChevronLeft,
+  CheckCircle2,
+  Zap,
+  RefreshCw,
   Target,
-  Wind,
-  Info,
   History,
   Brain,
-  Eye,
   Activity,
-  Hand,
   ShieldCheck,
-  Volume2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';

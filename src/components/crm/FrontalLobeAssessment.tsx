@@ -3,13 +3,12 @@ import { useState, useEffect } from "react";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Hand, Info, Save, Loader2, RotateCcw, ImageOff, CheckCircle2, Zap, RefreshCw, ArrowRightLeft } from "lucide-react";
+import { Hand, Loader2, RotateCcw, ImageOff, CheckCircle2, Zap, RefreshCw, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
 import { showSuccess, showError } from "@/utils/toast";
 import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
@@ -237,7 +236,7 @@ const FrontalLobeAssessment = ({
             </h3>
             <div className="bg-card rounded-lg p-4 mb-4">
               {!imageError ? (
-                <img 
+                <img loading="lazy" decoding="async" 
                   src={imagePath} 
                   alt="Frontal Lobe Assessment Reference"
                   className="w-full h-auto rounded-lg object-cover"
@@ -318,7 +317,7 @@ const FrontalLobeAssessment = ({
               {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Save Notes"}
             </Button>
             {(initialNotes || currentStatus) && (
-              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-10 px-4 rounded-md border-destructive/20 text-destructive hover:bg-destructive/5">
+              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-10 px-4 rounded-md border-destructive/20 text-destructive-strong hover:bg-destructive/5">
                 <RotateCcw size={16} />
               </Button>
             )}

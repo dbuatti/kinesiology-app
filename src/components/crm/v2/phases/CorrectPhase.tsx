@@ -2,9 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Target, Activity, Info, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import EditableField from "@/components/shared/EditableField";
 import PathwayLogicWizard from "@/components/crm/PathwayLogicWizard";
@@ -35,7 +33,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
 
   const pathwayFindings = useMemo(() => {
     return getInhibitedFindings(appointment.priority_pattern).map(f => ({
-      value: findingLabel(f.catKey, f.baseName, f.side),
+      value: findingLabel(f.catKey, f.baseName, f.side, f.status),
       category: f.catKey,
     }));
   }, [appointment.priority_pattern]);

@@ -1,19 +1,16 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Heart,
   Shield,
   Layers,
   Zap,
-  Info,
   CheckCircle2,
   ArrowRight,
   Sparkles,
   Lightbulb,
   ShieldAlert,
   Activity,
-  Brain,
   Eye,
   Crown,
   RefreshCw,

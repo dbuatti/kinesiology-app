@@ -24,7 +24,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
-import { nameHash, nameInitials, avatarColor } from "@/utils/avatar";
+import { nameInitials, avatarColor } from "@/utils/avatar";
 import { parseAmPmToMinutes } from "@/utils/availability";
 import { convertVoiceToAppointment } from "@/utils/voiceToFnh";
 import { useAuth } from "@/components/AuthProvider";

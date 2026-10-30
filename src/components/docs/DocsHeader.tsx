@@ -1,15 +1,15 @@
 
-import { 
-  FileText, 
-  Star, 
-  Folder, 
-  Cloud, 
-  History, 
-  MessageSquare, 
-  Video, 
-  Lock, 
+import {
+  FileText,
+  Star,
+  Folder,
+  Cloud,
+  History,
+  MessageSquare,
+  Video,
+  Lock,
   ChevronDown,
-  Sparkles
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

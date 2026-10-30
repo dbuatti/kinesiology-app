@@ -1,20 +1,17 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Brain, 
-  Zap, 
-  Heart, 
-  Activity, 
-  Fingerprint, 
-  RotateCcw, 
-  Sparkles, 
+import {
+  Zap,
+  Heart,
+  Activity,
+  Fingerprint,
+  RotateCcw,
+  Sparkles,
   ArrowLeft,
   Calendar,
-  Quote
+  Quote,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface IdentityShiftingReportProps {
   session: any;

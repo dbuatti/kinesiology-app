@@ -1,26 +1,17 @@
 
-import React, { useMemo } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { useMemo } from "react";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { getMuscleInfo } from "@/data/muscle-info-data";
-import { getChannelByName } from "@/data/tcm-channel-data";
 import { VAGUS_ASSOCIATIONS } from "@/data/vagus-data";
-import { 
-  Brain, 
-  Zap, 
-  Activity, 
-  Heart, 
-  RefreshCw, 
-  ArrowRight, 
-  AlertCircle,
+import {
+  Brain,
+  Zap,
+  Activity,
+  Heart,
+  RefreshCw,
   Lightbulb,
   ShieldAlert,
-  Layers
+  Layers,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -59,7 +50,7 @@ const ClinicalReasoningModal = ({ muscleName, status, open, onOpenChange }: Clin
         title: "Meridian Sedation",
         desc: `The ${info.meridian} meridian may be over-active. Check sedation points or the 'Mother' element in the Sheng cycle.`,
         icon: Layers,
-        color: "text-primary bg-primary/5"
+        color: "text-primary-strong bg-primary/5"
       });
       steps.push({
         title: "Neurolymphatic Clearance",
@@ -121,7 +112,7 @@ const ClinicalReasoningModal = ({ muscleName, status, open, onOpenChange }: Clin
           <div className="flex items-center gap-3 p-4 bg-card/5 rounded-2xl border border-primary-foreground/10">
             <Badge className={cn(
               "border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1",
-              status === 'Inhibition' ? "bg-amber-500" : status === 'Hypertonic' ? "bg-destructive" : "bg-purple-500"
+              status === 'Inhibition' ? "bg-rose-500" : status === 'Hypertonic' ? "bg-amber-500" : "bg-purple-500"
             )}>
               {status}
             </Badge>

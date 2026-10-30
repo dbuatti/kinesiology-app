@@ -1,16 +1,13 @@
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { 
-  ArrowDown, 
-  Brain, 
-  Zap, 
-  Activity, 
-  Layers, 
+import {
+  ArrowDown,
+  Zap,
+  Activity,
+  Layers,
   Move,
-  ShieldAlert,
   Info,
-  Workflow
+  Workflow,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

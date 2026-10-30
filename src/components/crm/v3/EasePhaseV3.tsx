@@ -1,8 +1,18 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import {
-  Droplets, Heart, Zap, Wind, Activity, CheckCircle2,
-  Timer, Play, Pause, RotateCcw, Check, ArrowRight, ListChecks,
+  Droplets,
+  Heart,
+  Zap,
+  Wind,
+  Activity,
+  CheckCircle2,
+  Timer,
+  Play,
+  Pause,
+  RotateCcw,
+  Check,
+  ArrowRight,
 } from "lucide-react";
 import { safeParse } from "@/utils/safe-json";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";
@@ -14,7 +24,6 @@ import {
   SecondaryButton,
   GhostButton,
   StatusBadge,
-  AlertBanner,
   ConfirmationFooter,
 } from "./DesignSystem";
 
@@ -173,7 +182,7 @@ const TechniqueCard = ({
         <div className="flex min-w-0 items-start gap-3">
           <div className={cn(
             'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl',
-            recorded ? 'bg-primary/10 text-primary' : 'bg-muted/60 text-muted-foreground'
+            recorded ? 'bg-primary/10 text-primary-strong' : 'bg-muted/60 text-muted-foreground'
           )}>
             <Icon size={17} strokeWidth={1.75} />
           </div>
@@ -322,7 +331,7 @@ const EasePhaseV3 = ({ appointment, saveField, onJumpToPhase }: PhaseProps) => {
             </div>
             <span className={cn(
               'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums',
-              allDone ? 'bg-success/10 text-success' : 'bg-muted text-muted-foreground'
+              allDone ? 'bg-success/10 text-success-strong' : 'bg-muted text-muted-foreground'
             )}>
               {done}/{total} complete
             </span>

@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Scale, Loader2, RotateCcw, CheckCircle2, Zap, RefreshCw, ArrowRightLeft, Timer, Play, Pause, ChevronDown, FileText } from "lucide-react";
+import { Scale, RotateCcw, CheckCircle2, Zap, RefreshCw, ArrowRightLeft, Timer, Play, Pause, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
@@ -330,7 +330,7 @@ const SharpenedRhombergsTest = ({
               <span className="text-[10px] text-muted-foreground font-medium">Saved {lastSaved}</span>
             )}
             {(initialNotes || currentStatus) && (
-              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-8 px-3 rounded-md border-destructive/20 text-destructive hover:bg-destructive/5 text-[11px] font-semibold">
+              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-8 px-3 rounded-md border-destructive/20 text-destructive-strong hover:bg-destructive/5 text-[11px] font-semibold">
                 <RotateCcw size={12} className="mr-1" /> Reset
               </Button>
             )}
@@ -353,7 +353,7 @@ const SharpenedRhombergsTest = ({
           <p className="text-[10px] text-muted-foreground">Sharpened Rhomberg's Test protocol & diagram</p>
         </div>
         <div className="rounded-lg overflow-hidden">
-          <img src="/images/sharpened-rhombergs-test.png" alt="Sharpened Rhombergs Test" className="w-full h-auto rounded-md object-cover" />
+          <img loading="lazy" decoding="async" src="/images/sharpened-rhombergs-test.png" alt="Sharpened Rhombergs Test" className="w-full h-auto rounded-md object-cover" />
         </div>
         <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
           <li>Client places feet together with toes pointing forward (heel-to-toe stance).</li>

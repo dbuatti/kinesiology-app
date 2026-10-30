@@ -190,6 +190,7 @@ export const MULTI_STIMS: Record<number, string[]> = {
     "Clean roof of mouth with tongue",
     "Slow heart-rate breathing (extended exhale)",
     "Cymba Concha auricular point to lateralise (right = right vagus, left = left vagus)",
+    "Smile with teeth",
   ],
   11: ["Ipsilateral SCM contraction", "Contralateral upper trapezius contraction"],
   12: [

@@ -6,8 +6,16 @@
     <title>Resonance Kinesiology — Daniele Buatti</title>
     <meta name="description" content="FNH kinesiology and voice/piano coaching with Daniele Buatti in Melbourne. Book a session — no account needed." />
 
-    <!-- PWA / iOS standalone -->
-    <meta name="theme-color" content="#1C1917" />
+    <!-- Fonts arrive from Google; warm the connection before the CSS @import
+         in globals.css asks for it. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- PWA / iOS standalone. Two theme colours so the browser chrome matches
+         the real canvas in each theme, not a warm stone tone. -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F8FAFC" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0B1218" />
+    <meta name="theme-color" content="#F8FAFC" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -23,14 +31,14 @@
     <meta property="og:url" content="https://kinesiology-app.vercel.app/" />
     <meta property="og:title" content="Resonance Kinesiology — Daniele Buatti" />
     <meta property="og:description" content="FNH kinesiology and voice/piano coaching with Daniele Buatti in Melbourne. Book a session — no account needed." />
-    <meta property="og:image" content="/social-preview.png" />
+    <meta property="og:image" content="https://kinesiology-app.vercel.app/social-preview.png" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://kinesiology-app.vercel.app/" />
     <meta property="twitter:title" content="Resonance Kinesiology — Daniele Buatti" />
     <meta property="twitter:description" content="FNH kinesiology and voice/piano coaching with Daniele Buatti in Melbourne. Book a session — no account needed." />
-    <meta property="twitter:image" content="/social-preview.png" />
+    <meta property="twitter:image" content="https://kinesiology-app.vercel.app/social-preview.png" />
   </head>
 
   <body>

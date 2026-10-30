@@ -1,13 +1,25 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  GitBranch, Sparkles, Brain, Activity, CheckCircle2, 
-  Zap, RefreshCw, Eye, Dumbbell,
-  ChevronRight, ChevronLeft, Droplets, 
-  AlertTriangle, ArrowRight, Heart, ImageIcon,
-  ShieldAlert, Hand, PlayCircle, Baby, ClipboardCheck,
-  ChevronDown
+import {
+  GitBranch,
+  Sparkles,
+  Brain,
+  Activity,
+  CheckCircle2,
+  Zap,
+  RefreshCw,
+  Eye,
+  Dumbbell,
+  ChevronRight,
+  ChevronLeft,
+  AlertTriangle,
+  Heart,
+  ImageIcon,
+  ShieldAlert,
+  Baby,
+  ClipboardCheck,
+  ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +47,7 @@ import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
 import { EYE_POSITIONS } from '@/data/emotion-data';
 import { safeParse } from '@/utils/safe-json';
 import { format } from 'date-fns';
+import { isFindingCategory, isInhibitedStatus } from '@/components/crm/v2/v2-utils';
 
 type Step = 
   | 'SELECT_START'
@@ -120,18 +133,22 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
   const effectiveItem = selectedFinding === 'CUSTOM' ? customText : selectedFinding;
 
   const { inhibitedItems, hasAnyTested } = useMemo(() => {
-    const items = new Set<string>();
+    const items = new Map<string, string>(); // name -> status
     const baseNames = new Map<string, Set<'L' | 'R'>>();
     let hasAnyTested = false;
     
     if (priorityPattern) {
       try {
         const parsed = safeParse(priorityPattern, {});
-        Object.values(parsed).forEach((category: any) => {
+        Object.entries(parsed).forEach(([catKey, category]) => {
+          if (catKey === "priorities") return;
+          // Skip correction processes (e.g. mechanoreceptor) — only include
+          // standard assessment findings that actually need correcting.
+          if (!isFindingCategory(catKey)) return;
           if (Object.keys(category).length > 0) hasAnyTested = true;
           Object.entries(category).forEach(([name, status]) => {
-            if (DYSFUNCTIONAL_STATUSES.includes(status as string)) {
-              items.add(name);
+            if (isInhibitedStatus(String(status))) {
+              items.set(name, String(status));
               const match = name.match(/(.+) \(([LR])\)$/);
               if (match) {
                 const base = match[1];
@@ -142,12 +159,15 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
             }
           });
         });
-      } catch (e) {}
+      } catch {
+        // priority_pattern can be malformed JSON; treat it as "nothing
+        // recorded" instead of crashing the wizard.
+      }
     }
 
     muscleFindings.forEach(name => {
       hasAnyTested = true;
-      items.add(name);
+      if (!items.has(name)) items.set(name, null);
       const match = name.match(/(.+) \(([LR])\)$/);
       if (match) {
         const base = match[1];
@@ -159,15 +179,20 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
 
     baseNames.forEach((sides, base) => {
       if (sides.has('L') && sides.has('R')) {
-        items.add(`${base} (Bilateral)`);
+        items.set(`${base} (Bilateral)`, null);
       }
     });
 
-    if (initialFinding && initialFinding !== 'CUSTOM') {
-      items.add(initialFinding);
+    // Only add initialFinding if it's an actual finding already in the pattern
+    // (not a correction process name like "Mechanoreceptor (Unconscious)").
+    if (initialFinding && initialFinding !== 'CUSTOM' && items.has(initialFinding)) {
+      // Already present from the pattern loop above.
     }
 
-    return { inhibitedItems: Array.from(items).sort(), hasAnyTested };
+    return {
+      inhibitedItems: Array.from(items.entries()).map(([name, status]) => ({ name, status })).sort((a, b) => a.name.localeCompare(b.name)),
+      hasAnyTested
+    };
   }, [priorityPattern, initialFinding, muscleFindings]);
 
   useEffect(() => {
@@ -296,7 +321,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
             <div className="py-8 flex flex-col items-center justify-center text-center space-y-4 animate-in fade-in duration-300">
               <div className={cn(
                 "w-12 h-12 rounded-xl flex items-center justify-center",
-                hasAnyTested ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
+                hasAnyTested ? "bg-success/10 text-success-strong" : "bg-muted text-muted-foreground"
               )}>
                 {hasAnyTested ? <CheckCircle2 size={24} /> : <ClipboardCheck size={24} />}
               </div>
@@ -331,12 +356,13 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                   <SelectValue placeholder={loadingMuscles ? "Loading..." : "Select finding..."} />
                 </SelectTrigger>
                 <SelectContent className="rounded-lg border-border bg-card">
-                  {inhibitedItems.map(item => (
-                    <SelectItem key={item} value={item} className={cn(
+                  {inhibitedItems.map(({ name, status }) => (
+                    <SelectItem key={name} value={name} className={cn(
                       "py-2 text-sm font-medium",
-                      item.includes('(Bilateral)') && "text-primary"
+                      name.includes('(Bilateral)') && "text-primary"
                     )}>
-                      {item}
+                      {name}
+                      {status && <span className="ml-2 text-[10px] text-muted-foreground/60">({status})</span>}
                     </SelectItem>
                   ))}
                   <SelectItem value="CUSTOM" className="py-2 text-sm font-medium text-primary">+ Custom Entry</SelectItem>
@@ -360,7 +386,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                   onClick={() => goToStep('AFFERENT_SELECT')}
                   className="min-h-[128px] rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-primary/50 hover:bg-primary/[0.03] hover:shadow-sm"
                 >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary-strong">
                     <GitBranch size={17} strokeWidth={1.75} />
                   </div>
                   <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-primary">Bottom-Up</p>
@@ -398,7 +424,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                       <Badge variant="outline" className="border-border text-muted-foreground font-medium text-xs px-2 py-0 rounded-full">
                         {clinicalTip.type}
                       </Badge>
-                      <Badge className="bg-primary/10 text-primary border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0 rounded-full">
+                      <Badge className="bg-primary/10 text-primary-strong border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0 rounded-full">
                         {clinicalTip.logic}
                       </Badge>
                     </div>
@@ -437,7 +463,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                 <p className="text-xs font-medium text-muted-foreground">Correcting</p>
                 <p className="text-sm font-medium text-foreground">{effectiveItem || "General"}</p>
               </div>
-              <Badge className="bg-primary/10 text-primary border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0 rounded-full">Afferent</Badge>
+              <Badge className="bg-primary/10 text-primary-strong border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0 rounded-full">Afferent</Badge>
             </div>
             {[
               { type: 'Mechanoreceptive', icon: Activity, step: 'MECHANO_PROCESS', desc: 'Joint and muscle receptor calibration' },
@@ -520,7 +546,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
         return (
           <div className="py-4 space-y-4 animate-in fade-in duration-200">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-success/10 text-success flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-success/10 text-success-strong flex items-center justify-center shrink-0">
                 <CheckCircle2 size={20} />
               </div>
               <div>
@@ -580,7 +606,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
   const isProcessStep = ['MECHANO_PROCESS', 'NOCICEPTIVE_PROCESS', 'EFFERENT_PROCESS', 'EMOTIONS_PROCESS', 'VESTIBULAR_PROCESS'].includes(step);
 
   return (
-    <>
+    <div className="max-w-[640px] mx-auto">
       <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
         {/* Compact header with Select → Direction → Apply indicator */}
         <div className="px-4 py-3 border-b border-border/60 flex items-center justify-between gap-3">
@@ -601,7 +627,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
             {isProcessStep || step === 'COMPLETION' ? (
               <span className={cn(
                 'rounded-full px-2 py-1 text-[11px] font-semibold',
-                step === 'COMPLETION' ? 'bg-success/10 text-success' : 'bg-primary/10 text-primary'
+                step === 'COMPLETION' ? 'bg-success/10 text-success-strong' : 'bg-primary/10 text-primary-strong'
               )}>
                 {step === 'COMPLETION' ? 'Logged' : 'Applying…'}
               </span>
@@ -617,7 +643,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                       <span className={cn(
                         'rounded-full px-2 py-1 text-[10px] font-semibold',
                         activeS ? 'bg-primary text-primary-foreground'
-                        : doneS ? 'bg-success/10 text-success'
+                        : doneS ? 'bg-success/10 text-success-strong'
                         : 'bg-muted text-muted-foreground'
                       )}>
                         {s.label}
@@ -667,7 +693,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                     {urls.map((url, index) => (
                       url ? (
                         <div key={index} className="aspect-video rounded-lg overflow-hidden border border-border">
-                          <img src={url} alt={`${category} ${index}`} className="w-full h-full object-cover" />
+                          <img loading="lazy" decoding="async" src={url} alt={`${category} ${index}`} className="w-full h-full object-cover" />
                         </div>
                       ) : null
                     ))}
@@ -678,7 +704,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
           </ScrollArea>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 };
 

@@ -1,14 +1,19 @@
 
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { MUSCLE_GROUPS } from "@/data/muscle-data";
 import { getMuscleInfo } from "@/data/muscle-info-data";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { 
-  Search, Dumbbell, Info, ImageIcon, 
-  LayoutGrid, List, Loader2, Plus, Target,
-  Clock, Zap, FilterX, Brain
+import {
+  Search,
+  Dumbbell,
+  ImageIcon,
+  Target,
+  Clock,
+  Zap,
+  FilterX,
+  Brain,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -24,7 +29,7 @@ const MuscleReference = () => {
   const [selectedGroup, setSelectedGroup] = useState<string | 'All'>('All');
   const [meridianFilter, setMeridianFilter] = useState<string | 'All'>('All');
   const [customizations, setCustomizations] = useState<Record<string, any>>({});
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -147,7 +152,7 @@ const MuscleReference = () => {
             >
               <div className="aspect-video bg-muted/50 relative overflow-hidden border-b border-border/50">
                 {data?.image_url ? (
-                  <img src={data.image_url} alt={muscle.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <img loading="lazy" decoding="async" src={data.image_url} alt={muscle.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-muted-foreground/60">
                     <ImageIcon size={32} className="mb-2 opacity-20" />

@@ -1,7 +1,7 @@
 
-import React, { useState } from "react";
-import { CLINICAL_COMPLAINTS, ClinicalComplaint } from "@/data/clinical-complaints-data";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useState } from "react";
+import { CLINICAL_COMPLAINTS } from "@/data/clinical-complaints-data";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Search, Zap, Brain, Activity, Move, Info, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -31,12 +31,12 @@ const ClinicalCheatSheet = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {filtered.map((item) => (
           <Card key={item.complaint} className="border-none shadow-lg rounded-2xl bg-card hover:shadow-2xl transition-all group overflow-hidden">
-            <CardHeader className="pb-4 bg-muted/50/50 border-b border-border/50">
+            <CardHeader className="pb-4 bg-muted/50 border-b border-border/50">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <Badge className={cn(
                     "border-none font-semibold text-[10px] uppercase tracking-wider mb-2",
-                    item.category === 'Structural' ? "bg-primary/10 text-primary" :
+                    item.category === 'Structural' ? "bg-primary/10 text-primary-strong" :
                     item.category === 'Emotional' ? "bg-rose-100 text-rose-700" :
                     item.category === 'Neurological' ? "bg-purple-100 text-purple-700" :
                     "bg-emerald-100 text-emerald-700"

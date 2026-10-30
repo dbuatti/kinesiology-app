@@ -1,13 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ArrowLeft, 
-  Calendar, 
-  Target, 
-  Activity, 
-  Zap, 
-  CheckCircle2, 
+import {
+  ArrowLeft,
+  Calendar,
+  Target,
+  Activity,
+  Zap,
+  CheckCircle2,
   Anchor,
   Download,
   Share2,
@@ -15,9 +15,8 @@ import {
   RefreshCw,
   XCircle,
   Clock,
-  Sparkles
+  Sparkles,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface IdentityAlignmentReportProps {
   session: any;
@@ -57,7 +56,7 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
       </div>
 
       <div className="text-center space-y-2">
-        <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 px-3 py-1">
+        <Badge variant="outline" className="bg-primary/5 text-primary-strong border-primary/20 px-3 py-1">
           Session Report
         </Badge>
         <h1 className="text-3xl font-serif font-bold">{session.goal}</h1>

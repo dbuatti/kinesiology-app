@@ -17,7 +17,16 @@ import { useEventPricing } from "@/hooks/useEventPricing";
 import { cn } from "@/lib/utils";
 import { CALCOM_CONFIG, TIMEZONE } from "@/config/integrations";
 import {
-  Loader2, Calendar, Clock, Check, Music, Search, Mail, CalendarPlus, CheckCircle2, User, Plus
+  Loader2,
+  Calendar,
+  Clock,
+  Check,
+  Music,
+  Search,
+  Mail,
+  CalendarPlus,
+  CheckCircle2,
+  Plus,
 } from "lucide-react";
 
 interface VoiceStudent {
@@ -327,7 +336,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
         <div className="px-8 pt-8 pb-5 border-b border-border shrink-0">
           <DialogHeader>
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary-strong flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
                 <Music size={22} />
               </div>
               <div>
@@ -621,7 +630,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
 
           {createBooking.isError && !bookingDone && (
             <div className="space-y-3">
-              <div className="bg-destructive/5 dark:bg-red-950/30 text-destructive dark:text-red-400 p-4 rounded-xl text-xs font-bold">
+              <div className="bg-destructive/5 dark:bg-red-950/30 text-destructive-strong dark:text-red-400 p-4 rounded-xl text-xs font-bold">
                 {(createBooking.error as any)?.message || "Booking failed. The slot may already be taken."}
               </div>
               <Button

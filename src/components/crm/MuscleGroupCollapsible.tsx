@@ -1,11 +1,7 @@
 
 import { Dumbbell, ChevronUp, ChevronDown } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import MuscleTestCard from "./MuscleTestCard";
 import { MuscleTestResult } from "@/types/crm";
 import { MuscleStatus } from "@/data/muscle-data";

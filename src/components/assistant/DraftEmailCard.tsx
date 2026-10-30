@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from "@/utils/toast";
 import { DraftEmail } from "@/types/assistant";
-import { Mail, Send, Loader2, X } from "lucide-react";
+import { Mail, Send, Loader2, X, CheckCircle2 } from "lucide-react";
 
 interface Props {
   draft: DraftEmail;
@@ -21,6 +21,7 @@ export default function DraftEmailCard({ draft, onSent, onDiscard }: Props) {
   const [subject, setSubject] = useState(draft.subject || "");
   const [body, setBody] = useState(draft.body || "");
   const [isSending, setIsSending] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const handleSend = async () => {
     if (!to || !subject || !body) {
@@ -33,14 +34,46 @@ export default function DraftEmailCard({ draft, onSent, onDiscard }: Props) {
         body: { to, subject, body, client_id: draft.client_id, appointment_id: draft.appointment_id },
       });
       if (error) throw error;
-      showSuccess(`Email sent to ${to}.`);
-      onSent();
+      showSuccess(`Email sent successfully to ${to}.`);
+      setSent(true);
+      // Keep showing preview for a moment, then clear
+      setTimeout(() => {
+        onSent();
+      }, 1200);
     } catch (err: any) {
       showError(err.message || "Failed to send email.");
     } finally {
       setIsSending(false);
     }
   };
+
+  if (sent) {
+    return (
+      <Card className="border-chart-emerald/40 bg-chart-emerald/5">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-chart-emerald">
+            <CheckCircle2 className="h-4 w-4" /> Email sent successfully
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="text-[13px]">
+            <div className="text-muted-foreground">To</div>
+            <div className="text-foreground break-all">{to}</div>
+          </div>
+          <div className="text-[13px]">
+            <div className="text-muted-foreground">Subject</div>
+            <div className="text-foreground">{subject}</div>
+          </div>
+          <div className="text-[13px]">
+            <div className="text-muted-foreground mb-1">Preview</div>
+            <div className="rounded-lg border border-border bg-background/60 p-3 text-[13px] leading-relaxed text-foreground whitespace-pre-wrap max-h-[200px] overflow-y-auto">
+              {body}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-chart-primary/40 bg-chart-primary/5">

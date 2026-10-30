@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CranialNerveTest } from "@/types/crm";
 import { showError } from "@/utils/toast";
-import { safeParse } from "@/utils/safe-json";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { isLateralStim, cranialSideKey, nerveStimLines } from "@/components/crm/pathway-reflex-stim-data";
 import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";

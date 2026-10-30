@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { calculateBrainstemTone, Nuclei } from '@/utils/brainstem-logic';
@@ -67,7 +67,7 @@ const BrainstemToneMap = ({ priorityPattern, activeFilter, onSelectNuclei }: Bra
                   <div className="flex flex-col items-end gap-1">
                     <Badge variant="outline" className={cn(
                       "font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 border-none rounded-full flex items-center gap-1",
-                      nuclei.toneEffect === 'Flexors' ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
+                      nuclei.toneEffect === 'Flexors' ? "bg-primary/10 text-primary-strong" : "bg-destructive/10 text-destructive-strong"
                     )}>
                       {nuclei.toneEffect === 'Flexors' ? <ArrowDownCircle size={10} /> : <ArrowUpCircle size={10} />}
                       {nuclei.toneEffect}
@@ -122,7 +122,7 @@ const BrainstemToneMap = ({ priorityPattern, activeFilter, onSelectNuclei }: Bra
             variant="ghost" 
             size="sm" 
             onClick={() => onSelectNuclei?.(null)}
-            className="h-9 px-4 text-[11px] font-semibold text-destructive hover:bg-destructive/5 rounded-xl border border-destructive/20"
+            className="h-9 px-4 text-[11px] font-semibold text-destructive-strong hover:bg-destructive/5 rounded-xl border border-destructive/20"
           >
             <FilterX size={14} className="mr-2" /> Clear Filter
           </Button>

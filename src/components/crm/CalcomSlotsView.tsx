@@ -8,11 +8,8 @@ import {
   Clock,
   Loader2,
   RefreshCw,
-  ChevronRight,
-  ChevronLeft,
   ExternalLink,
   AlertCircle,
-  CheckCircle2,
   CalendarDays,
   Settings2,
   Copy,
@@ -22,23 +19,17 @@ import {
   ShieldAlert,
   CalendarPlus,
   User,
-  X,
   Trash2,
-  Filter,
   ChevronDown,
   ChevronUp,
-  LayoutGrid,
-  Activity,
   ArrowLeft,
   ArrowRight,
-  Mail,
   Send,
-  Sparkles,
   Instagram,
   CalendarClock,
-  Mic
+  Mic,
 } from "lucide-react";
-import { format, addWeeks, subWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays, isBefore, startOfDay, nextMonday, isMonday, startOfWeek, parseISO } from "date-fns";
+import { format, addWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays, isBefore, startOfDay, nextMonday, isMonday, startOfWeek } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { PRACTICE_TIMEZONE } from "@/utils/practice-time";
 import { cn } from "@/lib/utils";
@@ -53,11 +44,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Select,
   SelectContent,
@@ -843,7 +830,7 @@ const CalcomSlotsView = () => {
                   return (
                     <Card key={date} className={cn(
                       "border-none shadow-xl rounded-2xl overflow-hidden group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col",
-                      isBlocked ? "bg-muted/50/80 dark:bg-muted/50 border-2 border-dashed border-border dark:border-border" : "bg-card"
+                      isBlocked ? "bg-muted/50 dark:bg-muted/50 border-2 border-dashed border-border dark:border-border" : "bg-card"
                     )}>
                       <CardHeader className={cn(
                         "transition-colors p-6 pb-4",
@@ -1133,7 +1120,7 @@ const CalcomSlotsView = () => {
           <div className="p-10">
             <DialogHeader className="mb-8">
               <div className="flex items-center gap-4 mb-2">
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-xl">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary-strong flex items-center justify-center shadow-xl">
                   <CalendarPlus size={28} />
                 </div>
                 <div>
@@ -1164,7 +1151,7 @@ const CalcomSlotsView = () => {
           <div className="p-8">
             <DialogHeader className="mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary-strong flex items-center justify-center shadow-lg">
                   <CalendarPlus size={22} />
                 </div>
                 <div>

@@ -15,7 +15,7 @@ export interface TimelineEntry {
 
 // Upcoming blocks are tinted by practice; the live one is always solid.
 const NEXT_TONE: Record<TimelineEntry["practice"], string> = {
-  kinesiology: "bg-primary/[0.09] text-primary ring-primary/25 hover:bg-primary/[0.14]",
+  kinesiology: "bg-primary/[0.09] text-primary-strong ring-primary/25 hover:bg-primary/[0.14]",
   voice: "bg-chart-destructive/[0.09] text-chart-destructive ring-chart-destructive/25 hover:bg-chart-destructive/[0.14]",
   piano: "bg-chart-amber/[0.12] text-chart-amber ring-chart-amber/30 hover:bg-chart-amber/[0.18]",
 };

@@ -2,16 +2,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Zap, 
-  Activity, 
-  ShieldAlert, 
-  RotateCcw, 
-  Sparkles, 
+import {
+  Zap,
+  Activity,
+  ShieldAlert,
+  RotateCcw,
+  Sparkles,
   ArrowLeft,
   Calendar,
   Quote,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 

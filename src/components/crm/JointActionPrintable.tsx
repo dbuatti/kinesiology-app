@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { JOINT_ACTION_LIBRARY } from '@/data/joint-action-data';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';

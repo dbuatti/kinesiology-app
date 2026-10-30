@@ -110,7 +110,7 @@ const LigamentImageUploader = ({ userId, category, imageIndex, initialUrl, onUpl
         <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={(e) => { const file = e.target.files?.[0]; if (file) handleUpload(file); }} />
         {initialUrl ? (
           <>
-            <img key={initialUrl} src={initialUrl} alt={title} className="w-full h-full object-cover" />
+            <img loading="lazy" decoding="async" key={initialUrl} src={initialUrl} alt={title} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
               <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-lg"><Upload size={14} /></Button>
               <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}><X size={14} /></Button>

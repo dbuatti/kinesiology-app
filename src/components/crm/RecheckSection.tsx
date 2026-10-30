@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { CheckCircle2, AlertCircle, ArrowRight, ChevronDown, ChevronRight, Clock } from 'lucide-react';
+import { CheckCircle2, ArrowRight, ChevronDown, ChevronRight, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -111,7 +111,7 @@ export const RecheckSection = ({
                   "w-5 h-5 rounded-md flex items-center justify-center shrink-0",
                   item.previousStatus === 'Inhibited' || item.previousStatus === 'Inhibition'
                     ? "bg-amber-500/10 text-amber-500"
-                    : "bg-destructive/10 text-destructive"
+                    : "bg-destructive/10 text-destructive-strong"
                 )}>
                   {item.previousStatus === 'Hypertonic' ? (
                     <span className="text-[10px] font-bold">↑</span>

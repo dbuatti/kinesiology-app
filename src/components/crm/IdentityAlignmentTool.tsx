@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -12,33 +12,24 @@ import { Badge } from "@/components/ui/badge";
 import {
   ArrowRight,
   ArrowLeft,
-  RotateCcw,
   CheckCircle2,
   Sparkles,
-  Brain,
   Zap,
   Loader2,
   History,
   Save,
   Trash2,
-  Activity,
-  Target,
   Anchor,
   Clock,
-  ShieldAlert,
-  XCircle,
-  Info,
-  ChevronRight,
   ShieldCheck,
   FileText,
   Wand2,
   Quote,
-  ArrowRightLeft
+  ArrowRightLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
 import IdentityAlignmentReport from './IdentityAlignmentReport';
 import JournalRefresher from './JournalRefresher';
 import BacklogSelector from './BacklogSelector';
@@ -129,7 +120,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
   };
 
   const checkForDraft = async (id: string) => {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('identity_alignment_sessions')
       .select('*')
       .eq('backlog_id', id)
@@ -600,7 +591,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
             variant="outline"
             onClick={() => onChange(true)}
             className={cn(
-              "flex-1 h-7 rounded-lg border-destructive bg-destructive/10 text-destructive font-semibold text-[11px]",
+              "flex-1 h-7 rounded-lg border-destructive bg-destructive/10 text-destructive-strong font-semibold text-[11px]",
               value === true && "bg-destructive/30"
             )}
           >YES</Button>
@@ -660,7 +651,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
               variant="outline"
               onClick={() => { setFormData({...formData, goalInevitable: true}); saveProgress(false, { goalInevitable: true }); }}
               className={cn(
-                "flex-1 h-7 rounded-lg border-destructive bg-destructive/10 text-destructive font-semibold text-[11px]",
+                "flex-1 h-7 rounded-lg border-destructive bg-destructive/10 text-destructive-strong font-semibold text-[11px]",
                 formData.goalInevitable === true && "bg-destructive/30"
               )}
             >YES</Button>

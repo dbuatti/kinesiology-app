@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from "react";
+import { useState } from "react";
 import { VAGUS_ASSOCIATIONS } from "@/data/vagus-data";
 import { getMuscleInfo } from "@/data/muscle-info-data";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, Move, Activity, Zap, RefreshCw, Info, Layers } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import MuscleInfoModal from "./MuscleInfoModal";
-import { Button } from "@/components/ui/button";
 
 const SpinalSegmentReference = () => {
   const [search, setSearch] = useState("");

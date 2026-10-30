@@ -4,14 +4,21 @@ import { BRAIN_REFLEX_POINTS, BrainRegionCategory, BrainReflexPoint } from "@/da
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { 
-  Search, Brain, Zap, Info, 
-  ArrowRightLeft, MousePointer2, 
-  Layers, Activity, ShieldAlert,
-  Upload, Image as ImageIcon, X, Loader2,
-  Plus, Sparkles, Target, Maximize2, Hand, PlayCircle,
-  ChevronDown, ChevronUp, ChevronRight, Map as MapIcon,
-  Printer
+import {
+  Search,
+  Brain,
+  Zap,
+  Layers,
+  Upload,
+  X,
+  Loader2,
+  Plus,
+  Maximize2,
+  Hand,
+  ChevronUp,
+  ChevronRight,
+  Map as MapIcon,
+  Printer,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -161,7 +168,7 @@ const ReflexImageZone = ({
       
       {currentUrl ? (
         <>
-          <img 
+          <img loading="lazy" decoding="async" 
             key={currentUrl} 
             src={currentUrl} 
             alt="Reflex Reference" 
@@ -336,7 +343,7 @@ const BrainReflexReference = () => {
               "relative rounded-xl overflow-hidden bg-foreground border border-border transition-all duration-700",
               mapExpanded ? "aspect-auto" : "aspect-[21/9]"
             )}>
-              <img 
+              <img loading="lazy" decoding="async" 
                 src="/images/mechanoreceptive/homunculus.png" 
                 alt="FNH Brain Zone Reference Map" 
                 className="w-full h-full object-contain opacity-80 hover:opacity-100 transition-opacity"

@@ -1,16 +1,24 @@
 
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { 
-  History, ChevronDown, ChevronUp, Calendar, Target, 
-  CheckCircle2, AlertCircle, RefreshCw, Info, Zap, Baby, Brain, Dumbbell,
-  Clock, ArrowRight, Sparkles, HelpCircle, ExternalLink, FileText
+import {
+  History,
+  ChevronDown,
+  ChevronUp,
+  Calendar,
+  Zap,
+  Baby,
+  Brain,
+  Dumbbell,
+  Sparkles,
+  ExternalLink,
+  FileText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { processNeurologicalHistory, FindingHistory } from '@/utils/neurological-history';
+import { processNeurologicalHistory } from '@/utils/neurological-history';
 
 interface ClientHistoryDropdownProps {
   history: any[];
@@ -100,7 +108,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                             href={session.notion_link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 bg-primary/10 hover:bg-primary/15 px-1.5 py-0.5 rounded transition-colors"
+                            className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary-strong bg-primary/10 hover:bg-primary/15 px-1.5 py-0.5 rounded transition-colors"
                             title="Open in Notion"
                           >
                             <ExternalLink size={10} /> Notion
@@ -175,7 +183,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                                   {side && (
                                     <Badge className={cn(
                                       "border-none font-semibold text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm leading-none",
-                                       side === 'L' ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
+                                       side === 'L' ? "bg-primary/10 text-primary-strong" : "bg-destructive/10 text-destructive-strong"
                                     )}>
                                       {side === 'L' ? 'Left' : 'Right'}
                                     </Badge>
@@ -246,7 +254,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                                           <span className="text-xs font-medium text-muted-foreground">{h.date}</span>
                                           <Badge variant="outline" className={cn(
                                             "text-[7px] font-semibold uppercase tracking-wider px-1.5 py-0 border-none",
-                                             isClear ? "bg-chart-emerald/10 text-chart-emerald" : "bg-destructive/10 text-destructive"
+                                             isClear ? "bg-chart-emerald/10 text-chart-emerald" : "bg-destructive/10 text-destructive-strong"
                                           )}>
                                             {h.status}
                                           </Badge>

@@ -69,6 +69,25 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
   const { isPrivate, togglePrivacy } = usePrivacyMode();
   const touchX = useRef<number | null>(null);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSE_KEY) === "true");
+  const isInSession = location.pathname.startsWith('/appointments/');
+  const [isFullScreen, setIsFullScreen] = useState(() =>
+    localStorage.getItem('rk_fullscreen') === 'true' || localStorage.getItem('rk_v2_fullscreen') === 'true'
+  );
+
+  useEffect(() => {
+    const onFullScreenChange = () => {
+      setIsFullScreen(
+        localStorage.getItem('rk_fullscreen') === 'true' ||
+          localStorage.getItem('rk_v2_fullscreen') === 'true'
+      );
+    };
+    window.addEventListener('rk_fullscreen_change', onFullScreenChange);
+    window.addEventListener('antigravity_fullscreen_change', onFullScreenChange);
+    return () => {
+      window.removeEventListener('rk_fullscreen_change', onFullScreenChange);
+      window.removeEventListener('antigravity_fullscreen_change', onFullScreenChange);
+    };
+  }, []);
 
   const toggleCollapsed = () => {
     setCollapsed((prev) => {
@@ -161,8 +180,10 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
         )}
       </div>
 
-      {/* Workspace switcher */}
-      <div className={cn("shrink-0 pb-2", isRail ? "px-2" : "px-3")}>
+      {/* Workspace switcher — hidden when full-screening a session page so
+          Practice / Business / Growth don't clutter the canvas. */}
+      {!(isFullScreen && isInSession) && (
+        <div className={cn("shrink-0 pb-2", isRail ? "px-2" : "px-3")}>
         {isRail ? (
           <div className="flex flex-col items-center gap-1">
             {WORKSPACES.map((w) => (
@@ -212,7 +233,7 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
           </LayoutGroup>
         )}
       </div>
-
+      )}
       {/* Navigation */}
       <LayoutGroup id={`nav-${scope}`}>
         <nav className={cn("flex-1 overflow-y-auto overflow-x-hidden pb-4 pt-2", isRail ? "px-2" : "px-3")}>

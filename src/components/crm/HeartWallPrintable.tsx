@@ -1,8 +1,5 @@
 
 
-import { EMOTION_CODE_CHART, ROW_DATA } from '@/data/emotion-code-data';
-import { cn } from '@/lib/utils';
-
 const HeartWallPrintable = () => {
   const rows = [
     {

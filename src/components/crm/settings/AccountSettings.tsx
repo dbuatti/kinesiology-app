@@ -39,7 +39,7 @@ const AccountSettings = () => {
         <Button
           variant="outline"
           onClick={handleSignOut}
-          className="w-full h-10 rounded-xl text-sm font-medium text-destructive hover:text-destructive hover:bg-destructive/5 border-destructive/25"
+          className="w-full h-10 rounded-xl text-sm font-medium text-destructive-strong hover:text-destructive-strong hover:bg-destructive/5 border-destructive/25"
         >
           <LogOut size={16} className="mr-2" /> Sign out
         </Button>

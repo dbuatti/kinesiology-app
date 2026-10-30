@@ -10,8 +10,10 @@ import {
   Minus,
   Plus,
   RotateCcw,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CaptionWithPulse, PulsePointPeek } from "@/components/crm/corrections/PulsePointPeek";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -27,11 +29,15 @@ import {
   PROTOCOL_STEP_MAP,
   allowedValuesFor,
   formatZonePair,
+  hasValue,
+  isMidlineZone,
   isZoneValue,
   organPairFor,
+  summariseValues,
   type BrainCategory,
   type Element,
   type OrganOption,
+  type ProtocolEntry,
   type ProtocolField,
   type ProtocolLog,
   type ProtocolLogPatch,
@@ -55,9 +61,6 @@ interface ProtocolLogSheetProps {
   variant?: "card" | "inline";
 }
 
-const hasValue = (value: unknown) =>
-  Array.isArray(value) ? value.length > 0 : value !== null && value !== undefined && value !== "";
-
 /** Progressive disclosure: only render a field once its parent is answered. */
 const isVisible = (field: ProtocolField, values: Record<string, unknown>) => {
   const when = field.showWhen;
@@ -67,12 +70,6 @@ const isVisible = (field: ProtocolField, values: Record<string, unknown>) => {
   if (when.equals) return when.equals.includes(String(parent ?? ""));
   return true;
 };
-
-/** The spine of a correction, read back in one line. */
-const logSummary = (values: Record<string, unknown>) =>
-  [values.emotion, values.organ, values.polarity, values.shift, values.retest]
-    .flatMap((v) => (Array.isArray(v) ? v : hasValue(v) ? [v] : []))
-    .map(String);
 
 const hasLogData = (log?: ProtocolLog) =>
   Object.values(log?.values ?? {}).some(hasValue) || (log?.steps?.length ?? 0) > 0;
@@ -136,6 +133,9 @@ const ProtocolLogSheet = ({
     ? formatZonePair(values.zone1 as ZoneValue, values.zone2 as ZoneValue)
     : null;
 
+  /** One line for the header — the same reader the saved list uses. */
+  const summary = summariseValues(processId, values);
+
   /** Chips that depend on another field only offer what that field allows. */
   const optionsFor = (field: Extract<ProtocolField, { kind: "chips" }>) => {
     if (!field.dependsOn || !field.optionsByValue) return field.options;
@@ -163,18 +163,18 @@ const ProtocolLogSheet = ({
               className={cn(
                 "font-semibold text-foreground/80",
                 inline
-                  ? "text-[9px] uppercase tracking-wide text-muted-foreground"
-                  : "text-[10px]"
+                  ? "text-[11px] uppercase tracking-wide text-muted-foreground"
+                  : "text-[11px]"
               )}
             >
               {field.label}
             </p>
             {field.hint && (
-              <p className="shrink-0 text-[9px] text-muted-foreground/70">{field.hint}</p>
+              <p className="shrink-0 text-[10px] text-muted-foreground/70">{field.hint}</p>
             )}
           </div>
         ) : (
-          field.hint && <p className="text-[9px] text-muted-foreground/70">{field.hint}</p>
+          field.hint && <p className="text-[10px] text-muted-foreground/70">{field.hint}</p>
         )}
 
         {field.kind === "chips" && (
@@ -284,7 +284,7 @@ const ProtocolLogSheet = ({
       <div
         data-protocol-sheet={processId}
         data-step={step ?? "extra"}
-        className="mt-2 space-y-2 rounded-lg border border-border/60 bg-card/60 px-2 py-1.5"
+        className="mt-2.5 space-y-2.5 rounded-xl border border-border/70 bg-muted/30 p-2.5"
       >
         {visibleFields.map(renderField)}
       </div>
@@ -295,28 +295,159 @@ const ProtocolLogSheet = ({
     <div data-protocol-sheet={processId} className="rounded-xl border border-border bg-muted/20">
       <div className="sticky top-0 z-10 flex items-center justify-between gap-2 rounded-t-xl border-b border-border bg-muted/90 px-3 py-2 backdrop-blur supports-[backdrop-filter]:bg-muted/75">
         <div className="min-w-0">
-          <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
             {heading ?? "Log"}
           </p>
-          {(zonePair || logSummary(values).length > 0) && (
-            <p className="truncate text-[10px] font-semibold text-foreground/80">
-              {logSummary(values).length > 0 ? logSummary(values).join(" · ") : zonePair}
+          {(zonePair || summary.length > 0) && (
+            <p
+              className="text-[11px] font-semibold leading-snug break-words text-foreground/80"
+              title={summary.join(" · ")}
+            >
+              {summary.length > 0 ? summary.join(" · ") : zonePair}
             </p>
           )}
         </div>
-        {hasLogData(log) && (
-          <button
-            type="button"
-            onClick={() => onChange({ values: {}, steps: [] })}
-            title={`Clear the ${processId} log`}
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <RotateCcw size={12} />
-          </button>
-        )}
+        <ProtocolLogActions processId={processId} log={log} onChange={onChange} />
       </div>
 
+      <ProtocolEntryList
+        processId={processId}
+        entries={log?.entries}
+        onChange={onChange}
+        className="border-b border-border/60"
+      />
+
       <div className="divide-y divide-border/60">{visibleFields.map(renderField)}</div>
+    </div>
+  );
+};
+
+/* ------------------------------------------------------------------ */
+
+/**
+ * "Add another" + the list of corrections already banked for this process.
+ *
+ * A session often corrects two ligaments, three zones or three emotions. The
+ * sheet keeps editing one live entry; this banks it and starts a fresh one, so
+ * nothing is overwritten. Works on old logs that only ever had one entry.
+ */
+const ProtocolLogActions = ({
+  processId,
+  log,
+  onChange,
+}: {
+  processId: string;
+  log?: ProtocolLog;
+  onChange: (patch: ProtocolLogPatch) => void;
+}) => {
+  const live = hasLogData(log);
+  const savedCount = log?.entries?.length ?? 0;
+
+  // Saved entries keep the buttons on screen even once the live form is empty,
+  // so a second correction can always be started without hunting for the bar.
+  if (!live && savedCount === 0) return null;
+
+  const archive = () =>
+    onChange((previous) => {
+      const values = previous.values ?? {};
+      const steps = previous.steps ?? [];
+      if (!Object.values(values).some(hasValue) && steps.length === 0) return {};
+      return {
+        entries: [
+          ...(previous.entries ?? []),
+          {
+            id: `entry-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            values,
+            steps,
+            savedAt: new Date().toISOString(),
+          },
+        ],
+        values: {},
+        steps: [],
+      };
+    });
+
+  return (
+    <div className="flex shrink-0 items-center gap-1">
+      <button
+        type="button"
+        onClick={archive}
+        disabled={!live}
+        title="Save this correction and start a new one"
+        className="flex h-6 items-center gap-1 rounded-md border border-border bg-card px-1.5 text-[10px] font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary-strong focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-card disabled:hover:text-muted-foreground coarse:h-10 coarse:px-2.5 coarse:text-[12px]"
+      >
+        <Plus size={11} strokeWidth={3} />
+        <span className="hidden sm:inline">Another</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange({ values: {}, steps: [] })}
+        disabled={!live}
+        title={`Clear the ${processId} log`}
+        aria-label={`Clear the ${processId} log`}
+        className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-muted-foreground coarse:h-10 coarse:w-10"
+      >
+        <RotateCcw size={12} />
+      </button>
+    </div>
+  );
+};
+
+const ProtocolEntryList = ({
+  processId,
+  entries,
+  onChange,
+  className,
+}: {
+  processId: string;
+  entries?: ProtocolEntry[];
+  onChange: (patch: ProtocolLogPatch) => void;
+  className?: string;
+}) => {
+  if (!entries?.length) return null;
+
+  const remove = (id: string) =>
+    onChange((previous) => ({
+      entries: (previous.entries ?? []).filter((entry) => entry.id !== id),
+    }));
+
+  return (
+    <div className={cn("px-1.5 py-1", className)}>
+      <p className="px-1 pb-1 text-[9.5px] font-bold uppercase tracking-wider text-muted-foreground">
+        Saved · {entries.length}
+      </p>
+      <ul className="max-h-28 space-y-px overflow-y-auto">
+        {entries.map((entry, index) => {
+          const bits = summariseValues(processId, entry.values);
+          return (
+            <li
+              key={entry.id}
+              className="group flex items-start gap-1.5 rounded-md px-1 py-0.5 transition-colors hover:bg-muted/60"
+            >
+              <span className="mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold tabular-nums text-primary-strong">
+                {index + 1}
+              </span>
+              {/* Two lines rather than an ellipsis: a saved correction is worth
+                  reading in full when you check what you already did. */}
+              <span
+                className="line-clamp-2 min-w-0 flex-1 break-words text-[11px] leading-snug text-foreground/80"
+                title={bits.join(" · ")}
+              >
+                {bits.join(" · ") || "Logged"}
+              </span>
+              <button
+                type="button"
+                onClick={() => remove(entry.id)}
+                title="Delete this entry"
+                aria-label={`Delete saved entry ${index + 1}`}
+                className="mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:bg-destructive/10 hover:text-destructive-strong focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25 coarse:h-8 coarse:w-8"
+              >
+                <X size={11} />
+              </button>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 };
@@ -337,29 +468,34 @@ export const ProtocolLogBar = ({
   heading?: string;
 }) => {
   if (!onChange) return null;
-  const bits = logSummary(log?.values ?? {});
+  const bits = summariseValues(processId, log?.values ?? {});
+  const savedCount = log?.entries?.length ?? 0;
 
   return (
-    <div className="sticky top-0 z-10 flex items-center justify-between gap-2 rounded-lg border border-border bg-card/95 px-2.5 py-1.5 shadow-xs backdrop-blur supports-[backdrop-filter]:bg-card/85">
-      <p
-        className="min-w-0 flex-1 truncate text-[10px]"
-        title={bits.length > 0 ? bits.join(" · ") : undefined}
-      >
-        <span className="font-bold uppercase tracking-wider text-muted-foreground">{heading}</span>
-        {bits.length > 0 && (
-          <span className="ml-2 font-semibold text-foreground/80">{bits.join(" · ")}</span>
-        )}
-      </p>
-      {hasLogData(log) && (
-        <button
-          type="button"
-          onClick={() => onChange({ values: {}, steps: [] })}
-          title={`Clear the ${processId} log`}
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+    <div className="sticky top-0 z-10 rounded-lg border border-border bg-card/95 shadow-xs backdrop-blur supports-[backdrop-filter]:bg-card/85">
+      <div className="flex items-center justify-between gap-2 px-2.5 py-1.5">
+        <p
+          className="min-w-0 flex-1 truncate text-[11px]"
+          title={bits.length > 0 ? bits.join(" · ") : undefined}
         >
-          <RotateCcw size={12} />
-        </button>
-      )}
+          <span className="font-bold uppercase tracking-wider text-muted-foreground">{heading}</span>
+          {savedCount > 0 && (
+            <span className="ml-1.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[9.5px] font-bold text-primary-strong">
+              {savedCount} saved
+            </span>
+          )}
+          {bits.length > 0 && (
+            <span className="ml-2 font-semibold text-foreground/80">{bits.join(" · ")}</span>
+          )}
+        </p>
+        <ProtocolLogActions processId={processId} log={log} onChange={onChange} />
+      </div>
+      <ProtocolEntryList
+        processId={processId}
+        entries={log?.entries}
+        onChange={onChange}
+        className="border-t border-border/60"
+      />
     </div>
   );
 };
@@ -388,7 +524,7 @@ const ChipsControl = ({
 
   if (options.length === 0) {
     return emptyHint ? (
-      <p className="text-[9px] text-muted-foreground/60">{emptyHint}</p>
+      <p className="text-[10.5px] text-muted-foreground/60">{emptyHint}</p>
     ) : null;
   }
 
@@ -414,14 +550,14 @@ const ChipsControl = ({
               aria-pressed={active}
               onClick={() => toggle(option)}
               className={cn(
-                "flex items-center gap-1 rounded-md border font-medium transition-colors",
+                "flex items-center gap-1 border font-medium transition-colors",
                 emphasis
-                  ? "min-h-10 px-3 py-2 text-[11px]"
-                  : "px-2 py-1 text-[10px]",
+                  ? "min-h-11 px-3 py-2 text-[12px]"
+                  : "px-2.5 py-1.5 text-[11px] rounded-lg",
                 active
                   ? emphasis
                     ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                    : "border-primary/40 bg-primary/10 text-primary"
+                    : "border-primary/40 bg-primary/10 text-primary-strong"
                   : "border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground"
               )}
             >
@@ -431,9 +567,13 @@ const ChipsControl = ({
           );
         })}
       </div>
-      {caption && <p className="text-[9px] leading-relaxed text-muted-foreground">{caption}</p>}
+      {caption && (
+        <p className="text-[10.5px] leading-relaxed text-muted-foreground">
+          <CaptionWithPulse caption={caption} />
+        </p>
+      )}
       {selected.length === 0 && emptyHint && (
-        <p className="text-[9px] text-muted-foreground/60">{emptyHint}</p>
+        <p className="text-[10.5px] text-muted-foreground/60">{emptyHint}</p>
       )}
     </div>
   );
@@ -487,7 +627,7 @@ const OrganControl = ({
   onChange: (value: string | null) => void;
 }) => {
   if (organs.length === 0) {
-    return <p className="text-[9px] text-muted-foreground/60">Pick primary emotion first</p>;
+    return <p className="text-[10px] text-muted-foreground/60">Pick primary emotion first</p>;
   }
 
   const selected = organs.find((o) => o.name === value);
@@ -513,7 +653,7 @@ const OrganControl = ({
                 <span className={cn("h-1.5 w-1.5 rounded-full", tone.dot)} />
                 <span className="text-[11px] font-bold text-foreground">{organ.name}</span>
               </span>
-              <span className="text-[9px] text-muted-foreground">{organ.depth}</span>
+              <span className="text-[10px] text-muted-foreground">{organ.depth}</span>
               {active && (
                 <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground animate-in zoom-in-50 duration-150">
                   <Check size={10} strokeWidth={3} />
@@ -526,10 +666,10 @@ const OrganControl = ({
 
       {selected && (
         <div className="rounded-lg border border-border/70 bg-card px-2.5 py-1.5">
-          <p className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
-            {selected.pulse} · {selected.depth}
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <PulsePointPeek pulse={selected.pulse}>{selected.pulse}</PulsePointPeek> · {selected.depth}
           </p>
-          <p className="text-[10px] leading-relaxed text-muted-foreground">{selected.note}</p>
+          <p className="text-[11px] leading-relaxed text-muted-foreground">{selected.note}</p>
         </div>
       )}
     </div>
@@ -606,7 +746,7 @@ const EyeControl = ({
         title={EYE_POSITIONS.find((p) => p.label === label)?.cue}
         onClick={() => onChange(active ? null : label)}
         className={cn(
-          "flex min-h-10 items-center justify-center gap-1 rounded-lg border px-1.5 text-[10px] font-semibold transition-all",
+          "flex min-h-10 items-center justify-center gap-1 rounded-lg border px-1.5 text-[11px] font-semibold transition-all coarse:min-h-12 coarse:px-2 coarse:text-[12px]",
           active
             ? "border-primary bg-primary text-primary-foreground shadow-sm"
             : "border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground"
@@ -642,7 +782,7 @@ const EyeControl = ({
           <span className="text-muted-foreground">{position.desc}</span>
         </p>
       ) : (
-        <p className="text-[9px] text-muted-foreground/60">
+        <p className="text-[10px] text-muted-foreground/60">
           Tap the direction the client's eyes moved.
         </p>
       )}
@@ -685,7 +825,7 @@ const PolarityControl = ({
           aria-pressed={active}
           onClick={() => onChange(active ? null : option.value)}
           className={cn(
-            "flex min-h-11 items-center justify-center gap-1.5 rounded-xl border text-[11px] font-bold transition-all",
+            "flex min-h-11 items-center justify-center gap-1.5 rounded-xl border text-[11px] font-bold transition-all coarse:min-h-12 coarse:text-[12.5px]",
             active
               ? option.active
               : "border-border bg-card text-muted-foreground hover:text-foreground"
@@ -729,7 +869,7 @@ const StatusControl = ({
           aria-pressed={active}
           onClick={() => onChange(active ? null : option.value)}
           className={cn(
-            "min-h-10 rounded-lg border px-1.5 py-1 text-[10.5px] font-bold transition-all",
+            "min-h-10 rounded-lg border px-1.5 py-1 text-[10.5px] font-bold transition-all coarse:min-h-12 coarse:px-1 coarse:text-[12px]",
             active
               ? TONE_ACTIVE[option.tone]
               : "border-border bg-card text-muted-foreground hover:text-foreground"
@@ -762,7 +902,7 @@ const ToggleControl = ({
     onClick={() => onChange(!checked)}
     className={cn(
       "flex w-full items-center gap-2 rounded-lg border text-left font-medium transition-colors",
-      emphasis ? "min-h-11 px-3 py-2.5" : "px-2 py-1.5",
+      emphasis ? "min-h-11 px-3 py-2.5" : "px-2 py-1.5 coarse:min-h-11 coarse:px-3 coarse:py-2.5",
       checked
         ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
         : "border-border bg-card text-muted-foreground hover:text-foreground",
@@ -772,7 +912,7 @@ const ToggleControl = ({
     <span
       className={cn(
         "flex shrink-0 items-center justify-center rounded border",
-        emphasis ? "h-5 w-5 border-2" : "h-3.5 w-3.5",
+        emphasis ? "h-5 w-5 border-2" : "h-3.5 w-3.5 coarse:h-5 coarse:w-5",
         checked
           ? "border-emerald-500 bg-emerald-500 text-white"
           : "border-muted-foreground/40"
@@ -786,11 +926,17 @@ const ToggleControl = ({
         />
       )}
     </span>
-    <span className={cn("flex-1", emphasis ? "text-[11px] font-semibold" : "text-[10px]")}>
+    <span
+      className={cn(
+        "flex-1",
+        emphasis ? "text-[11px] font-semibold" : "text-[11px]",
+        "coarse:text-[12.5px]"
+      )}
+    >
       {label}
     </span>
     {emphasis && checked && (
-      <span className="animate-in fade-in text-[9px] font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+      <span className="animate-in fade-in text-[10px] font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
         Anchored
       </span>
     )}
@@ -813,10 +959,21 @@ const ZoneControl = ({
     : ["Cortical", "Subcortical"];
   const category: BrainCategory = value?.category ?? lockedCategory ?? "Cortical";
   const zones = BRAIN_ZONES[category];
+  const midline = isMidlineZone(value?.name);
 
   const setCategory = (next: BrainCategory) => {
     if (next === category) return;
     onChange({ category: next, name: "", side: value?.side ?? "L" });
+  };
+
+  const setZone = (name: string) => {
+    // A midline structure has no side: store null so the log reads
+    // "Hypothalamus", never "L · Hypothalamus".
+    onChange({
+      category,
+      name,
+      side: isMidlineZone(name) ? null : value?.side === "R" ? "R" : "L",
+    });
   };
 
   return (
@@ -829,9 +986,9 @@ const ZoneControl = ({
               type="button"
               onClick={() => setCategory(c)}
               className={cn(
-                "rounded-md border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide transition-colors",
+                "rounded-md border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide transition-colors coarse:min-h-9 coarse:px-2.5 coarse:py-1.5 coarse:text-[11.5px]",
                 category === c
-                  ? "border-primary/40 bg-primary/10 text-primary"
+                  ? "border-primary/40 bg-primary/10 text-primary-strong"
                   : "border-border bg-card text-muted-foreground hover:text-foreground"
               )}
             >
@@ -844,9 +1001,9 @@ const ZoneControl = ({
       <div className="flex items-stretch gap-1.5">
         <Select
           value={value?.name || undefined}
-          onValueChange={(name) => onChange({ category, name, side: value?.side ?? "L" })}
+          onValueChange={setZone}
         >
-          <SelectTrigger className="h-8 flex-1 rounded-lg text-[11px]">
+          <SelectTrigger className="h-8 flex-1 rounded-lg text-[11px] coarse:h-11 coarse:text-[16px]">
             <SelectValue placeholder="Choose zone…" />
           </SelectTrigger>
           <SelectContent className="max-h-72">
@@ -858,23 +1015,39 @@ const ZoneControl = ({
           </SelectContent>
         </Select>
 
-        <div className="flex shrink-0 overflow-hidden rounded-lg border border-border">
-          {(["L", "R"] as const).map((side) => (
-            <button
-              key={side}
-              type="button"
-              onClick={() => onChange({ category, name: value?.name ?? "", side })}
-              className={cn(
-                "w-7 text-[10px] font-bold transition-colors",
-                value?.side === side
-                  ? "bg-primary/10 text-primary"
-                  : "bg-card text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {side}
-            </button>
-          ))}
-        </div>
+        {/* Fixed-width slot: L/R for paired structures, a quiet "Midline" tag
+            for the ones that sit on the centre line. Never asks an impossible
+            question, never makes the row jump. */}
+        {midline ? (
+          <div
+            className="flex w-14 shrink-0 items-center justify-center rounded-lg border border-dashed border-border bg-muted/40 coarse:w-16"
+            title={`${value?.name} sits on the midline — no left/right side`}
+          >
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Midline
+            </span>
+          </div>
+        ) : (
+          <div className="flex w-14 shrink-0 overflow-hidden rounded-lg border border-border coarse:w-16">
+            {(["L", "R"] as const).map((side) => (
+              <button
+                key={side}
+                type="button"
+                onClick={() => onChange({ category, name: value?.name ?? "", side })}
+                aria-pressed={value?.side === side}
+                aria-label={`${side === "L" ? "Left" : "Right"} side`}
+                className={cn(
+                  "flex-1 text-[11px] font-bold transition-colors coarse:text-[13px]",
+                  value?.side === side
+                    ? "bg-primary/10 text-primary-strong"
+                    : "bg-card text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {side}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -924,7 +1097,8 @@ const DraftInput = ({
         (e.target as HTMLElement).blur();
       }
     },
-    className: "text-[11px] rounded-lg",
+    // 16px on touch: iOS zooms the viewport for any input below it.
+    className: "text-[11px] rounded-lg coarse:text-[16px] coarse:h-11",
   };
 
   return (
@@ -940,7 +1114,7 @@ const DraftInput = ({
         />
       )}
       {suffix && !multiline && (
-        <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-muted-foreground">
+        <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">
           {suffix}
         </span>
       )}

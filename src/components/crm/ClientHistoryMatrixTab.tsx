@@ -5,7 +5,13 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table";
 import {
-  LayoutGrid, Star, FileText, Baby, Zap, Dumbbell, Brain, Calendar,
+  LayoutGrid,
+  Star,
+  FileText,
+  Baby,
+  Zap,
+  Dumbbell,
+  Brain,
 } from "lucide-react";
 import { Appointment } from "@/types/crm";
 import { parsePattern, parseSideFromName, isInhibitedStatus } from "@/components/crm/v2/v2-utils";

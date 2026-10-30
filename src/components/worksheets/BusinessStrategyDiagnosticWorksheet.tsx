@@ -1,8 +1,20 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  Check, ArrowLeft, Flag, Target, Boxes, Megaphone, Clock, LayoutGrid,
-  Calculator, Eye, Loader, Copy, Sparkles, Compass,
+  Check,
+  ArrowLeft,
+  Flag,
+  Target,
+  Boxes,
+  Megaphone,
+  Clock,
+  LayoutGrid,
+  Calculator,
+  Eye,
+  Loader,
+  Copy,
+  Sparkles,
+  Compass,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -115,67 +127,6 @@ const CHECKBOX_GROUPS: Record<string, { key: string; label: string; group: strin
   ],
 };
 
-const SECTION_FIELDS: Record<string, { key: string; label: string; full?: boolean; single?: boolean }[]> = {
-  where: [
-    { key: 'clients_per_week', label: 'Clients per week', single: true },
-    { key: 'fee_per_session', label: 'Fee per session ($)', single: true },
-    { key: 'weekly_revenue', label: 'Weekly practice revenue ($)', single: true },
-    { key: 'hours_dayjob', label: 'Hours/wk — day job + clinic', single: true },
-    { key: 'transition_from_to', label: 'What are you transitioning FROM and TO? And by when?' },
-    { key: 'clients_sourced', label: 'How many current clients came from something you DID vs simply showed up?' },
-    { key: 'goal_12_month', label: 'Your 12-month goal in one line' },
-  ],
-  strategy: [
-    { key: 'strategy_sentence', label: 'YOUR STRATEGY, IN ONE SENTENCE' },
-    { key: 'hours_outreach', label: 'Hours/wk actually doing outreach', single: true },
-    { key: 'hours_preparing', label: 'Hours/wk "preparing" to (site, study, tweaks)', single: true },
-    { key: 'weeks_since_outreach', label: 'Weeks since last consistent outreach', single: true },
-  ],
-  program: [
-    { key: 'program_sessions', label: 'SESSION FOCUS / PHASE' },
-    { key: 'program_fnh', label: 'FNH PROCESS' },
-    { key: 'program_home', label: 'HOME PRACTICE' },
-  ],
-  offer: [
-    { key: 'offer_script', label: 'HOW DO I WORK WITH YOU?' },
-    { key: 'offer_blockers', label: 'What currently stops you presenting this to your NEXT new inquiry?' },
-    { key: 'offer_existing', label: 'How would you offer the program to people already booking session-by-session?' },
-  ],
-  marketing: [
-    { key: 'internal_lever', label: 'Which ONE internal lever could bring revenue THIS WEEK?' },
-    { key: 'external_channel', label: 'Which ONE external channel will you commit to for the next 6–12 months — and what does "consistent" mean in hours per week?' },
-    { key: 'not_channels', label: 'Channels you will deliberately NOT run this year' },
-  ],
-  time: [
-    { key: 'client_hours', label: 'Client hours/wk', single: true },
-    { key: 'admin_hours', label: 'Admin hours/wk', single: true },
-    { key: 'outreach_hours', label: 'Outreach hours/wk', single: true },
-    { key: 'learning_hours', label: 'Learning hours/wk', single: true },
-  ],
-  digital: [
-    { key: 'ten_second', label: 'Open your own profile as a stranger. What do they see in ten seconds — and what`s missing that costs you bookings?' },
-    { key: 'name_brand', label: 'Is your NAME on the front of your business, or are you hiding behind a brand?' },
-  ],
-  numbers: [
-    { key: 'gross_monthly', label: 'Gross monthly revenue ($)', single: true },
-    { key: 'monthly_expenses', label: 'Monthly expenses ($)', single: true },
-    { key: 'net_profit', label: 'Net profit ($)', single: true },
-    { key: 'real_hourly', label: 'Real hourly rate ($)', single: true },
-    { key: 'current_client_value', label: 'Avg sessions per client now × fee = current client value ($)', single: true },
-    { key: 'program_price', label: 'Program price ($)', single: true },
-    { key: 'diff_per_client', label: 'Difference per client ($)', single: true },
-    { key: 'program_maths', label: 'The program maths: if every new client took your program instead of single sessions, what would the month have earned?' },
-    { key: 'price_raise', label: 'When did you last raise your prices — and what would need to be true to raise them now?' },
-  ],
-  costume: [
-    { key: 'belief_working', label: 'What would you have to believe about yourself for your practice to already be working — and does it test true?' },
-    { key: 'costume_statement', label: 'THE COSTUME — "My business problem is ___. The belief underneath it is ___. If that belief were gone, this week I would ___."' },
-  ],
-  reflection: [
-    { key: 'strategy_one_line', label: 'Your strategy in one sentence — and the single action you will take THIS WEEK to start it. (Name the action, the day, and who it goes to.)' },
-  ],
-};
-
 const DIRECTION_OPTIONS = ['Day job + building the practice', 'Part-time, want to scale to fully booked', 'Established but burned out / over-giving', 'Transitioning from another modality into FNH'];
 const SPACE_OPTIONS = ['Home clinic / mobile', 'Room in a clinic / rented space'];
 
@@ -282,32 +233,6 @@ const TextField = ({
         rows={rows}
       />
     )}
-  </div>
-);
-
-const SectionBuilder = ({
-  fields,
-  formData,
-  updateField,
-  short = false,
-}: {
-  fields: { key: string; label: string; full?: boolean; single?: boolean }[];
-  formData: Record<string, any>;
-  updateField: (k: string, v: any) => void;
-  short?: boolean;
-}) => (
-  <div className={short ? 'space-y-4' : 'space-y-5'}>
-    {fields.map(f => (
-      <TextField
-        key={f.key}
-        label={f.label}
-        value={formData[f.key] || ''}
-        onChange={v => updateField(f.key, v)}
-        single={f.single}
-        full={f.full}
-        rows={f.full ? 4 : 3}
-      />
-    ))}
   </div>
 );
 
@@ -778,7 +703,7 @@ const BUSINESS_STRATEGY_DIAGNOSTIC = ({ onBack }: { onBack?: () => void }) => {
                 ['3', 'Generate & interrogate', 'Read the output critically. Ask follow-ups and request a conservative and an ambitious figure.'],
               ].map(([n, t, d]) => (
                 <div key={n} className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">{n}</span>
+                  <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary-strong text-xs font-bold flex items-center justify-center">{n}</span>
                   <div>
                     <p className="text-sm font-semibold">{t}</p>
                     <p className="text-xs text-muted-foreground">{d}</p>
@@ -883,7 +808,7 @@ Simple, direct, no hype.`}
                 onClick={() => setActiveSection(s.id)}
                 className={`flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors text-left whitespace-nowrap sm:whitespace-normal ${
                   isActive
-                    ? 'bg-primary/10 text-primary'
+                    ? 'bg-primary/10 text-primary-strong'
                     : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
                 }`}
               >

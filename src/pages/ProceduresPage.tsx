@@ -2,16 +2,16 @@ import { CountUp } from "@/hooks/use-count-up";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  TrendingUp, 
-  Loader2, 
-  Activity, 
-  Zap, 
-  Trophy, 
-  Sparkles, 
+import {
+  TrendingUp,
+  Loader2,
+  Activity,
+  Zap,
+  Trophy,
+  Sparkles,
   Search,
   ShieldCheck,
-  AlertCircle, 
+  AlertCircle,
   RefreshCw,
   Lightbulb,
   ArrowRight,
@@ -21,7 +21,7 @@ import {
   Shield,
   Dumbbell,
   Wind,
-  ArrowLeft
+  ArrowLeft,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";

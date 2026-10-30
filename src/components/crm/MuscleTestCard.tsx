@@ -53,7 +53,7 @@ const MuscleTestCard = ({
                 }}
                 className={cn(
                   "text-[10px] font-semibold px-2 py-0.5 rounded-md border tracking-wider transition-all hover:scale-[1.03] active:scale-95",
-                  side === 'L' ? "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10" : "bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100"
+                  side === 'L' ? "bg-primary/5 text-primary-strong border-primary/20 hover:bg-primary/10" : "bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100"
                 )}
               >
                 {side === 'L' ? 'LEFT' : 'RIGHT'}

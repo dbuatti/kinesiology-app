@@ -6,6 +6,7 @@ import Sidebar from '@/components/crm/Sidebar';
 import BackToTop from '@/components/shared/BackToTop';
 import FooterLinks from '@/components/crm/FooterLinks';
 import TopBar from '@/components/layout/TopBar';
+import ErrorBoundary from '@/components/shared/ErrorBoundary';
 import MobileTabBar from '@/components/layout/MobileTabBar';
 import { useAppMode } from '@/components/ModeProvider';
 import { useIpadMode } from '@/hooks/use-ipad-mode';
@@ -174,7 +175,12 @@ const MainLayout = () => {
           )}
         >
           <div key={location.pathname + location.search} className="page-enter flex-1">
-            <Outlet />
+            {/* Scoped to the route: if one screen throws, the shell (sidebar,
+                top bar, navigation) stays usable instead of blanking out.
+                Keyed on the path so navigating away clears the error. */}
+            <ErrorBoundary key={location.pathname}>
+              <Outlet />
+            </ErrorBoundary>
           </div>
           {!shouldHideHeader && !isWorkingToolPage && <FooterLinks />}
         </main>

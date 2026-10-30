@@ -1,23 +1,19 @@
 
 import { Link } from 'react-router-dom';
-import { 
- Printer, 
- FileText, 
- Zap, 
- Brain, 
- Move, 
- Heart, 
- Baby, 
- ChevronRight,
- LayoutGrid,
- ShieldCheck,
- Activity,
- Sparkles,
- CheckCircle2,
+import {
+  Printer,
+  FileText,
+  Zap,
+  Brain,
+  Move,
+  Heart,
+  Baby,
+  ChevronRight,
+  ShieldCheck,
+  Sparkles,
+  CheckCircle2,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import AppLayout from "@/components/crm/AppLayout";
 
 import PageHeader from "@/components/shared/PageHeader";
@@ -106,7 +102,6 @@ export function PrintHubTool() {
  return (
  <>
  <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
-
 
  <PageHeader 
  title="Clinical Print Hub"

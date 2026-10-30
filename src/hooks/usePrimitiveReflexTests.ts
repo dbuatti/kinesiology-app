@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PrimitiveReflexTest } from "@/types/crm";
 import { showError } from "@/utils/toast";
-import { safeParse } from "@/utils/safe-json";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { findGridReflex, primitiveSideKey } from "@/components/crm/pathway-reflex-stim-data";
 import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";

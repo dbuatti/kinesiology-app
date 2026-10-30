@@ -1,23 +1,22 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { PRACTICE_TIMEZONE } from "@/utils/practice-time";
-import { 
-  format, 
-  addDays, 
-  startOfToday, 
-  endOfDay, 
+import {
+  format,
+  addDays,
+  startOfToday,
+  endOfDay,
   isSameDay,
   parseISO,
-  eachDayOfInterval
+  eachDayOfInterval,
 } from "date-fns";
-import { 
-  Clock, 
-  Calendar, 
-  Loader2, 
+import {
+  Clock,
+  Loader2,
   AlertCircle,
   CalendarDays,
-  Info
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -125,7 +124,7 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
           <p className="text-sm font-semibold text-foreground">Connection Error</p>
           <p className="text-xs text-muted-foreground leading-relaxed">{error}</p>
         </div>
-        <Button variant="outline" onClick={fetchSlots} className="rounded-md border-destructive/30 text-destructive hover:bg-destructive/10">
+        <Button variant="outline" onClick={fetchSlots} className="rounded-md border-destructive/30 text-destructive-strong hover:bg-destructive/10">
           Retry Sync
         </Button>
       </div>
@@ -200,7 +199,7 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
             <p className="text-xs font-medium text-muted-foreground">
               Pick a start time &mdash; sessions run ~60m
             </p>
-            <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-primary-strong bg-primary/10 px-2 py-0.5 rounded-full">
               {currentDaySlots.length} slots
             </span>
           </div>

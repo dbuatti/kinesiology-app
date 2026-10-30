@@ -1,23 +1,21 @@
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { CRANIAL_NERVES, BRAINSTEM_KEYS, BrainstemNuclei } from "@/data/cranial-nerve-data";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { 
-  Search, 
-  Zap, 
-  Activity, 
-  Info, 
+import {
+  Search,
+  Zap,
+  Info,
   ShieldAlert,
   Hand,
   PlayCircle,
-  Layers,
   Workflow,
   Sparkles,
   ArrowRightLeft,
   Printer,
-  FileText
+  FileText,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";

@@ -224,6 +224,10 @@ interface CorrectionsManualContentProps {
   compact?: boolean;
   /** Fill the parent's height instead of sizing to content. */
   fill?: boolean;
+  /** Report depth changes to parent (for dock breadcrumb/navigation). */
+  onDepthChange?: (depth: number) => void;
+  /** Signal from parent to step back one level. */
+  backSignal?: number;
 }
 
 const CorrectionsManualContent = ({
@@ -235,6 +239,8 @@ const CorrectionsManualContent = ({
   onProtocolLogChange,
   compact = false,
   fill = false,
+  onDepthChange,
+  backSignal,
 }: CorrectionsManualContentProps = {}) => {
   const [activeTab, setActiveTab] = useState<string>(() => initialSelection?.tab ?? "afferent");
   const [afferentActive, setAfferentActive] = useState(
@@ -254,6 +260,48 @@ const CorrectionsManualContent = ({
   /** Heart Wall is one page — a deep link scrolls to its section. */
   const [hwFocus, setHwFocus] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<string | null>(null);
+
+  // Report depth to parent for dock navigation (0 = list, 1 = viewing instructions)
+  useEffect(() => {
+    if (compact) {
+      onDepthChange?.(instructionsOpen ? 1 : 0);
+    }
+  }, [compact, instructionsOpen, onDepthChange]);
+
+  // Handle back signal from dock (Esc/Backspace)
+  const [lastBackSignal, setLastBackSignal] = useState(backSignal);
+  useEffect(() => {
+    if (!compact || backSignal === undefined || backSignal === lastBackSignal) return;
+    setLastBackSignal(backSignal);
+    if (instructionsOpen) {
+      setInstructionsOpen(false);
+    }
+  }, [backSignal, lastBackSignal, compact, instructionsOpen]);
+  
+  // Stop scroll events from bubbling up to parent elements
+  useEffect(() => {
+    const stopPropagation = (e: Event) => e.stopPropagation();
+    const captureWheel = (e: WheelEvent) => {
+      if ((e.target as HTMLElement).closest('.scroll-isolated')) {
+        e.stopPropagation();
+      }
+    }
+    const captureTouch = (e: TouchEvent) => {
+      if ((e.target as HTMLElement).closest('.scroll-isolated')) {
+        e.stopPropagation();
+      }
+    }
+    
+    document.addEventListener('wheel', captureWheel, { passive: true });
+    document.addEventListener('touchstart', captureTouch, { passive: true });
+    document.addEventListener('touchmove', captureTouch, { passive: true });
+    
+    return () => {
+      document.removeEventListener('wheel', captureWheel);
+      document.removeEventListener('touchstart', captureTouch);
+      document.removeEventListener('touchmove', captureTouch);
+    };
+  }, []);
 
   const activeId = activeTab === "afferent" ? afferentActive : efferentActive;
 
@@ -283,6 +331,34 @@ const CorrectionsManualContent = ({
     }
     setInstructionsOpen(true);
   }, [target]);
+
+  // Keyboard navigation: 1-9 jump directly to root-level processes
+  // (one-handed while the client is on the table). Context-aware: always
+  // opens instructions on the selected process; if already showing it,
+  // toggles back to the list.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+      const key = e.key;
+      if (key >= "1" && key <= "9") {
+        e.preventDefault();
+        const index = parseInt(key, 10) - 1;
+        const items = getItems();
+        if (index < items.length) {
+          const item = items[index];
+          const alreadyActive = item.id === activeId && instructionsOpen;
+          setActiveId(item.id);
+          setInstructionsOpen(alreadyActive ? false : true);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [activeTab, activeId, instructionsOpen]);
 
   // Scroll the requested Heart Wall section into view once it's rendered.
   useEffect(() => {
@@ -318,8 +394,6 @@ const CorrectionsManualContent = ({
 
     const toggle = (index: number) => {
       if (!processId || !onProtocolLogChange) return;
-      // Functional patch: two quick taps compose instead of the second
-      // overwriting the first with the same stale step list.
       onProtocolLogChange(processId, (previous) => {
         const steps = previous.steps ?? [];
         return {
@@ -330,16 +404,24 @@ const CorrectionsManualContent = ({
       });
     };
 
+    const stepColor = accent === "text-primary"
+      ? { done: "bg-emerald-500 text-white", pending: "bg-primary/10 dark:bg-primary/50 text-primary dark:text-blue-300" }
+      : accent === "text-purple-600"
+        ? { done: "bg-emerald-500 text-white", pending: "bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300" }
+        : accent === "text-rose-600"
+          ? { done: "bg-emerald-500 text-white", pending: "bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300" }
+          : { done: "bg-emerald-500 text-white", pending: "bg-destructive/10 text-destructive" };
+
     return (
-      <div className="space-y-1.5">
+      <div className="space-y-1">
         {steps.map((step, i) => {
           const isDone = done.includes(i);
           return (
             <div
               key={step}
               className={cn(
-                "flex gap-3 px-3 py-2 rounded-lg transition-colors",
-                isDone ? "bg-emerald-50/50 dark:bg-emerald-950/20" : "hover:bg-muted/40"
+                "flex gap-2.5 px-3 py-2.5 rounded-lg transition-colors",
+                isDone ? "bg-emerald-50/40 dark:bg-emerald-950/15" : "hover:bg-muted/30"
               )}
             >
               <button
@@ -348,26 +430,18 @@ const CorrectionsManualContent = ({
                 disabled={!canTick}
                 title={canTick ? (isDone ? "Mark as not done" : "Mark as done") : undefined}
                 className={cn(
-                  "badge-step mt-0.5 transition-colors",
+                  "shrink-0 flex h-6 w-6 items-center justify-center rounded-md text-[9.5px] font-semibold transition-colors",
                   canTick && "cursor-pointer",
-                  isDone
-                    ? "bg-emerald-500 text-white"
-                    : accent === "text-primary"
-                    ? "bg-primary/10 dark:bg-primary/50 text-primary dark:text-blue-300"
-                    : accent === "text-purple-600"
-                    ? "bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300"
-                    : accent === "text-rose-600"
-                    ? "bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300"
-                    : "bg-destructive/10 text-destructive"
+                  isDone ? stepColor.done : stepColor.pending
                 )}
               >
-                {isDone ? <Check size={11} strokeWidth={3} /> : i + 1}
+                {isDone ? <Check size={10} strokeWidth={3} /> : i + 1}
               </button>
               <div className="min-w-0 flex-1 space-y-0.5">
                 <span
                   className={cn(
-                    "block text-xs leading-relaxed",
-                    isDone ? "text-muted-foreground" : "text-foreground/90"
+                    "block text-[11px] leading-relaxed",
+                    isDone ? "text-muted-foreground/80" : "text-foreground/95"
                   )}
                 >
                   {step}
@@ -428,7 +502,7 @@ const CorrectionsManualContent = ({
     if (!onProtocolLogChange || !fields.some((f) => mapped[f.id] == null)) return null;
 
     return (
-      <div className="mt-4 border-t border-border/70 pt-3">
+      <div className="mt-3 border-t border-border/50 pt-3">
         <ProtocolLogSheet
           processId={processId}
           fields={fields}
@@ -474,13 +548,13 @@ const CorrectionsManualContent = ({
     const filtered = filteredBrainZones(points);
     return (
       <div>
-        <h4 className={cn("text-[11px] font-semibold mb-2", accent)}>{label}</h4>
-        <div className="flex flex-wrap gap-1.5">
+        <h4 className={cn("text-[9.5px] font-semibold uppercase tracking-wider mb-2", accent)}>{label}</h4>
+        <div className="flex flex-wrap gap-1">
           {filtered.map((p) => (
             <button
               key={p.id}
               onClick={() => setModalPoint(p)}
-              className="text-[10px] px-2.5 py-1 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground border border-border bg-card"
+              className="text-[10px] px-2 py-0.5 rounded hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground border border-border/50 bg-card/50"
             >
               {p.name}
             </button>
@@ -498,7 +572,7 @@ const CorrectionsManualContent = ({
         return (
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold tracking-tight">{content.title}</h2>
+              <h2 className="text-base font-medium tracking-tight">{content.title}</h2>
               <StepProgress processId={afferentActive} total={content.steps.length} />
             </div>
             {logBar(afferentActive)}
@@ -516,10 +590,10 @@ const CorrectionsManualContent = ({
         const isEmotional = efferentActive === "emotional";
         const isBrainZone = efferentActive === "cortical" || efferentActive === "subcortical";
         return (
-          <div className="space-y-5">
-            <div className="space-y-4">
+          <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold tracking-tight">{content.title}</h2>
+                <h2 className="text-base font-medium tracking-tight">{content.title}</h2>
                 <StepProgress processId={efferentActive} total={content.steps.length} />
               </div>
               {logBar(efferentActive)}
@@ -665,10 +739,10 @@ const CorrectionsManualContent = ({
 
   /** All five Heart Wall stages on one scrolling page. */
   const renderHeartWall = () => (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex items-center gap-2">
-        <h2 className="text-base font-bold tracking-tight">Heart Wall</h2>
-        <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[9px] font-bold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+        <h2 className="text-base font-medium tracking-tight">Heart Wall</h2>
+        <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[8px] font-bold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
           Screen → Assess → Correct → Recheck
         </span>
       </div>
@@ -681,13 +755,13 @@ const CorrectionsManualContent = ({
             <section
               key={sectionId}
               id={`hw-section-${sectionId}`}
-              className="scroll-mt-2 space-y-3 border-t border-border pt-5 first:border-t-0 first:pt-0"
+              className="scroll-mt-2 space-y-2 border-t border-border/50 pt-4 first:border-t-0 first:pt-0"
             >
               <div className="flex items-center gap-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-rose-100 text-[10px] font-bold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded text-[9px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
                   {index + 1}
                 </span>
-                <h3 className="text-sm font-bold tracking-tight">{section.title}</h3>
+                <h3 className="text-sm font-medium tracking-tight">{section.title}</h3>
                 <StepProgress processId={sectionId} total={section.steps.length} />
               </div>
               {logBar(sectionId, section.title)}
@@ -700,88 +774,239 @@ const CorrectionsManualContent = ({
     </div>
   );
 
-  const renderLimitingBeliefs = () => (
-          <div className="space-y-8">
-            {/* A-E Core Cycle */}
-            <div>
-              <h2 className="text-base font-bold tracking-tight mb-4">A-E Core Cycle</h2>
-              <div className="space-y-0">
-                {lbAE.map((item, i) => (
-                  <div key={item.step}>
-                    <div className="flex gap-3 px-3 py-3 rounded-lg hover:bg-muted/40 transition-colors">
-                      <span className="flex items-center justify-center w-6 h-6 rounded-md bg-destructive/10 text-destructive text-[11px] font-bold shrink-0 mt-0.5">
-                        {item.step}
-                      </span>
-                      <div className="space-y-0.5">
-                        <p className="text-xs font-semibold text-foreground">{item.label}</p>
-                        <p className="text-[11px] text-muted-foreground italic">{item.prompt}</p>
-                      </div>
-                    </div>
-                    {i < lbAE.length - 1 && (
-                      <div className="flex justify-center py-0.5">
-                        <div className="w-px h-3 bg-border" />
-                      </div>
+  const renderLimitingBeliefs = () => {
+    const lbLog = protocolLogs?.[activeId]?.values ?? {};
+    const saveLB = (patch: Record<string, unknown>) => {
+      onProtocolLogChange?.("lb-process", (previous) => ({
+        values: { ...(previous.values ?? {}), ...patch },
+      }));
+    };
+
+    const belief = (lbLog.belief ?? "") as string;
+    const aeFilled = lbAE.filter((item) => (lbLog[item.step.toLowerCase()] ?? "").trim().length > 0).length;
+    const checkpointsAnswered = lbCheckpoints.filter((cp) => lbLog[cp.id.toLowerCase()]).length;
+    const total = lbAE.length + lbCheckpoints.length + 1;
+
+    const handleKeyDown = (e: React.KeyboardEvent, fieldId: string, value: string) => {
+      if ((e.key === "y" || e.key === "Y") && value !== "Yes") {
+        e.preventDefault();
+        saveLB({ [fieldId]: "Yes" });
+      } else if ((e.key === "n" || e.key === "N") && value !== "No") {
+        e.preventDefault();
+        saveLB({ [fieldId]: "No" });
+      }
+    };
+
+    return (
+      <div className={cn("space-y-4", compact && "space-y-3")}>
+        {/* Belief header — prominent input for the core belief */}
+        <div className="border border-border/60 rounded-lg bg-card/50 p-3">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="flex items-center justify-center w-4 h-4 rounded text-[9px] font-bold bg-primary/10 text-primary shrink-0">B</span>
+            <p className="text-[11px] font-medium text-foreground">Limiting Belief</p>
+          </div>
+          <input
+            value={belief}
+            onChange={(e) => saveLB({ belief: e.target.value })}
+            placeholder="e.g. I am not safe"
+            className="w-full border-none bg-transparent text-sm font-medium text-foreground focus:ring-0 placeholder:text-muted-foreground/50"
+          />
+        </div>
+
+        {/* Progress bar */}
+        <div className="w-full">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider">Progress</span>
+            <span className="text-[9px] font-medium text-foreground">
+              {Math.round(((aeFilled + checkpointsAnswered + (belief ? 1 : 0)) / total) * 100)}%
+            </span>
+          </div>
+          <div className="w-full h-1 rounded-full bg-muted/30 overflow-hidden">
+            <div
+              className="h-full bg-primary transition-all duration-300"
+              style={{ width: `${Math.round(((aeFilled + checkpointsAnswered + (belief ? 1 : 0)) / total) * 100)}%` }}
+            />
+          </div>
+        </div>
+
+        {/* A-E Core Cycle — editable inline */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <h2 className="text-base font-medium tracking-tight">A-E Core Cycle</h2>
+            <span className="flex items-center justify-center w-4 h-4 rounded-full bg-muted/50 text-muted-foreground text-[8px] font-bold">
+              {aeFilled}/{lbAE.length}
+            </span>
+          </div>
+          <div className="space-y-1 relative">
+            {/* Vertical connection line */}
+            {lbAE.length > 1 && (
+              <div className="absolute left-2.5 top-0 bottom-[2px] w-[1px] bg-border/30" />
+            )}
+            {lbAE.map((item, i) => {
+              const fieldId = item.step.toLowerCase();
+              const currentValue = (lbLog[fieldId] ?? "") as string;
+              const isFilled = currentValue.trim().length > 0;
+              return (
+                <div key={item.step} className="space-y-1">
+                  <div
+                    className={cn(
+                      "flex gap-2.5 px-3 py-2.5 rounded-lg border transition-colors focus-within:border-primary/30 focus-within:ring-1 focus-within:ring-primary/10",
+                      isFilled
+                        ? "border-primary/20 bg-primary/5 hover:border-primary/30"
+                        : "border-border/60 bg-card/50 hover:border-foreground/10",
                     )}
+                  >
+                    <span
+                      className={cn(
+                        "flex items-center justify-center w-5 h-5 rounded-md text-[10px] font-bold shrink-0 mt-0.5",
+                        isFilled
+                          ? "bg-emerald/10 text-emerald-strong"
+                          : "bg-destructive/10 text-destructive-strong",
+                      )}
+                    >
+                      {item.step}
+                    </span>
+                    <div className="space-y-0.5 min-w-0">
+                      <p className="text-[11px] font-medium text-foreground">{item.label}</p>
+                      <p className="text-[10px] text-muted-foreground/80 italic">{item.prompt}</p>
+                    </div>
+                    <div className="ml-auto min-w-0">
+                      <textarea
+                        value={currentValue}
+                        onChange={(e) => saveLB({ [fieldId]: e.target.value })}
+                        placeholder="Type your notes here…"
+                        rows={2}
+                        className={cn(
+                          "w-full min-w-0 resize-none rounded-md border border-transparent bg-transparent px-2 py-1 text-[10.5px] text-foreground focus:outline-none focus:border-primary/30 focus:bg-muted/20 transition-all",
+                          isFilled && "placeholder:text-transparent",
+                        )}
+                      />
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                  {i < lbAE.length - 1 && (
+                    <div className="flex justify-center py-0.5">
+                      <div className="w-px h-2 bg-border/30" />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
-            {/* Divider with arrow */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-dashed border-border" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="bg-card px-3 text-xs font-medium text-muted-foreground">Then Check</span>
-              </div>
-            </div>
+        {/* Divider with arrow */}
+        <div className="relative my-3">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-dashed border-border/40" />
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-background px-3 text-[9px] font-medium text-muted-foreground/70 uppercase tracking-wider">Then Check</span>
+          </div>
+        </div>
 
-            {/* F/G/H Checkpoints */}
-            <div className="space-y-6">
-              <h2 className="text-base font-bold tracking-tight">Decision Checkpoints</h2>
-              {lbCheckpoints.map((cp, i) => (
-                <div key={cp.id} className="space-y-2">
-                  <div className="p-4 border-2 border-destructive/20 bg-destructive/5 rounded-xl">
-                    <div className="flex items-start gap-3">
-                      <span className="flex items-center justify-center w-7 h-7 rounded-full bg-destructive/10 text-destructive text-xs font-bold shrink-0">
+        {/* F/G/H Checkpoints — interactive Yes/No */}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <h2 className="text-base font-medium tracking-tight">Decision Checkpoints</h2>
+            <span className="flex items-center justify-center w-4 h-4 rounded-full bg-muted/50 text-muted-foreground text-[8px] font-bold">
+              {checkpointsAnswered}/{lbCheckpoints.length}
+            </span>
+          </div>
+          <div className="space-y-2">
+            {lbCheckpoints.map((cp, i) => {
+              const fieldId = cp.id.toLowerCase();
+              const currentValue = (lbLog[fieldId] ?? "") as string;
+              const isYes = currentValue === "Yes";
+              const isNo = currentValue === "No";
+              const answered = isYes || isNo;
+              return (
+                <div key={cp.id} className="space-y-1.5">
+                  <div
+                    className={cn(
+                      "p-3 border rounded-lg transition-colors",
+                      answered
+                        ? (isYes ? "bg-rose-50/50 dark:bg-rose-950/15 border-rose-200/40" : "bg-emerald-50/50 dark:bg-emerald-950/15 border-emerald-200/40")
+                        : "bg-destructive/5 border-destructive/15",
+                    )}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <span
+                        className={cn(
+                          "flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold shrink-0 mt-0.5",
+                          answered
+                            ? (isYes ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300" : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300")
+                            : "bg-destructive/10 text-destructive-strong border border-destructive/20",
+                        )}
+                      >
                         {cp.id}
                       </span>
-                      <div className="space-y-3 flex-1">
-                        <p className="text-sm font-semibold text-foreground">{cp.question}</p>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800">
-                            <div className="flex items-center gap-1.5 mb-1">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">YES</span>
-                              <ArrowRightCircle size={12} className="text-rose-500" />
+                      <div className="space-y-2 flex-1">
+                        <p className="text-sm font-medium text-foreground">{cp.question}</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div
+                            onClick={() => saveLB({ [fieldId]: "Yes" })}
+                            onKeyDown={(e) => handleKeyDown(e, fieldId, currentValue)}
+                            tabIndex={0}
+                            role="button"
+                            aria-pressed={isYes}
+                            aria-label={`${cp.question} — Yes`}
+                            className={cn(
+                              "p-2 rounded-lg border cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1",
+                              isYes
+                                ? "bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/50 shadow-sm"
+                                : "bg-card border-transparent hover:border-rose-200/40 hover:bg-rose-50/30",
+                            )}
+                          >
+                            <div className="flex items-center gap-1 mb-0.5">
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Yes</span>
+                              <ArrowRightCircle size={11} className="text-rose-500" />
                             </div>
-                            <p className="text-[10px] text-rose-800 dark:text-rose-200 leading-relaxed">
-                              Restart A-E cycle {i === 2 ? '(stay on H)' : `(skip to next checkpoint after)`}
+                            <p className="text-[9px] text-rose-700 dark:text-rose-300 leading-relaxed">
+                              Restart A-E cycle {i === 2 ? "(stay on H)" : "(skip to next)"}
                             </p>
                           </div>
-                          <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
-                            <div className="flex items-center gap-1.5 mb-1">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">NO</span>
-                              <ArrowRightCircle size={12} className="text-emerald-500" />
+                          <div
+                            onClick={() => saveLB({ [fieldId]: "No" })}
+                            onKeyDown={(e) => handleKeyDown(e, fieldId, currentValue)}
+                            tabIndex={0}
+                            role="button"
+                            aria-pressed={isNo}
+                            aria-label={`${cp.question} — No`}
+                            className={cn(
+                              "p-2 rounded-lg border cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1",
+                              isNo
+                                ? "bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 shadow-sm"
+                                : "bg-card border-transparent hover:border-emerald-200/40 hover:bg-emerald-50/30",
+                            )}
+                          >
+                            <div className="flex items-center gap-1 mb-0.5">
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">No</span>
+                              <ArrowRightCircle size={11} className="text-emerald-500" />
                             </div>
                             <p className="text-[10px] text-emerald-800 dark:text-emerald-200 leading-relaxed">{cp.noAdvance}</p>
                           </div>
                         </div>
+                        {answered && (
+                          <p className="mt-1.5 text-[9px] font-medium text-muted-foreground/70 italic">
+                            Marked: {currentValue}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
                   {i < lbCheckpoints.length - 1 && (
-                    <div className="flex justify-center py-1">
-                      <ArrowDown size={14} className="text-muted-foreground/40" />
+                    <div className="flex justify-center py-0.5">
+                      <ArrowDown size={10} className="text-muted-foreground/30" />
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
-
-            {logSheet("lb-process", "Log the belief")}
+              );
+            })}
           </div>
-        );
+        </div>
+      </div>
+    );
+  };
 
   const getActiveId = () => activeId;
 
@@ -803,8 +1028,9 @@ const CorrectionsManualContent = ({
 
   return (
     <div className={cn("flex flex-col", fill && "h-full min-h-0")}>
+
       <div className="border-b shrink-0">
-        <div className="px-4 py-2 flex items-center justify-between gap-4">
+        <div className={cn("flex items-center justify-between gap-3", compact ? "px-3 py-1.5" : "px-4 py-2")}>
           <div className="flex min-w-0 items-center gap-1.5">
             {compact && instructionsOpen && (
               <button
@@ -812,18 +1038,18 @@ const CorrectionsManualContent = ({
                 onClick={() => setInstructionsOpen(false)}
                 title="Back to the process list"
                 aria-label="Back to the process list"
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
               >
-                <ChevronLeft size={15} />
+                <ChevronLeft size={14} />
               </button>
             )}
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="h-8 bg-muted/60">
-                <TabsTrigger value="afferent" className="text-[13px] h-7 px-3 data-[state=active]:bg-primary/5 data-[state=active]:text-primary data-[state=active]:shadow-sm">
-                  <ArrowDownCircle size={12} className="mr-1.5" /> Afferent
+            <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (compact) setInstructionsOpen(false); }}>
+              <TabsList className={cn("bg-muted/50", compact ? "h-7" : "h-8")}>
+                <TabsTrigger value="afferent" className={cn(compact ? "h-6 text-[10.5px] px-2" : "h-7 text-[11px] px-2.5")}>
+                  <ArrowDownCircle size={11} className="mr-1" /> Afferent
                 </TabsTrigger>
-                <TabsTrigger value="efferent" className="text-[13px] h-7 px-3 data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700 data-[state=active]:shadow-sm">
-                  <ArrowUpCircle size={12} className="mr-1.5" /> Efferent
+                <TabsTrigger value="efferent" className={cn(compact ? "h-6 text-[10.5px] px-2" : "h-7 text-[11px] px-2.5")}>
+                  <ArrowUpCircle size={11} className="mr-1" /> Efferent
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -831,35 +1057,40 @@ const CorrectionsManualContent = ({
           <div className="flex items-center gap-2">
             {getSearchPlaceholder() && (
               <div className={cn("relative", compact ? "w-28" : "w-48")}>
-                <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Search size={10} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground/70" />
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={getSearchPlaceholder()}
-                  className="h-7 pl-7 text-[11px] rounded-lg"
+                  className={cn("pl-6 rounded-lg", compact ? "h-6 text-[10px]" : "h-7 pl-7 text-[11px]")}
                 />
               </div>
             )}
             {!compact && (
               <button
                 onClick={handlePrint}
-                className="h-7 px-2.5 rounded-lg text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-1.5"
+                className="h-7 px-2.5 rounded-lg text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors flex items-center gap-1.5"
               >
-                <Printer size={12} /> Print
+                <Printer size={11} /> Print
               </button>
+            )}
+            {compact && !instructionsOpen && (
+              <span className="text-[9px] font-medium text-muted-foreground/50 uppercase tracking-wider">
+                Keys 1–9
+              </span>
             )}
           </div>
         </div>
       </div>
 
       {compact ? (
-        <div className="flex flex-1 min-h-0">
+        <div className="flex flex-1 min-h-0 overflow-hidden">
           {/* The list never moves: full width until a process is tapped, then a
               left column while its instructions slide in beside it. */}
           <div
             className={cn(
-              "min-h-0 overflow-y-auto px-3 py-2.5 space-y-2",
-              instructionsOpen ? "w-[164px] shrink-0 border-r border-border" : "flex-1"
+              "min-h-0 overflow-y-auto px-2.5 py-2 space-y-2 transition-all duration-200 scroll-isolated",
+              instructionsOpen ? "w-[184px] shrink-0 border-r border-border" : "flex-1"
             )}
           >
             {(() => {
@@ -870,13 +1101,18 @@ const CorrectionsManualContent = ({
                 else acc.push({ group: item.group, items: [item] });
                 return acc;
               }, []);
+              // Compute global index for keyboard shortcut display
+              let globalIdx = 0;
               return groups.map((g, gi) => (
                 <div key={g.group ?? gi} className="space-y-1">
                   {g.group && (
-                    <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/50">{g.group}</p>
+                    <p className="px-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40">{g.group}</p>
                   )}
-                  <div className={cn("gap-1", instructionsOpen ? "flex flex-col" : "flex flex-wrap")}>
-                    {g.items.map((item) => (
+                  <div className={cn("gap-0.5", instructionsOpen ? "flex flex-col" : "flex flex-wrap")}>
+                    {g.items.map((item) => {
+                      const num = globalIdx + 1;
+                      globalIdx++;
+                      return (
                       <button
                         key={item.id}
                         onClick={() => {
@@ -884,16 +1120,25 @@ const CorrectionsManualContent = ({
                           setInstructionsOpen(true);
                         }}
                         className={cn(
-                          "px-2 py-1 rounded-md border text-[10px] font-medium transition-colors",
+                          "group relative px-2 py-1.5 rounded-lg border text-[10.5px] font-medium transition-all",
                           instructionsOpen && "w-full text-left",
                           item.id === activeId
-                            ? tabAccent
-                            : "border-border bg-card text-muted-foreground hover:text-foreground"
+                            ? cn(tabAccent, "shadow-sm")
+                            : "border-transparent bg-card/60 text-muted-foreground hover:text-foreground hover:bg-muted/50"
                         )}
                       >
-                        {item.label}
+                        <span className="flex items-center gap-1.5">
+                          <span className={cn(
+                            "flex h-4 w-4 shrink-0 items-center justify-center rounded-md text-[8px] font-bold transition-colors",
+                            item.id === activeId ? "bg-current/10" : "bg-muted/70 text-muted-foreground/70"
+                          )}>
+                            {num}
+                          </span>
+                          <span className="truncate">{item.label}</span>
+                        </span>
                       </button>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               ));
@@ -903,20 +1148,21 @@ const CorrectionsManualContent = ({
           {instructionsOpen && (
             <div
               key={`${activeTab}:${activeId}`}
-              className="flex min-w-0 flex-1 flex-col animate-in fade-in slide-in-from-right-4 duration-200"
+              className="flex min-w-0 flex-1 flex-col animate-in fade-in slide-in-from-right-2 duration-150"
             >
               {/* No pane header here — the process title inside the page is the
                   only heading, so the name isn't printed twice. */}
-              <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">{getContent()}</div>
+              <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 scroll-isolated" onWheel={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()}>
             </div>
-          )}
+          </div>
+        )}
         </div>
       ) : (
         <div className="flex flex-1 min-h-0 overflow-hidden">
           <CorrectionsSidebar items={getItems()} activeId={getActiveId()} setActiveId={setActiveId} tabAccent={tabAccent} />
-          <main className="min-w-0 flex-1 max-w-3xl px-6 py-6 overflow-y-auto">
+          <div className="min-w-0 flex-1 max-w-3xl px-6 py-6 overflow-y-auto scroll-isolated" onWheel={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()}>
             {getContent()}
-          </main>
+          </div>
         </div>
       )}
 

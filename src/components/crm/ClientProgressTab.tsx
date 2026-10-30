@@ -1,11 +1,20 @@
 
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { 
-  TrendingUp, Activity, FlaskConical, Brain, 
-  AlertCircle, CheckCircle2, History, Zap, Info,
-  ArrowUpRight, ArrowDownRight, LineChart,
-  Workflow
+import {
+  TrendingUp,
+  Activity,
+  FlaskConical,
+  Brain,
+  AlertCircle,
+  CheckCircle2,
+  History,
+  Zap,
+  Info,
+  ArrowUpRight,
+  ArrowDownRight,
+  LineChart,
+  Workflow,
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer } from 'recharts';
 import { format } from "date-fns";
@@ -55,17 +64,6 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
       });
   }, [appointments]);
 
-  const coherenceData = useMemo(() => {
-    return [...appointments]
-      .filter(app => app.coherence_score !== null && app.coherence_score !== undefined)
-      .reverse()
-      .map(app => ({
-        date: format(new Date(app.date), "MMM d"),
-        score: app.coherence_score,
-        fullDate: format(new Date(app.date), "MMMM d, yyyy")
-      }));
-  }, [appointments]);
-
   const resolutionRate = useMemo(() => {
     const history = processNeurologicalHistory(appointments);
     if (history.length === 0) return 0;
@@ -102,14 +100,14 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
         <Button 
           onClick={() => openAssessment('bolt')}
           variant="outline" 
-          className="rounded-xl border-border bg-primary/5 text-primary hover:bg-primary/10 font-bold h-10"
+          className="rounded-xl border-border bg-primary/5 text-primary-strong hover:bg-primary/10 font-bold h-10"
         >
           <FlaskConical size={16} className="mr-2" /> Log BOLT
         </Button>
         <Button 
           onClick={() => openAssessment('coherence')}
           variant="outline" 
-          className="rounded-xl border-border bg-destructive/5 text-destructive hover:bg-destructive/10 font-bold h-10"
+          className="rounded-xl border-border bg-destructive/5 text-destructive-strong hover:bg-destructive/10 font-bold h-10"
         >
           <Activity size={16} className="mr-2" /> Log Coherence
         </Button>

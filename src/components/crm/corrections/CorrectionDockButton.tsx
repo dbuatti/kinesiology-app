@@ -8,7 +8,7 @@ const CorrectionDockButton = () => {
     <button
       onClick={toggleDock}
       aria-pressed={isOpen}
-      className="flex items-center gap-1.5 px-2 md:px-2.5 h-8 text-[13px] font-medium border border-border bg-card shadow-xs hover:bg-muted rounded-lg shrink-0 whitespace-nowrap"
+      className="flex items-center gap-1.5 px-2.5 h-7 text-[10.5px] font-medium tracking-tight border border-border bg-card hover:bg-muted/60 rounded-lg shrink-0 whitespace-nowrap"
       title="Corrections manual — afferent / efferent (M)"
     >
       <BookMarked size={13} />

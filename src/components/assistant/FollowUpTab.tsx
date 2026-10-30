@@ -15,11 +15,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Mail, MessageCircle, Mic, Zap, MoreHorizontal, BellOff, Bell, ArrowUpRight, CalendarPlus, PartyPopper, CircleSlash } from "lucide-react";
+import { Mail, MessageCircle, Mic, Zap, MoreHorizontal, BellOff, Bell, ArrowUpRight, CalendarPlus, PartyPopper, CircleSlash, Archive, RotateCcw } from "lucide-react";
 import { showError, showSuccess } from "@/utils/toast";
 import { setPersonClosed } from "@/lib/people";
+import { supabase } from "@/integrations/supabase/client";
 
-type Filter = LifecycleStatus | "all" | "quick_win";
+type Filter = LifecycleStatus | "all" | "quick_win" | "closed";
 
 const SNOOZE_KEY = "rk_followup_snoozed";
 type SnoozeMap = Record<string, number>; // id → snoozed-until epoch ms
@@ -46,6 +47,8 @@ export default function FollowUpTab() {
   const [filter, setFilter] = useState<Filter>("all");
   const [snoozed, setSnoozed] = useState<SnoozeMap>(readSnoozes);
   const [showSnoozed, setShowSnoozed] = useState(false);
+  const [closed, setClosed] = useState<AttentionClient[]>([]);
+  const [loadingClosed, setLoadingClosed] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -54,6 +57,43 @@ export default function FollowUpTab() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  const loadClosed = useCallback(async () => {
+    setLoadingClosed(true);
+    try {
+      // Use the same query as fetchClosedPeople in people.ts — closed = lifecycle_status_manual=true + lifecycle_status=closed in clients table
+      const { data, error } = await supabase
+        .from("clients")
+        .select("id, name, email, practices, lifecycle_status, lifecycle_status_reason, lifecycle_status_updated_at")
+        .eq("lifecycle_status_manual", true)
+        .eq("lifecycle_status", "closed")
+        .order("lifecycle_status_updated_at", { ascending: false });
+      if (error) throw error;
+      const rows = (data || []) as any[];
+      const closedList: AttentionClient[] = rows.map((r) => ({
+        id: r.id,
+        name: r.name || "Unknown",
+        email: r.email || null,
+        status: "closed" as LifecycleStatus,
+        reason: r.lifecycle_status_reason || "Closed — don't follow up",
+        daysSinceLast: null,
+        kind: (r.practices?.includes("voice") || r.practices?.includes("piano")) ? "voice" : "kinesiology",
+        isQuickWin: false,
+      }));
+      setClosed(closedList);
+    } catch (e) {
+      console.error("Failed to load closed people:", e);
+      setClosed([]);
+    } finally {
+      setLoadingClosed(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (filter === "closed") {
+      loadClosed();
+    }
+  }, [filter, loadClosed]);
 
   const persist = (next: SnoozeMap) => {
     setSnoozed(next);
@@ -70,6 +110,13 @@ export default function FollowUpTab() {
     setClients((prev) => prev.filter((x) => x.id !== c.id));
     showSuccess(`${c.name.split(" ")[0]} closed — won't show in Follow-up again. Reopen from People.`);
   };
+  const reopen = async (c: AttentionClient) => {
+    const ok = await setPersonClosed({ id: c.id, email: c.email }, false);
+    if (!ok) { showError(`Couldn't reopen ${c.name.split(" ")[0]}.`); return; }
+    setClosed((prev) => prev.filter((x) => x.id !== c.id));
+    load();
+    showSuccess(`${c.name.split(" ")[0]} reopened — may appear in Follow-up again.`);
+  };
   const unsnooze = (c: AttentionClient) => {
     const next = { ...snoozed };
     delete next[c.id];
@@ -80,7 +127,7 @@ export default function FollowUpTab() {
   const counts = live.reduce((acc, c) => { acc[c.status] = (acc[c.status] || 0) + 1; return acc; }, {} as Record<LifecycleStatus, number>);
   const quickWinCount = live.filter((c) => c.isQuickWin).length;
   const snoozedCount = clients.filter((c) => snoozed[c.id]).length;
-  const shown = filter === "all" ? live : filter === "quick_win" ? live.filter((c) => c.isQuickWin) : live.filter((c) => c.status === filter);
+  const shown = filter === "closed" ? closed : filter === "all" ? live : filter === "quick_win" ? live.filter((c) => c.isQuickWin) : live.filter((c) => c.status === filter);
 
   const filters: { id: Filter; label: string; count: number; icon?: typeof Zap }[] = [
     { id: "all", label: "Everyone", count: live.length },
@@ -88,9 +135,10 @@ export default function FollowUpTab() {
     { id: "at_risk", label: "At risk", count: counts.at_risk || 0 },
     { id: "lapsed", label: "Lapsed", count: counts.lapsed || 0 },
     { id: "active", label: "Worth rebooking", count: counts.active || 0 },
+    { id: "closed", label: "Closed", count: closed.length, icon: Archive },
   ];
 
-  if (loading) {
+  if (loading && filter !== "closed") {
     return (
       <div className="space-y-2 py-4">
         {Array.from({ length: 4 }).map((_, i) => (
@@ -99,6 +147,8 @@ export default function FollowUpTab() {
       </div>
     );
   }
+
+  const isEmpty = filter === "closed" ? loadingClosed || shown.length === 0 : shown.length === 0;
 
   return (
     <div className="space-y-4 py-2">
@@ -120,7 +170,7 @@ export default function FollowUpTab() {
             </button>
           ))}
         </div>
-        {snoozedCount > 0 && (
+        {snoozedCount > 0 && filter !== "closed" && (
           <button
             onClick={() => setShowSnoozed((v) => !v)}
             className="inline-flex h-8 items-center gap-1.5 self-start rounded-lg px-2.5 text-[13px] text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground sm:ml-auto"
@@ -130,12 +180,12 @@ export default function FollowUpTab() {
         )}
       </div>
 
-      {shown.length === 0 ? (
+      {isEmpty ? (
         <div className="rounded-2xl border border-border bg-card">
           <EmptyState
-            icon={PartyPopper}
-            title={live.length === 0 ? "Everyone’s looked after" : "Nobody in this bucket"}
-            description={live.length === 0 ? "No one needs a follow-up right now. Nice." : "Try another filter above."}
+            icon={filter === "closed" ? Archive : PartyPopper}
+            title={filter === "closed" ? (loadingClosed ? "Loading..." : "No closed people") : (live.length === 0 ? "Everyone’s looked after" : "Nobody in this bucket")}
+            description={filter === "closed" ? (loadingClosed ? "Fetching closed people..." : "People you close won't follow up again. Reopen them here if they come back.") : (live.length === 0 ? "No one needs a follow-up right now. Nice." : "Try another filter above.")}
           />
         </div>
       ) : (
@@ -164,7 +214,7 @@ export default function FollowUpTab() {
                   <span
                     className={cn(
                       "relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
-                      c.kind === "voice" ? "bg-chart-destructive/10 text-chart-destructive" : "bg-primary/10 text-primary"
+                      c.kind === "voice" ? "bg-chart-destructive/10 text-chart-destructive" : "bg-primary/10 text-primary-strong"
                     )}
                   >
                     {initials}

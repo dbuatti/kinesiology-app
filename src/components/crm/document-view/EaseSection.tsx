@@ -3,22 +3,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { 
-  Play, 
-  Pause, 
-  RotateCcw, 
-  Zap, 
-  Activity, 
-  Heart, 
-  Brain, 
-  Sparkles, 
-  CheckCircle2, 
-  Trash2, 
-  ChevronDown, 
-  ChevronUp,
-  ArrowRightLeft,
-  Check
-} from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import { VAGUS_ASSOCIATIONS, VAGAL_FUNCTIONS, HAND_REFLEXOLOGY, VAGAL_GLANDS } from '@/data/vagus-data';
 import { showSuccess } from '@/utils/toast';
 import ConfirmDialog from "@/components/shared/ConfirmDialog";

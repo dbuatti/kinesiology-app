@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Check, Copy, ArrowLeft, DollarSign, Shield, Zap, TreePine, Target, Heart, Sparkles, Loader } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -65,7 +65,7 @@ const RatingRow = ({ label, value, onChange }: { label: string; value: number; o
             value === n
               ? 'bg-primary text-primary-foreground scale-110'
               : value > n
-              ? 'bg-primary/20 text-primary'
+              ? 'bg-primary/20 text-primary-strong'
               : 'bg-muted text-muted-foreground hover:bg-muted/80'
           }`}
         >
@@ -454,7 +454,7 @@ const MoneySecurityFreedomWorksheet = ({ onBack }: { onBack?: () => void }) => {
                   onClick={() => toggleNeed(need)}
                   className={`p-4 rounded-xl border text-sm font-medium transition-all text-left ${
                     (formData.needs_selected || []).includes(need)
-                      ? 'bg-primary/10 border-primary/40 text-primary'
+                      ? 'bg-primary/10 border-primary/40 text-primary-strong'
                       : 'bg-background border-border/30 text-muted-foreground hover:border-border/60'
                   }`}
                 >
@@ -596,21 +596,21 @@ const MoneySecurityFreedomWorksheet = ({ onBack }: { onBack?: () => void }) => {
 
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">1</span>
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary-strong text-xs font-bold flex items-center justify-center">1</span>
                 <div>
                   <p className="text-sm font-semibold">Copy your answers</p>
                   <p className="text-xs text-muted-foreground">Copy all your answers from the previous sections into one block of text, keeping the headings.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">2</span>
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary-strong text-xs font-bold flex items-center justify-center">2</span>
                 <div>
                   <p className="text-sm font-semibold">Open your AI assistant</p>
                   <p className="text-xs text-muted-foreground">Open ChatGPT or Claude, paste your answers, then paste the prompt below underneath them.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">3</span>
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 text-primary-strong text-xs font-bold flex items-center justify-center">3</span>
                 <div>
                   <p className="text-sm font-semibold">Generate &amp; interrogate</p>
                   <p className="text-xs text-muted-foreground">Read the output critically. Ask follow-ups and request a conservative and an ambitious figure.</p>
@@ -721,7 +721,7 @@ const MoneySecurityFreedomWorksheet = ({ onBack }: { onBack?: () => void }) => {
                 onClick={() => setActiveSection(s.id)}
                 className={`flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors text-left whitespace-nowrap sm:whitespace-normal ${
                   isActive
-                    ? 'bg-primary/10 text-primary'
+                    ? 'bg-primary/10 text-primary-strong'
                     : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
                 }`}
               >

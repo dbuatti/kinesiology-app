@@ -67,11 +67,7 @@ import {
   practiceWallToUtc,
   parsePracticeDatetimeLocal,
 } from "@/utils/practice-time";
-import {
-  differenceInMinutes,
-  subDays,
-  differenceInDays,
-} from "date-fns";
+import { differenceInMinutes, subDays, differenceInDays } from "date-fns";
 import {
   ResponsiveContainer,
   BarChart,
@@ -1057,8 +1053,6 @@ const TimetablePage = () => {
     }
     return weeksArr;
   }, [slots, bookings, blockedDates]);
-
-  const weekdayLabel = (d: Date) => practiceFormat(d, "EEE");
 
   // ── Proposal actions ──────────────────────────────────────────
   const handleCreateProposal = async (slotStart: string, slotEnd: string) => {

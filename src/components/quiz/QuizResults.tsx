@@ -1,16 +1,12 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Trophy, 
-  Zap, 
-  RotateCcw, 
-  ArrowLeft, 
-  CheckCircle2, 
-  XCircle,
+import {
+  Trophy,
+  RotateCcw,
+  ArrowLeft,
   TrendingUp,
-  Target,
-  Sparkles
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

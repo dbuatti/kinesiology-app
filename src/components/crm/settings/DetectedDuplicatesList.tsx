@@ -1,9 +1,7 @@
 
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, UserCheck, Loader2, Merge } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface DuplicateGroup {
  name: string;
@@ -39,7 +37,7 @@ const DetectedDuplicatesList = ({
 
  if (detectedDuplicates.length === 0) {
  return (
- <div className="p-6 bg-chart-emerald/10/50 rounded-3xl border border-border flex items-center gap-4">
+ <div className="p-6 bg-chart-emerald/10 rounded-3xl border border-border flex items-center gap-4">
  <div className="w-10 h-10 rounded-xl bg-chart-emerald text-primary-foreground flex items-center justify-center shadow-sm">
  <UserCheck size={20} />
  </div>

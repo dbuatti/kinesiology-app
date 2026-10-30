@@ -1,18 +1,18 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
- BookOpen, 
- Search, 
- ShieldCheck, 
- Workflow, 
- CheckCircle2, 
- Sparkles,
- Zap,
- Activity,
- Heart,
- Layers,
- Lightbulb
+import {
+  BookOpen,
+  Search,
+  ShieldCheck,
+  Workflow,
+  CheckCircle2,
+  Sparkles,
+  Zap,
+  Activity,
+  Heart,
+  Layers,
+  Lightbulb,
 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 

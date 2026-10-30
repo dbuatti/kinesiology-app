@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { StickyNote, Loader2, CheckCircle2, AlertCircle, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import EditableField from "@/components/shared/EditableField";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 
 interface QuickNotesDialogProps {
@@ -111,7 +110,7 @@ const QuickNotesDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-2xl rounded-xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col max-h-[85vh]">
+      <DialogContent className="sm:max-w-2xl rounded-2xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col max-h-[85vh]">
         <DialogHeader className="px-6 pt-5 pb-4 border-b border-border shrink-0">
           <DialogTitle className="text-base font-semibold flex items-center gap-2.5">
             <span className="w-8 h-8 rounded-xl bg-chart-primary/10 flex items-center justify-center text-chart-primary shrink-0">
@@ -124,80 +123,116 @@ const QuickNotesDialog = ({
           )}
         </DialogHeader>
 
-        <div className="flex flex-col flex-1 min-h-0 px-6 py-4">
+        <div className="flex flex-col flex-1 min-h-0 px-6 py-4 overflow-y-auto">
+          {/* Session context — editable goal & concern */}
           {(goal || issue) && (
-            <div className="mb-3 space-y-2 text-xs">
-              {goal && (
-                <div>
-                  <p className="font-semibold text-muted-foreground mb-0.5">Session Goal</p>
-                  <p className="text-foreground leading-relaxed">{goal}</p>
-                </div>
-              )}
-              {issue && (
-                <div>
-                  <p className="font-semibold text-muted-foreground mb-0.5">Primary Concern</p>
-                  <p className="text-foreground leading-relaxed">{issue}</p>
-                </div>
-              )}
-            </div>
+            <section className="space-y-3 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {goal && (
+                  <EditableField
+                    field="goal"
+                    label="Session goal"
+                    value={goal}
+                    multiline
+                    placeholder="e.g. Sleep through the night without waking at 3am…"
+                    onSave={onSave}
+                    className="border-none p-0 shadow-none bg-transparent"
+                  />
+                )}
+                {issue && (
+                  <EditableField
+                    field="issue"
+                    label="Primary concern"
+                    value={issue}
+                    multiline
+                    placeholder="Describe the current symptoms and history…"
+                    onSave={onSave}
+                    className="border-none p-0 shadow-none bg-transparent"
+                  />
+                )}
+              </div>
+              <div className="h-px bg-border/60" />
+            </section>
           )}
-          <textarea
-            ref={taRef}
-            value={draft}
-            onChange={handleChange}
-            onFocus={() => setIsFocused(true)}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            placeholder="Jot down anything the client shares — observations, tangents, key phrases, to-dos. This saves to the session's notes and appears in the client's history."
-            className={cn(
-              "flex-1 min-h-[220px] w-full resize-none rounded-xl border border-border bg-muted/30 p-4 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-chart-primary/50 transition-shadow",
-              isPrivate && !isFocused && "blur-sensitive"
-            )}
-          />
-          <div className="flex items-center justify-between gap-3 pt-3 shrink-0">
-            <div className="flex items-center gap-2 min-w-0">
-              {isSaving ? (
-                <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-chart-primary animate-pulse">
-                  <Loader2 size={10} className="animate-spin" /> Saving…
-                </span>
-              ) : saveState === "saved" ? (
-                <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-chart-emerald animate-in fade-in">
-                  <CheckCircle2 size={10} /> Saved ✓
-                </span>
-              ) : saveState === "error" ? (
-                <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-destructive animate-in fade-in">
-                  <AlertCircle size={10} /> Save failed — try again
-                </span>
-              ) : (
-                <span className="text-[10px] text-muted-foreground/60">
-                  Autosaves as you type · shows in client history
+
+          {/* Session notes */}
+          <section className="space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Session notes
+              </p>
+              {copied && (
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-chart-emerald/10 text-chart-emerald text-[10px] font-semibold animate-in fade-in">
+                  Copied
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={async () => {
-                  const parts = [goal ? `Session Goal: ${goal}` : "", issue ? `Primary Concern: ${issue}` : "", draft].filter(Boolean);
-                  try { await navigator.clipboard.writeText(parts.join("\\n\\n")); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch {}
-                }}
-                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                title="Copy goal, concern and notes"
-              >
-                {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? "Copied" : "Copy all"}
-              </button>
-              <span className="hidden sm:inline text-xs font-medium text-muted-foreground/40">
-                ⌘/Ctrl + Enter
+            <textarea
+              ref={taRef}
+              value={draft}
+              onChange={handleChange}
+              onFocus={() => setIsFocused(true)}
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              placeholder="Jot down anything the client shares — observations, tangents, key phrases, to-dos. This saves to the session's notes and appears in the client's history."
+              className={cn(
+                "flex-1 min-h-[240px] w-full resize-none rounded-xl border border-border bg-muted/30 p-4 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-chart-primary/50 transition-shadow",
+                isPrivate && !isFocused && "blur-sensitive"
+              )}
+            />
+          </section>
+        </div>
+
+        <div className="flex items-center justify-between gap-3 px-6 py-3 shrink-0 border-t border-border/60">
+          <div className="flex items-center gap-2 min-w-0">
+            {isSaving ? (
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-chart-primary animate-pulse">
+                <Loader2 size={10} className="animate-spin" /> Saving…
               </span>
-              <Button
-                size="sm"
-                onClick={handleDone}
-                disabled={isSaving}
-                className="rounded-lg h-9 px-4 text-xs font-semibold"
-              >
-                Done
-              </Button>
-            </div>
+            ) : saveState === "saved" ? (
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-chart-emerald animate-in fade-in">
+                <CheckCircle2 size={10} /> Saved ✓
+              </span>
+            ) : saveState === "error" ? (
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-destructive animate-in fade-in">
+                <AlertCircle size={10} /> Save failed — try again
+              </span>
+            ) : (
+              <span className="text-[10px] text-muted-foreground/60">
+                Autosaves as you type · shows in client history
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={async () => {
+                const parts = [goal ? `Session Goal: ${goal}` : "", issue ? `Primary Concern: ${issue}` : "", draft].filter(Boolean);
+                try {
+                  await navigator.clipboard.writeText(parts.join("\\n\\n"));
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1500);
+                } catch {
+                  // Clipboard access can be blocked (insecure context, denied
+                  // permission) — the notes stay on screen either way.
+                }
+              }}
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              title="Copy goal, concern and notes"
+            >
+              {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? "Copied" : "Copy all"}
+            </button>
+            <span className="hidden sm:inline text-xs font-medium text-muted-foreground/40">
+              ⌘/Ctrl + Enter
+            </span>
+            <Button
+              size="sm"
+              onClick={handleDone}
+              disabled={isSaving}
+              className="rounded-lg h-9 px-4 text-xs font-semibold"
+            >
+              Done
+            </Button>
           </div>
         </div>
       </DialogContent>

@@ -1,10 +1,10 @@
 
-import React, { useState } from "react";
-import { ACUPOINTS, Acupoint } from "@/data/acupoint-data";
+import { useState } from "react";
+import { ACUPOINTS } from "@/data/acupoint-data";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, MapPin, Zap, Info, Filter } from "lucide-react";
+import { Search, MapPin, Zap, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 

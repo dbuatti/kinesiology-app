@@ -20,7 +20,7 @@ export const CLINICAL_COMPLAINTS: ClinicalComplaint[] = [
   {
     complaint: "Brain Fog / Mental Fatigue",
     category: "Neurological",
-    priorityMuscles: ["Supraspinatus", "SCM", "Upper Trapezius", "Diaphragm"],
+    priorityMuscles: ["Supraspinatus", "Sternocleidomastoid (SCM)", "Upper Trapezius", "Diaphragm"],
     priorityMeridians: ["Central", "Lung", "Kidney"],
     reflexPoints: ["GV20", "Cervical Lymphatics", "Carotid Pulse"],
     insights: "Often a 'Drainage' issue. Check Cervical Lymphatics and Vagus Nerve tone. Ensure BOLT score is > 25s to rule out hypocapnia-induced vasoconstriction."
@@ -68,7 +68,7 @@ export const CLINICAL_COMPLAINTS: ClinicalComplaint[] = [
   {
     complaint: "Vertigo (Limbic/Anxiety-Driven)",
     category: "Neurological",
-    priorityMuscles: ["SCM", "Upper Trapezius", "Deep Neck Flexors"],
+    priorityMuscles: ["Sternocleidomastoid (SCM)", "Upper Trapezius", "Deep Neck Flexors"],
     priorityMeridians: ["Central", "Governing", "Kidney"],
     reflexPoints: ["GV16 (Cerebellum)", "Limbic System", "CN VIII"],
     insights: "Shared pathways between the vestibular and limbic systems. If positional tests are clear but symptoms persist, prioritize emotional integration and SNS down-regulation. 'Letting Go' (David Hawkins) is a recommended resource."

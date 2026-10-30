@@ -1,16 +1,22 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { 
- Activity, FlaskConical, Brain, AlertCircle, 
- CheckCircle2, ArrowRight, Search, Loader2, 
- TrendingUp, Users, Zap, Wind, ShieldCheck,
-  CalendarClock, MessageSquare, RefreshCw
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Activity,
+  FlaskConical,
+  AlertCircle,
+  CheckCircle2,
+  ArrowRight,
+  Search,
+  TrendingUp,
+  Users,
+  Wind,
+  MessageSquare,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { LoadingState, EmptyState, ErrorState } from "@/components/shared/PageState";
 import { Link } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
@@ -83,22 +89,10 @@ export function ClinicalOversightTool() {
  const imperativeCount = clients.filter(c => c.latestData?.bolt_score !== null && c.latestData?.bolt_score !== undefined && c.latestData?.bolt_score < 25).length;
  const functionalCount = clients.filter(c => c.latestData?.bolt_score !== null && c.latestData?.bolt_score !== undefined && c.latestData?.bolt_score >= 25).length;
 
- if (loading) return (
- <div className="flex min-h-screen items-center justify-center">
- <Loader2 className="animate-spin text-muted-foreground" size={22} />
- </div>
- );
+ if (loading) return <LoadingState label="Reading practice data…" />;
 
  if (error) return (
-  <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-  <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
-  <AlertCircle size={28} className="text-destructive" />
-  </div>
-  <p className="text-destructive font-semibold text-sm">{error}</p>
-  <Button variant="outline" size="sm" onClick={() => { setError(null); setLoading(true); }} className="rounded-xl text-xs gap-2">
-  <RefreshCw size={14} /> Retry
-  </Button>
-  </div>
+  <ErrorState message={error} onRetry={() => { setError(null); setLoading(true); }} />
   );
 
  return (
@@ -189,7 +183,7 @@ export function ClinicalOversightTool() {
  <Link key={client.id} to={`/clients/${client.id}?tab=progress`}>
  <Card className={cn(
  "hover:shadow-sm transition-all border-2 rounded-xl overflow-hidden group h-full",
- isImperative ? "border-border bg-chart-destructive/10/30 " : "border-border bg-card"
+ isImperative ? "border-border bg-chart-destructive/10 " : "border-border bg-card"
  )}>
  <CardContent className="p-8 space-y-6">
  <div className="flex items-start justify-between">
@@ -237,11 +231,12 @@ export function ClinicalOversightTool() {
  </div>
 
  {filteredClients.length === 0 && (
-  <div className="text-center py-32 bg-muted/30 rounded-xl border-2 border-dashed border-border">
-  <Users size={48} className="mx-auto text-muted-foreground mb-4" />
-  <h3 className="text-xl font-semibold text-foreground">No clients found</h3>
-  <p className="text-muted-foreground font-medium">Try adjusting your search or add new clients to monitor.</p>
-  </div>
+  <EmptyState
+    icon={Users}
+    title="No clients found"
+    hint="Try adjusting your search or add new clients to monitor."
+    className="rounded-xl border border-dashed border-border bg-muted/20 py-20"
+  />
   )}
   </div>
   </div>

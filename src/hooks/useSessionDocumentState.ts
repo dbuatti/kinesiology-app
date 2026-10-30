@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { format, isToday, differenceInSeconds, parseISO } from "date-fns";
+import { isToday, differenceInSeconds } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { safeParse } from "@/utils/safe-json";
 import { showSuccess, showError } from "@/utils/toast";

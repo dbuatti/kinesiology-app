@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from '@/lib/utils';
@@ -11,7 +11,7 @@ const BrainZonePrintable = () => {
   const [orientation, setOrientation] = useState<'landscape' | 'portrait'>('portrait');
   const [isCompact, setIsCompact] = useState(true);
   const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   
   // Modal States
   const [selectedPoint, setSelectedPoint] = useState<BrainReflexPoint | null>(null);
@@ -78,14 +78,14 @@ const BrainZonePrintable = () => {
         
         <div className="relative aspect-[2.5/1] bg-muted/50 border border-border/50 mb-2 overflow-hidden flex items-center justify-center shrink-0">
           {mainImage ? (
-            <img src={mainImage} alt={point.name} className="w-full h-full object-cover" />
+            <img loading="lazy" decoding="async" src={mainImage} alt={point.name} className="w-full h-full object-cover" />
           ) : (
             <Brain size={16} className="text-muted-foreground/60" />
           )}
           
           {insetImage && (
             <div className="absolute bottom-0.5 right-0.5 w-[22%] aspect-square border border-foreground/20 shadow-sm overflow-hidden bg-card">
-              <img src={insetImage} alt="Inset" className="w-full h-full object-cover" />
+              <img loading="lazy" decoding="async" src={insetImage} alt="Inset" className="w-full h-full object-cover" />
             </div>
           )}
         </div>
@@ -93,7 +93,7 @@ const BrainZonePrintable = () => {
         {/* Floating Hover Popup of Image 2 (mainImage) outside boundaries, uncropped */}
         {mainImage && (
           <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[150%] aspect-video bg-card border-2 border-indigo-500 shadow-2xl rounded-2xl p-1.5 opacity-0 pointer-events-none group-hover:opacity-100 transition-all duration-300 scale-90 group-hover:scale-100 z-50 flex items-center justify-center print:hidden">
-            <img src={mainImage} alt={`${point.name} Full`} className="w-full h-full object-contain rounded-xl" />
+            <img loading="lazy" decoding="async" src={mainImage} alt={`${point.name} Full`} className="w-full h-full object-contain rounded-xl" />
           </div>
         )}
 

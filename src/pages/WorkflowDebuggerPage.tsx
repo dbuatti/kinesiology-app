@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, ChevronRight, Mail, User, Globe, CreditCard, FileText, Calendar, Webhook, Brain, Mic, Zap, ArrowRight, AlertTriangle, CheckCircle2, ExternalLink, Settings, Search, BookOpen, Workflow, Database, Cloud, Play, Copy, Terminal, Hash, Shield, Clock, RefreshCw, XCircle, DollarSign, Building, Eye, Code, Activity, Loader2, ArrowLeft } from "lucide-react";
+import { ChevronDown, ChevronRight, Mail, User, Globe, FileText, Calendar, Webhook, Brain, Mic, Zap, ArrowRight, AlertTriangle, CheckCircle2, Settings, Search, BookOpen, Workflow, Database, Cloud, Play, Copy, Terminal, Hash, Shield, Clock, RefreshCw, XCircle, Code, Activity, Loader2, ArrowLeft } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import { Badge } from "@/components/ui/badge";
@@ -912,13 +912,6 @@ const WorkflowDebuggerPage = () => {
       default: "bg-muted text-muted-foreground",
     };
     return colorMap[badgeColor || "default"] || colorMap.default;
-  };
-
-  const collapseAllSections = () => {
-    setExpandedSections(new Set());
-    setExpandedWorkflows(new Set());
-    setExpandedFunctions(new Set());
-    setExpandedTemplates(new Set());
   };
 
   const copyToClipboard = async (text: string) => {

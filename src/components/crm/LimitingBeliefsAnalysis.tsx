@@ -5,9 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Sparkles, Copy, Check, Loader2, Lightbulb, 
-  Shuffle, AlertTriangle, Wand2, History, ArrowRight
+import {
+  Sparkles,
+  Copy,
+  Check,
+  Loader2,
+  Lightbulb,
+  Shuffle,
+  AlertTriangle,
+  Wand2,
+  History,
+  ArrowRight,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showError } from "@/utils/toast";
@@ -67,7 +75,10 @@ const buildTranscript = (session: PastSession): string => {
   } = {};
   try {
     parsed = JSON.parse(session.dissolve_log || "{}");
-  } catch {}
+  } catch {
+    // A session saved before dissolve_log existed, or with corrupt JSON,
+    // simply has no loop history to report.
+  }
   const rounds = parsed.history || [];
   lines.push(`Rounds Completed: ${rounds.length}`);
   lines.push("");

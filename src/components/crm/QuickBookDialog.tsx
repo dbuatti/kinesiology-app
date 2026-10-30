@@ -16,7 +16,14 @@ import { showSuccess, showError } from "@/utils/toast";
 import { useAuth } from "@/components/AuthProvider";
 import { CALCOM_CONFIG } from "@/config/integrations";
 import {
-  Loader2, Calendar, Clock, CalendarPlus, Mail, AlertCircle, CheckCircle2, Sparkles
+  Loader2,
+  Calendar,
+  Clock,
+  CalendarPlus,
+  Mail,
+  AlertCircle,
+  CheckCircle2,
+  Sparkles,
 } from "lucide-react";
 
 interface Slot {
@@ -302,7 +309,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
         <div className="px-8 pt-8 pb-5 border-b border-border shrink-0">
           <DialogHeader>
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary-strong flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
                 <CalendarPlus size={22} />
               </div>
               <div className="flex-1 min-w-0">

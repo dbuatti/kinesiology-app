@@ -263,7 +263,7 @@ const HeartWallProtocol = () => {
                 <Hand size={14} className="text-chart-primary" />
                 <span className="text-xs font-medium text-muted-foreground">Pulse Point Reference</span>
               </div>
-              <img
+              <img loading="lazy" decoding="async"
                 src="/images/pulse-points.png"
                 alt="Pulse Points Reference"
                 className="w-full h-auto rounded-xl"
@@ -493,7 +493,7 @@ const HeartWallProtocol = () => {
         <SectionTitle icon={Activity} color="bg-destructive">Visceral Referral Zone — Detail</SectionTitle>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
           <div className="aspect-video rounded-xl overflow-hidden bg-muted border border-border shadow-inner flex items-center justify-center p-4">
-            <img
+            <img loading="lazy" decoding="async"
               src="/images/heart-referral.png"
               alt="Heart Visceral Referral Zones"
               className="max-w-full h-auto rounded-lg"

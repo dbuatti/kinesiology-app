@@ -13,9 +13,9 @@
 :where(.dark) .bg-cyan-50:not(:where(.keep-light, .keep-light *)){background-color:rgb(6 182 212 / 0.1)}
 :where(.dark) .bg-emerald-100:not(:where(.keep-light, .keep-light *)){background-color:rgb(16 185 129 / 0.14)}
 :where(.dark) .bg-emerald-50:not(:where(.keep-light, .keep-light *)){background-color:rgb(16 185 129 / 0.1)}
-:where(.dark) .bg-emerald-50\/10:not(:where(.keep-light, .keep-light *)){background-color:rgb(16 185 129 / 0.01)}
 :where(.dark) .bg-emerald-50\/20:not(:where(.keep-light, .keep-light *)){background-color:rgb(16 185 129 / 0.02)}
 :where(.dark) .bg-emerald-50\/30:not(:where(.keep-light, .keep-light *)){background-color:rgb(16 185 129 / 0.03)}
+:where(.dark) .bg-emerald-50\/40:not(:where(.keep-light, .keep-light *)){background-color:rgb(16 185 129 / 0.04)}
 :where(.dark) .bg-emerald-50\/50:not(:where(.keep-light, .keep-light *)){background-color:rgb(16 185 129 / 0.05)}
 :where(.dark) .bg-green-50:not(:where(.keep-light, .keep-light *)){background-color:rgb(34 197 94 / 0.1)}
 :where(.dark) .bg-indigo-100:not(:where(.keep-light, .keep-light *)){background-color:rgb(99 102 241 / 0.14)}
@@ -37,8 +37,11 @@
 :where(.dark) .bg-rose-50:not(:where(.keep-light, .keep-light *)){background-color:rgb(244 63 94 / 0.1)}
 :where(.dark) .bg-rose-50\/10:not(:where(.keep-light, .keep-light *)){background-color:rgb(244 63 94 / 0.01)}
 :where(.dark) .bg-rose-50\/30:not(:where(.keep-light, .keep-light *)){background-color:rgb(244 63 94 / 0.03)}
+:where(.dark) .bg-rose-50\/40:not(:where(.keep-light, .keep-light *)){background-color:rgb(244 63 94 / 0.04)}
 :where(.dark) .bg-rose-50\/50:not(:where(.keep-light, .keep-light *)){background-color:rgb(244 63 94 / 0.05)}
 :where(.dark) .bg-sky-200:not(:where(.keep-light, .keep-light *)){background-color:rgb(14 165 233 / 0.2)}
+:where(.dark) .bg-sky-50:not(:where(.keep-light, .keep-light *)){background-color:rgb(14 165 233 / 0.1)}
+:where(.dark) .bg-slate-100:not(:where(.keep-light, .keep-light *)){background-color:hsl(var(--muted) / 0.7)}
 :where(.dark) .bg-slate-200:not(:where(.keep-light, .keep-light *)){background-color:hsl(var(--muted) / 1)}
 :where(.dark) .bg-teal-50:not(:where(.keep-light, .keep-light *)){background-color:rgb(20 184 166 / 0.1)}
 :where(.dark) .bg-violet-50:not(:where(.keep-light, .keep-light *)){background-color:rgb(139 92 246 / 0.1)}
@@ -52,13 +55,14 @@
 :where(.dark) .border-amber-200\/50:not(:where(.keep-light, .keep-light *)){border-color:rgb(245 158 11 / 0.15)}
 :where(.dark) .border-amber-200\/60:not(:where(.keep-light, .keep-light *)){border-color:rgb(245 158 11 / 0.18)}
 :where(.dark) .border-amber-300:not(:where(.keep-light, .keep-light *)){border-color:rgb(245 158 11 / 0.4)}
+:where(.dark) .border-amber-300\/50:not(:where(.keep-light, .keep-light *)){border-color:rgb(245 158 11 / 0.2)}
 :where(.dark) .border-blue-300:not(:where(.keep-light, .keep-light *)){border-color:rgb(59 130 246 / 0.4)}
-:where(.dark) .border-cyan-100:not(:where(.keep-light, .keep-light *)){border-color:rgb(6 182 212 / 0.22)}
-:where(.dark) .border-cyan-200:not(:where(.keep-light, .keep-light *)){border-color:rgb(6 182 212 / 0.3)}
 :where(.dark) .border-emerald-100:not(:where(.keep-light, .keep-light *)){border-color:rgb(16 185 129 / 0.22)}
 :where(.dark) .border-emerald-200:not(:where(.keep-light, .keep-light *)){border-color:rgb(16 185 129 / 0.3)}
+:where(.dark) .border-emerald-200\/40:not(:where(.keep-light, .keep-light *)){border-color:rgb(16 185 129 / 0.12)}
 :where(.dark) .border-emerald-200\/50:not(:where(.keep-light, .keep-light *)){border-color:rgb(16 185 129 / 0.15)}
 :where(.dark) .border-emerald-300:not(:where(.keep-light, .keep-light *)){border-color:rgb(16 185 129 / 0.4)}
+:where(.dark) .border-emerald-300\/50:not(:where(.keep-light, .keep-light *)){border-color:rgb(16 185 129 / 0.2)}
 :where(.dark) .border-indigo-100:not(:where(.keep-light, .keep-light *)){border-color:rgb(99 102 241 / 0.22)}
 :where(.dark) .border-indigo-200:not(:where(.keep-light, .keep-light *)){border-color:rgb(99 102 241 / 0.3)}
 :where(.dark) .border-indigo-300:not(:where(.keep-light, .keep-light *)){border-color:rgb(99 102 241 / 0.4)}
@@ -71,9 +75,11 @@
 :where(.dark) .border-rose-100:not(:where(.keep-light, .keep-light *)){border-color:rgb(244 63 94 / 0.22)}
 :where(.dark) .border-rose-100\/60:not(:where(.keep-light, .keep-light *)){border-color:rgb(244 63 94 / 0.132)}
 :where(.dark) .border-rose-200:not(:where(.keep-light, .keep-light *)){border-color:rgb(244 63 94 / 0.3)}
+:where(.dark) .border-rose-200\/40:not(:where(.keep-light, .keep-light *)){border-color:rgb(244 63 94 / 0.12)}
 :where(.dark) .border-rose-200\/50:not(:where(.keep-light, .keep-light *)){border-color:rgb(244 63 94 / 0.15)}
 :where(.dark) .border-rose-200\/70:not(:where(.keep-light, .keep-light *)){border-color:rgb(244 63 94 / 0.21)}
 :where(.dark) .border-rose-300:not(:where(.keep-light, .keep-light *)){border-color:rgb(244 63 94 / 0.4)}
+:where(.dark) .border-rose-300\/50:not(:where(.keep-light, .keep-light *)){border-color:rgb(244 63 94 / 0.2)}
 :where(.dark) .border-teal-100:not(:where(.keep-light, .keep-light *)){border-color:rgb(20 184 166 / 0.22)}
 :where(.dark) .border-teal-200:not(:where(.keep-light, .keep-light *)){border-color:rgb(20 184 166 / 0.3)}
 :where(.dark) .border-violet-100:not(:where(.keep-light, .keep-light *)){border-color:rgb(139 92 246 / 0.22)}
@@ -90,32 +96,40 @@
 :where(.dark) .hover\:bg-amber-100\/70:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(245 158 11 / 0.157)}
 :where(.dark) .hover\:bg-amber-50:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(245 158 11 / 0.16)}
 :where(.dark) .hover\:bg-amber-50\/30:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(245 158 11 / 0.048)}
-:where(.dark) .hover\:bg-cyan-50:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(6 182 212 / 0.16)}
+:where(.dark) .hover\:bg-amber-50\/60:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(245 158 11 / 0.096)}
 :where(.dark) .hover\:bg-emerald-100:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(16 185 129 / 0.224)}
 :where(.dark) .hover\:bg-emerald-200:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(16 185 129 / 0.32)}
 :where(.dark) .hover\:bg-emerald-50:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(16 185 129 / 0.16)}
 :where(.dark) .hover\:bg-emerald-50\/30:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(16 185 129 / 0.048)}
+:where(.dark) .hover\:bg-emerald-50\/60:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(16 185 129 / 0.096)}
 :where(.dark) .hover\:bg-indigo-100:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(99 102 241 / 0.224)}
 :where(.dark) .hover\:bg-indigo-50:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(99 102 241 / 0.16)}
 :where(.dark) .hover\:bg-indigo-50\/30:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(99 102 241 / 0.048)}
 :where(.dark) .hover\:bg-rose-100:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(244 63 94 / 0.224)}
 :where(.dark) .hover\:bg-rose-50:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(244 63 94 / 0.16)}
+:where(.dark) .hover\:bg-rose-50\/30:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(244 63 94 / 0.048)}
+:where(.dark) .hover\:bg-rose-50\/60:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(244 63 94 / 0.096)}
+:where(.dark) .hover\:bg-sky-50\/60:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(14 165 233 / 0.096)}
+:where(.dark) .hover\:bg-slate-50\/60:hover:not(:where(.keep-light, .keep-light *)){background-color:hsl(var(--muted) / 0.384)}
 :where(.dark) .hover\:bg-teal-50:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(20 184 166 / 0.16)}
 :where(.dark) .hover\:bg-violet-50:hover:not(:where(.keep-light, .keep-light *)){background-color:rgb(139 92 246 / 0.16)}
-:where(.dark) .hover\:border-cyan-200:hover:not(:where(.keep-light, .keep-light *)){border-color:rgb(6 182 212 / 0.42)}
+:where(.dark) .hover\:border-amber-300:hover:not(:where(.keep-light, .keep-light *)){border-color:rgb(245 158 11 / 0.56)}
+:where(.dark) .hover\:border-emerald-200\/40:hover:not(:where(.keep-light, .keep-light *)){border-color:rgb(16 185 129 / 0.192)}
 :where(.dark) .hover\:border-emerald-300:hover:not(:where(.keep-light, .keep-light *)){border-color:rgb(16 185 129 / 0.56)}
 :where(.dark) .hover\:border-indigo-100:hover:not(:where(.keep-light, .keep-light *)){border-color:rgb(99 102 241 / 0.308)}
 :where(.dark) .hover\:border-indigo-200:hover:not(:where(.keep-light, .keep-light *)){border-color:rgb(99 102 241 / 0.42)}
 :where(.dark) .hover\:border-indigo-300:hover:not(:where(.keep-light, .keep-light *)){border-color:rgb(99 102 241 / 0.56)}
+:where(.dark) .hover\:border-rose-200\/40:hover:not(:where(.keep-light, .keep-light *)){border-color:rgb(244 63 94 / 0.192)}
 :where(.dark) .hover\:border-rose-300:hover:not(:where(.keep-light, .keep-light *)){border-color:rgb(244 63 94 / 0.56)}
+:where(.dark) .hover\:border-sky-300:hover:not(:where(.keep-light, .keep-light *)){border-color:rgb(14 165 233 / 0.56)}
+:where(.dark) .hover\:border-slate-300:hover:not(:where(.keep-light, .keep-light *)){border-color:hsl(var(--border) / 1.4)}
 :where(.dark) .text-amber-700:not(:where(.keep-light, .keep-light *)){color:rgb(252 211 77)}
 :where(.dark) .text-amber-800:not(:where(.keep-light, .keep-light *)){color:rgb(253 230 138)}
 :where(.dark) .text-amber-900:not(:where(.keep-light, .keep-light *)){color:rgb(254 243 199)}
+:where(.dark) .text-amber-950:not(:where(.keep-light, .keep-light *)){color:rgb(254 243 199)}
 :where(.dark) .text-blue-700:not(:where(.keep-light, .keep-light *)){color:rgb(147 197 253)}
 :where(.dark) .text-blue-800:not(:where(.keep-light, .keep-light *)){color:rgb(191 219 254)}
 :where(.dark) .text-cyan-700:not(:where(.keep-light, .keep-light *)){color:rgb(103 232 249)}
-:where(.dark) .text-cyan-800:not(:where(.keep-light, .keep-light *)){color:rgb(165 243 252)}
-:where(.dark) .text-cyan-900:not(:where(.keep-light, .keep-light *)){color:rgb(207 250 254)}
 :where(.dark) .text-emerald-700:not(:where(.keep-light, .keep-light *)){color:rgb(110 231 183)}
 :where(.dark) .text-emerald-800:not(:where(.keep-light, .keep-light *)){color:rgb(167 243 208)}
 :where(.dark) .text-emerald-900:not(:where(.keep-light, .keep-light *)){color:rgb(209 250 229)}

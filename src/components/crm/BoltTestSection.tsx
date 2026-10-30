@@ -1,13 +1,12 @@
 
 	import { useState } from "react";
-import { FlaskConical, ChevronDown, AlertCircle, BookOpen, RotateCcw, Info, Target, CheckCircle2, PlayCircle, X } from "lucide-react";
+import { FlaskConical, AlertCircle, BookOpen, RotateCcw, Target, PlayCircle, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import BoltTimer from "./BoltTimer";
 import BoltResourcesModal from "./BoltResourcesModal";
 import BreathingRecoveryTimer from "./BreathingRecoveryTimer";
-import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
@@ -74,7 +73,6 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
   };
 
   const needsImprovement = initialBoltScore !== null && initialBoltScore !== undefined && initialBoltScore < 25;
-  const isOptimal = initialBoltScore !== null && initialBoltScore !== undefined && initialBoltScore >= 40;
 
   return (
     <div className="space-y-4">
@@ -112,7 +110,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
                       <AlertCircle size={14} className="text-destructive shrink-0" />
                       <p className="text-xs font-medium text-destructive">Low CO₂ tolerance — consider running the recovery exercise.</p>
                     </div>
-                    <Button onClick={() => setShowExercise(true)} variant="ghost" size="sm" className="h-8 text-[11px] font-semibold text-destructive hover:bg-destructive/10 rounded-md">
+                    <Button onClick={() => setShowExercise(true)} variant="ghost" size="sm" className="h-8 text-[11px] font-semibold text-destructive-strong hover:bg-destructive/10 rounded-md">
                       Run
                     </Button>
                   </div>
@@ -142,7 +140,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
                         <BookOpen size={13} className="mr-2" /> Resources
                       </Button>
                       {initialBoltScore !== null && (
-                        <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="h-8 px-2 text-destructive hover:bg-destructive/10 rounded-md text-xs">
+                        <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="h-8 px-2 text-destructive-strong hover:bg-destructive/10 rounded-md text-xs">
                           <RotateCcw size={13} />
                         </Button>
                       )}

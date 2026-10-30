@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, UserPlus, Calendar, CalendarPlus, Target, Upload, HelpCircle, Zap, StickyNote, Bolt, Mic } from "lucide-react";
+import { Plus, UserPlus, CalendarPlus, Target, HelpCircle, Zap, Bolt, Mic } from "lucide-react";
 import SimpleBookDialog from "@/components/crm/SimpleBookDialog";
 import {
   Dialog,
@@ -17,11 +17,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import ClientForm from "./ClientForm";
 import AppointmentForm from "./AppointmentForm";
 import { QuickSessionDialog } from "./QuickSessionDialog";
@@ -177,7 +172,7 @@ const QuickActions = ({ compact = false }: { compact?: boolean }) => {
           <div className="p-6 sm:p-8">
             <DialogHeader className="mb-6 text-left">
               <div className="flex items-center gap-4 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary-strong flex items-center justify-center">
                   <UserPlus size={19} />
                 </div>
                 <div>
@@ -196,7 +191,7 @@ const QuickActions = ({ compact = false }: { compact?: boolean }) => {
           <div className="p-6 sm:p-8">
             <DialogHeader className="mb-6 text-left">
               <div className="flex items-center gap-4 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary-strong flex items-center justify-center">
                   <CalendarPlus size={19} />
                 </div>
                 <div>

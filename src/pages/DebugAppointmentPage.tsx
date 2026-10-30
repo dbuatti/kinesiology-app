@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,9 +6,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { showSuccess, showError } from "@/utils/toast";
-import { 
- Loader2, Beaker, Trash2, Info, Clock, CalendarClock, MoveRight,
- Zap, Heart, Sparkles, Globe, Mail, ShieldCheck, RefreshCw
+import {
+  Loader2,
+  Beaker,
+  Trash2,
+  Info,
+  Clock,
+  CalendarClock,
+  MoveRight,
+  Zap,
+  Heart,
+  Sparkles,
+  Globe,
+  Mail,
+  ShieldCheck,
+  RefreshCw,
 } from "lucide-react";
 import { addHours, format, addDays, setHours, setMinutes } from "date-fns";
 import { CALCOM_CONFIG } from "@/config/integrations";
@@ -95,7 +107,7 @@ const DebugAppointmentPage = () => {
  if (!debugClient) return showError("Setup environment first");
  setActiveTest('kit');
  try {
- const { data, error } = await supabase.functions.invoke('sync-to-kit', {
+ const { error } = await supabase.functions.invoke('sync-to-kit', {
  body: { record: debugClient }
  });
  if (error) throw error;
@@ -107,33 +119,12 @@ const DebugAppointmentPage = () => {
  }
  };
 
- // 3. Test Stripe Sync
- const testStripeSync = async () => {
- if (!debugClient) return showError("Setup environment first");
- setActiveTest('stripe');
- try {
- const { data, error } = await supabase.functions.invoke('stripe-manager', {
- body: { 
- action: 'sync-customer', 
- clientId: debugClient.id,
- clientData: debugClient
- }
- });
- if (error) throw error;
- showSuccess("Stripe Sync Function Invoked Successfully");
- } catch (err: any) {
- showError(`Stripe Error: ${err.message}`);
- } finally {
- setActiveTest(null);
- }
- };
-
  // 4. Test Email Onboarding
  const testEmailOnboarding = async () => {
  if (!debugClient || !debugApp) return showError("Setup environment first");
  setActiveTest('email');
  try {
- const { data, error } = await supabase.functions.invoke('send-manual-onboarding', {
+ const { error } = await supabase.functions.invoke('send-manual-onboarding', {
  body: { 
  clientId: debugClient.id,
  appointmentId: debugApp.id,
@@ -199,7 +190,7 @@ const DebugAppointmentPage = () => {
  
  const messyTime = setMinutes(setHours(targetDate, 10), 7).toISOString();
 
- const { data, error } = await supabase.functions.invoke('create-calcom-booking', {
+ const { error } = await supabase.functions.invoke('create-calcom-booking', {
  body: {
  clientId: debugClient.id,
  startTime: messyTime,
@@ -252,7 +243,7 @@ const DebugAppointmentPage = () => {
  <Beaker size={28} className="text-primary-foreground" />
  </div>
  <div>
- <Badge className="bg-primary/20 text-primary/50 border-primary/30 font-semibold text-[10px] uppercase tracking-wider mb-1 rounded-full">Automation Lab</Badge>
+ <Badge className="bg-primary/20 text-primary-strong border-primary/30 font-semibold text-[10px] uppercase tracking-wider mb-1 rounded-full">Automation Lab</Badge>
  <CardTitle className="text-3xl font-semibold">Integration Debug Suite</CardTitle>
  </div>
  </div>
@@ -349,7 +340,7 @@ const DebugAppointmentPage = () => {
  className="h-16 justify-between px-6 rounded-xl border-primary/30 bg-primary/5 hover:bg-muted0/10 text-primary-foreground group"
  >
  <div className="flex items-center gap-4">
- <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary/70">
+ <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary-strong">
  <Clock size={20} />
  </div>
  <div className="text-left">

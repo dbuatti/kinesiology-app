@@ -36,6 +36,7 @@ interface PathwayReflexStimGridBoardProps {
   activeTab: "reflexes" | "nerves" | "muscles";
   muscleState?: Record<string, MuscleGridState>;
   onMuscleToggle?: (key: string) => void;
+  showOnlyInhibited?: boolean;
 }
 
 const SectionHeader = ({ children }: { children: React.ReactNode }) => (
@@ -377,7 +378,7 @@ const MuscleMarkButton = ({
     className={cn(
       "relative flex h-11 w-11 items-center justify-center rounded-lg border-2 transition-all cursor-pointer active:scale-95 touch-manipulation [.touch-mode_&]:h-14 [.touch-mode_&]:w-14",
       state === "Hypotonic" && "border-sky-500/70 bg-sky-500/15 text-sky-700",
-      state === "Inhibited" && "border-chart-destructive/60 bg-chart-destructive/15 text-chart-destructive",
+      state === "Inhibited" && "border-rose-500/60 bg-rose-500/15 text-rose-700",
       state === "Hypertonic" && "border-amber-500/70 bg-amber-100/80 text-amber-700",
       !state && "border-border text-muted-foreground hover:border-sky-500/40 hover:bg-sky-500/5"
     )}
@@ -416,7 +417,7 @@ const MuscleSideSplit = ({
           "relative flex h-11 w-12 items-center justify-center transition-colors cursor-pointer active:scale-95 touch-manipulation [.touch-mode_&]:h-14 [.touch-mode_&]:w-14",
           i === 0 && "border-r border-border",
           state === "Hypotonic" && "bg-sky-500/15 text-sky-700",
-          state === "Inhibited" && "bg-chart-destructive/15 text-chart-destructive",
+          state === "Inhibited" && "bg-rose-500/15 text-rose-700",
           state === "Hypertonic" && "bg-amber-100/80 text-amber-700",
           !state && "text-muted-foreground hover:bg-muted"
         )}
@@ -491,6 +492,7 @@ export function PathwayReflexStimGridBoard({
   activeTab,
   muscleState = {},
   onMuscleToggle,
+  showOnlyInhibited = false,
 }: PathwayReflexStimGridBoardProps) {
   const muscleToggle = onMuscleToggle ?? onToggle;
   return (
@@ -499,25 +501,38 @@ export function PathwayReflexStimGridBoard({
         <section id="primitive-reflexes" className="scroll-mt-4">
           <SectionHeader>Primitive Reflexes</SectionHeader>
           <ColumnHeader cellLabel="Mark" />
-          {PRIMITIVE_TRACKS.map((track) => (
-            <div key={track.title}>
-              <div className="flex items-center gap-2 bg-muted/40 px-4 py-2">
-                <span className={cn("h-2.5 w-2.5 rounded-full", track.color)} />
-                <p className="text-xs font-medium text-muted-foreground">
-                  {track.title}
-                </p>
+          {PRIMITIVE_TRACKS.map((track) => {
+            const filteredReflexes = showOnlyInhibited
+              ? track.reflexes.filter((reflex) => {
+                  const keys = reflex.lateralized
+                    ? [primitiveSideKey(reflex, "L"), primitiveSideKey(reflex, "R")]
+                    : reflex.stims?.length
+                      ? reflex.stims.map((_, i) => primitiveStimKeyAt(reflex, i))
+                      : [primitiveStimKey(reflex)];
+                  return keys.some((k) => checked[k]);
+                })
+              : track.reflexes;
+            if (showOnlyInhibited && filteredReflexes.length === 0) return null;
+            return (
+              <div key={track.title}>
+                <div className="flex items-center gap-2 bg-muted/40 px-4 py-2">
+                  <span className={cn("h-2.5 w-2.5 rounded-full", track.color)} />
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {track.title}
+                  </p>
+                </div>
+                {filteredReflexes.map((reflex) => (
+                  <ReflexRow
+                    key={reflex.id}
+                    reflex={reflex}
+                    checked={checked}
+                    onToggle={onToggle}
+                    query={query}
+                  />
+                ))}
               </div>
-              {track.reflexes.map((reflex) => (
-                <ReflexRow
-                  key={reflex.id}
-                  reflex={reflex}
-                  checked={checked}
-                  onToggle={onToggle}
-                  query={query}
-                />
-              ))}
-            </div>
-          ))}
+            );
+          })}
         </section>
       )}
 
@@ -525,25 +540,39 @@ export function PathwayReflexStimGridBoard({
         <section id="cranial-nerves" className="scroll-mt-4">
           <SectionHeader>Cranial Nerves</SectionHeader>
           <ColumnHeader cellLabel="Mark" />
-          {NERVE_GROUPS.map((group) => (
-            <div key={group.label}>
-              <div className="flex items-center gap-2 bg-muted/40 px-4 py-2">
-                <span className={cn("h-2.5 w-2.5 rounded-full", NUCLEI_COLORS[group.label])} />
-                <p className="text-xs font-medium text-muted-foreground">
-                  {group.label} Nuclei
-                </p>
+          {NERVE_GROUPS.map((group) => {
+            const filteredNerves = showOnlyInhibited
+              ? group.items.filter((nerve) => {
+                  const lines = nerveStimLines(nerve);
+                  return lines.some((_, i) => {
+                    const keys = isLateralStim(nerve.id, i)
+                      ? [cranialSideKey(nerve.id, i, "L"), cranialSideKey(nerve.id, i, "R")]
+                      : [cranialStimKey(nerve.id, i)];
+                    return keys.some((k) => checked[k]);
+                  });
+                })
+              : group.items;
+            if (showOnlyInhibited && filteredNerves.length === 0) return null;
+            return (
+              <div key={group.label}>
+                <div className="flex items-center gap-2 bg-muted/40 px-4 py-2">
+                  <span className={cn("h-2.5 w-2.5 rounded-full", NUCLEI_COLORS[group.label])} />
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {group.label} Nuclei
+                  </p>
+                </div>
+                {filteredNerves.map((nerve) => (
+                  <NerveBlock
+                    key={nerve.id}
+                    nerve={nerve}
+                    checked={checked}
+                    onToggle={onToggle}
+                    query={query}
+                  />
+                ))}
               </div>
-              {group.items.map((nerve) => (
-                <NerveBlock
-                  key={nerve.id}
-                  nerve={nerve}
-                  checked={checked}
-                  onToggle={onToggle}
-                  query={query}
-                />
-              ))}
-            </div>
-          ))}
+            );
+          })}
         </section>
       )}
 
@@ -562,27 +591,39 @@ export function PathwayReflexStimGridBoard({
               return acc;
             },
             []
-          ).map(({ group, muscles }) => (
-            <div key={group}>
-              <div className="flex items-center gap-2 bg-muted/40 px-4 py-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-chart-primary" />
-                <p className="text-xs font-medium text-muted-foreground">
-                  {group}
-                </p>
+          ).map(({ group, muscles }) => {
+            const filteredMuscles = showOnlyInhibited
+              ? muscles.filter((m) => {
+                  const midline = muscleMidlineKey(m);
+                  const left = muscleSideKey(m, "L");
+                  const right = muscleSideKey(m, "R");
+                  const state = muscleState[midline] ?? muscleState[left] ?? muscleState[right];
+                  return state === "Inhibited" || state === "Hypertonic";
+                })
+              : muscles;
+            if (showOnlyInhibited && filteredMuscles.length === 0) return null;
+            return (
+              <div key={group}>
+                <div className="flex items-center gap-2 bg-muted/40 px-4 py-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-chart-primary" />
+                  <p className="text-xs font-medium text-muted-foreground">
+                    {group}
+                  </p>
+                </div>
+                {filteredMuscles.map((m) => (
+                  <MuscleRow
+                    key={m.name}
+                    name={m.name}
+                    midline={m.midline}
+                    group={m.group}
+                    checked={muscleState}
+                    onToggle={muscleToggle}
+                    query={query}
+                  />
+                ))}
               </div>
-              {muscles.map((m) => (
-                <MuscleRow
-                  key={m.name}
-                  name={m.name}
-                  midline={m.midline}
-                  group={m.group}
-                  checked={muscleState}
-                  onToggle={muscleToggle}
-                  query={query}
-                />
-              ))}
-            </div>
-          ))}
+            );
+          })}
         </section>
       )}
     </div>

@@ -1,16 +1,20 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, addDays, parseISO, getISOWeek } from "date-fns";
 import { CALCOM_CONFIG } from "@/config/integrations";
 import {
-  MessageCircle, Mail, Calendar, CalendarCheck2, CalendarPlus, Smile,
-  Loader2, ChevronRight, ExternalLink, Phone, CreditCard
+  MessageCircle,
+  Mail,
+  Calendar,
+  CalendarCheck2,
+  CalendarPlus,
+  Smile,
+  ChevronRight,
+  ExternalLink,
+  Phone,
+  CreditCard,
 } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { PRACTICE_TIMEZONE } from "@/utils/practice-time";
 import { cn } from "@/lib/utils";
@@ -101,13 +105,15 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
         const data = JSON.parse(stored);
         setLastContacted(data.at || null);
         setLastChannel(data.channel || null);
-      } catch {}
+      } catch {
+        // Corrupt or pre-versioned last-contact record — show nothing.
+      }
     }
   }, [student.id]);
 
   const firstName = (student.name || "Student").split(" ")[0];
 
-  const { data: msgSlots, isLoading: slotsLoading } = useQuery({
+  const { data: msgSlots } = useQuery({
     queryKey: ["voice-msg-slots", student.id],
     queryFn: async () => {
       const res = await supabase.functions.invoke("get-calcom-slots", {
@@ -128,7 +134,6 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
   const slotsByDate: Record<string, any[]> = msgSlots?.data || {};
   const sortedDates = Object.keys(slotsByDate).sort().filter((d) => slotsByDate[d]?.length > 0);
   const totalSlotDays = sortedDates.length;
-  const totalSlots = sortedDates.reduce((sum, d) => sum + slotsByDate[d].length, 0);
 
   const formatSmsSlots = (): string | null => {
     if (totalSlotDays > 3) return null;
@@ -139,15 +144,6 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
       const ranges = formatSlotRanges(times);
       return `${format(parseISO(dateKey + "T12:00:00"), "EEE")}: ${ranges}`;
     }).join(" • ");
-  };
-
-  const formatEmailSlots = (): string | null => {
-    if (totalSlotDays > 5) return null;
-    if (totalSlotDays === 0) return null;
-    return sortedDates.slice(0, 5).map((dateKey) => {
-      const times = slotsByDate[dateKey].map((s: any) => s.time);
-      return formatDateLine(dateKey, times);
-    }).join("\n");
   };
 
   const lastContactedDate = lastContacted ? new Date(lastContacted) : null;

@@ -1,22 +1,18 @@
 
-import { 
-  Heart, 
-  ShieldCheck, 
-  History, 
-  Zap, 
-  Eye, 
-  Activity, 
+import {
+  Heart,
+  ShieldCheck,
+  History,
+  Zap,
+  Eye,
+  Activity,
   Sparkles,
   Info,
-  ArrowRight,
-  CheckCircle2,
-  Clock,
-  Target,
-  Hand
+  Hand,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const STEPS = [
   { 
@@ -189,7 +185,7 @@ const EmotionsProtocolReference = () => {
               </CardHeader>
               <CardContent className="p-6">
                 <div className="aspect-square rounded-2xl overflow-hidden bg-muted/50 border border-border/50 shadow-inner flex items-center justify-center p-4">
-                  <img 
+                  <img loading="lazy" decoding="async" 
                     src="/images/pulse-points.png" 
                     alt="Organ Pulse Points Reference" 
                     className="max-w-full h-auto rounded-lg"
@@ -227,7 +223,7 @@ const EmotionsProtocolReference = () => {
               </CardHeader>
               <CardContent className="p-6 pt-0">
                 <div className="aspect-video rounded-2xl overflow-hidden bg-card/5 border border-primary-foreground/10 flex items-center justify-center p-4">
-                  <img 
+                  <img loading="lazy" decoding="async" 
                     src="/images/eye-modes.png" 
                     alt="Eye Accessing Cues Reference" 
                     className="max-w-full h-auto opacity-80"

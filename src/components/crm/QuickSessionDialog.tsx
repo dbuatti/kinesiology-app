@@ -42,7 +42,14 @@ import {
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import {
-  CalendarIcon, Loader2, Search, Plus, Zap, Check, ChevronsUpDown, ChevronDown
+  CalendarIcon,
+  Loader2,
+  Search,
+  Plus,
+  Zap,
+  Check,
+  ChevronsUpDown,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
@@ -80,7 +87,7 @@ export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogPro
   const navigate = useNavigate();
   const { session } = useAuth();
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [clientSearchOpen, setClientSearchOpen] = useState(false);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
@@ -224,7 +231,7 @@ export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogPro
         <div className="p-6 sm:p-8">
           <DialogHeader className="mb-6 text-left">
             <div className="flex items-center gap-4 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary-strong flex items-center justify-center">
                 <Zap size={19} />
               </div>
               <div>

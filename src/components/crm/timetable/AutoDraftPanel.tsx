@@ -28,7 +28,7 @@ import {
   type AvailabilityWindow,
 } from "@/utils/timetable-scheduler";
 import { Lightbulb } from "lucide-react";
-import { DRAFT_SERVICES, defaultServiceId, serviceLabel, serviceFor } from "@/config/integrations";
+import { DRAFT_SERVICES, defaultServiceId, serviceFor } from "@/config/integrations";
 
 // ── Inputs from the parent page (already-loaded data) ────────────────────────
 export interface AutoDraftClient {

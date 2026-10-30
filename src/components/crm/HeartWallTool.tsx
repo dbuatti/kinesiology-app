@@ -1,23 +1,38 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import {
-  Heart, Shield, Layers, Activity, Dumbbell, Brain, Info,
-  Sparkles, Zap, RefreshCw, ChevronRight, ChevronLeft,
-  CheckCircle2, XCircle, Loader2, SkipForward,
+  Heart,
+  Shield,
+  Layers,
+  Activity,
+  Dumbbell,
+  Brain,
+  Info,
+  Sparkles,
+  RefreshCw,
+  ChevronRight,
+  ChevronLeft,
+  CheckCircle2,
+  XCircle,
+  Loader2,
+  SkipForward,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showError, showSuccess } from "@/utils/toast";
 import { useHeartWallSession } from "@/hooks/useHeartWallSession";
-import {
-  HeartWallSession, HeartWallLayer, HeartWallLayerPhase, HeartWallLayerStatus,
-} from "@/types/crm";
+import { HeartWallLayer, HeartWallLayerPhase, HeartWallLayerStatus } from "@/types/crm";
 import { ROW_DATA, EMOTION_CODE_CHART } from "@/data/emotion-code-data";
 import PulsePointPicker from "./PulsePointPicker";
 import BrainZonePicker from "./BrainZonePicker";
@@ -55,7 +70,7 @@ function uuid() {
 }
 
 export default function HeartWallTool({ open, onOpenChange, clientId, appointmentId }: HeartWallToolProps) {
-  const { session, loading, createSession, saveSession, refresh } = useHeartWallSession(clientId, appointmentId);
+  const { session, loading, createSession, saveSession } = useHeartWallSession(clientId, appointmentId);
 
   const [uiState, setUiState] = useState<SessionUIState>("setup");
   const [stepIndex, setStepIndex] = useState(0);
@@ -72,7 +87,6 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
   const layers = session?.layers || [];
   const clearedCount = layers.filter(l => l.status === "cleared").length;
   const activeLayer = layers.find(l => l.id === activeLayerId) || null;
-  const totalLayers = session?.initialLayerCount ?? layers.length;
   const layersRemaining = session?.layersRemaining ?? null;
   const currentStep = ALL_STEPS[stepIndex];
 
@@ -282,6 +296,9 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-lg p-8 flex items-center justify-center">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Loading Heart Wall</DialogTitle>
+          </DialogHeader>
           <Loader2 size={28} className="animate-spin text-muted-foreground" />
         </DialogContent>
       </Dialog>

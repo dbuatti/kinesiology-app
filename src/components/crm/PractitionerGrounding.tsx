@@ -1,19 +1,15 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Wind, 
-  ShieldCheck, 
-  Sparkles, 
-  Timer, 
-  RotateCcw, 
+import {
+  Wind,
+  Timer,
+  RotateCcw,
   CheckCircle2,
-  Volume2,
-  X
+  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Progress } from '@/components/ui/progress';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface PractitionerGroundingProps {

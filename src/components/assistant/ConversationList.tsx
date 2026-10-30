@@ -51,8 +51,9 @@ export default function ConversationList({ conversations, activeId, onSelect, on
     const out: { label: string; items: AssistantConversation[] }[] = [];
     for (const c of filtered) {
       const label = bucketFor(c.updated_at || c.created_at);
-      const g = out.find((x) => x.label === label);
-      g ? g.items.push(c) : out.push({ label, items: [c] });
+      const group = out.find((x) => x.label === label);
+      if (group) group.items.push(c);
+      else out.push({ label, items: [c] });
     }
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -100,7 +101,7 @@ export default function ConversationList({ conversations, activeId, onSelect, on
                   >
                     <button onClick={() => onSelect(c.id)} className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
                       {initials ? (
-                        <span className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10.5px] font-semibold", c.voice_student_name ? "bg-chart-destructive/10 text-chart-destructive" : "bg-primary/10 text-primary")}>
+                        <span className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10.5px] font-semibold", c.voice_student_name ? "bg-chart-destructive/10 text-chart-destructive" : "bg-primary/10 text-primary-strong")}>
                           {initials}
                         </span>
                       ) : (
@@ -119,7 +120,7 @@ export default function ConversationList({ conversations, activeId, onSelect, on
                     </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); onDelete(c.id); }}
-                      className="shrink-0 rounded-md p-1 text-muted-foreground opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive md:opacity-0 md:group-hover:opacity-100"
+                      className="shrink-0 rounded-md p-1 text-muted-foreground opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive-strong md:opacity-0 md:group-hover:opacity-100"
                       title="Delete conversation"
                       aria-label="Delete conversation"
                     >

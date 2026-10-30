@@ -249,7 +249,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                                   {item.name}
                                   {item.side && <span className="ml-1 font-normal text-muted-foreground">({item.side})</span>}
                                   {isPathway && (
-                                    <span className="ml-1.5 inline-block rounded bg-primary/10 px-1.5 py-0.5 align-middle text-[9px] font-semibold uppercase tracking-wider text-primary ring-1 ring-primary/20">
+                                    <span className="ml-1.5 inline-block rounded bg-primary/10 px-1.5 py-0.5 align-middle text-[9px] font-semibold uppercase tracking-wider text-primary-strong ring-1 ring-primary/20">
                                       pathway
                                     </span>
                                   )}
@@ -287,7 +287,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                                 variant="ghost"
                                 size="sm"
                                 title="Choose this finding as the correction pathway and open Correct"
-                                className="h-9 rounded-lg px-2.5 text-[11px] font-medium text-primary hover:bg-primary/10"
+                                className="h-9 rounded-lg px-2.5 text-[11px] font-medium text-primary-strong hover:bg-primary/10"
                                 onClick={() => setPriorityPathway(itemPathway)}
                               >
                                 <Route size={12} className="mr-1" /> Set pathway

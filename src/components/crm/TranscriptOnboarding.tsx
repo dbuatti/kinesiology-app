@@ -38,11 +38,16 @@ const TranscriptOnboarding = ({ profile, onProfile }: TranscriptOnboardingProps)
       const { data, error } = await supabase.functions.invoke("voice-transcript-profile", {
         body: { transcript: transcript.trim() },
       });
-      if (error) throw new Error(error.message);
+      if (error) {
+        const msg = typeof error === "object" && error && "message" in error ? (error as any).message : String(error);
+        throw new Error(msg || "Couldn't build a profile");
+      }
       if (!data?.success) throw new Error(data?.error || "Couldn't build a profile");
       onProfile(data.profile as TranscriptProfile);
     } catch (err) {
-      showError(err instanceof Error ? err.message : "Couldn't build a profile");
+      const msg = err instanceof Error ? err.message : "Couldn't build a profile";
+      console.error("[TranscriptOnboarding] voice-transcript-profile failed:", err);
+      showError(msg);
     } finally {
       setReading(false);
     }

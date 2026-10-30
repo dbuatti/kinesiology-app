@@ -3,45 +3,35 @@ import EmptyState from "@/components/shared/EmptyState";
 import { useState, useEffect, useMemo } from "react";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { 
-  MessageSquare, 
-  Sparkles, 
-  Trash2, 
-  Loader2, 
-  Plus, 
-  History, 
-  Brain, 
+import {
+  MessageSquare,
+  Sparkles,
+  Trash2,
+  Loader2,
+  Brain,
   HelpCircle,
   Save,
   Calendar,
   Link as LinkIcon,
-  User,
-  X,
   Wand2,
   Fingerprint,
   ShieldAlert,
   PlusCircle,
   CheckCircle2,
-  Clock,
   Zap,
-  ChevronRight,
   GraduationCap,
-  ArrowRight,
   RotateCcw,
   Target,
   MessageCircle,
-   ChevronDown,
-   ChevronUp,
-   BookOpen,
-   Lock,
-   Activity,
-   Wind,
-   Layers,
-   ArrowLeft
+  BookOpen,
+  Lock,
+  Wind,
+  Layers,
+  ArrowLeft,
 } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";

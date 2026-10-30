@@ -1,18 +1,16 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  Fingerprint, 
-  Target, 
-  ShieldAlert, 
-  History, 
-  ArrowRight, 
-  Loader2, 
+import {
+  Fingerprint,
+  Target,
+  ShieldAlert,
+  History,
+  ArrowRight,
+  Loader2,
   Calendar,
-  FileText,
   Trash2,
   Search,
-  FilterX
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

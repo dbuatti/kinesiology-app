@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import {
@@ -71,7 +71,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGri
         >
           <CardContent className="p-6 space-y-5">
             <div className="flex items-start justify-between">
-              <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-lg font-semibold uppercase shrink-0">
+              <div className="w-12 h-12 rounded-full bg-primary/10 text-primary-strong flex items-center justify-center text-lg font-semibold uppercase shrink-0">
                 {client.name.charAt(0)}
               </div>
               <div className="flex flex-col items-end gap-1">
@@ -116,7 +116,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGri
                 {!isVoice && <IntakeStatusBadge client={client} />}
                 <NewInfoBadge submittedAt={(client as any).onboarding_submitted_at} />
                 {!isVoice && client.stripe_customer_id && (
-                  <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-medium uppercase border-primary/20 text-primary bg-primary/5">
+                  <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-medium uppercase border-primary/20 text-primary-strong bg-primary/5">
                     <CreditCard size={8} className="mr-1" /> Synced
                   </Badge>
                 )}
@@ -197,7 +197,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGri
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="px-2 h-8 text-primary font-medium text-xs hover:bg-primary/5"
+                    className="px-2 h-8 text-primary-strong font-medium text-xs hover:bg-primary/5"
                     asChild
                   >
                     <Link
@@ -211,7 +211,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGri
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="px-2 h-8 text-primary font-medium text-xs hover:bg-primary/5"
+                    className="px-2 h-8 text-primary-strong font-medium text-xs hover:bg-primary/5"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickBook(client.id); }}
                   >
                     <CalendarPlus size={14} className="mr-1.5" /> Quick Book

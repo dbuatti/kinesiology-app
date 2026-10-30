@@ -68,7 +68,7 @@ const JointActionTableModal = ({ open, onOpenChange }: JointActionTableModalProp
               </thead>
               <tbody className="bg-card">
                 {JOINT_ACTION_LIBRARY.map((joint, i) => (
-                  <tr key={i} className="border-t border-border/50 hover:bg-muted/50/50 transition-colors">
+                  <tr key={i} className="border-t border-border/50 hover:bg-muted/50 transition-colors">
                     <td className="p-4 font-semibold text-foreground">{joint.name}</td>
                     <td className="p-4 text-muted-foreground font-medium">
                       {joint.actions.Sagittal.map(a => a.label).join(', ')}

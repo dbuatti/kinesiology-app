@@ -1,6 +1,5 @@
 
 import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
-import { cn } from '@/lib/utils';
 
 const PrimitiveReflexWorksheet = () => {
   return (

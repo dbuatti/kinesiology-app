@@ -1,11 +1,11 @@
 
-import { 
-  Activity, 
-  Droplets, 
-  Brain, 
-  Zap, 
+import {
+  Activity,
+  Droplets,
+  Brain,
+  Zap,
   Heart,
-  AlertTriangle
+  AlertTriangle,
 } from 'lucide-react';
 
 export type DirectionType = 'Afferent (Bottom-Up)' | 'Efferent (Top-Down)';

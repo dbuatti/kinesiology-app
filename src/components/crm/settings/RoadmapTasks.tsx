@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
@@ -9,7 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import {
-  CheckCircle2, Circle, Plus, Trash2, Loader2, Wand2, Target, Sparkles
+  CheckCircle2,
+  Circle,
+  Plus,
+  Trash2,
+  Loader2,
+  Wand2,
+  Target,
+  Sparkles,
 } from "lucide-react";
 
 interface Task {
@@ -196,7 +203,7 @@ const RoadmapTasks = ({ rateDistribution, averageSessionRate }: RoadmapTasksProp
               variant="outline"
               onClick={handleGenerate}
               disabled={generating}
-              className="rounded-xl font-semibold text-[11px] h-9 px-4 border-primary/30 text-primary hover:bg-primary/5"
+              className="rounded-xl font-semibold text-[11px] h-9 px-4 border-primary/30 text-primary-strong hover:bg-primary/5"
             >
               {generating
                 ? <><Loader2 size={12} className="mr-1.5 animate-spin" />Generating…</>

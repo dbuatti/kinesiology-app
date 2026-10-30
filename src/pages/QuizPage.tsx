@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { generateQuestion, Question, QuizCategory } from "@/utils/quiz-engine";
 import QuestionRenderer from "@/components/quiz/QuestionRenderer";
@@ -6,21 +6,19 @@ import QuizSetup from "@/components/quiz/QuizSetup";
 import QuizResults from "@/components/quiz/QuizResults";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { 
-  Zap, 
-  Trophy, 
-  ArrowRight, 
-  RotateCcw, 
+import {
+  Zap,
+  Trophy,
+  ArrowRight,
   ChevronLeft,
   BrainCircuit,
   Sparkles,
   CheckCircle2,
   XCircle,
-  Info,
-  X
+  X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { showSuccess, showError } from "@/utils/toast";
+import { showSuccess } from "@/utils/toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type GameStatus = 'setup' | 'playing' | 'finished';
@@ -202,7 +200,7 @@ export function QuizTool({ embedded = false, onExit }: QuizToolProps = {}) {
 
       <main className="max-w-3xl mx-auto px-4 pt-8 space-y-8">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full border border-primary/20">
+          <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary-strong rounded-full border border-primary/20">
             {currentQuestion.id.startsWith('ai') ? <Sparkles size={14} /> : <BrainCircuit size={14} />}
             <span className="text-[10px] font-semibold uppercase tracking-wider">{currentQuestion.category}</span>
           </div>
@@ -250,7 +248,7 @@ export function QuizTool({ embedded = false, onExit }: QuizToolProps = {}) {
                 <Button 
                   variant="outline"
                   onClick={() => loadNextQuestion(true)} 
-                  className="h-14 px-6 rounded-2xl border-2 border-primary/20 text-primary hover:bg-primary/5 font-bold"
+                  className="h-14 px-6 rounded-2xl border-2 border-primary/20 text-primary-strong hover:bg-primary/5 font-bold"
                 >
                   <Sparkles size={18} className="mr-2" /> AI Challenge
                 </Button>

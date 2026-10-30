@@ -1,13 +1,9 @@
 
-import React, { useState } from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Footprints, Scale, Brain, Hand, RefreshCw } from "lucide-react";
-import { cn } from "@/lib/utils";
 import FakudaStepTest from "./FakudaStepTest";
 import SharpenedRhombergsTest from "./SharpenedRhombergsTest";
 import FrontalLobeAssessment from "./FrontalLobeAssessment";
 import RightingReflexesAssessment from "./RightingReflexesAssessment";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 
@@ -74,7 +70,7 @@ const NeurologicalAssessments = ({
                     <h4 className="text-sm font-semibold text-foreground">Fakuda Step Test</h4>
                     <p className="text-[11px] text-muted-foreground">Assess midline/vestibule cerebellum imbalances</p>
                   </div>
-                  {hasFakudaNotes && <Badge className="bg-success/10 text-success border-success/20 font-semibold">Completed</Badge>}
+                  {hasFakudaNotes && <Badge className="bg-success/10 text-success-strong border-success/20 font-semibold">Completed</Badge>}
                 </div>
                 <FakudaStepTest
                   appointmentId={appointmentId}
@@ -89,7 +85,7 @@ const NeurologicalAssessments = ({
                     <h4 className="text-sm font-semibold text-foreground">Sharpened Rhombergs Test</h4>
                     <p className="text-[11px] text-muted-foreground">Assess midline cerebellum and proprioception</p>
                   </div>
-                  {hasRhombergsNotes && <Badge className="bg-success/10 text-success border-success/20 font-semibold">Completed</Badge>}
+                  {hasRhombergsNotes && <Badge className="bg-success/10 text-success-strong border-success/20 font-semibold">Completed</Badge>}
                 </div>
                 <SharpenedRhombergsTest
                   appointmentId={appointmentId}
@@ -104,7 +100,7 @@ const NeurologicalAssessments = ({
                     <h4 className="text-sm font-semibold text-foreground">Frontal Lobe Assessment</h4>
                     <p className="text-[11px] text-muted-foreground">Rapid hand drill for frontal cortex asymmetry</p>
                   </div>
-                  {hasFrontalLobeNotes && <Badge className="bg-success/10 text-success border-success/20 font-semibold">Completed</Badge>}
+                  {hasFrontalLobeNotes && <Badge className="bg-success/10 text-success-strong border-success/20 font-semibold">Completed</Badge>}
                 </div>
                 <FrontalLobeAssessment
                   appointmentId={appointmentId}
@@ -119,7 +115,7 @@ const NeurologicalAssessments = ({
                     <h4 className="text-lg font-semibold text-foreground">Righting Reflexes</h4>
                     <p className="text-xs text-muted-foreground font-medium">Ocular & Labyrinthine postural organization</p>
                   </div>
-                  {hasRightingNotes && <Badge className="bg-primary/10 text-primary dark:text-primary border-primary/20 font-semibold">Completed</Badge>}
+                  {hasRightingNotes && <Badge className="bg-primary/10 text-primary-strong dark:text-primary-strong border-primary/20 font-semibold">Completed</Badge>}
                 </div>
                 <RightingReflexesAssessment
                   appointmentId={appointmentId}

@@ -1,10 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
-import { Target, Plus, X, Check, ArrowRight, History, MapPin } from "lucide-react";
+import { Target, Plus, X, Check, ArrowRight, History } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PathwayLogicWizard from "@/components/crm/PathwayLogicWizard";
 import ProtocolLogSheet from "@/components/crm/corrections/ProtocolLogSheet";
@@ -17,7 +15,6 @@ import {
   Card,
   Section,
   PrimaryButton,
-  SecondaryButton,
   GhostButton,
   StatusBadge,
   EmptyState,
@@ -174,7 +171,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
         <div className="sticky top-[108px] z-20 -mx-1 border-b border-border/60 bg-background/90 px-1 py-2 backdrop-blur-xl">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-strong">
                 <Target size={15} strokeWidth={2} />
               </div>
               <div className="min-w-0">
@@ -274,7 +271,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
                       className={cn(
                         'flex h-8 items-center gap-2 whitespace-nowrap rounded-md border px-2 text-xs font-medium transition-colors',
                         open
-                          ? 'border-primary/40 bg-primary/10 text-primary'
+                          ? 'border-primary/40 bg-primary/10 text-primary-strong'
                           : 'border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground'
                       )}
                     >
@@ -406,7 +403,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
               {acuTags.map(tag => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-1 rounded-full bg-primary/10 py-1 pl-3 pr-2 text-[11px] font-semibold text-primary"
+                  className="inline-flex items-center gap-1 rounded-full bg-primary/10 py-1 pl-3 pr-2 text-[11px] font-semibold text-primary-strong"
                 >
                   {tag}
                   <button

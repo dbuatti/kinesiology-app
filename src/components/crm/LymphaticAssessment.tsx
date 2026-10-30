@@ -1,15 +1,27 @@
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Info, Timer, Play, Pause, RotateCcw, 
-  Droplets, ChevronDown, Zap, Search, 
-  AlertCircle, HelpCircle, Brain, Move,
-  CheckCircle2, ShieldCheck, RefreshCw, Image as ImageIcon,
-  Thermometer, BookOpen, ClipboardCheck, Sparkles, X, ChevronRight
+import {
+  Timer,
+  Play,
+  Pause,
+  RotateCcw,
+  Droplets,
+  ChevronDown,
+  Zap,
+  Search,
+  HelpCircle,
+  Brain,
+  Move,
+  CheckCircle2,
+  RefreshCw,
+  Image as ImageIcon,
+  Thermometer,
+  ClipboardCheck,
+  Sparkles,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -25,7 +37,6 @@ interface LymphaticAssessmentProps {
   onSaveField: (field: string, value: string | null) => Promise<void>;
 }
 
-const LYMPH_ZONES: string[] = ['Cervical', 'Thoracic (L)', 'Thoracic (R)', 'Cisterna Chyli', 'Inguinal', 'Popliteal'];
 const PRIMARY_ZONES = ['Cervical', 'Thoracic (L)', 'Thoracic (R)', 'Cisterna Chyli'];
 const SECONDARY_ZONES = ['Inguinal', 'Popliteal'];
 
@@ -348,7 +359,7 @@ const LymphaticAssessment = ({
                               <span className="text-xs font-medium text-muted-foreground">Visual Reference</span>
                             </div>
                             <div className="flex-1 flex items-center justify-center p-4 bg-muted rounded-3xl">
-                              <img 
+                              <img loading="lazy" decoding="async" 
                                 src={ZONE_INSTRUCTIONS[focusedZone].image} 
                                 alt={`${focusedZone} Release Position`}
                                 className="max-w-full h-auto rounded-xl"

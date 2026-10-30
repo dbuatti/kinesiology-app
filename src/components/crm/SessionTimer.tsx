@@ -1,22 +1,20 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { 
-  Clock, 
-  CheckCircle2, 
-  Target, 
-  Zap, 
-  AlertTriangle, 
-  Home, 
-  ChevronDown, 
-  LogOut, 
+import {
+  Clock,
+  CheckCircle2,
+  Target,
+  Zap,
+  AlertTriangle,
+  Home,
+  ChevronDown,
+  LogOut,
   AlertCircle,
-  Maximize2,
-  Minimize2,
   FileText,
-  LayoutGrid
+  LayoutGrid,
 } from 'lucide-react';
-import { format, differenceInSeconds, formatDistanceToNow } from 'date-fns';
+import { format, differenceInSeconds } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -57,7 +55,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
     return () => clearInterval(interval);
   }, []);
 
-  const [isFullScreen, setIsFullScreen] = useState(() => {
+  const [, setIsFullScreen] = useState(() => {
     return localStorage.getItem('rk_fullscreen') === 'true';
   });
 
@@ -70,14 +68,6 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
   }, []);
 
   const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
-
-  const toggleFullScreen = () => {
-    const nextState = !isFullScreen;
-    setIsFullScreen(nextState);
-    localStorage.setItem('rk_fullscreen', String(nextState));
-    window.dispatchEvent(new Event('rk_fullscreen_change'));
-    showSuccess(nextState ? "Full Screen Mode Enabled" : "Full Screen Mode Disabled");
-  };
 
   const isDocViewActive = location.search.includes('view=document');
 
@@ -93,7 +83,6 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
 
   const {
     elapsedSeconds,
-    elapsedMinutes,
     recommendedStage,
     stageProgressPercent,
     overallProgressPercent,
@@ -144,7 +133,6 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
     };
   }, [appointmentDate, currentTime]);
 
-  const isOngoing = elapsedSeconds >= 0 && status !== 'Completed';
   const isUpcoming = elapsedSeconds < 0;
   const isFinished = status === 'Completed';
 
@@ -275,7 +263,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
               {!isFinished && (
                 <DropdownMenuItem 
                   onClick={() => setShowCompleteConfirm(true)}
-                  className="rounded-xl py-2.5 md:py-3 px-4 cursor-pointer flex items-center gap-3 text-success focus:text-success focus:bg-success/10"
+                  className="rounded-xl py-2.5 md:py-3 px-4 cursor-pointer flex items-center gap-3 text-success-strong focus:text-success-strong focus:bg-success/10"
                 >
                   <CheckCircle2 size={14} />
                   <span className="font-medium text-xs">Complete Session</span>
@@ -283,7 +271,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
               )}
               <DropdownMenuItem
                 onClick={() => navigate('/practice/clinical-hub')}
-                className="rounded-xl py-2.5 md:py-3 px-4 cursor-pointer flex items-center gap-3 text-destructive focus:text-destructive focus:bg-destructive/10"
+                className="rounded-xl py-2.5 md:py-3 px-4 cursor-pointer flex items-center gap-3 text-destructive-strong focus:text-destructive-strong focus:bg-destructive/10"
               >
                 <LogOut size={14} />
                 <span className="font-medium text-xs">Pause / Exit</span>

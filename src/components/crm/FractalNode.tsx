@@ -1,21 +1,19 @@
 
 import { useState, Children } from 'react';
 import type { ReactNode } from 'react';
-import { 
-  ChevronRight, 
-  ChevronDown, 
-  Fingerprint, 
-  Target, 
-  ShieldAlert, 
+import {
+  ChevronRight,
+  ChevronDown,
+  Fingerprint,
+  Target,
+  ShieldAlert,
   MoreHorizontal,
   Trash2,
   ArrowRight,
-  RefreshCw,
   Plus,
   Zap,
   Crown,
-  Layers,
-  Star
+  Star,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';

@@ -2,32 +2,21 @@
 import { useState, useEffect, useMemo } from 'react';
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  Layers, 
-  Sparkles, 
-  Loader2, 
-  Wand2, 
-  RefreshCw, 
-  Info, 
-  Check, 
+import {
+  Layers,
+  Sparkles,
+  Loader2,
+  Wand2,
+  Info,
   X,
-  ArrowRight,
-  Target,
-  ShieldAlert,
-  Fingerprint,
-  History,
-  LayoutGrid,
   CheckCircle2,
   ChevronRight,
-  Plus,
   Crown,
-  ShieldCheck,
-  Zap,
   AlertCircle,
   Merge,
-  Clock
+  Clock,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { showSuccess, showError } from "@/utils/toast";

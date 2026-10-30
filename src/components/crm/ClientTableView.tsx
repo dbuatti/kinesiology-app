@@ -79,7 +79,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientTa
             <TableRow key={client.id} className="hover:bg-foreground/[0.02] transition-colors group border-border">
               <TableCell className="px-6 py-3">
                 <Link to={profileHref} className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[13px] font-semibold shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-primary/10 text-primary-strong flex items-center justify-center text-[13px] font-semibold shrink-0">
                     {client.name.charAt(0)}
                   </div>
                   <div className="flex flex-col">
@@ -95,7 +95,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientTa
                       {!isVoice && <IntakeStatusBadge client={client} />}
                       <NewInfoBadge submittedAt={(client as any).onboarding_submitted_at} />
                       {!isVoice && client.stripe_customer_id && (
-                        <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-semibold border-primary/20 text-primary bg-primary/5">
+                        <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-semibold border-primary/20 text-primary-strong bg-primary/5">
                           <CreditCard size={8} className="mr-1" /> Synced
                         </Badge>
                       )}
@@ -160,7 +160,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientTa
               </TableCell>
               <TableCell className="text-center">
                 {(client.upcoming_count ?? 0) > 0 ? (
-                  <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary/10 px-2 text-xs font-medium tabular-nums text-primary">{client.upcoming_count}</span>
+                  <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary/10 px-2 text-xs font-medium tabular-nums text-primary-strong">{client.upcoming_count}</span>
                 ) : (
                   <span className="text-sm text-muted-foreground/50">—</span>
                 )}
@@ -213,7 +213,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientTa
                     // slot (see AssistantInput's autoSend).
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10" asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive-strong hover:bg-destructive/10" asChild>
                           <Link
                             to={`/clients/${client.id}/hub?prompt=${encodeURIComponent(`Find a good slot and book ${client.name.split(" ")[0]}'s next session — check their availability notes and usual pattern first.`)}`}
                             onClick={(e) => e.stopPropagation()}
@@ -230,7 +230,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientTa
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive-strong hover:bg-destructive/10"
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickBook(client.id); }}
                         >
                           <CalendarPlus size={16} />

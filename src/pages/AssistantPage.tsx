@@ -136,7 +136,7 @@ export default function AssistantPage({ initialTab }: { initialTab?: AssistantTa
 
   const {
     conversations, activeId, messages, isSending, streamingText, statusText, pendingDraft, pendingBookings,
-    loadConversations, selectConversation: selectConversationBase, startNewChat: startNewChatBase, handleSend,
+selectConversation: selectConversationBase, startNewChat: startNewChatBase, handleSend,
     handleDraftSent, handleDraftDiscard, handleBookingResolved, deleteConversation,
   } = useAssistantConversation({
     clientId: focusedPerson?.id || null,

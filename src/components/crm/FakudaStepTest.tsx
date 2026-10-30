@@ -2,8 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Footprints, Info, Save, Loader2, RotateCcw, CheckCircle2, Zap, RefreshCw, ArrowRightLeft, Timer, Play, Pause, ChevronDown, FileText } from "lucide-react";
+import { Footprints, RotateCcw, CheckCircle2, Zap, RefreshCw, ArrowRightLeft, Timer, Play, Pause, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
 import { showSuccess, showError } from "@/utils/toast";
@@ -224,7 +223,7 @@ const FakudaStepTest = ({
             onClick={() => handleSetStatus('Clear')}
             className={cn(
               "h-10 px-4 rounded-md font-semibold text-[11px] transition-all",
-              currentStatus === 'Clear' ? "bg-success text-primary-foreground" : "bg-transparent text-muted-foreground border border-border hover:bg-success/10 hover:text-success"
+              currentStatus === 'Clear' ? "bg-success text-primary-foreground" : "bg-transparent text-muted-foreground border border-border hover:bg-success/10 hover:text-success-strong"
             )}
           >
             <CheckCircle2 size={13} className="mr-2" /> Clear
@@ -234,7 +233,7 @@ const FakudaStepTest = ({
             onClick={() => handleSetStatus('Inhibited')}
             className={cn(
               "h-10 px-4 rounded-md font-semibold text-[11px] transition-all",
-              currentStatus === 'Inhibited' ? "bg-destructive text-primary-foreground" : "bg-transparent text-muted-foreground border border-border hover:bg-destructive/10 hover:text-destructive"
+              currentStatus === 'Inhibited' ? "bg-destructive text-primary-foreground" : "bg-transparent text-muted-foreground border border-border hover:bg-destructive/10 hover:text-destructive-strong"
             )}
           >
             <Zap size={13} className="mr-2" /> Inhibited
@@ -244,7 +243,7 @@ const FakudaStepTest = ({
             onClick={() => handleSetStatus('Recheck')}
             className={cn(
               "h-10 px-4 rounded-md font-semibold text-[11px] transition-all",
-              currentStatus === 'Recheck' ? "bg-warning text-primary-foreground" : "bg-transparent text-muted-foreground border border-border hover:bg-warning/10 hover:text-warning"
+              currentStatus === 'Recheck' ? "bg-warning text-primary-foreground" : "bg-transparent text-muted-foreground border border-border hover:bg-warning/10 hover:text-warning-strong"
             )}
           >
             <RefreshCw size={13} className="mr-2" /> Recheck
@@ -319,7 +318,7 @@ const FakudaStepTest = ({
               <span className="text-[10px] text-muted-foreground font-medium">Saved {lastSaved}</span>
             )}
             {(initialFakudaNotes || currentStatus) && (
-              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-8 px-3 rounded-md border-destructive/20 text-destructive hover:bg-destructive/5 text-[11px] font-semibold">
+              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-8 px-3 rounded-md border-destructive/20 text-destructive-strong hover:bg-destructive/5 text-[11px] font-semibold">
                 <RotateCcw size={12} className="mr-1" /> Reset
               </Button>
             )}
@@ -342,8 +341,8 @@ const FakudaStepTest = ({
           <p className="text-[10px] text-muted-foreground">Fakuda (Fukuda) Step Test protocol & images</p>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <img src="/images/fakuda-1.png" alt="Fakuda Reference 1" className="w-full h-20 object-cover rounded-md border border-border" />
-          <img src="/images/fakuda-2.png" alt="Fakuda Reference 2" className="w-full h-20 object-cover rounded-md border border-border" />
+          <img loading="lazy" decoding="async" src="/images/fakuda-1.png" alt="Fakuda Reference 1" className="w-full h-20 object-cover rounded-md border border-border" />
+          <img loading="lazy" decoding="async" src="/images/fakuda-2.png" alt="Fakuda Reference 2" className="w-full h-20 object-cover rounded-md border border-border" />
         </div>
         <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
           <li>Client stands with eyes closed and shoulders flexed to 90 degrees.</li>

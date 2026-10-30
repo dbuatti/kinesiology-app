@@ -1,6 +1,5 @@
 import { BrandMark } from "@/components/layout/BrandMark";
 import type { ReactNode } from "react";
-import { Bot, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AssistantMessage } from "@/types/assistant";
 

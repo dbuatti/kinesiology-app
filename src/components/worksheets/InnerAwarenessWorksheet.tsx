@@ -1,8 +1,7 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Check, Trash2, Loader, Copy, Save } from 'lucide-react';
+import { Check, Loader, Save } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 const InnerAwarenessWorksheet = ({ submissionId, onComplete, onBack }) => {
   const [localId, setLocalId] = useState<string | null>(submissionId || null);
@@ -65,7 +64,6 @@ const InnerAwarenessWorksheet = ({ submissionId, onComplete, onBack }) => {
     };
     init();
   }, [userId, submissionId]);
-
 
   useEffect(() => {
     if (!userId || !localId) return;

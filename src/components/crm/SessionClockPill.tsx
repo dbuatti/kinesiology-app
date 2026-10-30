@@ -39,12 +39,12 @@ const SessionClockPill = ({
   const overtime = elapsed >= TOTAL_SECONDS;
 
   const tone = finished
-    ? "bg-success/10 text-success"
+    ? "bg-success/10 text-success-strong"
     : upcoming
     ? "bg-muted text-muted-foreground"
     : overtime
-    ? "bg-destructive/10 text-destructive"
-    : "bg-success/10 text-success";
+    ? "bg-destructive/10 text-destructive-strong"
+    : "bg-success/10 text-success-strong";
 
   const label = finished
     ? "Complete"

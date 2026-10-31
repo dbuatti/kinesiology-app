@@ -46,6 +46,7 @@ import { QuickSessionDialog } from "@/components/crm/QuickSessionDialog";
 import PathwayReflexStimGrid from "@/components/crm/PathwayReflexStimGrid";
 import QuickNotesDialog from "@/components/crm/QuickNotesDialog";
 import HowToSearch from "@/components/crm/HowToSearch";
+import { CTMModal } from "@/components/ctm/CTMModal";
 import { parseClientJournal } from "@/utils/journal-helper";
 import { safeParse } from "@/utils/safe-json";
 import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
@@ -84,6 +85,7 @@ const AppointmentV2Page = () => {
   const [notesOpen, setNotesOpen] = useState(false);
   const [imageRefOpen, setImageRefOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [ctmOpen, setCtmOpen] = useState(false);
   const [activePhase, setActivePhase] = useState(0);
 
   // Report → Manual navigation: deep-link a finding/pathway into the clinical workspace.
@@ -230,6 +232,10 @@ const AppointmentV2Page = () => {
       if (e.key.toLowerCase() === 'r') {
         e.preventDefault();
         setReportOpen(prev => !prev);
+      }
+      if (e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        setCtmOpen(true);
       }
       // Timer shortcuts: 1 = 3m, 2 = 6m, 3 = 9m
       if (e.key === '1') { e.preventDefault(); startTimer(3); }
@@ -655,6 +661,16 @@ const AppointmentV2Page = () => {
       </div>
       <ImageReferenceModal open={imageRefOpen} onClose={() => setImageRefOpen(false)} />
       <SessionReportModal open={reportOpen} onClose={() => setReportOpen(false)} appointment={appointment} updateMetadata={updateMetadata} />
+      <CTMModal
+        open={ctmOpen}
+        onOpenChange={setCtmOpen}
+        inhibitionState={inhibitionPathwayState}
+        onSelectPathway={(key) => {
+          // Push the selected pathway into the clinical workspace so the
+          // practitioner can deep-link back into it after the CTM run.
+          setPendingManualPathwayId(key);
+        }}
+      />
     </CorrectionDockProvider>
   );
 };

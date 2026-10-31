@@ -162,11 +162,87 @@ function useCTMSelection(category: string): UseCTMSelectionReturn {
 /*  Heart-Wall Emotions sub-modal                                      */
 /* ------------------------------------------------------------------ */
 function HeartWallSubModal({ onClose, saveSelection }: { onClose: () => void; saveSelection: (sel: Record<string, any>) => void }) {
-  const { selected: emotionSel, select: selectEmotion, deselect: deselectEmotion } = useCTMSelection("heartWall");
-  const { selected: channelSel, select: selectChannel, deselect: deselectChannel } = useCTMSelection("heartWallChannel");
-  const { selected: elementSel, select: selectElement, deselect: deselectElement } = useCTMSelection("heartWallElement");
+  const { selected: emotionSel, select: selectEmotion } = useCTMSelection("heartWall");
+  const { selected: organSel, select: selectOrgan } = useCTMSelection("heartWallOrgan");
+  const { selected: muscleSel, select: selectMuscle } = useCTMSelection("heartWallMuscle");
 
-  const emotionItems = PRIMARY_EMOTIONS?.slice(0, 8) ?? [];
+  // Full Heart-Wall organ-emotions reference from FNH Mastery
+  const HEART_WALL_GROUPS = [
+    {
+      element: "Fire",
+      organs: ["Heart", "Small Intestine"],
+      emotions: [
+        "Abandonment", "Betrayal", "Defensiveness", "Forlorn", "Lost",
+        "Love unreceived", "Effort unreceived", "Heartache", "Bitterness",
+        "Insecurity", "Overjoy", "Vulnerability"
+      ],
+      muscles: {
+        "Heart": ["Vastus lateralis", "Subscapularis"],
+        "Small Intestine": ["Quadriceps", "Abdominals"]
+      }
+    },
+    {
+      element: "Earth",
+      organs: ["Spleen", "Stomach"],
+      emotions: [
+        "Anxiety", "Despair", "Disgust", "Nervousness", "Worry",
+        "Failure", "Helplessness", "Hopelessness", "Lack of control", "Low self-esteem"
+      ],
+      muscles: {
+        "Spleen": ["Triceps", "Mid trapezius", "Lower trapezius"],
+        "Stomach": ["Pectoralis major clavicular", "Diaphragm", "Neck flexors"]
+      }
+    },
+    {
+      element: "Metal",
+      organs: ["Lung", "Colon"],
+      emotions: [
+        "Crying", "Discouragement", "Sadness", "Sorrow", "Confusion",
+        "Grief", "Self-abuse", "Shame", "Unworthy", "Worthless"
+      ],
+      muscles: {
+        "Lung": ["Posterior deltoid"],
+        "Colon": ["Tensor fasciae latae", "Gluteus maximus", "Quadratus lumborum"]
+      }
+    },
+    {
+      element: "Wood",
+      organs: ["Liver", "Gallbladder"],
+      emotions: [
+        "Anger", "Blaming", "Rejection", "Guilt", "Hatred",
+        "Resentment", "Depression", "Frustration", "Indecisiveness",
+        "Taken for granted", "Stubbornness"
+      ],
+      muscles: {
+        "Liver": ["Pectoralis major sternal", "Rhomboids"],
+        "Gallbladder": ["Anterior deltoid", "Popliteus"]
+      }
+    },
+    {
+      element: "Water",
+      organs: ["Kidneys", "Bladder"],
+      emotions: [
+        "Dread", "Fear", "Horror", "Peeved", "Conflict",
+        "Insecurity", "Terror", "Panic", "Unsupported", "Wishy-washy"
+      ],
+      muscles: {
+        "Kidneys": ["Psoas", "Upper trapezius"],
+        "Bladder": ["Erector spinae"]
+      }
+    },
+    {
+      element: "Fire",
+      organs: ["Adrenals", "Thyroid", "Reproductive"],
+      emotions: [
+        "Humiliation", "Jealousy", "Longing", "Lust", "Overwhelm", "Pride", "Shock"
+      ],
+      muscles: {
+        "Adrenals": ["Piriformis", "Flexor hallucis longus"],
+        "Thyroid": ["Supraspinatus"],
+        "Reproductive": ["Gluteus medius"]
+      }
+    }
+  ];
 
   return (
     <>
@@ -176,86 +252,110 @@ function HeartWallSubModal({ onClose, saveSelection }: { onClose: () => void; sa
         onClose={onClose}
       />
       <SubModalBody>
-        <div className="text-sm text-foreground/80 leading-relaxed">
+        <div className="text-sm text-foreground/80 leading-relaxed mb-4">
           Screen: client focuses on heart while imagining being loved/accepted. If indicator inhibits, obtain permission, identify priority primary Heart-Wall emotion, check the relevant organ-muscle pair, record context (age, event, absorbed).
         </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold uppercase text-muted-foreground">Priority Primary Emotion</span>
-            <span className="ml-auto text-[10px] text-muted-foreground">{emotionSel?.emotion ?? "—"}</span>
+        {/* Selected summary */}
+        <div className="bg-chart-primary/5 border border-chart-primary/20 rounded-lg p-3 mb-4">
+          <div className="grid grid-cols-3 gap-2 text-[10px]">
+            <div>
+              <span className="text-muted-foreground/60">Emotion:</span>
+              <span className="ml-1 font-bold text-foreground">{emotionSel?.emotion ?? "—"}</span>
+            </div>
+            <div>
+              <span className="text-muted-foreground/60">Organ:</span>
+              <span className="ml-1 font-bold text-foreground">{organSel?.organ ?? "—"}</span>
+            </div>
+            <div>
+              <span className="text-muted-foreground/60">Muscle:</span>
+              <span className="ml-1 font-bold text-foreground">{muscleSel?.muscle ?? "—"}</span>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            {emotionItems.map((emotion) => {
-              const active = emotionSel?.emotion === emotion.label;
-              return (
-                <button
-                  key={emotion.label}
-                  onClick={() => {
-                    selectEmotion(emotion.label, { emotion: emotion.label, element: emotion.element, organs: emotion.organs });
-                    saveSelection({ heartWall: emotion.label });
-                  }}
-                  className={cn(
-                    "text-left bg-card border rounded-lg p-2 text-sm transition-all",
-                    active ? "border-chart-primary/50 ring-1 ring-chart-primary/20 bg-chart-primary/5 text-chart-primary" : "border-border text-foreground/90 hover:bg-muted"
-                  )}
-                >
-                  <div className="font-bold">{emotion.label}</div>
-                  <div className="text-[9px] text-muted-foreground/60">{emotion.element || ""}</div>
-                </button>
-              );
-            })}
+        </div>
+
+        {/* Element tabs */}
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-1 mb-3">
+            {HEART_WALL_GROUPS.map((group, idx) => (
+              <button
+                key={idx}
+                onClick={() => selectEmotion(group.element, { element: group.element, groupIdx: idx })}
+                className={cn(
+                  "px-2 py-1 rounded-full text-[9px] font-medium border transition-colors",
+                  emotionSel?.element === group.element
+                    ? "bg-chart-primary text-white border-chart-primary"
+                    : "border-border bg-card text-foreground/80 hover:bg-muted"
+                )}
+              >
+                {group.element}
+              </button>
+            ))}
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-semibold uppercase text-muted-foreground">Channel / Element</span>
-              <span className="ml-auto text-[10px] text-muted-foreground">{channelSel?.channel ?? elementSel?.element ?? "—"}</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(CHANNEL_EMOTIONS ?? {}).map(([channel, emotions]) => (
-                <button
-                  key={channel}
-                  onClick={() => {
-                    selectChannel(channel, { channel, emotions });
-                    saveSelection({ heartWallChannel: channel });
-                  }}
-                  className={cn(
-                    "px-2.5 py-1 rounded-full text-[10px] font-medium border transition-colors",
-                    channelSel?.channel === channel
-                      ? "bg-chart-primary text-white border-chart-primary"
-                      : "border-border bg-card text-foreground/80 hover:bg-muted"
-                  )}
-                >
-                  {channel}
-                </button>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(ELEMENT_EMOTIONS ?? {}).map(([element, emotions]) => (
-                <button
-                  key={element}
-                  onClick={() => {
-                    selectElement(element, { element, emotions });
-                    saveSelection({ heartWallElement: element });
-                  }}
-                  className={cn(
-                    "px-2.5 py-1 rounded-full text-[10px] font-medium border transition-colors",
-                    elementSel?.element === element
-                      ? "bg-chart-emerald text-white border-chart-emerald"
-                      : "border-border bg-card text-foreground/80 hover:bg-muted"
-                  )}
-                >
-                  {element}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Current group detail */}
+          {emotionSel?.groupIdx !== undefined && (
+            <div className="space-y-3">
+              {(() => {
+                const group = HEART_WALL_GROUPS[emotionSel.groupIdx];
+                return (
+                  <>
+                    <h4 className="text-[10px] font-semibold uppercase text-muted-foreground mb-2">
+                      {group.element} Element — {group.organs.join(" / ")}
+                    </h4>
 
-          {emotionSel?.organMuscle && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <p className="text-[10px] font-bold text-amber-800 mb-1">Organ-Muscle Check</p>
-              <p className="text-xs text-amber-700">{emotionSel.organMuscle}</p>
+                    {/* Emotions grid */}
+                    <div>
+                      <p className="text-[10px] font-semibold text-muted-foreground mb-1.5">Emotions</p>
+                      <div className="grid grid-cols-2 gap-1.5 max-h-40 overflow-y-auto">
+                        {group.emotions.map((emotion) => {
+                          const active = emotionSel?.emotion === emotion;
+                          return (
+                            <button
+                              key={emotion}
+                              onClick={() => { selectEmotion(emotion, { emotion, element: group.element, groupIdx: emotionSel.groupIdx }); saveSelection({ heartWall: emotion }); }}
+                              className={cn(
+                                "text-left bg-card border rounded-md p-1.5 text-[9px] transition-all",
+                                active ? "border-chart-primary/50 ring-1 ring-chart-primary/20 bg-chart-primary/5 text-chart-primary font-bold" : "border-border text-foreground/90 hover:bg-muted"
+                              )}
+                            >
+                              {emotion}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Organs + Muscles */}
+                    {group.organs.map((organ) => (
+                      <div key={organ} className="bg-muted/30 rounded-lg p-2">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[9px] font-bold text-foreground">{organ}</span>
+                          <span className="text-[9px] text-muted-foreground/60">{group.element}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {group.muscles[organ]?.map((muscle) => (
+                            <button
+                              key={muscle}
+                              onClick={() => { selectOrgan(organ, { organ }); selectMuscle(muscle, { muscle }); saveSelection({ heartWallOrgan: organ, heartWallMuscle: muscle }); }}
+                              className={cn(
+                                "px-2 py-0.5 rounded text-[9px] font-medium border transition-colors",
+                                organSel?.organ === organ && muscleSel?.muscle === muscle
+                                  ? "bg-chart-emerald text-white border-chart-emerald"
+                                  : organSel?.organ === organ
+                                    ? "border-chart-emerald/50 bg-chart-emerald/5 text-chart-emerald"
+                                    : "border-border bg-card text-foreground/80 hover:bg-muted"
+                              )}
+                            >
+                              {muscle}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                );
+              })()}
             </div>
           )}
         </div>

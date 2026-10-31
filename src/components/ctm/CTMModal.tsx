@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { CheckCircle2, ChevronLeft, ChevronRight, Brain, Activity, Zap, Heart, Hand, Info, Search, Loader2 } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, X, Brain, Activity, Zap, Heart, Hand, Info, Search, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { showSuccess, showError } from "@/utils/toast";

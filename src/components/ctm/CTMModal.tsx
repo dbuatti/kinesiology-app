@@ -231,7 +231,7 @@ function HeartWallSubModal({ onClose, saveSelection }: { onClose: () => void; sa
       }
     },
     {
-      element: "Fire",
+      element: "Glands",
       organs: ["Adrenals", "Thyroid", "Reproductive"],
       emotions: [
         "Humiliation", "Jealousy", "Longing", "Lust", "Overwhelm", "Pride", "Shock"

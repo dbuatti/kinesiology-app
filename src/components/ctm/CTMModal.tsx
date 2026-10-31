@@ -332,19 +332,19 @@ function BrainZonesSubModal({ onClose, saveSelection }: { onClose: () => void; s
           <div>
             <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-3">Cranial Nerves</p>
             <div className="grid grid-cols-3 gap-2">
-              {CRANIAL_NERVES.map((cn) => {
-                const active = cnSel?.cranialNerve === cn.name;
+              {CRANIAL_NERVES.map((nerve) => {
+                const active = cnSel?.cranialNerve === nerve.name;
                 return (
                   <button
-                    key={cn.id}
-                    onClick={() => { selectCN(cn.name, { nerve: cn.name, latin: cn.latinName, nuclei: cn.nuclei }); saveSelection({ cranialNerve: cn.name }); }}
+                    key={nerve.id}
+                    onClick={() => { selectCN(nerve.name, { nerve: nerve.name, latin: nerve.latinName, nuclei: nerve.nuclei }); saveSelection({ cranialNerve: nerve.name }); }}
                     className={cn(
                       "text-left bg-card border rounded-lg p-2 text-sm transition-all",
                       active ? "border-chart-secondary/50 ring-1 ring-chart-secondary/20 bg-chart-secondary/5 text-chart-secondary font-bold" : "border-border text-foreground/90 hover:bg-muted"
                     )}
                   >
-                    <div className="font-bold text-[10px]">{cn.name}</div>
-                    <div className="text-[8px] text-muted-foreground/60">{cn.latinName}</div>
+                    <div className="font-bold text-[10px]">{nerve.name}</div>
+                    <div className="text-[8px] text-muted-foreground/60">{nerve.latinName}</div>
                   </button>
                 );
               })}
@@ -919,13 +919,15 @@ export function CTMModal({
                   With the node held, scan the connected systems — and take the top three only. The 2026 revision expanded the menu from 5 to 7 systems by adding Fascia and Meridians.
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
                 <span>Selected ({selectedSystems.length}/3):</span>
                 {selectedSystems.map((key) => (
                   <span key={key} className="font-medium text-foreground bg-chart-primary/10 px-1.5 py-0.5 rounded-md">{key}</span>
                 ))}
               </div>
-              <div className="grid grid-cols-2 gap-2">
+
+              <div className="bg-card border border-border rounded-2xl p-4 shadow-sm grid grid-cols-2 gap-3">
                 {CTM_SYSTEM_GROUPS.map((sys) => (
                   <button
                     key={sys.key}
@@ -934,7 +936,7 @@ export function CTMModal({
                       openSubModal(sys.key);
                     }}
                     className={cn(
-                      "text-left bg-card border rounded-xl p-3 shadow-sm hover:shadow transition-all",
+                      "text-left bg-card border p-3 shadow-sm hover:shadow transition-all",
                       selectedSystems.includes(sys.key) ? "border-chart-primary/50 ring-1 ring-chart-primary/20 bg-chart-primary/5" : "border-border"
                     )}
                   >

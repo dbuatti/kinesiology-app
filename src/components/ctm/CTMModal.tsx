@@ -474,6 +474,7 @@ function BrainZonesSubModal({ onClose, saveSelection }: { onClose: () => void; s
 /* ------------------------------------------------------------------ */
 function OrgansSubModal({ onClose, saveSelection }: { onClose: () => void; saveSelection: (sel: Record<string, any>) => void }) {
   const { selected, select } = useCTMSelection("organ");
+  const [zoom, setZoom] = useState<string | null>(null);
 
   const ORGANS = [
     { label: "Lung", pair: "Colon", element: "Metal", muscle: "Posterior Deltoid" },
@@ -500,6 +501,35 @@ function OrgansSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
       />
       <SubModalBody>
         <div className="space-y-4">
+          {/* Pulse points reference image */}
+          <div className="space-y-1.5">
+            <p className="text-[10px] font-semibold uppercase text-muted-foreground">Pulse Point Chart</p>
+            <button
+              type="button"
+              onClick={() => setZoom("/images/pulse-points.png")}
+              className="block w-full overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in hover:ring-2 hover:ring-chart-emerald/30 transition-all"
+            >
+              <img
+                src="/images/pulse-points.png"
+                alt="Pulse point positions on the wrist — cun, guan, chi on left and right"
+                className="w-full object-contain"
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  target.style.display = "none";
+                  const parent = target.parentElement;
+                  if (parent) {
+                    const placeholder = document.createElement("div");
+                    placeholder.className = "flex h-40 items-center justify-center";
+                    placeholder.innerHTML = '<p class="text-[10px] text-muted-foreground/50">Pulse point image not found</p>';
+                    parent.appendChild(placeholder);
+                  }
+                }}
+              />
+            </button>
+            <p className="text-[9px] text-muted-foreground/50 text-center">Tap to zoom · cun / guan / chi</p>
+          </div>
+
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-semibold uppercase text-muted-foreground">Priority Organ / Gland</span>
             <span className="ml-auto text-[10px] text-muted-foreground">{selected?.organ ?? "—"}</span>
@@ -549,6 +579,27 @@ function OrgansSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
           </Button>
         </div>
       </SubModalBody>
+
+      {zoom && (
+        <div
+          className="fixed inset-0 z-[130] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          onClick={() => setZoom(null)}
+        >
+          <img
+            src={zoom}
+            alt="Pulse points zoomed"
+            className="max-h-full max-w-full rounded-xl object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button
+            onClick={() => setZoom(null)}
+            className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white backdrop-blur-sm hover:bg-white/20"
+            aria-label="Close"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
     </>
   );
 }
@@ -625,6 +676,7 @@ function JointsSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
 /* ------------------------------------------------------------------ */
 function CranialSuturesSubModal({ onClose, saveSelection }: { onClose: () => void; saveSelection: (sel: Record<string, any>) => void }) {
   const { selected, select } = useCTMSelection("suture");
+  const [zoom, setZoom] = useState<string | null>(null);
 
   return (
     <>
@@ -636,6 +688,35 @@ function CranialSuturesSubModal({ onClose, saveSelection }: { onClose: () => voi
       />
       <SubModalBody>
         <div className="space-y-5">
+          {/* Cranial sutures reference image */}
+          <div className="space-y-1.5">
+            <p className="text-[10px] font-semibold uppercase text-muted-foreground">Suture Chart</p>
+            <button
+              type="button"
+              onClick={() => setZoom("/images/cranial-sutures.png")}
+              className="block w-full overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in hover:ring-2 hover:ring-chart-secondary/30 transition-all"
+            >
+              <img
+                src="/images/cranial-sutures.png"
+                alt="Cranial sutures reference diagram"
+                className="w-full object-contain"
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  target.style.display = "none";
+                  const parent = target.parentElement;
+                  if (parent) {
+                    const placeholder = document.createElement("div");
+                    placeholder.className = "flex h-40 items-center justify-center";
+                    placeholder.innerHTML = '<p class="text-[10px] text-muted-foreground/50">Suture chart not found</p>';
+                    parent.appendChild(placeholder);
+                  }
+                }}
+              />
+            </button>
+            <p className="text-[9px] text-muted-foreground/50 text-center">Tap to zoom</p>
+          </div>
+
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-semibold uppercase text-muted-foreground">Selected Suture</span>
             <span className="ml-auto text-[10px] text-muted-foreground">{selected?.suture ?? "—"}</span>
@@ -672,6 +753,27 @@ function CranialSuturesSubModal({ onClose, saveSelection }: { onClose: () => voi
           </Button>
         </div>
       </SubModalBody>
+
+      {zoom && (
+        <div
+          className="fixed inset-0 z-[130] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          onClick={() => setZoom(null)}
+        >
+          <img
+            src={zoom}
+            alt="Cranial sutures zoomed"
+            className="max-h-full max-w-full rounded-xl object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button
+            onClick={() => setZoom(null)}
+            className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white backdrop-blur-sm hover:bg-white/20"
+            aria-label="Close"
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
     </>
   );
 }

@@ -1,7 +1,8 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { X, ChevronLeft, ChevronRight, Brain, Activity, Zap, Heart, Hand, Info, Search, Loader2 } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, Brain, Activity, Zap, Heart, Hand, Info, Search, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { showSuccess, showError } from "@/utils/toast";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { PRIMARY_EMOTIONS, CHANNEL_EMOTIONS, ELEMENT_EMOTIONS } from "@/data/emotion-data";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
@@ -1348,6 +1349,30 @@ export function CTMModal({
                   </dl>
                 </div>
               )}
+
+              {/* Stage 4 — explicit submit. Selections are already merged into
+                  ctmState as the practitioner clicks "Done" in each sub-modal;
+                  this button is the single point that commits the whole stack
+                  back to the session metadata. */}
+              <div className="flex items-center gap-2 pt-1">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    onSaveCTMState?.({ ...ctmState });
+                    if (Object.keys(ctmState).length === 0) {
+                      showError("No CTM selections saved yet — pick a system first");
+                    } else {
+                      showSuccess("CTM stack saved to session");
+                    }
+                  }}
+                  className="rounded-full h-9 px-4 bg-chart-emerald hover:bg-chart-emerald/90 text-white text-[11px] font-semibold shadow-sm"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Submit CTM Stack
+                </Button>
+                <span className="text-[10px] text-muted-foreground/60 leading-tight">
+                  Writes the full stack to session metadata
+                </span>
+              </div>
             </div>
           )}
         </div>
@@ -1361,9 +1386,21 @@ export function CTMModal({
             Phase {step + 1} / {CTM_PHASES.length}
             <span className="hidden sm:inline text-muted-foreground/50"> · keys 1–4</span>
           </span>
-          <Button size="sm" onClick={goNext} disabled={step === CTM_PHASES.length - 1} className="rounded-full h-8 px-3 bg-chart-primary hover:bg-chart-primary/90 text-white">
-            Next <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
-          </Button>
+          {step === CTM_PHASES.length - 1 ? (
+            <Button
+              size="sm"
+              onClick={() => { onSaveCTMState?.({ ...ctmState }); onOpenChange(false); }}
+              disabled={Object.keys(ctmState).length === 0}
+              title={Object.keys(ctmState).length === 0 ? "Select at least one system first" : "Submit and close"}
+              className="rounded-full h-8 px-4 bg-chart-emerald hover:bg-chart-emerald/90 text-white text-[11px] font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Submit &amp; Close
+            </Button>
+          ) : (
+            <Button size="sm" onClick={goNext} className="rounded-full h-8 px-3 bg-chart-primary hover:bg-chart-primary/90 text-white">
+              Next <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+            </Button>
+          )}
         </div>
       </div>
 

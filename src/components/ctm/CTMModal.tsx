@@ -6,6 +6,7 @@ import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { PRIMARY_EMOTIONS, CHANNEL_EMOTIONS, ELEMENT_EMOTIONS } from "@/data/emotion-data";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import { JOINT_ACTION_LIBRARY } from "@/data/joint-action-data";
+import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 import type { CranialNerve } from "@/data/cranial-nerve-data";
 import type { TcmChannel } from "@/data/tcm-channel-data";
 import type { JointData } from "@/data/joint-action-data";
@@ -39,23 +40,38 @@ export const CTM_SYSTEM_GROUPS = [
 
 /* ------------------------------------------------------------------ */
 /*  Selectable brain zones (cortical + subcortical)                    */
+/*  Derived from BRAIN_REFLEX_POINTS so this list cannot drift from    */
+/*  the clinical reference — it previously hard-coded only 6 cortical  */
+/*  zones and silently dropped Pre-Motor, OFC and ACC.                 */
 /* ------------------------------------------------------------------ */
-const BRAIN_ZONES = [
-  { label: "PFC — Prefrontal Cortex", kind: "cortical" },
-  { label: "Motor", kind: "cortical" },
-  { label: "Sensory", kind: "cortical" },
-  { label: "Visual", kind: "cortical" },
-  { label: "Auditory", kind: "cortical" },
-  { label: "Insula", kind: "cortical" },
-  { label: "Cerebellum", kind: "subcortical" },
-  { label: "Pons", kind: "subcortical" },
-  { label: "Medulla", kind: "subcortical" },
-  { label: "Thalamus", kind: "subcortical" },
-  { label: "Limbic", kind: "subcortical" },
-  { label: "Basal Nuclei", kind: "subcortical" },
-  { label: "Midbrain", kind: "subcortical" },
-  { label: "Hippocampus", kind: "subcortical" },
-];
+const ZONE_LABEL_OVERRIDES: Record<string, string> = {
+  pfc: "PFC — Prefrontal Cortex",
+  pmc: "Pre-Motor",
+  m1: "Motor",
+  s1: "Sensory",
+  visual: "Visual",
+  auditory: "Auditory",
+  insula: "Insula",
+  ofc: "OFC — Orbitofrontal",
+  acc: "ACC — Anterior Cingulate",
+  cerebellum: "Cerebellum",
+  pons: "Pons",
+  medulla: "Medulla",
+  hippocampus: "Hippocampus",
+  thalamus: "Thalamus",
+  basal_ganglia: "Basal Nuclei",
+  limbic: "Limbic",
+  midbrain: "Midbrain",
+  hypothalamus: "Hypothalamus",
+};
+
+const BRAIN_ZONES = BRAIN_REFLEX_POINTS.filter(
+  (p) => p.category === "Cortical" || p.category === "Subcortical"
+).map((p) => ({
+  label: ZONE_LABEL_OVERRIDES[p.id] ?? p.name,
+  kind: p.category === "Cortical" ? ("cortical" as const) : ("subcortical" as const),
+  pearl: p.pearl,
+}));
 
 /* ------------------------------------------------------------------ */
 /*  Selectable cranial sutures                                         */
@@ -420,9 +436,10 @@ function BrainZonesSubModal({ onClose, saveSelection }: { onClose: () => void; s
                 return (
                   <button
                     key={zone.label}
+                    title={zone.pearl}
                     onClick={() => { select(zone.label, { brainZone: zone.label, kind: "cortical" }); saveSelection({ brainZone: zone.label }); }}
                     className={cn(
-                      "text-left bg-card border rounded-lg p-2 text-sm transition-all",
+                      "text-left bg-card border rounded-lg px-2 py-1.5 text-[11px] font-medium leading-tight transition-all",
                       active ? "border-chart-primary/50 ring-1 ring-chart-primary/20 bg-chart-primary/5 text-chart-primary font-bold" : "border-border text-foreground/90 hover:bg-muted"
                     )}
                   >
@@ -441,9 +458,10 @@ function BrainZonesSubModal({ onClose, saveSelection }: { onClose: () => void; s
                 return (
                   <button
                     key={zone.label}
+                    title={zone.pearl}
                     onClick={() => { select(zone.label, { brainZone: zone.label, kind: "subcortical" }); saveSelection({ brainZone: zone.label }); }}
                     className={cn(
-                      "text-left bg-card border rounded-lg p-2 text-sm transition-all",
+                      "text-left bg-card border rounded-lg px-2 py-1.5 text-[11px] font-medium leading-tight transition-all",
                       active ? "border-chart-emerald/50 ring-1 ring-chart-emerald/20 bg-chart-emerald/5 text-chart-emerald font-bold" : "border-border text-foreground/90 hover:bg-muted"
                     )}
                   >

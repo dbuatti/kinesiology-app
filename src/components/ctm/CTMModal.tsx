@@ -1055,6 +1055,37 @@ export function CTMModal({
     onSaveCTMState?.({ ...ctmState, ...sel });
   }, [ctmState, onSaveCTMState]);
 
+  // Phase navigation shortcuts. Registered only while the CTM modal is open;
+  // the page-level handler bails out whenever CTM is open, so the global
+  // 1/2/3 timer shortcuts can never fire from inside this modal.
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+      if (e.key === "Escape") {
+        e.preventDefault();
+        if (activeSubModal) closeSubModal();
+        else onOpenChange(false);
+        return;
+      }
+
+      if (e.key === "ArrowRight") { e.preventDefault(); goNext(); return; }
+      if (e.key === "ArrowLeft") { e.preventDefault(); goBack(); return; }
+
+      // 1..4 jump straight to a phase
+      const phaseIndex = ["1", "2", "3", "4"].indexOf(e.key);
+      if (phaseIndex !== -1 && phaseIndex < CTM_PHASES.length) {
+        e.preventDefault();
+        goToStep(phaseIndex);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, activeSubModal, closeSubModal, goNext, goBack, goToStep, onOpenChange]);
+
   if (!open) return null;
 
   // Render the appropriate sub-modal
@@ -1097,6 +1128,7 @@ export function CTMModal({
             <button
               key={p.id}
               onClick={() => goToStep(i)}
+              title={`Press ${i + 1}`}
               className={cn(
                 "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all",
                 i === step ? "bg-chart-primary text-white shadow-sm" : "bg-muted/50 text-muted-foreground hover:bg-muted"
@@ -1325,7 +1357,10 @@ export function CTMModal({
           <Button variant="outline" size="sm" onClick={goBack} disabled={step === 0} className="rounded-full h-8 px-3">
             <ChevronLeft className="w-3.5 h-3.5 mr-0.5" /> Back
           </Button>
-          <span className="text-[10px] text-muted-foreground font-medium">Phase {step + 1} / {CTM_PHASES.length}</span>
+          <span className="text-[10px] text-muted-foreground font-medium">
+            Phase {step + 1} / {CTM_PHASES.length}
+            <span className="hidden sm:inline text-muted-foreground/50"> · keys 1–4</span>
+          </span>
           <Button size="sm" onClick={goNext} disabled={step === CTM_PHASES.length - 1} className="rounded-full h-8 px-3 bg-chart-primary hover:bg-chart-primary/90 text-white">
             Next <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
           </Button>

@@ -116,18 +116,62 @@ const AppointmentV2Page = () => {
   );
 
   const [timerDuration, setTimerDuration] = useState<number | null>(null);
+  const [timerRemaining, setTimerRemaining] = useState(0); // seconds
+  const [timerDone, setTimerDone] = useState(false);
   const timerRef = useRef<number | null>(null);
+  const timerEndsAtRef = useRef<number | null>(null);
+  const timerDoneRef = useRef<number | null>(null);
 
-  const startTimer = (minutes: number) => {
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) window.clearInterval(timerRef.current);
+    if (timerDoneRef.current) window.clearTimeout(timerDoneRef.current);
+    timerRef.current = null;
+    timerDoneRef.current = null;
+    timerEndsAtRef.current = null;
+    setTimerDuration(null);
+    setTimerRemaining(0);
+    setTimerDone(false);
+  }, []);
+
+  const startTimer = useCallback((minutes: number) => {
+    if (timerRef.current) window.clearInterval(timerRef.current);
+    if (timerDoneRef.current) window.clearTimeout(timerDoneRef.current);
+    setTimerDone(false);
+    const totalSeconds = Math.round(minutes * 60);
+    timerEndsAtRef.current = Date.now() + totalSeconds * 1000;
     setTimerDuration(minutes);
-    // Clear any existing timer
-    if (timerRef.current) clearTimeout(timerRef.current);
-    // Start countdown - for demo, just log and set duration
-    console.log(`Starting ${minutes}-minute timer`);
-    // Set a brief timeout to show the timer active state
-    timerRef.current = window.setTimeout(() => {
-      setTimerDuration(null);
-    }, minutes * 60_000);
+    setTimerRemaining(totalSeconds);
+    // Tick on an interval and derive remaining time from a wall-clock deadline,
+    // so the countdown stays accurate even if the tab is throttled.
+    timerRef.current = window.setInterval(() => {
+      const endsAt = timerEndsAtRef.current;
+      if (!endsAt) return;
+      const left = Math.max(0, Math.round((endsAt - Date.now()) / 1000));
+      setTimerRemaining(left);
+      if (left <= 0) {
+        if (timerRef.current) window.clearInterval(timerRef.current);
+        timerRef.current = null;
+        timerEndsAtRef.current = null;
+        setTimerDuration(null);
+        setTimerDone(true);
+        // Leave the "Done" flag up long enough to notice, then clear it.
+        timerDoneRef.current = window.setTimeout(() => {
+          setTimerDone(false);
+          timerDoneRef.current = null;
+        }, 10_000);
+      }
+    }, 250);
+  }, []);
+
+  useEffect(() => () => {
+    if (timerRef.current) window.clearInterval(timerRef.current);
+    if (timerDoneRef.current) window.clearTimeout(timerDoneRef.current);
+  }, []);
+
+  const formatTimer = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${String(s).padStart(2, "0")}`;
   };
 
   const handleLogProtocol = useCallback(
@@ -217,6 +261,9 @@ const AppointmentV2Page = () => {
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
+      // While the CTM modal is open it owns the keyboard: 1-4 select its phases,
+      // so none of the page shortcuts (timer 1/2/3, n/f/s/r/c) should fire.
+      if (ctmOpen) return;
       if (e.key.toLowerCase() === 'n') {
         e.preventDefault();
         setNotesOpen(true);
@@ -244,7 +291,7 @@ const AppointmentV2Page = () => {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [ctmOpen, startTimer]);
 
   const toggleFullScreen = () => {
     const next = !isFullScreen;
@@ -551,22 +598,36 @@ const AppointmentV2Page = () => {
                 </span>
               ))}
             </div>
-            {/* View modes moved here */}
-            {/* Quick timer pills — 3 / 6 / 9 min */}
+            {/* Quick timer pills — 3 / 6 / 9 min. The active pill becomes a live countdown. */}
             <div className="flex items-center gap-1 shrink-0">
               <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground/40">Timer</span>
-              {[3,6,9].map(min => (
+              {timerDone && (
                 <button
-                  key={min}
-                  onClick={() => startTimer(min)}
-                  className={cn(
-                    "h-[18px] px-1.5 rounded-md text-[9px] font-medium transition-colors border",
-                    timerDuration === min ? "bg-amber-500 text-white border-amber-500" : "bg-muted hover:bg-amber-50 text-muted-foreground hover:text-foreground border-border"
-                  )}
+                  onClick={() => setTimerDone(false)}
+                  className="h-[18px] px-1.5 rounded-md border border-emerald-500 bg-emerald-500 text-[9px] font-bold text-white animate-pulse"
+                  title="Timer finished — tap to dismiss"
                 >
-                  {min}m
+                  Done
                 </button>
-              ))}
+              )}
+              {[3,6,9].map(min => {
+                const active = timerDuration === min;
+                return (
+                  <button
+                    key={min}
+                    onClick={() => (active ? stopTimer() : startTimer(min))}
+                    title={active ? `${formatTimer(timerRemaining)} left — tap to stop` : `Start ${min} minute timer (key ${[3,6,9].indexOf(min) + 1})`}
+                    className={cn(
+                      "h-[18px] rounded-md transition-colors border tabular-nums",
+                      active
+                        ? "min-w-[44px] px-1.5 bg-amber-500 text-white border-amber-500 shadow-sm text-[10px] font-bold"
+                        : "px-1.5 bg-muted hover:bg-amber-50 text-muted-foreground hover:text-foreground border-border text-[9px] font-medium"
+                    )}
+                  >
+                    {active ? formatTimer(timerRemaining) : `${min}m`}
+                  </button>
+                );
+              })}
             </div>
             {/* Spacer for alignment */}
             <div className="ml-auto" />

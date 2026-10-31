@@ -111,14 +111,23 @@ function SubModalHeader({
   imageRefId?: string;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-border bg-gradient-to-r from-card to-muted/30 shrink-0">
-      <div className="flex flex-col gap-0.5">
-        <h3 className="text-lg font-bold text-foreground leading-tight">{title}</h3>
-        <p className="text-[10px] text-muted-foreground font-medium tracking-wide uppercase">{subtitle}</p>
+    <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border bg-gradient-to-r from-card to-muted/30 px-6 py-4">
+      <div className="flex min-w-0 flex-col gap-1">
+        <h3 className="text-lg font-bold leading-tight text-foreground">{title}</h3>
+        <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{subtitle}</p>
       </div>
-      <Button size="sm" variant="ghost" onClick={onClose} className="rounded-full h-8 w-8 p-0 hover:bg-muted">
-        <ChevronLeft className="w-4 h-4 mr-1" /> Back
-      </Button>
+
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Back to CTM"
+        className="group flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-background/70 py-1 pl-1 pr-3.5 text-[11px] font-semibold text-muted-foreground shadow-sm transition-all duration-200 hover:border-chart-primary/40 hover:bg-chart-primary/5 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-chart-primary/40 active:scale-[0.97]"
+      >
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted/80 transition-colors duration-200 group-hover:bg-chart-primary/15">
+          <ChevronLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" />
+        </span>
+        Back
+      </button>
     </div>
   );
 }
@@ -126,10 +135,10 @@ function SubModalHeader({
 /* ------------------------------------------------------------------ */
 /*  Scrollable body                                                    */
 /* ------------------------------------------------------------------ */
-function SubModalBody({ children }: { children: React.ReactNode }) {
+function SubModalBody({ children, wide = false }: { children: React.ReactNode; wide?: boolean }) {
   return (
     <div className="min-h-0 flex-1 overflow-y-auto p-6 bg-card">
-      <div className="max-w-md space-y-5">{children}</div>
+      <div className={cn("w-full space-y-5", !wide && "mx-auto max-w-xl")}>{children}</div>
     </div>
   );
 }
@@ -257,13 +266,13 @@ function HeartWallSubModal({ onClose, saveSelection }: { onClose: () => void; sa
         subtitle="Focus heart → imagine receiving love → permission → priority emotion → organ-muscle pair"
         onClose={onClose}
       />
-      <SubModalBody>
-        <div className="text-sm text-foreground/80 leading-relaxed mb-4">
+      <SubModalBody wide>
+        <div className="text-sm text-foreground/80 leading-relaxed">
           Screen: client focuses on heart while imagining being loved/accepted. If indicator inhibits, obtain permission, identify priority primary Heart-Wall emotion, check the relevant organ-muscle pair, record context (age, event, absorbed).
         </div>
 
         {/* Selected summary */}
-        <div className="bg-chart-primary/5 border border-chart-primary/20 rounded-lg p-3 mb-4">
+        <div className="bg-chart-primary/5 border border-chart-primary/20 rounded-lg p-3">
           <div className="grid grid-cols-3 gap-2 text-[10px]">
             <div>
               <span className="text-muted-foreground/60">Emotion:</span>
@@ -282,7 +291,7 @@ function HeartWallSubModal({ onClose, saveSelection }: { onClose: () => void; sa
 
         {/* Element tabs */}
         <div className="space-y-4">
-          <div className="flex flex-wrap gap-1 mb-3">
+          <div className="flex flex-wrap gap-1.5">
             {HEART_WALL_GROUPS.map((group, idx) => {
               const isActive = emotionSel?.groupIdx === idx;
               const groupName = group.organs[0];
@@ -321,7 +330,7 @@ function HeartWallSubModal({ onClose, saveSelection }: { onClose: () => void; sa
                     {/* Emotions grid */}
                     <div>
                       <p className="text-[10px] font-semibold text-muted-foreground mb-1.5">Emotions</p>
-                      <div className="grid grid-cols-2 gap-1.5 max-h-40 overflow-y-auto">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-44 overflow-y-auto">
                         {group.emotions.map((emotion) => {
                           const active = emotionSel?.emotion === emotion;
                           return (
@@ -329,7 +338,7 @@ function HeartWallSubModal({ onClose, saveSelection }: { onClose: () => void; sa
                               key={emotion}
                               onClick={() => { selectEmotion(emotion, { emotion, element: group.element, groupIdx: emotionSel.groupIdx }); saveSelection({ heartWall: emotion }); }}
                               className={cn(
-                                "text-left bg-card border rounded-md p-1.5 text-[9px] transition-all",
+                                "text-left bg-card border rounded-md px-2 py-1.5 text-[10px] transition-all",
                                 active ? "border-chart-primary/50 ring-1 ring-chart-primary/20 bg-chart-primary/5 text-chart-primary font-bold" : "border-border text-foreground/90 hover:bg-muted"
                               )}
                             >
@@ -341,32 +350,34 @@ function HeartWallSubModal({ onClose, saveSelection }: { onClose: () => void; sa
                     </div>
 
                     {/* Organs + Muscles */}
-                    {group.organs.map((organ) => (
-                      <div key={organ} className="bg-muted/30 rounded-lg p-2">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[9px] font-bold text-foreground">{organ}</span>
-                          <span className="text-[9px] text-muted-foreground/60">{group.element}</span>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {group.organs.map((organ) => (
+                        <div key={organ} className="bg-muted/30 rounded-lg p-2">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span className="text-[10px] font-bold text-foreground">{organ}</span>
+                            <span className="text-[9px] text-muted-foreground/60">{group.element}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1">
+                            {group.muscles[organ]?.map((muscle) => (
+                              <button
+                                key={muscle}
+                                onClick={() => { selectOrgan(organ, { organ }); selectMuscle(muscle, { muscle }); saveSelection({ heartWallOrgan: organ, heartWallMuscle: muscle }); }}
+                                className={cn(
+                                  "px-2 py-0.5 rounded text-[9px] font-medium border transition-colors",
+                                  organSel?.organ === organ && muscleSel?.muscle === muscle
+                                    ? "bg-chart-emerald text-white border-chart-emerald"
+                                    : organSel?.organ === organ
+                                      ? "border-chart-emerald/50 bg-chart-emerald/5 text-chart-emerald"
+                                      : "border-border bg-card text-foreground/80 hover:bg-muted"
+                                )}
+                              >
+                                {muscle}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                        <div className="flex flex-wrap gap-1">
-                          {group.muscles[organ]?.map((muscle) => (
-                            <button
-                              key={muscle}
-                              onClick={() => { selectOrgan(organ, { organ }); selectMuscle(muscle, { muscle }); saveSelection({ heartWallOrgan: organ, heartWallMuscle: muscle }); }}
-                              className={cn(
-                                "px-2 py-0.5 rounded text-[9px] font-medium border transition-colors",
-                                organSel?.organ === organ && muscleSel?.muscle === muscle
-                                  ? "bg-chart-emerald text-white border-chart-emerald"
-                                  : organSel?.organ === organ
-                                    ? "border-chart-emerald/50 bg-chart-emerald/5 text-chart-emerald"
-                                    : "border-border bg-card text-foreground/80 hover:bg-muted"
-                              )}
-                            >
-                              {muscle}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </>
                 );
               })()}
@@ -1304,7 +1315,10 @@ export function CTMModal({
       {renderSubModal() && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4" onClick={closeSubModal}>
           <div
-            className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
+            className={cn(
+              "flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl",
+              activeSubModal === "heart-wall" ? "max-w-2xl" : "max-w-xl"
+            )}
             onClick={(e) => e.stopPropagation()}
           >
             {renderSubModal()}

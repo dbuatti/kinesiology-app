@@ -112,6 +112,9 @@ const SELECTABLE_MERIDIANS: Array<{ code: string; name: string; element: string 
   { code: "LR", name: "Liver", element: "Wood" },
 ];
 
+/* Sub-modals that need the extra width (dense multi-column content) */
+const WIDE_SUBMODALS = ["heart-wall", "brain-zones"];
+
 /* ------------------------------------------------------------------ */
 /*  Sub-modal: shared header + close                                   */
 /* ------------------------------------------------------------------ */
@@ -426,7 +429,7 @@ function BrainZonesSubModal({ onClose, saveSelection }: { onClose: () => void; s
         onClose={onClose}
         imageRefId="brain-zones"
       />
-      <SubModalBody>
+      <SubModalBody wide>
         <div className="space-y-5">
           <div>
             <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-3">Cortical Zones</p>
@@ -1335,7 +1338,7 @@ export function CTMModal({
           <div
             className={cn(
               "flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl",
-              activeSubModal === "heart-wall" ? "max-w-2xl" : "max-w-xl"
+              activeSubModal && WIDE_SUBMODALS.includes(activeSubModal) ? "max-w-2xl" : "max-w-xl"
             )}
             onClick={(e) => e.stopPropagation()}
           >

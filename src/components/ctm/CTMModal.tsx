@@ -22,10 +22,10 @@ export interface CTMPhase {
 }
 
 export const CTM_PHASES: CTMPhase[] = [
-  { id: "screen", label: "1 — The Screen" },
-  { id: "node", label: "2 — Find Node" },
-  { id: "systems", label: "3 — Find 3 Systems" },
-  { id: "correction", label: "4 — The Correction" },
+  { id: "screen", label: "The Screen" },
+  { id: "node", label: "Find Node" },
+  { id: "systems", label: "Find 3 Systems" },
+  { id: "correction", label: "The Correction" },
 ];
 
 export const CTM_SYSTEM_GROUPS = [

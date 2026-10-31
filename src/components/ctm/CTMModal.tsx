@@ -503,31 +503,28 @@ function OrgansSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
         <div className="space-y-4">
           {/* Pulse points reference image */}
           <div className="space-y-1.5">
-            <p className="text-[10px] font-semibold uppercase text-muted-foreground">Pulse Point Chart</p>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] font-semibold uppercase text-muted-foreground">Pulse Point Chart</p>
+              <span className="text-[9px] text-muted-foreground/50">Tap to enlarge</span>
+            </div>
             <button
               type="button"
               onClick={() => setZoom("/images/pulse-points.png")}
-              className="block w-full overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in hover:ring-2 hover:ring-chart-emerald/30 transition-all"
+              className="relative flex h-56 w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in hover:ring-2 hover:ring-chart-emerald/40 transition-all"
             >
+              <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] text-muted-foreground/60">
+                Pulse point chart unavailable
+              </span>
               <img
                 src="/images/pulse-points.png"
                 alt="Pulse point positions on the wrist — cun, guan, chi on left and right"
-                className="w-full object-contain"
-                loading="lazy"
+                className="relative h-full w-full object-contain p-1"
+                decoding="async"
                 onError={(e) => {
-                  const target = e.currentTarget;
-                  target.style.display = "none";
-                  const parent = target.parentElement;
-                  if (parent) {
-                    const placeholder = document.createElement("div");
-                    placeholder.className = "flex h-40 items-center justify-center";
-                    placeholder.innerHTML = '<p class="text-[10px] text-muted-foreground/50">Pulse point image not found</p>';
-                    parent.appendChild(placeholder);
-                  }
+                  e.currentTarget.style.display = "none";
                 }}
               />
             </button>
-            <p className="text-[9px] text-muted-foreground/50 text-center">Tap to zoom · cun / guan / chi</p>
           </div>
 
           <div className="flex items-center justify-between">
@@ -756,31 +753,30 @@ function CranialSuturesSubModal({ onClose, saveSelection }: { onClose: () => voi
         <div className="space-y-5">
           {/* Cranial sutures reference image */}
           <div className="space-y-1.5">
-            <p className="text-[10px] font-semibold uppercase text-muted-foreground">Suture Chart</p>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] font-semibold uppercase text-muted-foreground">Suture Chart</p>
+              <span className="text-[9px] text-muted-foreground/50">Tap to enlarge</span>
+            </div>
             <button
               type="button"
               onClick={() => setZoom("/images/cranial-sutures.png")}
-              className="block w-full overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in hover:ring-2 hover:ring-chart-secondary/30 transition-all"
+              className="relative flex h-56 w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in hover:ring-2 hover:ring-chart-secondary/40 transition-all"
             >
+              <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] text-muted-foreground/60">
+                Suture chart unavailable
+              </span>
               <img
                 src="/images/cranial-sutures.png"
-                alt="Cranial sutures reference diagram"
-                className="w-full object-contain"
-                loading="lazy"
+                alt="Cranial sutures reference diagram — coronal, sagittal, lambdoid, squamous, frontozygomatic, temporozygomatic"
+                className="relative h-full w-full object-contain p-1"
+                width={1186}
+                height={1532}
+                decoding="async"
                 onError={(e) => {
-                  const target = e.currentTarget;
-                  target.style.display = "none";
-                  const parent = target.parentElement;
-                  if (parent) {
-                    const placeholder = document.createElement("div");
-                    placeholder.className = "flex h-40 items-center justify-center";
-                    placeholder.innerHTML = '<p class="text-[10px] text-muted-foreground/50">Suture chart not found</p>';
-                    parent.appendChild(placeholder);
-                  }
+                  e.currentTarget.style.display = "none";
                 }}
               />
             </button>
-            <p className="text-[9px] text-muted-foreground/50 text-center">Tap to zoom</p>
           </div>
 
           <div className="flex items-center justify-between">
@@ -1294,8 +1290,11 @@ export function CTMModal({
 
       {/* Sub-modal overlay */}
       {renderSubModal() && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm" onClick={closeSubModal}>
-          <div className="w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4" onClick={closeSubModal}>
+          <div
+            className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             {renderSubModal()}
           </div>
         </div>

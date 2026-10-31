@@ -128,7 +128,7 @@ function SubModalHeader({
 /* ------------------------------------------------------------------ */
 function SubModalBody({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex-1 overflow-y-auto p-6 bg-card">
+    <div className="min-h-0 flex-1 overflow-y-auto p-6 bg-card">
       <div className="max-w-md space-y-5">{children}</div>
     </div>
   );
@@ -524,14 +524,14 @@ function OrgansSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
             <button
               type="button"
               onClick={() => setZoom("/images/pulse-points.png")}
-              className="relative flex h-56 w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in hover:ring-2 hover:ring-chart-emerald/40 transition-all"
+              className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in hover:ring-2 hover:ring-chart-emerald/40 transition-all"
             >
               <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] text-muted-foreground/60">
                 Pulse point chart unavailable
               </span>
               <img
-                src="/images/pulse-points.png"
-                alt="Pulse point positions on the wrist — cun, guan, chi on left and right"
+                src="/images/pulse-points-preview.webp"
+                alt="Wrist pulse points"
                 className="relative h-full w-full object-contain p-1"
                 decoding="async"
                 onError={(e) => {
@@ -774,17 +774,15 @@ function CranialSuturesSubModal({ onClose, saveSelection }: { onClose: () => voi
             <button
               type="button"
               onClick={() => setZoom("/images/cranial-sutures.png")}
-              className="relative flex h-56 w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in hover:ring-2 hover:ring-chart-secondary/40 transition-all"
+              className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in hover:ring-2 hover:ring-chart-secondary/40 transition-all"
             >
               <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] text-muted-foreground/60">
                 Suture chart unavailable
               </span>
               <img
-                src="/images/cranial-sutures.png"
-                alt="Cranial sutures reference diagram — coronal, sagittal, lambdoid, squamous, frontozygomatic, temporozygomatic"
+                src="/images/cranial-sutures-preview.webp"
+                alt="Cranial sutures diagram"
                 className="relative h-full w-full object-contain p-1"
-                width={1186}
-                height={1532}
                 decoding="async"
                 onError={(e) => {
                   e.currentTarget.style.display = "none";
@@ -1079,7 +1077,7 @@ export function CTMModal({
         </div>
 
         {/* Main content */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
           {/* ----- STEP 1: SCREEN ----- */}
           {step === 0 && (
             <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">

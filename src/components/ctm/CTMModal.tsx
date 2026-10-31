@@ -144,18 +144,24 @@ interface UseCTMSelectionReturn {
 }
 
 function useCTMSelection(category: string): UseCTMSelectionReturn {
-  const [selected, setSelected] = useState<Record<string, any>>({});
-  const select = useCallback((key: string, value: string | any) => {
-    setSelected((prev) => ({ ...prev, [category]: value, selectedAt: new Date().toISOString() }));
-  }, [category]);
-  const deselect = useCallback(() => {
-    setSelected((prev) => {
-      const next = { ...prev };
-      delete next[category];
-      return next;
-    });
-  }, [category]);
-  return { selected, select, deselect };
+  // NOTE: `selected` must be the *value* for this category, not a map of
+  // category -> value. Every call site reads it as `selected?.organ`,
+  // `selected?.groupIdx`, etc. Nesting the value under `selected[category]`
+  // silently made all of those undefined (nothing ever highlighted or
+  // expanded when you clicked a tab).
+  const [selected, setSelected] = useState<Record<string, any> | null>(null);
+  const select = useCallback(
+    (_key: string, value: string | Record<string, any>) => {
+      setSelected(
+        typeof value === "string"
+          ? { [category]: value, selectedAt: new Date().toISOString() }
+          : { ...value, selectedAt: new Date().toISOString() }
+      );
+    },
+    [category]
+  );
+  const deselect = useCallback(() => setSelected(null), []);
+  return { selected: selected ?? {}, select, deselect };
 }
 
 /* ------------------------------------------------------------------ */
@@ -277,24 +283,32 @@ function HeartWallSubModal({ onClose, saveSelection }: { onClose: () => void; sa
         {/* Element tabs */}
         <div className="space-y-4">
           <div className="flex flex-wrap gap-1 mb-3">
-            {HEART_WALL_GROUPS.map((group, idx) => (
-              <button
-                key={idx}
-                onClick={() => selectEmotion(group.element, { element: group.element, groupIdx: idx })}
-                className={cn(
-                  "px-2 py-1 rounded-full text-[9px] font-medium border transition-colors",
-                  emotionSel?.element === group.element
-                    ? "bg-chart-primary text-white border-chart-primary"
-                    : "border-border bg-card text-foreground/80 hover:bg-muted"
-                )}
-              >
-                {group.element}
-              </button>
-            ))}
+            {HEART_WALL_GROUPS.map((group, idx) => {
+              const isActive = emotionSel?.groupIdx === idx;
+              const groupName = group.organs[0];
+              return (
+                <button
+                  key={group.element}
+                  type="button"
+                  onClick={() => selectEmotion(group.element, { element: group.element, groupIdx: idx })}
+                  className={cn(
+                    "px-2.5 py-1.5 rounded-full text-[10px] font-semibold border transition-colors",
+                    isActive
+                      ? "bg-chart-primary text-white border-chart-primary shadow-sm"
+                      : "border-border bg-card text-foreground/80 hover:bg-muted"
+                  )}
+                >
+                  {group.element}
+                  <span className={cn("ml-1 text-[8px] font-normal", isActive ? "text-white/70" : "text-muted-foreground/60")}>
+                    {groupName}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Current group detail */}
-          {emotionSel?.groupIdx !== undefined && (
+          {emotionSel?.groupIdx != null && HEART_WALL_GROUPS[emotionSel.groupIdx] && (
             <div className="space-y-3">
               {(() => {
                 const group = HEART_WALL_GROUPS[emotionSel.groupIdx];

@@ -609,6 +609,27 @@ function OrgansSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
 /* ------------------------------------------------------------------ */
 function JointsSubModal({ onClose, saveSelection }: { onClose: () => void; saveSelection: (sel: Record<string, any>) => void }) {
   const { selected, select } = useCTMSelection("joint");
+  const [query, setQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState<"all" | "Axial" | "Appendicular">("all");
+
+  const filteredJoints = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return JOINT_ACTION_LIBRARY.filter((joint) => {
+      if (typeFilter !== "all" && joint.type !== typeFilter) return false;
+      if (!q) return true;
+      const actionText = Object.values(joint.actions)
+        .flat()
+        .map((a) => `${a.label} ${a.howTo}`)
+        .join(" ");
+      return (
+        joint.name.toLowerCase().includes(q) ||
+        joint.region.toLowerCase().includes(q) ||
+        joint.type.toLowerCase().includes(q) ||
+        joint.pearl.toLowerCase().includes(q) ||
+        actionText.toLowerCase().includes(q)
+      );
+    });
+  }, [query, typeFilter]);
 
   return (
     <>
@@ -618,14 +639,59 @@ function JointsSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
         onClose={onClose}
       />
       <SubModalBody>
-        <div className="space-y-5">
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-semibold uppercase text-muted-foreground">Selected Joint</span>
             <span className="ml-auto text-[10px] text-muted-foreground">{selected?.joint ?? "—"}</span>
           </div>
 
-          <div className="grid grid-cols-1 gap-2 max-h-[48vh] overflow-y-auto">
-            {JOINT_ACTION_LIBRARY.map((joint) => {
+          {/* Search + type filter */}
+          <div className="space-y-2">
+            <div className="relative">
+              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search joint, region, action…"
+                className="w-full rounded-lg border border-border bg-muted/30 py-1.5 pl-8 pr-7 text-[11px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-chart-primary/30"
+              />
+              {query && (
+                <button
+                  onClick={() => setQuery("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground"
+                  aria-label="Clear search"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              {(["all", "Axial", "Appendicular"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTypeFilter(t)}
+                  className={cn(
+                    "rounded-md px-2 py-0.5 text-[9px] font-semibold transition-colors",
+                    typeFilter === t
+                      ? "bg-chart-primary/10 text-chart-primary"
+                      : "text-muted-foreground/70 hover:bg-muted"
+                  )}
+                >
+                  {t === "all" ? "All" : t}
+                </button>
+              ))}
+              <span className="ml-auto text-[9px] text-muted-foreground/50">
+                {filteredJoints.length} of {JOINT_ACTION_LIBRARY.length}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-2 max-h-[42vh] overflow-y-auto">
+            {filteredJoints.length === 0 && (
+              <p className="text-[10px] text-muted-foreground italic py-6 text-center">No joints match “{query}”.</p>
+            )}
+            {filteredJoints.map((joint) => {
               const active = selected?.joint === joint.name;
               const allActions = Object.values(joint.actions).flat();
               const firstAction = allActions[0];

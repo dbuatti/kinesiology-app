@@ -33,8 +33,11 @@ import {
 } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
-import PeaceWizard, { PEACE_PHASES } from "@/components/crm/v2/PeaceWizard";
 import PeaceWizardV3 from "@/components/crm/v3/PeaceWizardV3";
+// V3 is the canonical PEACE implementation — the demo and real appointments
+// both run it. Phase metadata is taken from the v3 design system so the header
+// stepper and the wizard can never disagree.
+import { PHASE_SPECS as PEACE_PHASES } from "@/components/crm/v3/DesignSystem";
 import AppointmentV2DocView from "@/components/crm/v2/AppointmentV2DocView";
 import { CorrectionDockProvider } from "@/components/crm/corrections/CorrectionDockContext";
 import CorrectionDock from "@/components/crm/corrections/CorrectionDock";
@@ -320,6 +323,25 @@ const AppointmentV2Page = () => {
     setViewMode('grid');
   }, []);
 
+  /** Single completion path for both the header Finalise button and the wizard. */
+  const handleFinalise = useCallback(async () => {
+    if (isDemo) {
+      showSuccess("Demo session — nothing was saved.");
+      return;
+    }
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .update({ status: 'Completed' })
+        .eq('id', id);
+      if (error) throw error;
+      navigate(`/appointments/${id}`);
+    } catch (err) {
+      console.error("Failed to finalise session:", err);
+      showError("Failed to complete session. Please try again.");
+    }
+  }, [isDemo, id, navigate]);
+
   // React to pending manual navigation
   useEffect(() => {
     if (pendingManualPathwayId) {
@@ -576,7 +598,7 @@ const AppointmentV2Page = () => {
               </Button>
             ) : (
               <Button
-                onClick={onFinalise || onUpdate}
+                onClick={handleFinalise}
                 className="h-10 shrink-0 rounded-xl bg-chart-emerald px-5 text-[12px] font-medium text-white shadow-sm hover:bg-chart-emerald/90"
               >
                 <CheckCircle2 size={14} className="mr-1.5" /> Finalise
@@ -641,41 +663,16 @@ const AppointmentV2Page = () => {
       {viewMode === 'peace' && (
         <div className="mx-auto w-full max-w-[1120px] px-4 py-5 md:px-8">
           <ErrorBoundary>
-            {isDemo ? (
-              <PeaceWizardV3
-                appointment={appointment}
-                history={history}
-                onUpdate={refresh}
-                saveField={saveField}
-                updatePriorityPattern={updatePriorityPattern}
-                onPhaseChange={setActivePhase}
-                activePhase={activePhase}
-                onFinalise={() => showSuccess("Demo session — nothing was saved.")}
-              />
-            ) : (
-              <PeaceWizard
-                appointment={appointment}
-                history={history}
-                onUpdate={refresh}
-                saveField={saveField}
-                updatePriorityPattern={updatePriorityPattern}
-                onPhaseChange={setActivePhase}
-                activePhase={activePhase}
-                onFinalise={async () => {
-                  try {
-                    const { error } = await supabase
-                      .from('appointments')
-                      .update({ status: 'Completed' })
-                      .eq('id', id);
-                    if (error) throw error;
-                    navigate(`/appointments/${id}`);
-                  } catch (err) {
-                    console.error("Failed to finalise session:", err);
-                    showError("Failed to complete session. Please try again.");
-                  }
-                }}
-              />
-            )}
+            <PeaceWizardV3
+              appointment={appointment}
+              history={history}
+              onUpdate={refresh}
+              saveField={saveField}
+              updatePriorityPattern={updatePriorityPattern}
+              onPhaseChange={setActivePhase}
+              activePhase={activePhase}
+              onFinalise={handleFinalise}
+            />
           </ErrorBoundary>
         </div>
       )}
@@ -721,7 +718,12 @@ const AppointmentV2Page = () => {
       />
       </div>
       <ImageReferenceModal open={imageRefOpen} onClose={() => setImageRefOpen(false)} />
-      <SessionReportModal open={reportOpen} onClose={() => setReportOpen(false)} appointment={appointment} updateMetadata={updateMetadata} />
+      <SessionReportModal
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        appointment={appointment}
+        updateMetadata={async (metadata) => { await updateMetadata(metadata); }}
+      />
       <CTMModal
         open={ctmOpen}
         onOpenChange={setCtmOpen}

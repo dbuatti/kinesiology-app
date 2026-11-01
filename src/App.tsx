@@ -44,6 +44,7 @@ const IdentityWorkspacePage = lazy(() => import("./pages/IdentityWorkspacePage")
 const JournalPage = lazy(() => import("./pages/JournalPage"));
 const PracticeHubPage = lazy(() => import("./pages/PracticeHubPage"));
 const MorningProgramPage = lazy(() => import("./pages/MorningProgramPage"));
+const SelfWorkPage = lazy(() => import("./pages/SelfWorkPage"));
 
 // --- Worksheets (consolidated into Library panes) ---
 
@@ -269,6 +270,7 @@ const AppRoutes = () => {
           <Route path="/business/follow-up" element={<Navigate to="/follow-up" replace />} />
 
           {/* System */}
+          <Route path="/self-work" element={<SelfWorkPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/import" element={<ImportPage />} />
           <Route path="/settings/debug" element={<DebugAppointmentPage />} />

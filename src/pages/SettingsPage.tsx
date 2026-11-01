@@ -1,4 +1,4 @@
-import { Settings, Mail, Link as LinkIcon, Sparkles, Globe, Calendar, ExternalLink, FileText, Bug, FlaskConical, Workflow, ClipboardList, Eye, Share2, ArrowLeft } from "lucide-react";
+import { Settings, Mail, Link as LinkIcon, Sparkles, Globe, Calendar, ExternalLink, FileText, Bug, FlaskConical, Workflow, ClipboardList, Eye, Share2, ArrowLeft, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
@@ -253,6 +253,7 @@ const SettingsPage = () => {
                   <CardLink to="/settings/debug" icon={Bug} title="Appointment Debugger" desc="Test bookings, email sending, Stripe links, and Cal.com sync with real data" />
                   <CardLink to="/settings/demo" icon={FlaskConical} title="Demo Session" desc="Simulate a full clinical session with mock client data" />
                   <CardLink to="/settings/audit" icon={FileText} title="Site Audit" desc="Full text breakdown of all pages, routes, and components" />
+                  <CardLink to="/self-work" icon={Heart} title="Self Work" desc="Personal emotional integration practice for iPhone companion use" />
                 </div>
               </div>
             </div>

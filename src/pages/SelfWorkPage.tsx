@@ -319,10 +319,18 @@ export default function SelfWorkPage() {
       </header>
 
       <main className="pt-16 pb-28 px-4 sm:px-6 max-w-2xl mx-auto">
-        <div className="mb-6 flex items-center justify-center gap-1">
-          {["timelineSelect", "emotionSelect", "organSelect", "eyeSelect", "result"].map((s, i) => (
-            <div key={s} className={cn("w-2 h-2 rounded-full transition-all", step === s || (step === "result-saved" && i < 4) ? "bg-amber-400" : "bg-white/10")} />
-          ))}
+        {/* Step progress — cleaner, no clashing line */}
+        <div className="mb-6 flex items-center justify-center gap-3">
+          {["timelineSelect", "emotionSelect", "organSelect", "eyeSelect", "result"].map((s, i) => {
+            const isActive = step === s || (step === "result-saved" && i < 4);
+            const isPast = ["timelineSelect", "emotionSelect", "organSelect", "eyeSelect", "result"].indexOf(step) > i || (step === "result-saved" && i < 4);
+            return (
+              <div key={s} className="flex items-center gap-1">
+                <div className={cn("w-2.5 h-2.5 rounded-full transition-all duration-300", isActive ? "bg-amber-400 scale-125" : isPast ? "bg-amber-400/60" : "bg-white/10")} />
+                {i < 4 && <div className={cn("w-4 h-px", isPast ? "bg-amber-400/40" : "bg-white/10")} />}
+              </div>
+            );
+          })}
         </div>
 
         {step === "timelineSelect" && (
@@ -399,16 +407,42 @@ export default function SelfWorkPage() {
 
         {step === "result" && emotion && organ && (
           <StepCard title="Integration Complete" subtitle="Note shifts in awareness, emotion, or physical sensation." className="text-center">
-            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{background: "rgba(255,215,100,0.15)"}}><Heart size={32} className={colors.amberBright} /></div>
-            <p className="text-[12px] mb-6" style={{color: "rgba(255,215,100,0.6)"}}>Emotion: <span className="font-medium">{emotion.label}</span> · Organ: <span className="font-medium">{organ}</span> · Eye: <span className="font-medium">{eyePos}</span></p>
+            <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center" style={{background: "linear-gradient(135deg, rgba(255,215,100,0.2), rgba(255,215,100,0.05))", boxShadow: "0 0 40px rgba(255,215,100,0.15)"}}>
+              <Heart size={36} className={colors.amberBright} />
+            </div>
+            <div className="space-y-3 mb-6">
+              <div className="flex items-center justify-between px-4 py-3 rounded-xl" style={{background: "rgba(255,255,255,0.03)"}}>
+                <span className="text-[11px] uppercase tracking-wider" style={{color: "rgba(255,255,255,0.5)"}}>Emotion</span>
+                <span className="font-medium">{emotion.label}</span>
+              </div>
+              <div className="flex items-center justify-between px-4 py-3 rounded-xl" style={{background: "rgba(255,255,255,0.03)"}}>
+                <span className="text-[11px] uppercase tracking-wider" style={{color: "rgba(255,255,255,0.5)"}}>Organ</span>
+                <span className="font-medium">{organ}</span>
+              </div>
+              <div className="flex items-center justify-between px-4 py-3 rounded-xl" style={{background: "rgba(255,255,255,0.03)"}}>
+                <span className="text-[11px] uppercase tracking-wider" style={{color: "rgba(255,255,255,0.5)"}}>Eye Position</span>
+                <span className="font-medium">{eyePos}</span>
+              </div>
+              {timeline && (
+                <div className="flex items-center justify-between px-4 py-3 rounded-xl" style={{background: "rgba(255,255,255,0.03)"}}>
+                  <span className="text-[11px] uppercase tracking-wider" style={{color: "rgba(255,255,255,0.5)"}}>Timeline</span>
+                  <span className="font-medium">{timeline}{age ? ` — Age ${age}` : ""}</span>
+                </div>
+              )}
+            </div>
             <button onClick={() => { haptic("medium"); const log = { id: crypto.randomUUID(), timestamp: Date.now(), emotion: emotion.label, organ, eyePos: eyePos, timeline: timeline || undefined, age: age || undefined }; saveToHistory(log); setStep("result-saved"); }} className={cn("w-full rounded-xl px-6 py-3.5 text-sm font-semibold uppercase tracking-wider transition-all min-h-[48px]", colors.accentSolid, colors.accentHover)}>Save to Session Log</button>
           </StepCard>
         )}
 
         {step === "result-saved" && (
           <StepCard title="Saved ✅" subtitle="Your session has been logged to history." className="text-center">
-            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-amber-600/20"><Heart size={32} className={colors.amberBright} /></div>
-            <p className="text-[13px] mb-6" style={{color: "rgba(255,255,255,0.6)"}}>Emotional integration complete. ESR re-checked.</p>
+            <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center" style={{background: "linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.05))", boxShadow: "0 0 40px rgba(16,185,129,0.15)"}}>
+              <CheckCircle2 size={36} className="text-emerald-400" />
+            </div>
+            <div className="space-y-2 mb-6">
+              <p className="text-[13px]" style={{color: "rgba(255,255,255,0.6)"}}>Emotional integration complete. ESR re-checked.</p>
+              <p className="text-[11px]" style={{color: "rgba(255,255,255,0.4)"}}>Note any shifts in awareness, emotion, or physical sensation.</p>
+            </div>
             <button onClick={goHome} className={cn("w-full rounded-xl px-6 py-3.5 text-sm font-semibold uppercase tracking-wider transition-all min-h-[48px]", colors.accentSolid, colors.accentHover)}>Another Session</button>
             <button onClick={() => { haptic(); setStep("history"); }} className="mt-3 w-full rounded-xl py-3 px-4 text-sm font-medium uppercase tracking-wider transition-all min-h-[48px] bg-white/10 border border-white/20 hover:bg-white/15">View History</button>
           </StepCard>

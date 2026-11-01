@@ -287,14 +287,10 @@ const AppointmentV2Page = () => {
         e.preventDefault();
         setCtmOpen(true);
       }
-      // Timer shortcuts: 1 = 3m, 2 = 6m, 3 = 9m
-      if (e.key === '1') { e.preventDefault(); startTimer(3); }
-      if (e.key === '2') { e.preventDefault(); startTimer(6); }
-      if (e.key === '3') { e.preventDefault(); startTimer(9); }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [ctmOpen, startTimer]);
+  }, [ctmOpen]);
 
   const toggleFullScreen = () => {
     const next = !isFullScreen;

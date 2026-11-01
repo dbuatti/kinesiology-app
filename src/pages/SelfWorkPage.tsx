@@ -24,7 +24,7 @@ const footerItems = [
 
 // Cohesive color system
 const C = {
-  bg: "bg-[linear-gradient(180deg,#0b0f1a_0%,#131b2e_50%,#0b0f1a_100%)]",
+  bg: "bg-[linear-gradient(180deg,#0c0e14_0%,#141926_50%,#0c0e14_100%)]",
   card: "bg-white/[0.06] backdrop-blur-sm",
   cardHover: "hover:bg-white/[0.10]",
   border: "border-white/[0.08]",
@@ -218,17 +218,28 @@ export default function SelfWorkPage() {
 
           <div className="mt-4 grid grid-cols-2 gap-3">
             <button onClick={() => { haptic(); setStep("history"); }} className={cn("rounded-2xl py-4 px-6 text-sm font-semibold uppercase tracking-wider transition-all min-h-[52px] flex items-center justify-center gap-2", C.muted, C.mutedHover)}>
-              <History size={16} className="shrink-0" /> History
+              <History size={16} className="shrink-0" />
+              <span>History</span>
             </button>
             <button onClick={() => { haptic(); setShowExport(true); }} className={cn("rounded-2xl py-4 px-6 text-sm font-semibold uppercase tracking-wider transition-all min-h-[52px] flex items-center justify-center gap-2", C.muted, C.mutedHover)}>
-              <Download size={16} className="shrink-0" /> Export
+              <Download size={16} className="shrink-0" />
+              <span>Export</span>
             </button>
           </div>
 
           <div className="mt-6 grid grid-cols-3 gap-2">
-            <button onClick={() => { haptic(); setStep("esrRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}><Zap size={14} className="shrink-0" /> ESR</button>
-            <button onClick={() => { haptic(); setStep("organRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}><Sparkles size={14} className="shrink-0" /> Organs</button>
-            <button onClick={() => { haptic(); setStep("eyeRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}><Eye size={14} className="shrink-0" /> Eyes</button>
+            <button onClick={() => { haptic(); setStep("esrRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}>
+              <Zap size={16} className="shrink-0" />
+              <span>ESR</span>
+            </button>
+            <button onClick={() => { haptic(); setStep("organRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}>
+              <Sparkles size={16} className="shrink-0" />
+              <span>Organs</span>
+            </button>
+            <button onClick={() => { haptic(); setStep("eyeRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}>
+              <Eye size={16} className="shrink-0" />
+              <span>Eyes</span>
+            </button>
           </div>
         </div>
 

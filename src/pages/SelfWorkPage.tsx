@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Heart, Info, ChevronLeft, History, Eye, Zap, Sparkles, Brain, Settings, X, Save, Trash2, ArrowLeft } from "lucide-react";
+import { Heart, Info, ChevronLeft, History, Eye, Zap, Sparkles, Brain, Settings, X, Save, Trash2, ArrowLeft, Home, BookOpen, Clock, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PRIMARY_EMOTIONS, EYE_POSITIONS } from "@/data/emotion-data";
 
@@ -13,6 +13,50 @@ interface SessionLog {
   eyePos: string;
   timeline?: string;
   age?: string;
+}
+
+const footerItems = [
+  { id: "home", label: "Home", icon: Home, href: null },
+  { id: "history", label: "History", icon: Clock, href: null },
+  { id: "reference", label: "Reference", icon: BookOpen, href: null },
+  { id: "profile", label: "Profile", icon: User, href: "/settings" },
+] as const;
+
+function Footer({ currentStep, onNavigate }: { currentStep: Step; onNavigate: (step: Step | "settings") => void }) {
+  const c = { card: "bg-white/5 backdrop-blur-sm", border: "border-white/10" };
+  return (
+    <footer className={cn("fixed bottom-0 left-0 right-0 z-30", c.card, c.border, "border-t", "pb-safe-area")} style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+      <div className="grid grid-cols-4">
+        {footerItems.map((item) => {
+          const isActive = 
+            (item.id === "home" && currentStep === "home") ||
+            (item.id === "history" && currentStep === "history") ||
+            (item.id === "reference" && ["esrRef", "organRef", "eyeRef"].includes(currentStep));
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              onClick={() => {
+                if (item.href) {
+                  window.location.href = item.href;
+                } else {
+                  onNavigate(item.id as Step);
+                }
+              }}
+              className={cn(
+                "flex flex-col items-center gap-1 py-3 px-2 transition-colors min-h-[56px]",
+                isActive ? "text-amber-400" : "text-white/50 hover:text-white/70"
+              )}
+              aria-label={item.label}
+            >
+              <Icon size={22} />
+              <span className="text-[10px] font-medium">{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </footer>
+  );
 }
 
 export default function SelfWorkPage() {
@@ -41,10 +85,7 @@ export default function SelfWorkPage() {
   };
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("selfWorkHistory");
-      if (stored) setHistory(JSON.parse(stored));
-    } catch {}
+    try { const stored = localStorage.getItem("selfWorkHistory"); if (stored) setHistory(JSON.parse(stored)); } catch {}
     setIsIOS(/iPhone|iPad|iPod/.test(navigator.userAgent));
     const handleBeforeInstall = (e: BeforeInstallPromptEvent) => { e.preventDefault(); setShowInstallPrompt(true); };
     window.addEventListener("beforeinstallprompt", handleBeforeInstall as any);
@@ -74,6 +115,11 @@ export default function SelfWorkPage() {
 
   const goHome = useCallback(() => { haptic("light"); setStep("home"); }, []);
   const goBack = useCallback(() => { haptic("light"); if (["organSelect", "eyeSelect", "result"].includes(step)) setStep("home"); else setStep("home"); }, [step]);
+  const navigateFooter = useCallback((target: Step | "settings") => {
+    haptic("light");
+    if (target === "settings") { window.location.href = "/settings"; }
+    else { setStep(target); }
+  }, []);
 
   // Reference content
   const esrContent = (
@@ -132,7 +178,7 @@ export default function SelfWorkPage() {
   // HOME PAGE
   if (step === "home") {
     return (
-      <section className={cn("min-h-screen text-white", colors.bg, "pb-20")} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <section className={cn("min-h-screen text-white", colors.bg, "pb-28")} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="max-w-xl mx-auto px-4 pt-6">
           <div className="mb-8 animate-in fade-in slide-in-from-top-2 duration-300">
             <h1 className="text-3xl font-serif font-bold tracking-wider">Self Work</h1>
@@ -157,19 +203,16 @@ export default function SelfWorkPage() {
             </article>
           </div>
 
-          {/* MAIN CTA - EMOTIONS BUTTON */}
           <button onClick={() => { haptic(); setStep("organSelect"); }} className={cn("mt-6 w-full rounded-2xl py-5 px-6 text-base font-semibold uppercase tracking-wider transition-all min-h-[56px]", colors.accentSolid, colors.accentHover)}>
             <Heart size={20} className="inline mr-2" /> Start Emotional Integration
           </button>
 
-          {/* Secondary actions */}
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button onClick={() => { haptic(); setStep("history"); }} className={cn("rounded-2xl py-4 px-6 text-sm font-semibold uppercase tracking-wider transition-all min-h-[52px]", colors.muted, colors.mutedHover)}>
               <History size={16} className="mr-2" /> Session History
             </button>
           </div>
 
-          {/* Reference shortcuts */}
           <div className="mt-6 grid grid-cols-3 gap-2">
             <button onClick={() => { haptic(); setStep("esrRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all", colors.muted, colors.mutedHover)}><Zap size={14} className="mx-auto mb-1" /> ESR</button>
             <button onClick={() => { haptic(); setStep("organRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all", colors.muted, colors.mutedHover)}><Sparkles size={14} className="mx-auto mb-1" /> Organs</button>
@@ -177,8 +220,10 @@ export default function SelfWorkPage() {
           </div>
         </div>
 
+        <Footer currentStep={step} onNavigate={navigateFooter} />
+
         {showInstallPrompt && (
-          <div className="fixed bottom-4 left-4 right-4 max-w-xl mx-auto animate-in slide-in-from-bottom-2 duration-300 z-50">
+          <div className="fixed bottom-24 left-4 right-4 max-w-xl mx-auto animate-in slide-in-from-bottom-2 duration-300 z-50">
             <div className={cn("rounded-2xl p-4", colors.accentSolid, "shadow-xl")}>
               <div className="flex items-center justify-between">
                 <div><p className="font-semibold">Install Self Work</p><p className="text-[12px] opacity-90">Add to home screen for offline access</p></div>
@@ -194,7 +239,7 @@ export default function SelfWorkPage() {
   // HISTORY
   if (step === "history") {
     return (
-      <section className={cn("min-h-screen text-white", colors.bg, "pb-20")} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <section className={cn("min-h-screen text-white", colors.bg, "pb-28")} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="max-w-xl mx-auto px-4 pt-6">
           <div className="flex items-center justify-between mb-6">
             <button onClick={goHome} className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider opacity-70 hover:opacity-100 transition-opacity min-h-[44px]"><ArrowLeft size={16} className="opacity-70" /> Back</button>
@@ -224,32 +269,33 @@ export default function SelfWorkPage() {
             </div>
           )}
         </div>
+        <Footer currentStep={step} onNavigate={navigateFooter} />
       </section>
     );
   }
 
   // REFERENCE PAGES
-  if (step === "esrRef") return <RefPage title="ESR Indicator Check" icon={<Zap size={20} />} content={esrContent} onBack={goHome} colors={colors} />;
-  if (step === "organRef") return <RefPage title="Emotion → Organ Map" icon={<Sparkles size={20} />} content={organRefContent} onBack={goHome} colors={colors} />;
-  if (step === "eyeRef") return <RefPage title="NLP Eye Positions" icon={<Eye size={20} />} content={eyeRefContent} onBack={goHome} colors={colors} />;
+  if (step === "esrRef") return <RefPage title="ESR Indicator Check" icon={<Zap size={20} />} content={esrContent} onBack={goHome} colors={colors} onNavigate={navigateFooter} />;
+  if (step === "organRef") return <RefPage title="Emotion → Organ Map" icon={<Sparkles size={20} />} content={organRefContent} onBack={goHome} colors={colors} onNavigate={navigateFooter} />;
+  if (step === "eyeRef") return <RefPage title="NLP Eye Positions" icon={<Eye size={20} />} content={eyeRefContent} onBack={goHome} colors={colors} onNavigate={navigateFooter} />;
 
-  // INTEGRATION FLOW: organSelect → eyeSelect → result → result-saved
+  // INTEGRATION FLOW
   return (
-    <section className={cn("min-h-screen text-white overflow-x-hidden", colors.bg)} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+    <section className={cn("min-h-screen text-white overflow-x-hidden", colors.bg, "pb-28")} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <header className="fixed top-0 left-0 right-0 z-20 px-4 py-3 flex items-center justify-between border-b" style={{borderColor: "rgba(255,255,255,0.08)", background: "linear-gradient(to bottom, rgba(12,10,9,0.95), transparent)"}}>
         <button onClick={goBack} className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider opacity-70 hover:opacity-100 transition-opacity min-h-[44px]" aria-label="Back"><ArrowLeft size={16} className="opacity-70" /><span className="hidden sm:inline">Back</span></button>
         <h1 className="text-lg font-serif font-bold">Emotional Integration</h1>
         <button onClick={() => { haptic(); setStep("history"); }} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="History"><History size={18} className={colors.amberBright} /></button>
       </header>
 
-      <main className="pt-16 pb-24 px-4 sm:px-6 max-w-2xl mx-auto">
+      <main className="pt-16 pb-28 px-4 sm:px-6 max-w-2xl mx-auto">
         <div className="mb-6 flex items-center justify-center gap-1">
           {["organSelect", "eyeSelect", "result"].map((s, i) => (
             <div key={s} className={cn("w-2 h-2 rounded-full transition-all", step === s || (step === "result-saved" && i < 2) ? "bg-amber-400" : "bg-white/10")} />
           ))}
         </div>
 
-        {/* STEP 1: SELECT EMOTION + ORGAN */}
+        {/* STEP 1: SELECT EMOTION */}
         {step === "organSelect" && (
           <StepCard title="Primary Emotion" subtitle="Challenge for the priority emotion.">
             <div className="grid grid-cols-1 gap-2">
@@ -268,7 +314,7 @@ export default function SelfWorkPage() {
           <StepCard title={`Emotion: ${emotion.label}`} subtitle="Select the priority organ holding this emotion:">
             <div className="grid grid-cols-2 gap-2">
               {emotion.organs?.map((org: string) => (
-                <button key={org} onClick={() => { haptic(); setOrgan(org); setStep("eyeSelect"); }} className={cn("rounded-xl py-3 px-4 text-sm font-medium uppercase tracking-wider transition-all min-h-[48px]", colors.accent, colors.accentHover)}>{org}</button>
+                <button key={org} onClick={() => { haptic(); setOrgan(org); }} className={cn("rounded-xl py-3 px-4 text-sm font-medium uppercase tracking-wider transition-all min-h-[48px]", colors.accent, colors.accentHover)}>{org}</button>
               ))}
             </div>
             <p className="mt-3 text-[11px] text-center" style={{color: "rgba(255,215,100,0.5)"}}><em>Tap an organ to continue</em></p>
@@ -305,6 +351,7 @@ export default function SelfWorkPage() {
           </StepCard>
         )}
       </main>
+      <Footer currentStep={step} onNavigate={navigateFooter} />
     </section>
   );
 }
@@ -314,13 +361,14 @@ function StepCard({ title, subtitle, children, className = "" }: { title: string
   return <div className={cn("rounded-2xl p-5", c.card, c.border, className)}><div className="mb-4"><h2 className="text-xl font-serif font-bold mb-1">{title}</h2><p className="text-[12px]" style={{color: "rgba(255,255,255,0.5)"}}>{subtitle}</p></div>{children}</div>;
 }
 
-function RefPage({ title, icon, content, onBack, colors }: { title: string; icon: React.ReactNode; content: React.ReactNode; onBack: () => void; colors: any }) {
+function RefPage({ title, icon, content, onBack, colors, onNavigate }: { title: string; icon: React.ReactNode; content: React.ReactNode; onBack: () => void; colors: any; onNavigate: (step: Step | "settings") => void }) {
   return (
-    <section className={cn("min-h-screen text-white", colors.bg, "pb-20")} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+    <section className={cn("min-h-screen text-white", colors.bg, "pb-28")} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <div className="max-w-xl mx-auto px-4 pt-6">
         <div className="flex items-center justify-between mb-6"><button onClick={onBack} className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider opacity-70 hover:opacity-100 transition-opacity min-h-[44px]"><ArrowLeft size={16} className="opacity-70" /> Back</button><h1 className="text-lg font-serif font-bold">{title}</h1><div className="w-24" /></div>
         <div className={cn("rounded-2xl p-5", colors.card, colors.border)}>{content}</div>
       </div>
+      <Footer currentStep={step} onNavigate={onNavigate} />
     </section>
   );
 }

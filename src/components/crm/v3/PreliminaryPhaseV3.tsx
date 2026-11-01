@@ -485,7 +485,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                             )}
                           </div>
                           {/* Stim lines / directions */}
-                          {stimLines.length > 1 && (
+                          {stimLines.length > 0 && (
                             <div className="ml-2 pl-3 border-l-2 border-border/40 space-y-1 mt-2">
                               <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40 mb-1">Stim lines</p>
                               {stimLines.map((line, i) => {

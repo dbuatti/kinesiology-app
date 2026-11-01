@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Heart, Info, ChevronLeft, History, Eye, Zap, Sparkles, Brain, Settings, X, Trash2, ArrowLeft, Home, BookOpen, Clock, User, Download, Share2, RotateCcw, ChevronRight, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PRIMARY_EMOTIONS, EYE_POSITIONS } from "@/data/emotion-data";
+import LimitingBeliefsSelfWork from "@/components/crm/LimitingBeliefsSelfWork";
 
 type Step = "home" | "timelineSelect" | "timelineAge" | "emotionSelect" | "organSelect" | "eyeSelect" | "result" | "result-saved" | "history" | "esrRef" | "organRef" | "eyeRef" | "limitingBeliefs";
 

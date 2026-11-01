@@ -185,7 +185,6 @@ const AppRoutes = () => {
         <Route
           element={session ? <MainLayout /> : <Navigate to="/login" replace />}
         >
-          <Route path="/self-work" element={<SelfWorkPage />} />
           <Route path="/" element={<DashboardPage />} />
 
           {/* Clinic */}
@@ -289,6 +288,9 @@ const AppRoutes = () => {
           <Route path="/lab/limiting-beliefs" element={<Navigate to="/identity?tool=limiting" replace />} />
           <Route path="/lab/fractals" element={<Navigate to="/identity?tool=fractals" replace />} />
         </Route>
+
+        {/* Self Work - standalone, no MainLayout chrome */}
+        <Route path="/self-work" element={<SelfWorkPage />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

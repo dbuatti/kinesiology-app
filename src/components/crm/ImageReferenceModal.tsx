@@ -14,6 +14,7 @@ const SINGLE_IMAGES = [
   { id: "pulse-points", title: "Pulse Points", description: "Wrist pulse positions — cun, guan, chi on left and right. Light pressure = Yang (superficial). Deep pressure = Yin (deep).", src: "/images/pulse-points.png", alt: "Pulse point positions on the wrist" },
   { id: "brain-zones", title: "Brain Zones", description: "Cortical and subcortical brain zones reference — primary zones, secondary zones, and their partner regions for correction.", src: "/images/brain-zones.png", alt: "Brain zones reference diagram" },
   { id: "cranial-sutures", title: "Cranial Sutures", description: "Temporal-parietal suture (halfway between top of ear and top of head) — glide test for lymphatic congestion. Stuck side indicates priority zone.", src: "/images/cranial-sutures.png", alt: "Cranial sutures reference diagram" },
+  { id: "organ-referral", title: "Organ Referral Zones — Anterior & Posterior", description: "Body map showing visceral organ referral zones and their anterior/posterior surface mapping — heart, lungs, liver, stomach, pancreas, kidney, gallbladder, appendix, ovaries, uterus, colon, urinary bladder.", src: "/images/organ-referral-chart-v7_943feb3e.png", alt: "Organ referral zones — anterior and posterior body chart" },
 ];
 
 const CN_IMAGES = CRANIAL_NERVES.map((cn) => ({

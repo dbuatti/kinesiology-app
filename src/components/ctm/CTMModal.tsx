@@ -548,6 +548,32 @@ function OrgansSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
       />
       <SubModalBody>
         <div className="space-y-4">
+          {/* Organ referral chart */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] font-semibold uppercase text-muted-foreground">Organ Referral Chart</p>
+              <span className="text-[9px] text-muted-foreground/50">Tap to enlarge</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setZoom("/images/organ-referral-chart-v7_943feb3e.png")}
+              className="relative flex h-48 w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in hover:ring-2 hover:ring-chart-emerald/40 transition-all"
+            >
+              <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] text-muted-foreground/60">
+                Organ referral chart unavailable
+              </span>
+              <img
+                src="/images/organ-referral-preview.webp"
+                alt="Organ referral zones — anterior and posterior body chart"
+                className="relative h-full w-full object-contain p-1"
+                decoding="async"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            </button>
+          </div>
+
           {/* Pulse points reference image */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">

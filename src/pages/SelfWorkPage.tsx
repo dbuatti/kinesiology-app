@@ -115,6 +115,7 @@ export default function SelfWorkPage() {
   };
 
   const goHome = useCallback(() => { haptic("light"); setStep("home"); }, []);
+  const goBack = useCallback(() => { haptic("light"); setStep("home"); }, []);
 
   // Reference content
   const esrContent = (

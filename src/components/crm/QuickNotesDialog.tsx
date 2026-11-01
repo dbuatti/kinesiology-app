@@ -125,35 +125,29 @@ const QuickNotesDialog = ({
 
         <div className="flex flex-col flex-1 min-h-0 px-6 py-4 overflow-y-auto">
           {/* Session context — editable goal & concern */}
-          {(goal || issue) && (
-            <section className="space-y-3 mb-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {goal && (
-                  <EditableField
-                    field="goal"
-                    label="Session goal"
-                    value={goal}
-                    multiline
-                    placeholder="e.g. Sleep through the night without waking at 3am…"
-                    onSave={onSave}
-                    className="border-none p-0 shadow-none bg-transparent"
-                  />
-                )}
-                {issue && (
-                  <EditableField
-                    field="issue"
-                    label="Primary concern"
-                    value={issue}
-                    multiline
-                    placeholder="Describe the current symptoms and history…"
-                    onSave={onSave}
-                    className="border-none p-0 shadow-none bg-transparent"
-                  />
-                )}
-              </div>
-              <div className="h-px bg-border/60" />
-            </section>
-          )}
+          <section className="space-y-3 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <EditableField
+                field="goal"
+                label="Session goal"
+                value={goal || ""}
+                multiline
+                placeholder="e.g. Sleep through the night without waking at 3am…"
+                onSave={onSave}
+                className="border-none p-0 shadow-none bg-transparent"
+              />
+              <EditableField
+                field="issue"
+                label="Primary concern"
+                value={issue || ""}
+                multiline
+                placeholder="Describe the current symptoms and history…"
+                onSave={onSave}
+                className="border-none p-0 shadow-none bg-transparent"
+              />
+            </div>
+            <div className="h-px bg-border/60" />
+          </section>
 
           {/* Session notes */}
           <section className="space-y-2">

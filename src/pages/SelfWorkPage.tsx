@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Heart, Info, ChevronLeft, History, Eye, Zap, Sparkles, Brain, Settings, X, Trash2, ArrowLeft, Home, BookOpen, Clock, User, Download, Share2, RotateCcw, ChevronRight, CheckCircle2 } from "lucide-react";
+import { Heart, Info, ChevronLeft, History, Eye, Zap, Sparkles, Brain, Settings, X, Trash2, ArrowLeft, Home, BookOpen, Clock, User, Download, Share2, RotateCcw, ChevronRight, CheckCircle2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PRIMARY_EMOTIONS, EYE_POSITIONS } from "@/data/emotion-data";
 
@@ -62,14 +62,14 @@ export default function SelfWorkPage() {
   const [emotion, setEmotion] = useState<any>(null);
   const [organ, setOrgan] = useState<string>("");
   const [eyePos, setEyePos] = useState<string>("");
-  const [timeline, setTimeline] = useState<'Current' | 'Historic' | null>(null);
-  const [age, setAge] = useState("");
-  const [months, setMonths] = useState("");
   const [history, setHistory] = useState<SessionLog[]>([]);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const swipeStartX = useRef<number | null>(null);
   const [isIOS, setIsIOS] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [timeline, setTimeline] = useState<'Current' | 'Historic' | null>(null);
+  const [age, setAge] = useState("");
+  const [months, setMonths] = useState("");
 
   const colors = {
     bg: "bg-[linear-gradient(180deg,#0c0a09_0%,#151110_50%,#0c0a09_100%)]",
@@ -115,7 +115,41 @@ export default function SelfWorkPage() {
   };
 
   const goHome = useCallback(() => { haptic("light"); setStep("home"); }, []);
-  const goBack = useCallback(() => { haptic("light"); setStep("home"); }, []);
+
+  const navigateFooter = useCallback((target: Step | "settings") => {
+    haptic("light");
+    if (target === "settings") window.location.href = "/settings";
+    else setStep(target);
+  }, []);
+
+  const exportHistory = () => {
+    const data = JSON.stringify(history, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `self-work-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    haptic("medium");
+  };
+
+  const shareSession = async (log: SessionLog) => {
+    const text = `Emotional Integration: ${log.emotion} → ${log.organ} → ${log.eyePos} (${new Date(log.timestamp).toLocaleDateString()})`;
+    if (navigator.share) {
+      try { await navigator.share({ title: "Self Work Session", text }); haptic("light"); } catch {}
+    } else {
+      try { await navigator.clipboard.writeText(text); haptic("light"); } catch {}
+    }
+  };
+
+  const clearHistory = () => {
+    if (confirm("Clear all session history? This cannot be undone.")) {
+      setHistory([]);
+      localStorage.removeItem("selfWorkHistory");
+      haptic("heavy");
+    }
+  };
 
   // Reference content
   const esrContent = (
@@ -127,7 +161,7 @@ export default function SelfWorkPage() {
           <div className={cn("rounded-lg p-3", colors.card, colors.border)}><span className={colors.amberBright}>Inhibits</span> → Indicator muscle goes weak</div>
           <div className={cn("rounded-lg p-3", colors.card, colors.border)}><span className={colors.emerald}>Locks</span> → Weak muscle becomes strong</div>
         </div>
-        <p className="mt-3 text-[12px]" style={{color: "rgba(255,255,255,0.6)"}}>Either response = emotional integration indicated. Proceed to Permission.</p>
+        <p className="mt-3 text-[12px]" style={{color: "rgba(255,255,255,0.6)"}}>Either response = emotional integration indicated.</p>
       </div>
     </div>
   );
@@ -181,10 +215,23 @@ export default function SelfWorkPage() {
             <p className="text-[12px] font-medium uppercase tracking-widest mt-1" style={{color: "rgba(255,255,255,0.4)"}}>Emotional Integration</p>
           </div>
 
-          <div className="flex flex-col gap-4">
-            <button onClick={() => { haptic(); setStep("timelineSelect"); }} className={cn("w-full rounded-2xl py-8 px-6 text-lg font-semibold uppercase tracking-wider transition-all min-h-[80px]", colors.accentSolid, colors.accentHover)}>
-              <Heart size={24} className="inline mr-3" /> Emotions
+          <button onClick={() => { haptic(); setStep("timelineSelect"); }} className={cn("w-full rounded-2xl py-8 px-6 text-lg font-semibold uppercase tracking-wider transition-all min-h-[80px]", colors.accentSolid, colors.accentHover)}>
+            <Heart size={24} className="inline mr-3" /> Start Emotional Integration
+          </button>
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <button onClick={() => { haptic(); setStep("history"); }} className={cn("rounded-2xl py-4 px-6 text-sm font-semibold uppercase tracking-wider transition-all min-h-[52px]", colors.muted, colors.mutedHover)}>
+              <History size={16} className="mr-2" /> History
             </button>
+            <button onClick={() => { haptic(); setShowExport(true); }} className={cn("rounded-2xl py-4 px-6 text-sm font-semibold uppercase tracking-wider transition-all min-h-[52px]", colors.muted, colors.mutedHover)}>
+              <Download size={16} className="mr-2" /> Export
+            </button>
+          </div>
+
+          <div className="mt-6 grid grid-cols-3 gap-2">
+            <button onClick={() => { haptic(); setStep("esrRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all", colors.muted, colors.mutedHover)}><Zap size={14} className="mx-auto mb-1" /> ESR</button>
+            <button onClick={() => { haptic(); setStep("organRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all", colors.muted, colors.mutedHover)}><Sparkles size={14} className="mx-auto mb-1" /> Organs</button>
+            <button onClick={() => { haptic(); setStep("eyeRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all", colors.muted, colors.mutedHover)}><Eye size={14} className="mx-auto mb-1" /> Eyes</button>
           </div>
         </div>
 
@@ -266,7 +313,7 @@ export default function SelfWorkPage() {
   return (
     <section className={cn("min-h-screen text-white overflow-x-hidden", colors.bg, "pb-28")} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <header className="fixed top-0 left-0 right-0 z-20 px-4 py-3 flex items-center justify-between border-b" style={{borderColor: "rgba(255,255,255,0.08)", background: "linear-gradient(to bottom, rgba(12,10,9,0.95), transparent)"}}>
-        <button onClick={goBack} className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider opacity-70 hover:opacity-100 transition-opacity min-h-[44px]" aria-label="Back"><ArrowLeft size={16} className="opacity-70" /><span className="hidden sm:inline">Back</span></button>
+        <button onClick={goHome} className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider opacity-70 hover:opacity-100 transition-opacity min-h-[44px]" aria-label="Back"><ArrowLeft size={16} className="opacity-70" /><span className="hidden sm:inline">Back</span></button>
         <h1 className="text-lg font-serif font-bold">Emotional Integration</h1>
         <button onClick={() => { haptic(); setStep("history"); }} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="History"><History size={18} className={colors.amberBright} /></button>
       </header>
@@ -326,20 +373,7 @@ export default function SelfWorkPage() {
           </StepCard>
         )}
 
-        {step === "organSelect" && (
-          <StepCard title="Primary Emotion" subtitle="Challenge for the priority emotion.">
-            <div className="grid grid-cols-1 gap-2">
-              {PRIMARY_EMOTIONS.map((e) => (
-                <button key={e.id} onClick={() => { haptic(); setEmotion(e); setOrgan(""); setStep("eyeSelect"); }} className={cn("rounded-xl p-3 flex items-center gap-3 text-left transition-all min-h-[52px]", emotion?.id === e.id ? colors.accent : colors.card, colors.border, "hover:bg-white/10")}>
-                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-white", "bg-amber-500", e.color)}><Heart size={14} className="fill-current" /></div>
-                  <div><span className="font-medium text-sm">{e.label}</span><span className="text-[10px] block mt-0.5" style={{color: "rgba(255,215,100,0.9)"}}>{e.element} Element</span></div>
-                </button>
-              ))}
-            </div>
-          </StepCard>
-        )}
-
-        {step === "eyeSelect" && emotion && !organ && (
+        {step === "organSelect" && emotion && (
           <StepCard title={`Emotion: ${emotion.label}`} subtitle="Select the priority organ holding this emotion:">
             <div className="grid grid-cols-2 gap-2">
               {emotion.organs?.map((org: string) => (
@@ -353,9 +387,12 @@ export default function SelfWorkPage() {
         {step === "eyeSelect" && emotion && organ && (
           <StepCard title={`Organ: ${organ}`} subtitle={`Emotion: ${emotion.label} — Choose eye position:`}>
             <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => { haptic(); setEyePos("default"); setStep("result"); }} className={cn("rounded-xl py-3 px-4 text-sm font-medium uppercase tracking-wider transition-all min-h-[48px]", colors.accent, colors.accentHover)}>Default / Natural</button>
-              <button onClick={() => { haptic(); setEyePos("up"); setStep("result"); }} className={cn("rounded-xl py-3 px-4 text-sm font-medium uppercase tracking-wider transition-all min-h-[48px]", colors.accent, colors.accentHover)}>Look Up</button>
-              <button onClick={() => { haptic(); setEyePos("down"); setStep("result"); }} className={cn("rounded-xl py-3 px-4 text-sm font-medium uppercase tracking-wider transition-all min-h-[48px]", colors.accent, colors.accentHover)}>Look Down</button>
+              {EYE_POSITIONS.map((ep) => (
+                <button key={ep.id} onClick={() => { haptic(); setEyePos(ep.label); setStep("result"); }} className={cn("rounded-xl py-3 px-4 text-sm font-medium uppercase tracking-wider transition-all min-h-[48px]", colors.accent, colors.accentHover)}>
+                  <span className="font-medium">{ep.label}</span>
+                  <span className="text-[10px] block mt-0.5" style={{color: "rgba(255,215,100,0.7)"}}>{ep.pos}</span>
+                </button>
+              ))}
             </div>
           </StepCard>
         )}
@@ -364,7 +401,7 @@ export default function SelfWorkPage() {
           <StepCard title="Integration Complete" subtitle="Note shifts in awareness, emotion, or physical sensation." className="text-center">
             <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{background: "rgba(255,215,100,0.15)"}}><Heart size={32} className={colors.amberBright} /></div>
             <p className="text-[12px] mb-6" style={{color: "rgba(255,215,100,0.6)"}}>Emotion: <span className="font-medium">{emotion.label}</span> · Organ: <span className="font-medium">{organ}</span> · Eye: <span className="font-medium">{eyePos}</span></p>
-            <button onClick={() => { haptic("medium"); const log = { id: crypto.randomUUID(), timestamp: Date.now(), emotion: emotion.label, organ, eyePos: eyePos }; saveToHistory(log); setStep("result-saved"); }} className={cn("w-full rounded-xl px-6 py-3.5 text-sm font-semibold uppercase tracking-wider transition-all min-h-[48px]", colors.accentSolid, colors.accentHover)}>Save to Session Log</button>
+            <button onClick={() => { haptic("medium"); const log = { id: crypto.randomUUID(), timestamp: Date.now(), emotion: emotion.label, organ, eyePos: eyePos, timeline: timeline || undefined, age: age || undefined }; saveToHistory(log); setStep("result-saved"); }} className={cn("w-full rounded-xl px-6 py-3.5 text-sm font-semibold uppercase tracking-wider transition-all min-h-[48px]", colors.accentSolid, colors.accentHover)}>Save to Session Log</button>
           </StepCard>
         )}
 

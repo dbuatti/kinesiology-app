@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Heart, Info, ChevronLeft, History, Eye, Zap, Sparkles, Brain, Settings, X, Trash2, ArrowLeft, Home, BookOpen, Clock, User, Download, Share2, RotateCcw, ChevronRight, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PRIMARY_EMOTIONS, EYE_POSITIONS } from "@/data/emotion-data";
+import LimitingBeliefsSelfWork from "@/components/crm/LimitingBeliefsSelfWork";
 
-type Step = "home" | "timelineSelect" | "timelineAge" | "emotionSelect" | "organSelect" | "eyeSelect" | "result" | "result-saved" | "history" | "esrRef" | "organRef" | "eyeRef";
+type Step = "home" | "timelineSelect" | "timelineAge" | "emotionSelect" | "organSelect" | "eyeSelect" | "result" | "result-saved" | "history" | "esrRef" | "organRef" | "eyeRef" | "limitingBeliefs";
 
 interface SessionLog {
   id: string;
@@ -224,6 +225,11 @@ export default function SelfWorkPage() {
             <span>Start Emotional Integration</span>
           </button>
 
+          <button onClick={() => { haptic(); setStep("limitingBeliefs"); }} className={cn("w-full rounded-2xl py-5 px-6 text-lg font-semibold uppercase tracking-wider transition-all min-h-[64px] flex items-center justify-center gap-3", C.muted, C.mutedHover)}>
+            <Brain size={22} className="shrink-0" />
+            <span>Limiting Beliefs</span>
+          </button>
+
           <div className="mt-4 grid grid-cols-2 gap-3">
             <button onClick={() => { haptic(); setStep("history"); }} className={cn("rounded-2xl py-4 px-6 text-sm font-semibold uppercase tracking-wider transition-all min-h-[52px] flex items-center justify-center gap-2", C.muted, C.mutedHover)}>
               <History size={16} className="shrink-0" />
@@ -307,6 +313,30 @@ export default function SelfWorkPage() {
           )}
         </div>
         <Footer currentStep={step} onNavigate={(s) => { if (s === "history") setStep("history"); else if (s === "reference") setStep("esrRef"); else if (s === "settings") window.location.href = "/settings"; else setStep(s); }} />
+      </section>
+    );
+  }
+
+  // LIMITING BELIEFS
+  if (step === "limitingBeliefs") {
+    return (
+      <section className={cn("min-h-screen text-white overflow-x-hidden", C.bg, "pb-28")} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+        <header className="fixed top-0 left-0 right-0 z-20 px-4 py-3 flex items-center justify-between border-b" style={{borderColor: "rgba(255,255,255,0.08)", background: "linear-gradient(to bottom, rgba(12,10,9,0.95), transparent)"}}>
+          <button onClick={goHome} className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider opacity-70 hover:opacity-100 transition-opacity min-h-[44px]" aria-label="Back"><ArrowLeft size={16} className="opacity-70" /><span className="hidden sm:inline">Back</span></button>
+          <h1 className="text-lg font-serif font-bold">Limiting Beliefs</h1>
+          <button onClick={() => { haptic(); setStep("history"); }} className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors" aria-label="History"><History size={18} className={C.amberBright} /></button>
+        </header>
+        <main className="pt-16 pb-28 px-4 sm:px-6 max-w-2xl mx-auto">
+          <LimitingBeliefsSelfWork
+            onComplete={(summary) => {
+              const log = { id: crypto.randomUUID(), timestamp: Date.now(), emotion: summary, organ: "Limiting Beliefs", eyePos: "N/A" };
+              saveToHistory(log);
+              setStep("result-saved");
+            }}
+            onCancel={goHome}
+          />
+        </main>
+        <Footer currentStep={step} onNavigate={navigateFooter} />
       </section>
     );
   }

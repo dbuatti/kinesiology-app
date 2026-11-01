@@ -245,10 +245,7 @@ export const LATERAL_STIMS: Record<number, number[]> = {
   1: [0],
   2: [0, 1, 2, 3, 4],
   3: [0, 1, 2, 3, 4, 5],
-  // CN IV's single stim ("move eyes towards the tip of the nose — downward
-  // and inward convergence") is a bilateral convergence movement, NOT
-  // lateralized. The nerve-level L/R toggle (isLateralized) still applies —
-  // trochlear palsy is unilateral — but the stim row itself is one action.
+  4: [0],
   5: [0, 1, 2, 4],
   6: [0, 1],
   7: [0, 1, 2],

@@ -16,6 +16,8 @@ interface QuickNotesDialogProps {
   subtitle?: string;
   goal?: string | null;
   issue?: string | null;
+  /** Called when the user picks one of the goal/issue cards to edit it inline. */
+  onEditField?: (field: "goal" | "issue", initialValue: string | null) => void;
 }
 
 const QuickNotesDialog = ({
@@ -28,6 +30,7 @@ const QuickNotesDialog = ({
   subtitle,
   goal,
   issue,
+  onEditField,
 }: QuickNotesDialogProps) => {
   const [draft, setDraft] = useState(initialValue || "");
   const [isFocused, setIsFocused] = useState(false);
@@ -125,28 +128,25 @@ const QuickNotesDialog = ({
 
         <div className="flex flex-col flex-1 min-h-0 px-6 py-4 overflow-y-auto">
           {/* Session context — editable goal & concern */}
-          <section className="space-y-3 mb-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <EditableField
-                field="goal"
-                label="Session goal"
-                value={goal || ""}
-                multiline
-                placeholder="e.g. Sleep through the night without waking at 3am…"
-                onSave={onSave}
-                className="border-none p-0 shadow-none bg-transparent"
-              />
-              <EditableField
-                field="issue"
-                label="Primary concern"
-                value={issue || ""}
-                multiline
-                placeholder="Describe the current symptoms and history…"
-                onSave={onSave}
-                className="border-none p-0 shadow-none bg-transparent"
-              />
+          <section className="mb-3">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => onEditField?.("goal", goal)}
+                className="text-left rounded-xl border border-border bg-card p-3 shadow-sm hover:bg-muted transition-colors"
+              >
+                <p className="text-[9px] font-semibold uppercase text-muted-foreground tracking-wide mb-1">Session goal</p>
+                <p className="text-xs font-medium text-foreground leading-snug truncate">{goal || "—"}</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => onEditField?.("issue", issue)}
+                className="text-left rounded-xl border border-border bg-card p-3 shadow-sm hover:bg-muted transition-colors"
+              >
+                <p className="text-[9px] font-semibold uppercase text-muted-foreground tracking-wide mb-1">Primary concern</p>
+                <p className="text-xs font-medium text-foreground leading-snug truncate">{issue || "—"}</p>
+              </button>
             </div>
-            <div className="h-px bg-border/60" />
           </section>
 
           {/* Session notes */}

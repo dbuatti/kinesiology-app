@@ -130,7 +130,7 @@ const LOVETT_DATA: LovettPair[] = [
   { segment: "T6", reciprocating: "T5", muscles: [{ name: "Tibialis Anterior", gland: "Bladder" }, { name: "Hamstrings", gland: "Large Intestine" }] },
 ];
 
-type TabId = "pulse-points" | "brain-zones" | "cranial-sutures" | "cranial-nerves" | "muscle-organ" | "lovett-brothers" | "lymphatics";
+type TabId = "pulse-points" | "brain-zones" | "cranial-sutures" | "organ-referral" | "cranial-nerves" | "muscle-organ" | "lovett-brothers" | "lymphatics";
 
 export function ImageReferenceModal({ open, onClose }: ImageReferenceModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>("pulse-points");
@@ -170,7 +170,7 @@ export function ImageReferenceModal({ open, onClose }: ImageReferenceModalProps)
 
   const muscleInfo = selectedMuscle ? getMuscleInfo(selectedMuscle) : null;
 
-  const TAB_ORDER: TabId[] = ["pulse-points", "brain-zones", "cranial-sutures", "cranial-nerves", "muscle-organ", "lovett-brothers", "lymphatics"];
+  const TAB_ORDER: TabId[] = ["pulse-points", "brain-zones", "cranial-sutures", "organ-referral", "cranial-nerves", "muscle-organ", "lovett-brothers", "lymphatics"];
 
   useEffect(() => {
     if (!open) return;

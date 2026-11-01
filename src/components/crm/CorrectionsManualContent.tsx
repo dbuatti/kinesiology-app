@@ -1152,8 +1152,7 @@ const CorrectionsManualContent = ({
             >
               {/* No pane header here — the process title inside the page is the
                   only heading, so the name isn't printed twice. */}
-              <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 scroll-isolated" onWheel={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()}>
-            </div>
+              <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 scroll-isolated" onWheel={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()}>{getContent()}</div>
           </div>
         )}
         </div>

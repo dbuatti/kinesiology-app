@@ -17,7 +17,6 @@
 :where(.dark) .bg-emerald-50\/30:not(:where(.keep-light, .keep-light *)){background-color:rgb(16 185 129 / 0.03)}
 :where(.dark) .bg-emerald-50\/40:not(:where(.keep-light, .keep-light *)){background-color:rgb(16 185 129 / 0.04)}
 :where(.dark) .bg-emerald-50\/50:not(:where(.keep-light, .keep-light *)){background-color:rgb(16 185 129 / 0.05)}
-:where(.dark) .bg-emerald-50\/60:not(:where(.keep-light, .keep-light *)){background-color:rgb(16 185 129 / 0.06)}
 :where(.dark) .bg-green-50:not(:where(.keep-light, .keep-light *)){background-color:rgb(34 197 94 / 0.1)}
 :where(.dark) .bg-indigo-100:not(:where(.keep-light, .keep-light *)){background-color:rgb(99 102 241 / 0.14)}
 :where(.dark) .bg-indigo-100\/80:not(:where(.keep-light, .keep-light *)){background-color:rgb(99 102 241 / 0.112)}

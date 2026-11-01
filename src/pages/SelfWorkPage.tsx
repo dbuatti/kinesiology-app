@@ -22,9 +22,28 @@ const footerItems = [
   { id: "profile", label: "Profile", icon: User, href: "/settings" },
 ] as const;
 
+// Cohesive color system
+const C = {
+  bg: "bg-[linear-gradient(180deg,#0b0f1a_0%,#131b2e_50%,#0b0f1a_100%)]",
+  card: "bg-white/[0.06] backdrop-blur-sm",
+  cardHover: "hover:bg-white/[0.10]",
+  border: "border-white/[0.08]",
+  accent: "bg-amber-500/15 border-amber-400/25 text-amber-300",
+  accentSolid: "bg-amber-500 text-black",
+  accentHover: "hover:bg-amber-400",
+  muted: "bg-white/[0.08] border-white/[0.12] text-white/70",
+  mutedHover: "hover:bg-white/[0.12]",
+  amber: "text-amber-300",
+  amberBright: "text-amber-400",
+  emerald: "text-emerald-400",
+  text: "text-white",
+  textMuted: "text-white/60",
+  textDim: "text-white/35",
+};
+
 function Footer({ currentStep, onNavigate }: { currentStep: Step; onNavigate: (step: Step | "settings") => void }) {
   return (
-    <footer className="fixed bottom-0 left-0 right-0 z-30 bg-white/5 backdrop-blur-sm border-t border-white/10 pb-safe-area" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+    <footer className="fixed bottom-0 left-0 right-0 z-30 bg-[#0b0f1a]/90 backdrop-blur-md border-t border-white/[0.06] pb-safe-area">
       <div className="grid grid-cols-4">
         {footerItems.map((item) => {
           const isActive =
@@ -34,9 +53,9 @@ function Footer({ currentStep, onNavigate }: { currentStep: Step; onNavigate: (s
           const Icon = item.icon;
           return (
             <button key={item.id} onClick={() => item.href ? window.location.href = item.href : onNavigate(item.id as Step)}
-              className={cn("flex flex-col items-center gap-1 py-3 px-2 transition-colors min-h-[56px] active:scale-95", isActive ? "text-amber-400" : "text-white/50 hover:text-white/70")} aria-label={item.label}>
-              <Icon size={22} />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              className={cn("flex flex-col items-center gap-1 py-3 px-2 transition-colors min-h-[56px] active:scale-95", isActive ? "text-amber-400" : "text-white/45 hover:text-white/70")} aria-label={item.label}>
+              <Icon size={20} />
+              <span className="text-[10px] font-medium tracking-wide">{item.label}</span>
             </button>
           );
         })}
@@ -47,10 +66,10 @@ function Footer({ currentStep, onNavigate }: { currentStep: Step; onNavigate: (s
 
 function StepCard({ title, subtitle, children, className = "" }: { title: string; subtitle: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("rounded-2xl p-5 bg-white/5 border border-white/10 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-2 duration-300", className)}>
+    <div className={cn("rounded-2xl p-5 bg-white/[0.06] border border-white/[0.08] backdrop-blur-sm animate-in fade-in slide-in-from-bottom-2 duration-300", className)}>
       <div className="mb-4">
         <h2 className="text-xl font-serif font-bold mb-1">{title}</h2>
-        <p className="text-[12px]" style={{color: "rgba(255,255,255,0.5)"}}>{subtitle}</p>
+        <p className="text-[12px]" style={{color: "rgba(255,255,255,0.45)"}}>{subtitle}</p>
       </div>
       {children}
     </div>
@@ -70,21 +89,6 @@ export default function SelfWorkPage() {
   const [timeline, setTimeline] = useState<'Current' | 'Historic' | null>(null);
   const [age, setAge] = useState("");
   const [months, setMonths] = useState("");
-
-  const colors = {
-    bg: "bg-[linear-gradient(180deg,#0c0a09_0%,#151110_50%,#0c0a09_100%)]",
-    card: "bg-white/5 backdrop-blur-sm",
-    cardHover: "hover:bg-white/10",
-    border: "border-white/10",
-    accent: "bg-amber-600/20 border-amber-400/30 text-amber-300",
-    accentSolid: "bg-amber-600 text-white",
-    accentHover: "hover:bg-amber-500",
-    muted: "bg-white/10 border-white/20 text-white/80",
-    mutedHover: "hover:bg-white/15",
-    amber: "text-amber-300",
-    amberBright: "text-amber-400",
-    emerald: "text-emerald-400",
-  };
 
   useEffect(() => {
     try { const stored = localStorage.getItem("selfWorkHistory"); if (stored) setHistory(JSON.parse(stored)); } catch {}
@@ -143,23 +147,15 @@ export default function SelfWorkPage() {
     }
   };
 
-  const clearHistory = () => {
-    if (confirm("Clear all session history? This cannot be undone.")) {
-      setHistory([]);
-      localStorage.removeItem("selfWorkHistory");
-      haptic("heavy");
-    }
-  };
-
   // Reference content
   const esrContent = (
     <div className="space-y-4">
-      <h3 className="text-lg font-serif font-semibold flex items-center gap-2"><Heart size={20} className={colors.amberBright} /> ESR Indicator Check</h3>
-      <div className={cn("rounded-xl p-4", colors.card, colors.border)}>
+      <h3 className="text-lg font-serif font-semibold flex items-center gap-2"><Heart size={20} className={C.amberBright} /> ESR Indicator Check</h3>
+      <div className={cn("rounded-xl p-4", C.card, C.border)}>
         <p className="text-[13px] leading-relaxed" style={{color: "rgba(255,255,255,0.85)"}}>Hold <strong>GB14 (forehead)</strong> ESR points bilaterally.</p>
         <div className="mt-3 grid grid-cols-2 gap-3 text-[12px]">
-          <div className={cn("rounded-lg p-3", colors.card, colors.border)}><span className={colors.amberBright}>Inhibits</span> → Indicator muscle goes weak</div>
-          <div className={cn("rounded-lg p-3", colors.card, colors.border)}><span className={colors.emerald}>Locks</span> → Weak muscle becomes strong</div>
+          <div className={cn("rounded-lg p-3", C.card, C.border)}><span className={C.amberBright}>Inhibits</span> → Indicator muscle goes weak</div>
+          <div className={cn("rounded-lg p-3", C.card, C.border)}><span className={C.emerald}>Locks</span> → Weak muscle becomes strong</div>
         </div>
         <p className="mt-3 text-[12px]" style={{color: "rgba(255,255,255,0.6)"}}>Either response = emotional integration indicated.</p>
       </div>
@@ -168,8 +164,8 @@ export default function SelfWorkPage() {
 
   const eyeRefContent = (
     <div className="space-y-4">
-      <h3 className="text-lg font-serif font-semibold flex items-center gap-2"><Eye size={20} className={colors.amberBright} /> NLP Eye Accessing Cues</h3>
-      <div className={cn("rounded-xl p-4", colors.card, colors.border)}>
+      <h3 className="text-lg font-serif font-semibold flex items-center gap-2"><Eye size={20} className={C.amberBright} /> NLP Eye Accessing Cues</h3>
+      <div className={cn("rounded-xl p-4", C.card, C.border)}>
         <p className="text-[12px] mb-3" style={{color: "rgba(255,255,255,0.7)"}}>Eye positions access different neurological pathways:</p>
         <div className="space-y-2">
           {EYE_POSITIONS.map((ep) => (
@@ -185,8 +181,8 @@ export default function SelfWorkPage() {
 
   const organRefContent = (
     <div className="space-y-4">
-      <h3 className="text-lg font-serif font-semibold flex items-center gap-2"><Sparkles size={20} className={colors.amberBright} /> Emotion → Organ → Muscle Map</h3>
-      <div className={cn("rounded-xl p-4", colors.card, colors.border)}>
+      <h3 className="text-lg font-serif font-semibold flex items-center gap-2"><Sparkles size={20} className={C.amberBright} /> Emotion → Organ → Muscle Map</h3>
+      <div className={cn("rounded-xl p-4", C.card, C.border)}>
         <div className="space-y-3">
           {PRIMARY_EMOTIONS.map((e) => (
             <div key={e.id} className="rounded-lg p-3" style={{background: "rgba(255,255,255,0.03)"}}>
@@ -208,30 +204,31 @@ export default function SelfWorkPage() {
   // HOME PAGE
   if (step === "home") {
     return (
-      <section className={cn("min-h-screen text-white", colors.bg, "pb-28")} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <section className={cn("min-h-screen text-white", C.bg, "pb-28")} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="max-w-xl mx-auto px-4 pt-6">
           <div className="mb-8 animate-in fade-in slide-in-from-top-2 duration-300">
             <h1 className="text-3xl font-serif font-bold tracking-wider">Self Work</h1>
             <p className="text-[12px] font-medium uppercase tracking-widest mt-1" style={{color: "rgba(255,255,255,0.4)"}}>Emotional Integration</p>
           </div>
 
-          <button onClick={() => { haptic(); setStep("timelineSelect"); }} className={cn("w-full rounded-2xl py-8 px-6 text-lg font-semibold uppercase tracking-wider transition-all min-h-[80px]", colors.accentSolid, colors.accentHover)}>
-            <Heart size={24} className="inline mr-3" /> Start Emotional Integration
+          <button onClick={() => { haptic(); setStep("timelineSelect"); }} className={cn("w-full rounded-2xl py-5 px-6 text-lg font-semibold uppercase tracking-wider transition-all min-h-[64px] flex items-center justify-center gap-3", C.accentSolid, C.accentHover)}>
+            <Heart size={22} className="shrink-0" />
+            <span>Start Emotional Integration</span>
           </button>
 
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <button onClick={() => { haptic(); setStep("history"); }} className={cn("rounded-2xl py-4 px-6 text-sm font-semibold uppercase tracking-wider transition-all min-h-[52px]", colors.muted, colors.mutedHover)}>
-              <History size={16} className="mr-2" /> History
+            <button onClick={() => { haptic(); setStep("history"); }} className={cn("rounded-2xl py-4 px-6 text-sm font-semibold uppercase tracking-wider transition-all min-h-[52px] flex items-center justify-center gap-2", C.muted, C.mutedHover)}>
+              <History size={16} className="shrink-0" /> History
             </button>
-            <button onClick={() => { haptic(); setShowExport(true); }} className={cn("rounded-2xl py-4 px-6 text-sm font-semibold uppercase tracking-wider transition-all min-h-[52px]", colors.muted, colors.mutedHover)}>
-              <Download size={16} className="mr-2" /> Export
+            <button onClick={() => { haptic(); setShowExport(true); }} className={cn("rounded-2xl py-4 px-6 text-sm font-semibold uppercase tracking-wider transition-all min-h-[52px] flex items-center justify-center gap-2", C.muted, C.mutedHover)}>
+              <Download size={16} className="shrink-0" /> Export
             </button>
           </div>
 
           <div className="mt-6 grid grid-cols-3 gap-2">
-            <button onClick={() => { haptic(); setStep("esrRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all", colors.muted, colors.mutedHover)}><Zap size={14} className="mx-auto mb-1" /> ESR</button>
-            <button onClick={() => { haptic(); setStep("organRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all", colors.muted, colors.mutedHover)}><Sparkles size={14} className="mx-auto mb-1" /> Organs</button>
-            <button onClick={() => { haptic(); setStep("eyeRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all", colors.muted, colors.mutedHover)}><Eye size={14} className="mx-auto mb-1" /> Eyes</button>
+            <button onClick={() => { haptic(); setStep("esrRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}><Zap size={14} className="shrink-0" /> ESR</button>
+            <button onClick={() => { haptic(); setStep("organRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}><Sparkles size={14} className="shrink-0" /> Organs</button>
+            <button onClick={() => { haptic(); setStep("eyeRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}><Eye size={14} className="shrink-0" /> Eyes</button>
           </div>
         </div>
 
@@ -241,8 +238,8 @@ export default function SelfWorkPage() {
               <h2 className="text-lg font-serif font-bold">Export Session History</h2>
               <p className="text-[12px]" style={{color: "rgba(255,255,255,0.7)"}}>Download your session history as JSON for backup or analysis.</p>
               <div className="flex gap-3">
-                <button onClick={() => { exportHistory(); setShowExport(false); }} className={cn("flex-1 rounded-xl py-3 text-sm font-semibold uppercase tracking-wider transition-all min-h-[48px]", colors.accentSolid, colors.accentHover)}><Download size={16} className="mr-2" /> Export JSON</button>
-                <button onClick={() => setShowExport(false)} className={cn("flex-1 rounded-xl py-3 text-sm font-semibold uppercase tracking-wider transition-all min-h-[48px]", colors.muted, colors.mutedHover)}>Cancel</button>
+                <button onClick={() => { exportHistory(); setShowExport(false); }} className={cn("flex-1 rounded-xl py-3 text-sm font-semibold uppercase tracking-wider transition-all min-h-[48px]", C.accentSolid, C.accentHover)}><Download size={16} className="mr-2" /> Export JSON</button>
+                <button onClick={() => setShowExport(false)} className={cn("flex-1 rounded-xl py-3 text-sm font-semibold uppercase tracking-wider transition-all min-h-[48px]", C.muted, C.mutedHover)}>Cancel</button>
               </div>
             </div>
           </div>
@@ -252,7 +249,7 @@ export default function SelfWorkPage() {
 
         {showInstallPrompt && (
           <div className="fixed bottom-24 left-4 right-4 max-w-xl mx-auto animate-in slide-in-from-bottom-2 duration-300 z-50">
-            <div className={cn("rounded-2xl p-4", colors.accentSolid, "shadow-xl")}>
+            <div className={cn("rounded-2xl p-4", C.accentSolid, "shadow-xl")}>
               <div className="flex items-center justify-between">
                 <div><p className="font-semibold">Install Self Work</p><p className="text-[12px] opacity-90">Add to home screen for offline access</p></div>
                 <button onClick={() => setShowInstallPrompt(false)} className="p-1 rounded opacity-70 hover:opacity-100"><X size={16} /></button>
@@ -267,7 +264,7 @@ export default function SelfWorkPage() {
   // HISTORY
   if (step === "history") {
     return (
-      <section className={cn("min-h-screen text-white", colors.bg, "pb-28")} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <section className={cn("min-h-screen text-white", C.bg, "pb-28")} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="max-w-xl mx-auto px-4 pt-6">
           <div className="flex items-center justify-between mb-6">
             <button onClick={goHome} className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider opacity-70 hover:opacity-100 transition-opacity min-h-[44px]"><ArrowLeft size={16} className="opacity-70" /> Back</button>
@@ -275,7 +272,7 @@ export default function SelfWorkPage() {
             <button onClick={() => { if (confirm("Clear all history?")) { setHistory([]); localStorage.removeItem("selfWorkHistory"); haptic("heavy"); } }} className="p-2 rounded opacity-50 hover:opacity-100"><Trash2 size={16} /></button>
           </div>
           {history.length === 0 ? (
-            <div className={cn("rounded-2xl p-8 text-center", colors.card, colors.border)}>
+            <div className={cn("rounded-2xl p-8 text-center", C.card, C.border)}>
               <History size={48} className="mx-auto mb-3" style={{color: "rgba(255,255,255,0.3)"}} />
               <p className="text-[13px]" style={{color: "rgba(255,255,255,0.5)"}}>No sessions yet. Start your first integration.</p>
               <button onClick={goHome} className="mt-4" style={{color: "rgba(255,215,100,1)"}}>← Begin Integration</button>
@@ -283,7 +280,7 @@ export default function SelfWorkPage() {
           ) : (
             <div className="space-y-2">
               {history.map((log) => (
-                <article key={log.id} className={cn("rounded-xl p-4 transition-all", colors.card, colors.border)}>
+                <article key={log.id} className={cn("rounded-xl p-4 transition-all", C.card, C.border)}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{log.emotion}</p>
@@ -311,7 +308,7 @@ export default function SelfWorkPage() {
 
   // INTEGRATION FLOW
   return (
-    <section className={cn("min-h-screen text-white overflow-x-hidden", colors.bg, "pb-28")} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+    <section className={cn("min-h-screen text-white overflow-x-hidden", C.bg, "pb-28")} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <header className="fixed top-0 left-0 right-0 z-20 px-4 py-3 flex items-center justify-between border-b" style={{borderColor: "rgba(255,255,255,0.08)", background: "linear-gradient(to bottom, rgba(12,10,9,0.95), transparent)"}}>
         <button onClick={goHome} className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider opacity-70 hover:opacity-100 transition-opacity min-h-[44px]" aria-label="Back"><ArrowLeft size={16} className="opacity-70" /><span className="hidden sm:inline">Back</span></button>
         <h1 className="text-lg font-serif font-bold">Emotional Integration</h1>
@@ -319,7 +316,7 @@ export default function SelfWorkPage() {
       </header>
 
       <main className="pt-16 pb-28 px-4 sm:px-6 max-w-2xl mx-auto">
-        {/* Step progress — cleaner, no clashing line */}
+        {/* Progress dots */}
         <div className="mb-6 flex items-center justify-center gap-3">
           {["timelineSelect", "emotionSelect", "organSelect", "eyeSelect", "result"].map((s, i) => {
             const isActive = step === s || (step === "result-saved" && i < 4);
@@ -407,9 +404,7 @@ export default function SelfWorkPage() {
 
         {step === "result" && emotion && organ && (
           <StepCard title="Integration Complete" subtitle="Note shifts in awareness, emotion, or physical sensation." className="text-center">
-            <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center" style={{background: "linear-gradient(135deg, rgba(255,215,100,0.2), rgba(255,215,100,0.05))", boxShadow: "0 0 40px rgba(255,215,100,0.15)"}}>
-              <Heart size={36} className={colors.amberBright} />
-            </div>
+            <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center" style={{background: "linear-gradient(135deg, rgba(255,215,100,0.2), rgba(255,215,100,0.05))", boxShadow: "0 0 40px rgba(255,215,100,0.15)"}}><Heart size={36} className={colors.amberBright} /></div>
             <div className="space-y-3 mb-6">
               <div className="flex items-center justify-between px-4 py-3 rounded-xl" style={{background: "rgba(255,255,255,0.03)"}}>
                 <span className="text-[11px] uppercase tracking-wider" style={{color: "rgba(255,255,255,0.5)"}}>Emotion</span>

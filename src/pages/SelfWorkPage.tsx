@@ -3,7 +3,7 @@ import { Heart, Info, ChevronLeft, History, Eye, Zap, Sparkles, Brain, Settings,
 import { cn } from "@/lib/utils";
 import { PRIMARY_EMOTIONS, EYE_POSITIONS } from "@/data/emotion-data";
 
-type Step = "home" | "emotionSelect" | "organSelect" | "eyeSelect" | "result" | "result-saved" | "history" | "esrRef" | "organRef" | "eyeRef";
+type Step = "home" | "timelineSelect" | "timelineAge" | "emotionSelect" | "organSelect" | "eyeSelect" | "result" | "result-saved" | "history" | "esrRef" | "organRef" | "eyeRef";
 
 interface SessionLog {
   id: string;
@@ -62,6 +62,9 @@ export default function SelfWorkPage() {
   const [emotion, setEmotion] = useState<any>(null);
   const [organ, setOrgan] = useState<string>("");
   const [eyePos, setEyePos] = useState<string>("");
+  const [timeline, setTimeline] = useState<'Current' | 'Historic' | null>(null);
+  const [age, setAge] = useState("");
+  const [months, setMonths] = useState("");
   const [history, setHistory] = useState<SessionLog[]>([]);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const swipeStartX = useRef<number | null>(null);
@@ -177,41 +180,10 @@ export default function SelfWorkPage() {
             <p className="text-[12px] font-medium uppercase tracking-widest mt-1" style={{color: "rgba(255,255,255,0.4)"}}>Emotional Integration</p>
           </div>
 
-          <div className="space-y-3">
-            <article className={cn("rounded-2xl p-5 transition-all", colors.card, colors.border, colors.cardHover)}>
-              <h2 className="text-base font-serif font-semibold mb-2 flex items-center gap-2"><Heart size={18} className={colors.amberBright} /> ESR Indicator Check</h2>
-              <p className="text-[12px] leading-relaxed" style={{color: "rgba(255,255,255,0.85)"}}>Hold <strong>GB14 (forehead)</strong> ESR points. If indicator muscle <span className={cn("underline", colors.amberBright)}>inhibits</span> or weak muscle <span className={cn("underline", colors.emerald)}>locks</span> → emotional integration indicated.</p>
-            </article>
-
-            <article className={cn("rounded-2xl p-5", colors.card, colors.border)}>
-              <h2 className="text-base font-serif font-semibold mb-2 flex items-center gap-2"><Sparkles size={18} className={colors.amberBright} /> Quick Flow</h2>
-              <ol className="text-[12px] space-y-1.5" style={{color: "rgba(255,255,255,0.7)"}}>
-                <li className="flex items-center gap-2"><span className="w-5 h-5 rounded-full border border-white/20 flex items-center justify-center text-[10px] font-medium">1</span>Permission? No → Harmonic Rocking</li>
-                <li className="flex items-center gap-2"><span className="w-5 h-5 rounded-full border border-white/20 flex items-center justify-center text-[10px] font-medium">2</span>Timeline: Current or Historic (age regression)</li>
-                <li className="flex items-center gap-2"><span className="w-5 h-5 rounded-full border border-white/20 flex items-center justify-center text-[10px] font-medium">3</span>Primary Emotion (5 elements)</li>
-                <li className="flex items-center gap-2"><span className="w-5 h-5 rounded-full border border-white/20 flex items-center justify-center text-[10px] font-medium">4</span>Priority Organ (linked to emotion)</li>
-                <li className="flex items-center gap-2"><span className="w-5 h-5 rounded-full border border-white/20 flex items-center justify-center text-[10px] font-medium">5</span>Eye Position → Re-check ESR</li>
-              </ol>
-            </article>
-          </div>
-
-          <button onClick={() => { haptic(); setStep("organSelect"); }} className={cn("mt-6 w-full rounded-2xl py-5 px-6 text-base font-semibold uppercase tracking-wider transition-all min-h-[56px]", colors.accentSolid, colors.accentHover)}>
-            <Heart size={20} className="inline mr-2" /> Start Emotional Integration
-          </button>
-
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <button onClick={() => { haptic(); setStep("history"); }} className={cn("rounded-2xl py-4 px-6 text-sm font-semibold uppercase tracking-wider transition-all min-h-[52px]", colors.muted, colors.mutedHover)}>
-              <History size={16} className="mr-2" /> History
+          <div className="flex flex-col gap-4">
+            <button onClick={() => { haptic(); setStep("timelineSelect"); }} className={cn("w-full rounded-2xl py-8 px-6 text-lg font-semibold uppercase tracking-wider transition-all min-h-[80px]", colors.accentSolid, colors.accentHover)}>
+              <Heart size={24} className="inline mr-3" /> Emotions
             </button>
-            <button onClick={() => { haptic(); setShowExport(true); }} className={cn("rounded-2xl py-4 px-6 text-sm font-semibold uppercase tracking-wider transition-all min-h-[52px]", colors.muted, colors.mutedHover)}>
-              <Download size={16} className="mr-2" /> Export
-            </button>
-          </div>
-
-          <div className="mt-6 grid grid-cols-3 gap-2">
-            <button onClick={() => { haptic(); setStep("esrRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all", colors.muted, colors.mutedHover)}><Zap size={14} className="mx-auto mb-1" /> ESR</button>
-            <button onClick={() => { haptic(); setStep("organRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all", colors.muted, colors.mutedHover)}><Sparkles size={14} className="mx-auto mb-1" /> Organs</button>
-            <button onClick={() => { haptic(); setStep("eyeRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all", colors.muted, colors.mutedHover)}><Eye size={14} className="mx-auto mb-1" /> Eyes</button>
           </div>
         </div>
 
@@ -300,10 +272,58 @@ export default function SelfWorkPage() {
 
       <main className="pt-16 pb-28 px-4 sm:px-6 max-w-2xl mx-auto">
         <div className="mb-6 flex items-center justify-center gap-1">
-          {["organSelect", "eyeSelect", "result"].map((s, i) => (
-            <div key={s} className={cn("w-2 h-2 rounded-full transition-all", step === s || (step === "result-saved" && i < 2) ? "bg-amber-400" : "bg-white/10")} />
+          {["timelineSelect", "emotionSelect", "organSelect", "eyeSelect", "result"].map((s, i) => (
+            <div key={s} className={cn("w-2 h-2 rounded-full transition-all", step === s || (step === "result-saved" && i < 4) ? "bg-amber-400" : "bg-white/10")} />
           ))}
         </div>
+
+        {step === "timelineSelect" && (
+          <StepCard title="Identify Timeline" subtitle="Is this emotional stress current or historic?">
+            <div className="grid grid-cols-1 gap-3">
+              <button onClick={() => { haptic(); setTimeline('Current'); setStep("emotionSelect"); }} className={cn("rounded-xl p-4 text-left transition-all min-h-[56px]", colors.accent, colors.accentHover)}>
+                <div className="font-medium">Current</div>
+                <div className="text-[11px] mt-0.5" style={{color: "rgba(255,215,100,0.9)"}}>Known stress or pattern</div>
+              </button>
+              <button onClick={() => { haptic(); setTimeline('Historic'); setStep("timelineAge"); }} className={cn("rounded-xl p-4 text-left transition-all min-h-[56px]", colors.muted, colors.mutedHover)}>
+                <div className="font-medium">Historic</div>
+                <div className="text-[11px] mt-0.5" style={{color: "rgba(255,255,255,0.6)"}}>Past event or trauma — age regression</div>
+              </button>
+            </div>
+          </StepCard>
+        )}
+
+        {step === "timelineAge" && (
+          <StepCard title="Timeline Regression" subtitle="Challenge the system for the specific age of origin.">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs" style={{color: "rgba(255,255,255,0.6)"}}>Age</label>
+                <input type="number" placeholder="e.g. 5" className="w-full h-10 rounded-lg text-sm font-medium text-center bg-white/5 border border-white/10 text-white" value={age} onChange={(e) => setAge(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs" style={{color: "rgba(255,255,255,0.6)"}}>Months (Optional)</label>
+                <input type="number" placeholder="e.g. 4" className="w-full h-10 rounded-lg text-sm font-medium text-center bg-white/5 border border-white/10 text-white" value={months} onChange={(e) => setMonths(e.target.value)} />
+              </div>
+            </div>
+            <p className="mt-3 text-[11px]" style={{color: "rgba(255,255,255,0.5)"}}>Tip: Challenge in blocks (1-10, 10-20) then narrow down.</p>
+            <div className="mt-4 flex gap-3">
+              <button onClick={() => setStep("timelineSelect")} className={cn("flex-1 rounded-xl py-3 px-4 text-sm font-medium uppercase tracking-wider transition-all min-h-[48px]", colors.muted, colors.mutedHover)}>Back</button>
+              <button disabled={!age} onClick={() => { setTimeline('Historic'); setStep("emotionSelect"); }} className={cn("flex-[2] rounded-xl py-3 px-4 text-sm font-medium uppercase tracking-wider transition-all min-h-[48px]", colors.accentSolid, colors.accentHover, !age && "opacity-50")}>Continue</button>
+            </div>
+          </StepCard>
+        )}
+
+        {step === "emotionSelect" && (
+          <StepCard title="Primary Emotion" subtitle="Challenge for the priority emotion.">
+            <div className="grid grid-cols-1 gap-2">
+              {PRIMARY_EMOTIONS.map((e) => (
+                <button key={e.id} onClick={() => { haptic(); setEmotion(e); setOrgan(""); setStep("organSelect"); }} className={cn("rounded-xl p-3 flex items-center gap-3 text-left transition-all min-h-[52px]", emotion?.id === e.id ? colors.accent : colors.card, colors.border, "hover:bg-white/10")}>
+                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-white", "bg-amber-500", e.color)}><Heart size={14} className="fill-current" /></div>
+                  <div><span className="font-medium text-sm">{e.label}</span><span className="text-[10px] block mt-0.5" style={{color: "rgba(255,215,100,0.9)"}}>{e.element} Element</span></div>
+                </button>
+              ))}
+            </div>
+          </StepCard>
+        )}
 
         {step === "organSelect" && (
           <StepCard title="Primary Emotion" subtitle="Challenge for the priority emotion.">

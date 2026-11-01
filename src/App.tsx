@@ -185,6 +185,7 @@ const AppRoutes = () => {
         <Route
           element={session ? <MainLayout /> : <Navigate to="/login" replace />}
         >
+          <Route path="/self-work" element={<SelfWorkPage />} />
           <Route path="/" element={<DashboardPage />} />
 
           {/* Clinic */}
@@ -270,7 +271,6 @@ const AppRoutes = () => {
           <Route path="/business/follow-up" element={<Navigate to="/follow-up" replace />} />
 
           {/* System */}
-          <Route path="/self-work" element={<SelfWorkPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/import" element={<ImportPage />} />
           <Route path="/settings/debug" element={<DebugAppointmentPage />} />

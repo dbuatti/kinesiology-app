@@ -23,19 +23,20 @@ const footerItems = [
   { id: "profile", label: "Profile", icon: User, href: "/settings" },
 ] as const;
 
-// Refined color system — deep navy with warm gold accents
+// ——— Color system ———
+// Deep navy base with warm amber/gold accents for mobile-first readability
 const C = {
   bg: "bg-[linear-gradient(180deg,#0a0d14_0%,#111827_50%,#0a0d14_100%)]",
-  card: "bg-white/[0.05] backdrop-blur-sm",
-  cardHover: "hover:bg-white/[0.08]",
-  border: "border-white/[0.07]",
-  accent: "bg-amber-400/12 border-amber-400/25 text-amber-200",
-  accentSolid: "bg-amber-400 text-[#0a0d14]",
-  accentHover: "hover:bg-amber-300",
-  muted: "bg-white/[0.07] border-white/[0.10] text-white/65",
-  mutedHover: "hover:bg-white/[0.10]",
-  amber: "text-amber-200",
-  amberBright: "text-amber-300",
+  card: "bg-white/[0.03] backdrop-blur-md border-white/[0.03]",
+  cardHover: "hover:bg-white/[0.05]",
+  border: "border-white/[0.04]",
+  accent: "bg-amber-500/15 border-amber-500/20 text-amber-300",
+  accentSolid: "bg-amber-500 text-[#0a0d14]",
+  accentHover: "hover:bg-amber-400",
+  muted: "bg-white/[0.04] border-white/[0.06] text-white/60",
+  mutedHover: "hover:bg-white/[0.06]",
+  amber: "text-amber-300",
+  amberBright: "text-amber-400",
   emerald: "text-emerald-300",
   text: "text-white",
   textMuted: "text-white/55",
@@ -67,10 +68,10 @@ function Footer({ currentStep, onNavigate }: { currentStep: Step; onNavigate: (s
 
 function StepCard({ title, subtitle, children, className = "" }: { title: string; subtitle: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("rounded-2xl p-5 bg-white/[0.06] border border-white/[0.08] backdrop-blur-sm animate-in fade-in slide-in-from-bottom-2 duration-300", className)}>
+    <div className={cn("rounded-2xl p-4 border border-white/[0.04] backdrop-blur-sm transition-all duration-250", className)}>
       <div className="mb-4">
-        <h2 className="text-xl font-serif font-bold mb-1">{title}</h2>
-        <p className="text-[12px]" style={{color: "rgba(255,255,255,0.45)"}}>{subtitle}</p>
+        <h2 className="text-xl font-serif font-bold mb-1 text-amber-400">{title}</h2>
+        <p className="text-[11px] text-amber-300/80">{subtitle}</p>
       </div>
       {children}
     </div>
@@ -216,35 +217,35 @@ export default function SelfWorkPage() {
       <section className={cn("min-h-screen text-white", C.bg, "pb-28")} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="max-w-xl mx-auto px-4 pt-6">
           <div className="mb-8 animate-in fade-in slide-in-from-top-2 duration-300">
-            <h1 className="text-3xl font-serif font-bold tracking-wider">Self Work</h1>
-            <p className="text-[12px] font-medium uppercase tracking-widest mt-1" style={{color: "rgba(255,255,255,0.4)"}}>Emotional Integration</p>
+            <h1 className="text-2xl font-serif font-bold tracking-wide text-amber-300">Self Work</h1>
+            <p className="text-sm font-medium uppercase tracking-widest mb-2 text-amber-300/70">Emotional Integration</p>
           </div>
 
-          <button onClick={() => { haptic(); setStep("timelineSelect"); }} className={cn("w-full rounded-2xl py-5 px-6 text-lg font-semibold uppercase tracking-wider transition-all min-h-[64px] flex items-center justify-center gap-3", C.accentSolid, C.accentHover)}>
-            <Heart size={22} className="shrink-0" />
-            <span>Start Emotional Integration</span>
-          </button>
-
-          <button onClick={() => { haptic(); setStep("limitingBeliefs"); }} className={cn("w-full rounded-2xl py-5 px-6 text-lg font-semibold uppercase tracking-wider transition-all min-h-[64px] flex items-center justify-center gap-3", C.muted, C.mutedHover)}>
-            <Brain size={22} className="shrink-0" />
-            <span>Limiting Beliefs</span>
-          </button>
-
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <button onClick={() => { haptic(); setStep("history"); }} className={cn("rounded-2xl py-4 px-6 text-sm font-semibold uppercase tracking-wider transition-all min-h-[52px] flex items-center justify-center gap-2", C.muted, C.mutedHover)}>
-              <History size={16} className="shrink-0" />
-              <span>History</span>
-            </button>
-            <button onClick={() => { haptic(); setShowExport(true); }} className={cn("rounded-2xl py-4 px-6 text-sm font-semibold uppercase tracking-wider transition-all min-h-[52px] flex items-center justify-center gap-2", C.muted, C.mutedHover)}>
-              <Download size={16} className="shrink-0" />
-              <span>Export</span>
+          {/* Primary CTA */}
+          <div className="mb-4">
+            <button onClick={() => { haptic(); setStep("timelineSelect"); }} className={cn("w-full rounded-2xl py-5 px-6 text-lg font-semibold uppercase tracking-wider transition-all min-h-[60px] flex items-center justify-center gap-3 bg-amber-600/10 border border-amber-500/20 text-amber-300 hover:bg-amber-600/20 hover:text-amber-400", "shadow-sm:focus-visible")}>
+              <Heart size={24} className="shrink-0" />
+              <span>Start Emotional Integration</span>
             </button>
           </div>
 
-          <div className="mt-6 grid grid-cols-3 gap-2">
-            <button onClick={() => { haptic(); setStep("esrRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}><Zap size={14} className="shrink-0" /> ESR</button>
-            <button onClick={() => { haptic(); setStep("organRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}><Sparkles size={14} className="shrink-0" /> Organs</button>
-            <button onClick={() => { haptic(); setStep("eyeRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}><Eye size={14} className="shrink-0" /> Eyes</button>
+          {/* Secondary CTA */}
+          <div className="mb-4">
+            <button onClick={() => { haptic(); setStep("limitingBeliefs"); }} className={cn("w-full rounded-2xl py-5 px-6 text-lg font-semibold uppercase tracking-wider transition-all min-h-[60px] flex items-center justify-center gap-3 bg-white/5 border border-white/8 text-white/60 hover:bg-white/10 hover:text-white")}>
+              <Brain size={24} className="shrink-0" />
+              <span>Limiting Beliefs</span>
+            </button>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <button onClick={() => { haptic(); setStep("history"); }} className={cn("rounded-xl py-3 px-3 text-sm font-medium uppercase tracking-wider transition-all min-h-[44px]", C.muted, C.mutedHover)}><History size={14} className="shrink-0" /> History</button>
+            <button onClick={() => { haptic(); setShowExport(true); }} className={cn("rounded-xl py-3 px-3 text-sm font-medium uppercase tracking-wider transition-all min-h-[44px]", C.muted, C.mutedHover)}><Download size={14} className="shrink-0" /> Export</button>
+          </div>
+
+          <div className="mt-3 grid grid-cols-3 gap-1">
+            <button onClick={() => { haptic(); setStep("esrRef"); }} className={cn("rounded-full py-2 px-1.5 text-[10px] font-medium transition-all flex flex-col items-center gap-0.5", C.muted, C.mutedHover)}><Zap size={12} className="shrink-0" /> ESR</button>
+            <button onClick={() => { haptic(); setStep("organRef"); }} className={cn("rounded-full py-2 px-1.5 text-[10px] font-medium transition-all flex flex-col items-center gap-0.5", C.muted, C.mutedHover)}><Sparkles size={12} className="shrink-0" /> Organs</button>
+            <button onClick={() => { haptic(); setStep("eyeRef"); }} className={cn("rounded-full py-2 px-1.5 text-[10px] font-medium transition-all flex flex-col items-center gap-0.5", C.muted, C.mutedHover)}><Eye size={12} className="shrink-0" /> Eyes</button>
           </div>
         </div>
 
@@ -357,14 +358,26 @@ export default function SelfWorkPage() {
 
       <main className="pt-16 pb-28 px-4 sm:px-6 max-w-2xl mx-auto">
         {/* Progress dots */}
-        <div className="mb-6 flex items-center justify-center gap-3">
-          {["timelineSelect", "emotionSelect", "organSelect", "eyeSelect", "result"].map((s, i) => {
-            const isActive = step === s || (step === "result-saved" && i < 4);
+        <div className="mb-5 flex items-center justify-center gap-3 px-2">
+          {[
+            { key: "timelineSelect", label: "Timeline" },
+            { key: "emotionSelect", label: "Emotion" },
+            { key: "organSelect", label: "Organ" },
+            { key: "eyeSelect", label: "Eyes" },
+            { key: "result", label: "Save" },
+          ].map((s, i) => {
+            const isActive = step === s.key || (step === "result-saved" && i < 4);
             const isPast = ["timelineSelect", "emotionSelect", "organSelect", "eyeSelect", "result"].indexOf(step) > i || (step === "result-saved" && i < 4);
             return (
-              <div key={s} className="flex items-center gap-1">
-                <div className={cn("w-2.5 h-2.5 rounded-full transition-all duration-300", isActive ? "bg-amber-400 scale-125" : isPast ? "bg-amber-400/60" : "bg-white/10")} />
-                {i < 4 && <div className={cn("w-4 h-px", isPast ? "bg-amber-400/40" : "bg-white/10")} />}
+              <div key={s.key} className="flex items-center gap-1.5">
+                <div className="flex flex-col items-center gap-0.5">
+                  <div className={cn(
+                    "w-2.5 h-2.5 rounded-full transition-all duration-300",
+                    isActive ? "bg-amber-400 scale-125 ring-2 ring-amber-400/20" : isPast ? "bg-amber-400/50" : "bg-white/10"
+                  )} />
+                  <span className={cn("text-[8px] tracking-wider font-medium", isActive ? "text-amber-300" : isPast ? "text-amber-300/70" : "text-white/20")}>{s.label}</span>
+                </div>
+                {i < 4 && <div className={cn("w-5 h-[1px] -mt-3", isPast ? "bg-amber-400/35" : "bg-white/8")} />}
               </div>
             );
           })}
@@ -409,9 +422,9 @@ export default function SelfWorkPage() {
           <StepCard title="Primary Emotion" subtitle="Challenge for the priority emotion.">
             <div className="grid grid-cols-1 gap-2">
               {PRIMARY_EMOTIONS.map((e) => (
-                <button key={e.id} onClick={() => { haptic(); setEmotion(e); setOrgan(""); setStep("organSelect"); }} className={cn("rounded-xl p-3 flex items-center gap-3 text-left transition-all min-h-[52px]", emotion?.id === e.id ? C.accent : C.card, C.border, "hover:bg-white/10")}>
-                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-white", "bg-amber-500", e.color)}><Heart size={14} className="fill-current" /></div>
-                  <div><span className="font-medium text-sm">{e.label}</span><span className="text-[10px] block mt-0.5" style={{color: "rgba(255,215,100,0.9)"}}>{e.element} Element</span></div>
+                <button key={e.id} onClick={() => { haptic(); setEmotion(e); setOrgan(""); setStep("organSelect"); }} className={cn("rounded-xl p-3 flex items-center gap-3 text-left transition-all min-h-[56px] border", emotion?.id === e.id ? "bg-amber-500/15 border-amber-500/30 text-amber-300" : "bg-white/3 border-white/5 text-white/70 hover:bg-white/5")}>
+                  <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center text-white shrink-0", e.color)}><Heart size={16} className="fill-current" /></div>
+                  <div className="flex-1"><span className="font-medium text-sm">{e.label}</span><span className="text-[10px] block mt-0.5 text-amber-300/80">{e.element} Element</span></div>
                 </button>
               ))}
             </div>
@@ -422,7 +435,7 @@ export default function SelfWorkPage() {
           <StepCard title={`Emotion: ${emotion.label}`} subtitle="Select the priority organ holding this emotion:">
             <div className="grid grid-cols-2 gap-2">
               {emotion.organs?.map((org: string) => (
-                <button key={org} onClick={() => { haptic(); setOrgan(org); setStep("eyeSelect"); }} className={cn("rounded-xl py-3 px-4 text-sm font-medium uppercase tracking-wider transition-all min-h-[48px]", C.accent, C.accentHover)}>{org}</button>
+                <button key={org} onClick={() => { haptic(); setOrgan(org); setStep("eyeSelect"); }} className={cn("rounded-xl py-3 px-3 text-sm font-medium uppercase tracking-wider transition-all min-h-[52px] bg-amber-500/15 border border-amber-500/30 text-amber-300 hover:bg-amber-500/30")}>{org}</button>
               ))}
             </div>
             <p className="mt-3 text-[11px] text-center" style={{color: "rgba(255,215,100,0.5)"}}><em>Tap an organ to continue</em></p>
@@ -433,7 +446,7 @@ export default function SelfWorkPage() {
           <StepCard title={`Organ: ${organ}`} subtitle={`Emotion: ${emotion.label} — Choose eye position:`}>
             <div className="grid grid-cols-2 gap-2">
               {EYE_POSITIONS.map((ep) => (
-                <button key={ep.id} onClick={() => { haptic(); setEyePos(ep.label); setStep("result"); }} className={cn("rounded-xl py-3 px-4 text-sm font-medium uppercase tracking-wider transition-all min-h-[48px]", C.accent, C.accentHover)}>
+                <button key={ep.id} onClick={() => { haptic(); setEyePos(ep.label); setStep("result"); }} className={cn("rounded-xl py-3 px-3 text-sm font-medium uppercase tracking-wider transition-all min-h-[52px] bg-amber-500/15 border border-amber-500/30 text-amber-300 hover:bg-amber-500/30")}>
                   <span className="font-medium">{ep.label}</span>
                   <span className="text-[10px] block mt-0.5" style={{color: "rgba(255,215,100,0.7)"}}>{ep.pos}</span>
                 </button>

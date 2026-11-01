@@ -302,9 +302,9 @@ export default function SelfWorkPage() {
   }
 
   // REFERENCE PAGES
-  if (step === "esrRef") return <RefPage title="ESR Indicator Check" icon={<Zap size={20} />} content={esrContent} onBack={goHome} colors={C} onNavigate={(s: any) => { if (s === "settings") window.location.href = "/settings"; else setStep(s); }} />;
-  if (step === "organRef") return <RefPage title="Emotion → Organ Map" icon={<Sparkles size={20} />} content={organRefContent} onBack={goHome} colors={C} onNavigate={(s: any) => { if (s === "settings") window.location.href = "/settings"; else setStep(s); }} />;
-  if (step === "eyeRef") return <RefPage title="NLP Eye Positions" icon={<Eye size={20} />} content={eyeRefContent} onBack={goHome} colors={C} onNavigate={(s: any) => { if (s === "settings") window.location.href = "/settings"; else setStep(s); }} />;
+  if (step === "esrRef") return <RefPage title="ESR Indicator Check" icon={<Zap size={20} />} content={esrContent} onBack={goHome} colors={C} onNavigate={(s: any) => { if (s === "settings") window.location.href = "/settings"; else setStep(s); }} currentStep={step} />;
+  if (step === "organRef") return <RefPage title="Emotion → Organ Map" icon={<Sparkles size={20} />} content={organRefContent} onBack={goHome} colors={C} onNavigate={(s: any) => { if (s === "settings") window.location.href = "/settings"; else setStep(s); }} currentStep={step} />;
+  if (step === "eyeRef") return <RefPage title="NLP Eye Positions" icon={<Eye size={20} />} content={eyeRefContent} onBack={goHome} colors={C} onNavigate={(s: any) => { if (s === "settings") window.location.href = "/settings"; else setStep(s); }} currentStep={step} />;
 
   // INTEGRATION FLOW
   return (
@@ -450,14 +450,14 @@ export default function SelfWorkPage() {
 
 
 
-function RefPage({ title, icon, content, onBack, colors, onNavigate }: { title: string; icon: React.ReactNode; content: React.ReactNode; onBack: () => void; colors: any; onNavigate: (step: Step | "settings") => void }) {
+function RefPage({ title, icon, content, onBack, colors, onNavigate, currentStep }: { title: string; icon: React.ReactNode; content: React.ReactNode; onBack: () => void; colors: any; onNavigate: (step: Step | "settings") => void; currentStep: Step }) {
   return (
     <section className={cn("min-h-screen text-white", C.bg, "pb-28")}>
       <div className="max-w-xl mx-auto px-4 pt-6">
         <div className="flex items-center justify-between mb-6"><button onClick={onBack} className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider opacity-70 hover:opacity-100 transition-opacity min-h-[44px]"><ArrowLeft size={16} className="opacity-70" /> Back</button><h1 className="text-lg font-serif font-bold">{title}</h1><div className="w-24" /></div>
         <div className={cn("rounded-2xl p-5", C.card, C.border)}>{content}</div>
       </div>
-      <Footer currentStep={step} onNavigate={onNavigate} />
+      <Footer currentStep={currentStep} onNavigate={onNavigate} />
     </section>
   );
 }

@@ -22,28 +22,28 @@ const footerItems = [
   { id: "profile", label: "Profile", icon: User, href: "/settings" },
 ] as const;
 
-// Cohesive color system
+// Refined color system — warm slate with soft gold accents
 const C = {
-  bg: "bg-[linear-gradient(180deg,#0c0e14_0%,#141926_50%,#0c0e14_100%)]",
-  card: "bg-white/[0.06] backdrop-blur-sm",
-  cardHover: "hover:bg-white/[0.10]",
-  border: "border-white/[0.08]",
-  accent: "bg-amber-500/15 border-amber-400/25 text-amber-300",
-  accentSolid: "bg-amber-500 text-black",
-  accentHover: "hover:bg-amber-400",
-  muted: "bg-white/[0.08] border-white/[0.12] text-white/70",
-  mutedHover: "hover:bg-white/[0.12]",
-  amber: "text-amber-300",
-  amberBright: "text-amber-400",
-  emerald: "text-emerald-400",
+  bg: "bg-[linear-gradient(180deg,#0a0d14_0%,#111827_50%,#0a0d14_100%)]",
+  card: "bg-white/[0.05] backdrop-blur-sm",
+  cardHover: "hover:bg-white/[0.08]",
+  border: "border-white/[0.07]",
+  accent: "bg-amber-400/12 border-amber-400/25 text-amber-200",
+  accentSolid: "bg-amber-400 text-[#0a0d14]",
+  accentHover: "hover:bg-amber-300",
+  muted: "bg-white/[0.07] border-white/[0.10] text-white/65",
+  mutedHover: "hover:bg-white/[0.10]",
+  amber: "text-amber-200",
+  amberBright: "text-amber-300",
+  emerald: "text-emerald-300",
   text: "text-white",
-  textMuted: "text-white/60",
-  textDim: "text-white/35",
+  textMuted: "text-white/55",
+  textDim: "text-white/30",
 };
 
 function Footer({ currentStep, onNavigate }: { currentStep: Step; onNavigate: (step: Step | "settings") => void }) {
   return (
-    <footer className="fixed bottom-0 left-0 right-0 z-30 bg-[#0b0f1a]/90 backdrop-blur-md border-t border-white/[0.06] pb-safe-area">
+    <footer className="fixed bottom-0 left-0 right-0 z-30 bg-[#0a0d14]/95 backdrop-blur-md border-t border-white/[0.06] pb-safe-area">
       <div className="grid grid-cols-4">
         {footerItems.map((item) => {
           const isActive =
@@ -53,7 +53,7 @@ function Footer({ currentStep, onNavigate }: { currentStep: Step; onNavigate: (s
           const Icon = item.icon;
           return (
             <button key={item.id} onClick={() => item.href ? window.location.href = item.href : onNavigate(item.id as Step)}
-              className={cn("flex flex-col items-center gap-1 py-3 px-2 transition-colors min-h-[56px] active:scale-95", isActive ? "text-amber-400" : "text-white/45 hover:text-white/70")} aria-label={item.label}>
+              className={cn("flex flex-col items-center gap-1 py-3 px-2 transition-all duration-200 min-h-[56px] active:scale-95", isActive ? "text-amber-300" : "text-white/40 hover:text-white/60")} aria-label={item.label}>
               <Icon size={20} />
               <span className="text-[10px] font-medium tracking-wide">{item.label}</span>
             </button>
@@ -165,13 +165,21 @@ export default function SelfWorkPage() {
   const eyeRefContent = (
     <div className="space-y-4">
       <h3 className="text-lg font-serif font-semibold flex items-center gap-2"><Eye size={20} className={C.amberBright} /> NLP Eye Accessing Cues</h3>
+      <div className={cn("rounded-2xl overflow-hidden", C.card, C.border)}>
+        <div className="aspect-video flex items-center justify-center p-4" style={{background: "rgba(255,255,255,0.02)"}}>
+          <img loading="lazy" decoding="async" src="/images/eye-modes.png" alt="NLP Eye Accessing Cues Reference" className="max-w-full h-auto opacity-90 rounded-xl" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+        </div>
+      </div>
       <div className={cn("rounded-xl p-4", C.card, C.border)}>
         <p className="text-[12px] mb-3" style={{color: "rgba(255,255,255,0.7)"}}>Eye positions access different neurological pathways:</p>
         <div className="space-y-2">
           {EYE_POSITIONS.map((ep) => (
             <div key={ep.label} className="flex items-center gap-3 p-3 rounded-lg" style={{background: "rgba(255,255,255,0.03)"}}>
-              <span className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold" style={{background: "rgba(255,215,100,0.2)", color: "rgba(255,215,100,1)"}}>{ep.pos}</span>
-              <div className="flex-1"><span className="font-medium text-sm">{ep.label}</span><span className="text-[11px] block" style={{color: "rgba(255,255,255,0.5)"}}>{ep.desc}</span></div>
+              <span className="w-9 h-9 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0" style={{background: "rgba(255,215,100,0.15)", color: "rgba(255,215,100,1)"}}>{ep.pos}</span>
+              <div className="flex-1 min-w-0">
+                <span className="font-medium text-sm block">{ep.label}</span>
+                <span className="text-[11px] block" style={{color: "rgba(255,255,255,0.5)"}}>{ep.desc}</span>
+              </div>
             </div>
           ))}
         </div>
@@ -228,18 +236,9 @@ export default function SelfWorkPage() {
           </div>
 
           <div className="mt-6 grid grid-cols-3 gap-2">
-            <button onClick={() => { haptic(); setStep("esrRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}>
-              <Zap size={16} className="shrink-0" />
-              <span>ESR</span>
-            </button>
-            <button onClick={() => { haptic(); setStep("organRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}>
-              <Sparkles size={16} className="shrink-0" />
-              <span>Organs</span>
-            </button>
-            <button onClick={() => { haptic(); setStep("eyeRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}>
-              <Eye size={16} className="shrink-0" />
-              <span>Eyes</span>
-            </button>
+            <button onClick={() => { haptic(); setStep("esrRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}><Zap size={14} className="shrink-0" /> ESR</button>
+            <button onClick={() => { haptic(); setStep("organRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}><Sparkles size={14} className="shrink-0" /> Organs</button>
+            <button onClick={() => { haptic(); setStep("eyeRef"); }} className={cn("rounded-xl py-3 px-2 text-[11px] font-medium transition-all flex flex-col items-center gap-1", C.muted, C.mutedHover)}><Eye size={14} className="shrink-0" /> Eyes</button>
           </div>
         </div>
 
@@ -463,10 +462,10 @@ export default function SelfWorkPage() {
 
 function RefPage({ title, icon, content, onBack, colors, onNavigate, currentStep }: { title: string; icon: React.ReactNode; content: React.ReactNode; onBack: () => void; colors: any; onNavigate: (step: Step | "settings") => void; currentStep: Step }) {
   return (
-    <section className={cn("min-h-screen text-white", C.bg, "pb-28")}>
+    <section className={cn("min-h-screen text-white", colors.bg, "pb-28")}>
       <div className="max-w-xl mx-auto px-4 pt-6">
         <div className="flex items-center justify-between mb-6"><button onClick={onBack} className="flex items-center gap-2 text-[12px] font-medium uppercase tracking-wider opacity-70 hover:opacity-100 transition-opacity min-h-[44px]"><ArrowLeft size={16} className="opacity-70" /> Back</button><h1 className="text-lg font-serif font-bold">{title}</h1><div className="w-24" /></div>
-        <div className={cn("rounded-2xl p-5", C.card, C.border)}>{content}</div>
+        <div className={cn("rounded-2xl p-5", colors.card, colors.border)}>{content}</div>
       </div>
       <Footer currentStep={currentStep} onNavigate={onNavigate} />
     </section>

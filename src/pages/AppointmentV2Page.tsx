@@ -82,7 +82,7 @@ const AppointmentV2Page = () => {
   // shell (sidebar visible), never inherit a persisted fullscreen choice that
   // hides the chrome and reads as a different, older page.
   const [isFullScreen, setIsFullScreen] = useState(() =>
-    isDemo ? false : localStorage.getItem('rk_v2_fullscreen') === 'true'
+    isDemo ? false : localStorage.getItem('rk_fullscreen') === 'true'
   );
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
@@ -254,9 +254,9 @@ const AppointmentV2Page = () => {
   }, [activePhase, appointment]);
 
   useEffect(() => {
-    const handler = () => setIsFullScreen(localStorage.getItem('rk_v2_fullscreen') === 'true');
-    window.addEventListener('antigravity_fullscreen_change', handler);
-    return () => window.removeEventListener('antigravity_fullscreen_change', handler);
+    const handler = () => setIsFullScreen(localStorage.getItem('rk_fullscreen') === 'true');
+    window.addEventListener('rk_fullscreen_change', handler);
+    return () => window.removeEventListener('rk_fullscreen_change', handler);
   }, []);
 
   useEffect(() => {
@@ -294,9 +294,9 @@ const AppointmentV2Page = () => {
 
   const toggleFullScreen = () => {
     const next = !isFullScreen;
-    if (!isDemo) localStorage.setItem('rk_v2_fullscreen', String(next));
+    if (!isDemo) localStorage.setItem('rk_fullscreen', String(next));
     setIsFullScreen(next);
-    window.dispatchEvent(new Event('antigravity_fullscreen_change'));
+    window.dispatchEvent(new Event('rk_fullscreen_change'));
   };
 
   // Navigation from SessionReportModal → Grid/Manual

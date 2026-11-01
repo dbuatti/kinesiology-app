@@ -22,28 +22,28 @@ const footerItems = [
   { id: "profile", label: "Profile", icon: User, href: "/settings" },
 ] as const;
 
-// Refined color system — warm slate with soft gold accents
+// Refined color system — deep navy with warm gold accents
 const C = {
-  bg: "bg-[linear-gradient(180deg,#0a0d14_0%,#111827_50%,#0a0d14_100%)]",
-  card: "bg-white/[0.05] backdrop-blur-sm",
-  cardHover: "hover:bg-white/[0.08]",
-  border: "border-white/[0.07]",
-  accent: "bg-amber-400/12 border-amber-400/25 text-amber-200",
-  accentSolid: "bg-amber-400 text-[#0a0d14]",
+  bg: "bg-[linear-gradient(180deg,#080b12_0%,#0f1624_50%,#080b12_100%)]",
+  card: "bg-white/[0.04] backdrop-blur-md",
+  cardHover: "hover:bg-white/[0.07]",
+  border: "border-white/[0.06]",
+  accent: "bg-amber-400/10 border-amber-400/20 text-amber-200",
+  accentSolid: "bg-amber-400 text-[#080b12]",
   accentHover: "hover:bg-amber-300",
-  muted: "bg-white/[0.07] border-white/[0.10] text-white/65",
-  mutedHover: "hover:bg-white/[0.10]",
+  muted: "bg-white/[0.06] border-white/[0.08] text-white/60",
+  mutedHover: "hover:bg-white/[0.09]",
   amber: "text-amber-200",
   amberBright: "text-amber-300",
   emerald: "text-emerald-300",
   text: "text-white",
-  textMuted: "text-white/55",
-  textDim: "text-white/30",
+  textMuted: "text-white/50",
+  textDim: "text-white/25",
 };
 
 function Footer({ currentStep, onNavigate }: { currentStep: Step; onNavigate: (step: Step | "settings") => void }) {
   return (
-    <footer className="fixed bottom-0 left-0 right-0 z-30 bg-[#0a0d14]/95 backdrop-blur-md border-t border-white/[0.06] pb-safe-area">
+    <footer className="fixed bottom-0 left-0 right-0 z-30 bg-[#080b12]/95 backdrop-blur-md border-t border-white/[0.06] pb-safe-area">
       <div className="grid grid-cols-4">
         {footerItems.map((item) => {
           const isActive =
@@ -53,7 +53,7 @@ function Footer({ currentStep, onNavigate }: { currentStep: Step; onNavigate: (s
           const Icon = item.icon;
           return (
             <button key={item.id} onClick={() => item.href ? window.location.href = item.href : onNavigate(item.id as Step)}
-              className={cn("flex flex-col items-center gap-1 py-3 px-2 transition-all duration-200 min-h-[56px] active:scale-95", isActive ? "text-amber-300" : "text-white/40 hover:text-white/60")} aria-label={item.label}>
+              className={cn("flex flex-col items-center gap-1 py-3 px-2 transition-all duration-200 min-h-[56px] active:scale-95", isActive ? "text-amber-300" : "text-white/35 hover:text-white/55")} aria-label={item.label}>
               <Icon size={20} />
               <span className="text-[10px] font-medium tracking-wide">{item.label}</span>
             </button>

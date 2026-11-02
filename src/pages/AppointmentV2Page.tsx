@@ -56,6 +56,7 @@ import { safeParse } from "@/utils/safe-json";
 import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
 import type { ProtocolLog, ProtocolLogPatch } from "@/data/protocol-log";
 import ClientIntakeSummary from "@/components/crm/ClientIntakeSummary";
+import ClientIntakeEditModal from "@/components/crm/ClientIntakeEditModal";
 
 const AppointmentV2Page = () => {
   const { id } = useParams<{ id: string }>();
@@ -92,6 +93,7 @@ const AppointmentV2Page = () => {
   const [imageRefOpen, setImageRefOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [ctmOpen, setCtmOpen] = useState(false);
+  const [intakeEditOpen, setIntakeEditOpen] = useState(false);
   const [activePhase, setActivePhase] = useState(0);
 
   // Report → Manual navigation: deep-link a finding/pathway into the clinical workspace.
@@ -724,13 +726,30 @@ const AppointmentV2Page = () => {
                 <h2 className="text-base font-serif font-bold text-amber-300">{appointment.clients?.name || "Client"}</h2>
                 <p className="text-[10px] text-white/40">Client Intake Summary</p>
               </div>
-              <button onClick={() => setIntakeOpen(false)} className="p-1 rounded hover:bg-white/10 transition-colors"><X size={16} className="text-white/50" /></button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => { setIntakeOpen(false); setIntakeEditOpen(true); }}
+                  className="px-2 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-[10px] font-semibold text-amber-300 hover:bg-amber-500/20 transition-colors"
+                >
+                  Edit
+                </button>
+                <button onClick={() => setIntakeOpen(false)} className="p-1 rounded hover:bg-white/10 transition-colors"><X size={16} className="text-white/50" /></button>
+              </div>
             </div>
             <div className="p-5">
               <ClientIntakeSummary data={appointment.clients as Record<string, unknown>} />
             </div>
           </div>
         </div>
+      )}
+
+      {intakeEditOpen && (
+        <ClientIntakeEditModal
+          clientId={appointment.clients?.id || ""}
+          initialData={appointment.clients as Record<string, unknown>}
+          onClose={() => setIntakeEditOpen(false)}
+          onSave={() => { refresh(); setIntakeOpen(true); }}
+        />
       )}
 
       <QuickNotesDialog

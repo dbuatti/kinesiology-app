@@ -30,6 +30,7 @@ import {
   MoreHorizontal,
   Zap,
   Brain,
+  X,
 } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
@@ -54,6 +55,7 @@ import { parseClientJournal } from "@/utils/journal-helper";
 import { safeParse } from "@/utils/safe-json";
 import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
 import type { ProtocolLog, ProtocolLogPatch } from "@/data/protocol-log";
+import ClientIntakeSummary from "@/components/crm/ClientIntakeSummary";
 
 const AppointmentV2Page = () => {
   const { id } = useParams<{ id: string }>();
@@ -85,6 +87,7 @@ const AppointmentV2Page = () => {
     isDemo ? false : localStorage.getItem('rk_fullscreen') === 'true'
   );
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
+  const [intakeOpen, setIntakeOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
   const [imageRefOpen, setImageRefOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -418,6 +421,13 @@ const AppointmentV2Page = () => {
               >
                 {appointment.clients?.name || "Unknown"}
               </Link>
+              <button
+                onClick={() => { setIntakeOpen(true); }}
+                className="ml-1 shrink-0 rounded-md bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300 hover:bg-amber-500/20 transition-colors"
+                title="Quick view of client intake"
+              >
+                Intake
+              </button>
               {isDemo && (
                 <span className="shrink-0 rounded-md bg-muted/60 px-1.5 py-0.5 text-[9px] font-medium tracking-tight text-muted-foreground" title="Public demo — nothing is saved.">
                   Demo
@@ -507,6 +517,9 @@ const AppointmentV2Page = () => {
                 <DropdownMenuItem onClick={toggleFullScreen} className="flex items-center gap-2">
                   {isFullScreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
                   {isFullScreen ? "Exit fullscreen" : "Fullscreen"}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => { setIntakeOpen(true); }} className="flex items-center gap-2">
+                  <User size={14} /> Client Intake
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -702,6 +715,24 @@ const AppointmentV2Page = () => {
       </div>
 
       <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} />
+
+      {intakeOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl bg-[#0f0d10] border border-amber-500/20 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="sticky top-0 flex items-center justify-between px-5 py-3 border-b border-white/[0.06] bg-[#0f0d10]/95 backdrop-blur-sm rounded-t-2xl">
+              <div>
+                <h2 className="text-base font-serif font-bold text-amber-300">{appointment.clients?.name || "Client"}</h2>
+                <p className="text-[10px] text-white/40">Client Intake Summary</p>
+              </div>
+              <button onClick={() => setIntakeOpen(false)} className="p-1 rounded hover:bg-white/10 transition-colors"><X size={16} className="text-white/50" /></button>
+            </div>
+            <div className="p-5">
+              <ClientIntakeSummary data={appointment.clients as Record<string, unknown>} />
+            </div>
+          </div>
+        </div>
+      )}
+
       <QuickNotesDialog
         open={notesOpen}
         onOpenChange={setNotesOpen}

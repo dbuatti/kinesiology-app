@@ -283,6 +283,10 @@ export const CorrectionDockProvider = ({
   selectionRef.current = selection;
   const pathwayRef = useRef(inhibitionPathway);
   pathwayRef.current = inhibitionPathway;
+  // Same trick for the pathway→status map: back-to-back "clear" taps must not
+  // write over each other through a stale render snapshot.
+  const inhibitionStateRef = useRef<Record<string, InhibitionPathwayState>>(inhibitionPathwayState);
+  inhibitionStateRef.current = inhibitionPathwayState;
 
   const openDock = useCallback<CorrectionDockContextValue["openDock"]>((request) => {
     // No explicit request = just the list, at whatever tab it was on.
@@ -330,7 +334,7 @@ export const CorrectionDockProvider = ({
   const setInhibitionStatus = useCallback<CorrectionDockContextValue["setInhibitionStatus"]>(
     (processId, pathway, status, priorityStep) => {
       const next: Record<string, InhibitionPathwayState> = {
-        ...inhibitionPathwayState,
+        ...inhibitionStateRef.current,
         [processId]: {
           pathway,
           status,
@@ -338,6 +342,7 @@ export const CorrectionDockProvider = ({
           ...(status === "clear" ? { clearedAt: new Date().toISOString() } : {}),
         },
       };
+      inhibitionStateRef.current = next;
       setInhibitionPathwayState(next);
       // Persist to appointment metadata.
       onInhibitionPathwayChange?.(inhibitionPathway, next);
@@ -346,7 +351,7 @@ export const CorrectionDockProvider = ({
         prev && prev.pathway.processId === processId ? { ...prev, status, priorityStep } : prev
       );
     },
-    [inhibitionPathwayState, onInhibitionPathwayChange, inhibitionPathway]
+    [onInhibitionPathwayChange, inhibitionPathway]
   );
 
   /** Clear the inhibition pathway record for a processId. */

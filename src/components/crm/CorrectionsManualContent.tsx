@@ -460,10 +460,23 @@ const CorrectionsManualContent = ({
 
   const StepProgress = ({ processId, total }: { processId: string; total: number }) => {
     const done = protocolLogs?.[processId]?.steps?.length ?? 0;
-    if (!onProtocolLogChange || done === 0) return null;
+    const saved = protocolLogs?.[processId]?.entries?.length ?? 0;
+    if (!onProtocolLogChange || (done === 0 && saved === 0)) return null;
     return (
-      <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-        {done}/{total}
+      <span className="flex shrink-0 items-center gap-1">
+        {saved > 0 && (
+          <span
+            className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary-strong dark:bg-primary/25 dark:text-primary"
+            title={`${saved} correction${saved === 1 ? "" : "s"} saved for this process`}
+          >
+            {saved} saved
+          </span>
+        )}
+        {done > 0 && (
+          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+            {done}/{total}
+          </span>
+        )}
       </span>
     );
   };

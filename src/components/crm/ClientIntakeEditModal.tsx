@@ -1,4 +1,3 @@
-import { ReactNode } from "react";
 import { X } from "lucide-react";
 import PublicIntakeForm from "./PublicIntakeForm";
 
@@ -16,23 +15,27 @@ export default function ClientIntakeEditModal({
   onSave,
 }: ClientIntakeEditModalProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-2xl bg-[#0f0d10] border border-amber-500/20 shadow-2xl animate-in zoom-in-95 duration-200">
-        <div className="sticky top-0 flex items-center justify-between px-5 py-3 border-b border-white/[0.06] bg-[#0f0d10]/95 backdrop-blur-sm rounded-t-2xl">
-          <div>
-            <h2 className="text-base font-serif font-bold text-amber-300">Edit Client Intake</h2>
-            <p className="text-[10px] text-white/40">Fill out the intake form while sitting with the client.</p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm p-3 sm:p-6 animate-in fade-in duration-200">
+      <div className="flex w-full max-w-2xl max-h-[92vh] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl animate-in zoom-in-95 duration-200">
+        {/* Header */}
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-card px-5 py-3">
+          <div className="min-w-0">
+            <h2 className="text-base font-semibold tracking-tight text-foreground">Edit Client Intake</h2>
+            <p className="text-[11px] text-muted-foreground">
+              Fill out the intake form while sitting with the client.
+            </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded hover:bg-white/10 transition-colors"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label="Close modal"
           >
-            <X size={18} className="text-white/50" />
+            <X size={16} />
           </button>
         </div>
 
-        <div className="overflow-y-auto max-h-[calc(90vh-60px)]">
+        {/* Scroll body — generous gutters so inputs never touch the edge */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6">
           <PublicIntakeForm
             clientId={clientId}
             initialData={initialData as any}

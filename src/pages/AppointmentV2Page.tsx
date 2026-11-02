@@ -425,7 +425,7 @@ const AppointmentV2Page = () => {
               </Link>
               <button
                 onClick={() => { setIntakeOpen(true); }}
-                className="ml-1 shrink-0 rounded-md bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300 hover:bg-amber-500/20 transition-colors"
+                className="ml-1 shrink-0 rounded-md border border-border bg-muted/60 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 title="Quick view of client intake"
               >
                 Intake
@@ -719,24 +719,32 @@ const AppointmentV2Page = () => {
       <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} />
 
       {intakeOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl bg-[#0f0d10] border border-amber-500/20 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="sticky top-0 flex items-center justify-between px-5 py-3 border-b border-white/[0.06] bg-[#0f0d10]/95 backdrop-blur-sm rounded-t-2xl">
-              <div>
-                <h2 className="text-base font-serif font-bold text-amber-300">{appointment.clients?.name || "Client"}</h2>
-                <p className="text-[10px] text-white/40">Client Intake Summary</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm p-3 sm:p-6 animate-in fade-in duration-200">
+          <div className="flex w-full max-w-2xl max-h-[88vh] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-card px-5 py-3">
+              <div className="min-w-0">
+                <h2 className="truncate text-base font-semibold tracking-tight text-foreground">
+                  {appointment.clients?.name || "Client"}
+                </h2>
+                <p className="text-[11px] text-muted-foreground">Client Intake Summary</p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-1.5">
                 <button
                   onClick={() => { setIntakeOpen(false); setIntakeEditOpen(true); }}
-                  className="px-2 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-[10px] font-semibold text-amber-300 hover:bg-amber-500/20 transition-colors"
+                  className="rounded-md border border-primary/25 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/20"
                 >
                   Edit
                 </button>
-                <button onClick={() => setIntakeOpen(false)} className="p-1 rounded hover:bg-white/10 transition-colors"><X size={16} className="text-white/50" /></button>
+                <button
+                  onClick={() => setIntakeOpen(false)}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  aria-label="Close intake summary"
+                >
+                  <X size={16} />
+                </button>
               </div>
             </div>
-            <div className="p-5">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6">
               <ClientIntakeSummary data={appointment.clients as Record<string, unknown>} />
             </div>
           </div>

@@ -24,6 +24,32 @@ export interface InhibitionPathwayState {
   clearedAt?: string;
 }
 
+const PHASE_LABELS: Record<string, string> = {
+  muscle: "Muscle",
+  primitiveReflex: "Primitive reflex",
+  cranialNerve: "Cranial nerve",
+  ligament: "Ligament",
+  organ: "Organ",
+  emotion: "Emotion",
+  gland: "Gland",
+  other: "Other",
+};
+
+/**
+ * "Sternocleidomastoid (SCM) (R) · Muscle" — the one string used wherever a
+ * correction has to say which pathway it was worked on.
+ */
+export const inhibitionPathwayLabel = (
+  state?: InhibitionPathwayState | null
+): string | undefined => {
+  const pathway = state?.pathway;
+  if (!pathway) return undefined;
+  const name = pathway.notes || pathway.processId;
+  const sided = pathway.side === "L" || pathway.side === "R" ? `${name} (${pathway.side})` : name;
+  const phase = pathway.phase ? PHASE_LABELS[pathway.phase] ?? pathway.phase : "";
+  return phase ? `${sided} · ${phase}` : sided;
+};
+
 export interface CorrectionTarget {
   tab: CorrectionTab;
   item: string;
@@ -303,21 +329,24 @@ export const CorrectionDockProvider = ({
   /** Record a pathway status (inhibited / clear / etc.) for a given processId. */
   const setInhibitionStatus = useCallback<CorrectionDockContextValue["setInhibitionStatus"]>(
     (processId, pathway, status, priorityStep) => {
-      setInhibitionPathwayState((prev) => {
-        const next = {
-          ...prev,
-          [processId]: {
-            pathway,
-            status,
-            priorityStep: priorityStep ?? null,
-          },
-        };
-        // Persist to appointment metadata
-        onInhibitionPathwayChange?.(inhibitionPathway, next);
-        return next;
-      });
+      const next: Record<string, InhibitionPathwayState> = {
+        ...inhibitionPathwayState,
+        [processId]: {
+          pathway,
+          status,
+          priorityStep: priorityStep ?? undefined,
+          ...(status === "clear" ? { clearedAt: new Date().toISOString() } : {}),
+        },
+      };
+      setInhibitionPathwayState(next);
+      // Persist to appointment metadata.
+      onInhibitionPathwayChange?.(inhibitionPathway, next);
+      // Keep the active pathway in step so "cleared" shows immediately.
+      setInhibitionPathway((prev) =>
+        prev && prev.pathway.processId === processId ? { ...prev, status, priorityStep } : prev
+      );
     },
-    [onInhibitionPathwayChange, inhibitionPathway]
+    [inhibitionPathwayState, onInhibitionPathwayChange, inhibitionPathway]
   );
 
   /** Clear the inhibition pathway record for a processId. */

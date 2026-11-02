@@ -59,6 +59,8 @@ interface ProtocolLogSheetProps {
   unassigned?: boolean;
   /** Inline drops the card chrome so the fields can sit inside a step. */
   variant?: "card" | "inline";
+  /** The pathway being corrected, stamped onto every banked correction. */
+  pathwayLabel?: string;
 }
 
 /** Progressive disclosure: only render a field once its parent is answered. */
@@ -90,6 +92,7 @@ const ProtocolLogSheet = ({
   step,
   unassigned,
   variant = "card",
+  pathwayLabel,
 }: ProtocolLogSheetProps) => {
   const values = log?.values ?? {};
 
@@ -307,7 +310,7 @@ const ProtocolLogSheet = ({
             </p>
           )}
         </div>
-        <ProtocolLogActions processId={processId} log={log} onChange={onChange} />
+        <ProtocolLogActions processId={processId} log={log} onChange={onChange} pathwayLabel={pathwayLabel} />
       </div>
 
       <ProtocolEntryList
@@ -335,10 +338,12 @@ const ProtocolLogActions = ({
   processId,
   log,
   onChange,
+  pathwayLabel,
 }: {
   processId: string;
   log?: ProtocolLog;
   onChange: (patch: ProtocolLogPatch) => void;
+  pathwayLabel?: string;
 }) => {
   const live = hasLogData(log);
   const savedCount = log?.entries?.length ?? 0;
@@ -360,6 +365,7 @@ const ProtocolLogActions = ({
             values,
             steps,
             savedAt: new Date().toISOString(),
+            ...(pathwayLabel ? { pathway: pathwayLabel } : {}),
           },
         ],
         values: {},
@@ -429,11 +435,18 @@ const ProtocolEntryList = ({
               </span>
               {/* Two lines rather than an ellipsis: a saved correction is worth
                   reading in full when you check what you already did. */}
-              <span
-                className="line-clamp-2 min-w-0 flex-1 break-words text-[11px] leading-snug text-foreground/80"
-                title={bits.join(" · ")}
-              >
-                {bits.join(" · ") || "Logged"}
+              <span className="min-w-0 flex-1">
+                {entry.pathway && (
+                  <span className="block truncate text-[9.5px] font-bold uppercase tracking-wider text-primary-strong">
+                    {entry.pathway}
+                  </span>
+                )}
+                <span
+                  className="line-clamp-2 block break-words text-[11px] leading-snug text-foreground/80"
+                  title={bits.join(" · ")}
+                >
+                  {bits.join(" · ") || "Logged"}
+                </span>
               </span>
               <button
                 type="button"
@@ -461,11 +474,13 @@ export const ProtocolLogBar = ({
   log,
   onChange,
   heading = "Log",
+  pathwayLabel,
 }: {
   processId: string;
   log?: ProtocolLog;
   onChange?: (patch: ProtocolLogPatch) => void;
   heading?: string;
+  pathwayLabel?: string;
 }) => {
   if (!onChange) return null;
   const bits = summariseValues(processId, log?.values ?? {});
@@ -488,7 +503,7 @@ export const ProtocolLogBar = ({
             <span className="ml-2 font-semibold text-foreground/80">{bits.join(" · ")}</span>
           )}
         </p>
-        <ProtocolLogActions processId={processId} log={log} onChange={onChange} />
+        <ProtocolLogActions processId={processId} log={log} onChange={onChange} pathwayLabel={pathwayLabel} />
       </div>
       <ProtocolEntryList
         processId={processId}

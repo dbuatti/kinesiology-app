@@ -6,11 +6,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PathwayLogicWizard from "@/components/crm/PathwayLogicWizard";
 import ProtocolLogSheet from "@/components/crm/corrections/ProtocolLogSheet";
-import { PROTOCOL_FIELDS, PROTOCOL_STEP_MAP } from "@/data/protocol-log";
+import { PROTOCOL_FIELDS, PROTOCOL_STEP_MAP, summariseValues, type ProtocolLog, type ProtocolEntry } from "@/data/protocol-log";
 import { getInhibitedFindings, findingLabel } from "@/components/crm/v2/v2-utils";
 import { safeParse } from "@/utils/safe-json";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";
-import { useCorrectionDock } from "@/components/crm/corrections/CorrectionDockContext";
+import { useCorrectionDock, inhibitionPathwayLabel } from "@/components/crm/corrections/CorrectionDockContext";
 import {
   Card,
   Section,
@@ -31,10 +31,18 @@ const LOGGABLE = [
   { id: "emotional", title: "Emotional (Pulse Point)", group: "Efferent" },
 ];
 
-const hasData = (values?: Record<string, unknown>, steps?: number[]) =>
-  Object.values(values ?? {}).some((v) =>
+const hasLiveData = (log?: ProtocolLog) =>
+  Object.values(log?.values ?? {}).some((v) =>
     Array.isArray(v) ? v.length > 0 : v !== null && v !== undefined && v !== ""
-  ) || (steps?.length ?? 0) > 0;
+  ) || (log?.steps?.length ?? 0) > 0;
+
+/** Anything worth showing: banked corrections count too. */
+const hasData = (log?: ProtocolLog) =>
+  (log?.entries?.length ?? 0) > 0 || hasLiveData(log);
+
+/** Corrections recorded for a process: banked entries plus the live one. */
+const countCorrections = (log?: ProtocolLog) =>
+  (log?.entries?.length ?? 0) + (hasLiveData(log) ? 1 : 0);
 
 const stepTotal = (processId: string) =>
   new Set(Object.values(PROTOCOL_STEP_MAP[processId] ?? {})).size;
@@ -49,7 +57,13 @@ const fmtTime = (iso?: string) => {
 };
 
 const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: PhaseProps) => {
-  const { protocolLogs, logProtocol } = useCorrectionDock();
+  const {
+    protocolLogs,
+    logProtocol,
+    inhibitionPathway,
+    setInhibitionStatus,
+  } = useCorrectionDock();
+  const pathwayLabel = inhibitionPathwayLabel(inhibitionPathway);
   const [pathModalOpen, setPathModalOpen] = useState(false);
   const [customPathway, setCustomPathway] = useState("");
   const [customMode, setCustomMode] = useState(false);
@@ -64,6 +78,13 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
 
   const priorityPathway = (meta as any)?.priority_pathway || "";
   const isCustom = priorityPathway === 'CUSTOM';
+
+  /**
+   * The pathway string stamped on corrections: the dock's selected inhibition
+   * pathway when there is one, otherwise the priority pathway chosen here.
+   */
+  const stampedPathway =
+    pathwayLabel ?? (priorityPathway && priorityPathway !== 'CUSTOM' ? priorityPathway : undefined);
 
   useEffect(() => {
     if (priorityPathway && priorityPathway !== 'CUSTOM') {
@@ -90,9 +111,62 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
 
   // Processes with saved data reopen automatically; the picker adds more.
   const [openIds, setOpenIds] = useState<string[]>(() =>
-    LOGGABLE.map(l => l.id).filter(id => hasData(protocolLogs?.[id]?.values, protocolLogs?.[id]?.steps))
+    LOGGABLE.map(l => l.id).filter(id => hasData(protocolLogs?.[id]))
   );
-  const loggedCount = LOGGABLE.filter(l => hasData(protocolLogs?.[l.id]?.values, protocolLogs?.[l.id]?.steps)).length;
+  const loggedCount = LOGGABLE.reduce((sum, l) => sum + countCorrections(protocolLogs?.[l.id]), 0);
+
+  /**
+   * Every correction recorded this session — banked entries first, then the
+   * live form — flattened so the practitioner can read back exactly what was
+   * done to which pathway, in order.
+   */
+  const appliedCorrections = useMemo(() => {
+    const rows: Array<{
+      key: string;
+      processId: string;
+      processTitle: string;
+      group: string;
+      pathway?: string;
+      summary: string;
+      savedAt?: string;
+      entry?: ProtocolEntry;
+      live: boolean;
+    }> = [];
+
+    for (const proc of LOGGABLE) {
+      const log = protocolLogs?.[proc.id];
+      if (!log) continue;
+
+      for (const entry of log.entries ?? []) {
+        rows.push({
+          key: entry.id,
+          processId: proc.id,
+          processTitle: proc.title,
+          group: proc.group,
+          pathway: entry.pathway,
+          summary: summariseValues(proc.id, entry.values).join(" · ") || "Logged",
+          savedAt: entry.savedAt,
+          entry,
+          live: false,
+        });
+      }
+
+      if (hasLiveData(log)) {
+        rows.push({
+          key: `${proc.id}-live`,
+          processId: proc.id,
+          processTitle: proc.title,
+          group: proc.group,
+          pathway: stampedPathway,
+          summary: summariseValues(proc.id, log.values ?? {}).join(" · ") || "In progress",
+          savedAt: log.updatedAt,
+          live: true,
+        });
+      }
+    }
+
+    return rows.sort((a, b) => (a.savedAt ?? "").localeCompare(b.savedAt ?? ""));
+  }, [protocolLogs, stampedPathway]);
 
   const corrections = useMemo(
     () => (((meta as any)?.corrections || []) as { pathway: string; summary: string; timestamp: string }[]),
@@ -246,15 +320,124 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="text-card-title">Corrections applied</p>
-              <p className="text-meta">Open a process to log its steps — add as many as you correct.</p>
+              <p className="text-meta">
+                What was corrected and how — every process you log lands here.
+              </p>
             </div>
             <StatusBadge variant={loggedCount > 0 ? 'recorded' : 'pending'}>
               {loggedCount} logged
             </StatusBadge>
           </div>
 
+          {/* Everything recorded this session, newest last */}
+          {appliedCorrections.length > 0 ? (
+            <ul className="space-y-2">
+              {appliedCorrections.map((row) => (
+                <li
+                  key={row.key}
+                  className="flex items-start gap-3 rounded-xl border border-border/70 bg-background px-4 py-3"
+                >
+                  <span
+                    className={cn(
+                      'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full',
+                      row.live
+                        ? 'bg-primary/15 text-primary-strong'
+                        : 'bg-success/15 text-success'
+                    )}
+                  >
+                    <Check size={12} strokeWidth={3} />
+                  </span>
+                  <div className="min-w-0 flex-1 space-y-0.5">
+                    {row.pathway && (
+                      <p className="truncate text-[10px] font-bold uppercase tracking-[0.07em] text-primary-strong">
+                        {row.pathway}
+                      </p>
+                    )}
+                    <p className="text-[13px] font-semibold leading-snug text-foreground">
+                      {row.processTitle}
+                      <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                        {row.group}
+                      </span>
+                      {row.live && (
+                        <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          in progress
+                        </span>
+                      )}
+                    </p>
+                    <p className="break-words text-[11.5px] leading-relaxed text-muted-foreground">
+                      {row.summary}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    {row.savedAt && (
+                      <span className="text-[10px] tabular-nums text-muted-foreground/70">
+                        {fmtTime(row.savedAt)}
+                      </span>
+                    )}
+                    {!row.live && row.entry && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          logProtocol(row.processId, (previous) => ({
+                            entries: (previous.entries ?? []).filter((e) => e.id !== row.entry!.id),
+                          }))
+                        }
+                        aria-label="Delete this correction"
+                        className="rounded p-0.5 text-muted-foreground/60 transition-colors hover:bg-destructive/10 hover:text-destructive-strong"
+                      >
+                        <X size={11} />
+                      </button>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyState
+              icon={History}
+              title="No corrections logged yet"
+              description="Pick a process below — its step-by-step log opens here, and every correction you save is listed back here with the pathway and method."
+            />
+          )}
+
+          {/* Stipulate that the correction cleared the pathway */}
+          {inhibitionPathway && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-muted/20 px-4 py-2.5">
+              <div className="min-w-0">
+                <p className="truncate text-[12px] font-semibold text-foreground">{pathwayLabel}</p>
+                <p className="text-[10.5px] text-muted-foreground">
+                  {inhibitionPathway.status === 'clear'
+                    ? 'Marked clear — the correction held on retest.'
+                    : 'Confirm the correction cleared this pathway.'}
+                </p>
+              </div>
+              {inhibitionPathway.status === 'clear' ? (
+                <span className="flex shrink-0 items-center gap-1 rounded-md bg-success/15 px-2.5 py-1 text-[11px] font-semibold text-success">
+                  <Check size={12} strokeWidth={3} /> Pathway clear
+                </span>
+              ) : (
+                <PrimaryButton
+                  onClick={() =>
+                    setInhibitionStatus(
+                      inhibitionPathway.pathway.processId,
+                      inhibitionPathway.pathway,
+                      'clear',
+                      inhibitionPathway.priorityStep
+                    )
+                  }
+                  className="h-8 shrink-0 text-[11px]"
+                >
+                  Mark pathway clear
+                </PrimaryButton>
+              )}
+            </div>
+          )}
+
           {/* Process picker */}
           <div className="space-y-2">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+              Log another process
+            </p>
             {(['Afferent', 'Efferent'] as const).map(group => (
               <div key={group} className="flex flex-wrap items-center gap-2">
                 <span className="w-16 shrink-0 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
@@ -262,7 +445,8 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
                 </span>
                 {LOGGABLE.filter(l => l.group === group).map(proc => {
                   const open = openIds.includes(proc.id);
-                  const done = hasData(protocolLogs?.[proc.id]?.values, protocolLogs?.[proc.id]?.steps);
+                  const count = countCorrections(protocolLogs?.[proc.id]);
+                  const done = count > 0;
                   return (
                     <button
                       key={proc.id}
@@ -277,6 +461,11 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
                     >
                       {done && <Check size={12} strokeWidth={3} />}
                       {proc.title}
+                      {count > 0 && (
+                        <span className="rounded-full bg-primary/15 px-1.5 text-[10px] font-bold tabular-nums text-primary-strong">
+                          {count}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -324,19 +513,14 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
                         fields={PROTOCOL_FIELDS[pid] ?? []}
                         log={log}
                         onChange={(patch) => logProtocol(pid, patch)}
+                        pathwayLabel={stampedPathway}
                       />
                     </div>
                   </div>
                 );
               })}
             </div>
-          ) : (
-            <EmptyState
-              icon={History}
-              title="No corrections logged yet"
-              description="Pick a process above — its step-by-step log opens here, and you can log as many as the session needs."
-            />
-          )}
+          ) : null}
         </Card>
 
         {/* Running clinical note */}

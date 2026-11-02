@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import CorrectionsManualContent from "@/components/crm/CorrectionsManualContent";
 import { processLabel } from "@/data/correction-process-list";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
-import { useCorrectionDock } from "./CorrectionDockContext";
+import { useCorrectionDock, inhibitionPathwayLabel } from "./CorrectionDockContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -341,6 +341,24 @@ const CorrectionDock = () => {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
+            {inhibitionPathway && inhibitionPathway.status !== "clear" && (
+              <button
+                type="button"
+                onClick={() =>
+                  setInhibitionStatus(
+                    inhibitionPathway.pathway.processId,
+                    inhibitionPathway.pathway,
+                    "clear",
+                    inhibitionPathway.priorityStep
+                  )
+                }
+                title="Stipulate that the correction cleared this pathway"
+                className="flex h-7 shrink-0 items-center gap-1 rounded-md border border-success/30 bg-success/10 px-2 text-[10px] font-semibold text-success transition-colors hover:bg-success/20"
+              >
+                <Check size={11} strokeWidth={3} />
+                <span className="hidden sm:inline">Pathway clear</span>
+              </button>
+            )}
           </div>
           <button onClick={closeDock} title="Close corrections" aria-label="Close corrections" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground/60 transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25 lg:px-2 lg:w-auto lg:gap-1.5">
             <X size={13} className="lg:hidden" />
@@ -352,7 +370,7 @@ const CorrectionDock = () => {
           </button>
         </header>
         <div className="flex min-h-0 flex-1 flex-col">
-          <CorrectionsManualContent compact fill target={target} initialSelection={selection} onSelectionChange={rememberSelection} onDepthChange={setDepth} backSignal={backSignal} protocolLogs={protocolLogs} onProtocolLogChange={logProtocol} />
+          <CorrectionsManualContent compact fill target={target} initialSelection={selection} onSelectionChange={rememberSelection} onDepthChange={setDepth} backSignal={backSignal} protocolLogs={protocolLogs} onProtocolLogChange={logProtocol} pathwayLabel={inhibitionPathwayLabel(inhibitionPathway)} />
         </div>
       </aside>
     </>

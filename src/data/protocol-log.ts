@@ -37,6 +37,12 @@ export interface ProtocolEntry {
   values: Record<string, unknown>;
   steps?: number[];
   savedAt: string;
+  /**
+   * The inhibited pathway this correction was worked on ("Sternocleidomastoid
+   * (SCM) (R) · Muscle"). Stamped at save time so the Correct phase can report
+   * *what* was corrected, not just which process was used.
+   */
+  pathway?: string;
 }
 
 /** A write is either a plain patch or a function of the freshest log. */

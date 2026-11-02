@@ -228,6 +228,8 @@ interface CorrectionsManualContentProps {
   onDepthChange?: (depth: number) => void;
   /** Signal from parent to step back one level. */
   backSignal?: number;
+  /** Pathway being corrected — stamped onto every correction saved here. */
+  pathwayLabel?: string;
 }
 
 const CorrectionsManualContent = ({
@@ -241,6 +243,7 @@ const CorrectionsManualContent = ({
   fill = false,
   onDepthChange,
   backSignal,
+  pathwayLabel,
 }: CorrectionsManualContentProps = {}) => {
   const [activeTab, setActiveTab] = useState<string>(() => initialSelection?.tab ?? "afferent");
   const [afferentActive, setAfferentActive] = useState(
@@ -476,6 +479,7 @@ const CorrectionsManualContent = ({
           : undefined
       }
       heading={heading}
+      pathwayLabel={pathwayLabel}
     />
   );
 
@@ -492,6 +496,7 @@ const CorrectionsManualContent = ({
       }
       step={step}
       variant="inline"
+      pathwayLabel={pathwayLabel}
     />
   );
 
@@ -510,6 +515,7 @@ const CorrectionsManualContent = ({
           onChange={(patch) => onProtocolLogChange(processId, patch)}
           unassigned
           variant="inline"
+          pathwayLabel={pathwayLabel}
         />
       </div>
     );
@@ -524,6 +530,7 @@ const CorrectionsManualContent = ({
         heading={heading}
         log={protocolLogs?.[processId]}
         onChange={(patch) => onProtocolLogChange(processId, patch)}
+        pathwayLabel={pathwayLabel}
       />
     );
   };

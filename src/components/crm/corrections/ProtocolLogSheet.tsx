@@ -383,7 +383,7 @@ const ProtocolLogActions = ({
         className="flex h-6 items-center gap-1 rounded-md border border-border bg-card px-1.5 text-[10px] font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary-strong focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-border disabled:hover:bg-card disabled:hover:text-muted-foreground coarse:h-10 coarse:px-2.5 coarse:text-[12px]"
       >
         <Plus size={11} strokeWidth={3} />
-        <span className="hidden sm:inline">Another</span>
+        <span className="hidden sm:inline">Save</span>
       </button>
       <button
         type="button"

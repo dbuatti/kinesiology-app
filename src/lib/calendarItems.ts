@@ -251,11 +251,10 @@ export function buildCalendarItems(inputs: CalendarInputs): CalendarItem[] {
    (kinesiologyAppts || []).forEach((a) => {
   const appDate = new Date(a.date);
   // An explicit price_amount of 0 is the persisted "free" state (set from the
-  // Bookings list / session doc) and always wins. Otherwise charge the client's
-  // CURRENT rate (from Client Audit / standard_rate) — this is what "Send payment
-  // link" bills — falling back to any per-appointment price.
+  // Bookings list / session doc) and always wins. Otherwise use the session's
+  // charge (price_amount), falling back to the client's current standard rate.
   const isFree = a.priceAmount === 0;
-  const currentRate = isFree ? 0 : ((a.standardRate && a.standardRate > 0) ? a.standardRate : (a.priceAmount && a.priceAmount > 0 ? a.priceAmount : 0));
+  const currentRate = isFree ? 0 : ((a.priceAmount && a.priceAmount > 0) ? a.priceAmount : (a.standardRate && a.standardRate > 0 ? a.standardRate : 0));
   items.push({
   id: `k-${a.id}`,
   source: "kinesiology",

@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
+import { PaymentStatusBadge } from "@/components/crm/PaymentStatusBadge";
 import { format } from "date-fns";
 
 const APPOINTMENT_TAGS = ["Kinesiology", "Community Kinesiology", "Consultation", "Initial Session", "Follow-up", "Quick Session"];
@@ -301,9 +302,15 @@ const AllAppointmentsPage = () => {
                         {a.priceAmount != null ? `$${a.priceAmount}` : "—"}
                       </span>
                       {a.priceAmount != null && a.priceAmount > 0 && (
-                        <span className={`block text-[10px] font-semibold uppercase tracking-wider ${a.isPaid ? 'text-emerald-600' : 'text-amber-600'}`}>
-                          {a.isPaid ? "Paid" : "Due"}
-                        </span>
+                        <div className="mt-0.5 flex justify-end">
+                          <PaymentStatusBadge
+                            paid={a.isPaid}
+                            priceAmount={a.priceAmount}
+                            status={a.status}
+                            size="sm"
+                            showAmount={false}
+                          />
+                        </div>
                       )}
                       {a.priceAmount === 0 && (
                         <span className="block text-xs font-medium text-muted-foreground">Free</span>

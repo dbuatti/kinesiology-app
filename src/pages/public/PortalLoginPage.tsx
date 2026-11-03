@@ -6,16 +6,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { showError } from "@/utils/toast";
+import NoIndex from "@/components/shared/NoIndex";
 import { Loader2, Mail, CheckCircle2 } from "lucide-react";
 
 export default function PortalLoginPage() {
-  const { session } = useAuth();
+  const { session, isPractitioner } = useAuth();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (session) return <Navigate to="/portal" replace />;
+  // The practitioner's own account is not a client — send it back to the CRM
+  // instead of into a portal with nothing in it. While the check is still in
+  // flight, wait rather than bouncing the practitioner into the portal.
+  if (session && isPractitioner === undefined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+  if (session) return <Navigate to={isPractitioner ? "/" : "/portal"} replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +56,7 @@ export default function PortalLoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted px-6 py-16">
+      <NoIndex />
       <Card className="max-w-md w-full border border-border shadow-sm rounded-2xl overflow-hidden">
         <div className="bg-gradient-to-br from-chart-purple to-chart-destructive p-8 text-center text-white">
           <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl border border-white/20">

@@ -67,6 +67,10 @@ export interface Appointment {
   session_north_star?: string;
   next_session_note?: string | null;
   modes_balances?: string;
+  personal_note?: string | null;
+  session_summary_email?: string | null;
+  session_summary_drafted_at?: string | null;
+  session_summary_sent_at?: string | null;
   journal?: string;
   notion_link?: string;
   bolt_score?: number | null;

@@ -6,7 +6,12 @@ export default defineConfig(() => ({
   server: {
     host: "::",
     port: 8080,
-    hmr: false, // disables React Refresh preamble (SWC plugin) — avoids @vitejs/plugin-react-swc preamble error
+    // Keep HMR enabled so the websocket stays alive while the tab is
+    // backgrounded — with hmr disabled, Vite falls back to full document
+    // reloads whenever the connection drops/reconnects (which is what made
+    // the page reload on Cmd+Tab). React Refresh is still off via the SWC
+    // plugin option below.
+    hmr: true,
 
     // Reviewing the demo from the iPad goes through tailscale, and Vite
     // rejects unknown Host headers with a 403 — which looks like the app is

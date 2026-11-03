@@ -1,14 +1,62 @@
+# Resonance Kinesiology — danielebuatti.com
+#
+# The only thing that should ever be indexed is the public landing page ("/").
+# Everything else is the practice's back office (clients, appointments, clinical
+# notes, money) or a client's own portal, and must stay out of search results
+# and link previews.
+#
+# Belt and braces: vercel.json also sends `X-Robots-Tag: noindex, nofollow` on
+# every one of these paths, and the admin shell mounts a <meta name="robots">
+# tag at runtime (src/components/shared/NoIndex.tsx). None of that is access
+# control — the real boundary is Supabase RLS + is_practitioner().
+
 User-agent: Googlebot
-Allow: /
+Allow: /$
+Disallow: /
 
 User-agent: Bingbot
-Allow: /
+Allow: /$
+Disallow: /
 
 User-agent: Twitterbot
-Allow: /
+Disallow: /
 
 User-agent: facebookexternalhit
-Allow: /
+Disallow: /
 
 User-agent: *
-Allow: /
+Allow: /$
+Disallow: /
+
+# Named for readability (the rules above already cover these).
+Disallow: /clients
+Disallow: /assistant
+Disallow: /inbox
+Disallow: /follow-up
+Disallow: /availability
+Disallow: /timetable
+Disallow: /appointments
+Disallow: /calendar
+Disallow: /sessions
+Disallow: /morning-program
+Disallow: /journal
+Disallow: /practice
+Disallow: /identity
+Disallow: /library
+Disallow: /resources
+Disallow: /worksheets
+Disallow: /voice
+Disallow: /money
+Disallow: /audit
+Disallow: /marketing
+Disallow: /business
+Disallow: /settings
+Disallow: /self-work
+Disallow: /notes-doc
+Disallow: /oversight
+Disallow: /session-workspace
+Disallow: /portal
+Disallow: /login
+Disallow: /onboarding
+Disallow: /voice-onboarding
+Disallow: /guide

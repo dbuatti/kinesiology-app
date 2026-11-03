@@ -13,12 +13,41 @@ const corsHeaders = {
 }
 
 const MAIN_DB_ID = "171f7156cdc645e8b689af13d217bc7c";
+const PLANNER_DB_ID = "11caad21cd0980d8a3eeeffb27fc43c0";
 
 serve(async (req) => {
   const functionName = "sync-to-notion";
   console.log(`[${functionName}] Request received`);
 
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+
+  // Kept outside the try so the catch can record a real row instead of only
+  // writing to the function log (which is how a broken trigger went unnoticed
+  // for months).
+  let supabase: any = null;
+  let failureReference: string | null = null;
+
+  /**
+   * Notion sync failures used to exist only in the edge-function log, so a
+   * trigger that had been silently 401-ing for months looked like "the sync
+   * just stopped". Every failure now lands in webhook_failures, which the
+   * Settings pages already surface.
+   */
+  const recordFailure = async (detail: string, reference?: string | null) => {
+    console.error(`[${functionName}] FAILED: ${detail}`);
+    if (!supabase) return;
+    try {
+      await supabase.from('webhook_failures').insert({
+        source: functionName,
+        event_type: functionName,
+        reference: reference ?? failureReference ?? null,
+        detail: String(detail).slice(0, 2000),
+        resolved: false,
+      });
+    } catch (logErr) {
+      console.error(`[${functionName}] Could not record failure in webhook_failures:`, logErr.message);
+    }
+  };
 
   try {
     const authErr = await requirePractitioner(req, corsHeaders);
@@ -36,7 +65,7 @@ serve(async (req) => {
       throw new Error("Missing Supabase environment variables.")
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+    supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
     const origin = body.origin || Deno.env.get('SITE_URL') || "https://kinesiology-app.vercel.app";
 
     const notionHeaders = {
@@ -48,9 +77,26 @@ serve(async (req) => {
     const action = body.action;
     const clientId = body.clientId || body.client?.id;
     const appointmentId = body.appointmentId || body.appointment?.id;
+    failureReference = appointmentId || clientId || null;
 
-    const { data: profileData } = await supabase.from('profiles').select('id').limit(1).maybeSingle();
-    const PRACTITIONER_ID = profileData?.id;
+    // Which auth user owns rows this function creates. `profiles` now also
+    // contains client-portal accounts (one profile per auth user), so a
+    // `limit(1)` there can pick a CLIENT — the explicit list of practitioner
+    // accounts is the only safe source.
+    let PRACTITIONER_ID = Deno.env.get('PRACTITIONER_USER_ID') || null;
+    if (!PRACTITIONER_ID) {
+      const { data: practitionerRow } = await supabase
+        .from('practice_practitioners')
+        .select('user_id')
+        .limit(1)
+        .maybeSingle();
+      PRACTITIONER_ID = practitionerRow?.user_id || null;
+    }
+    if (!PRACTITIONER_ID) {
+      const { data: profileData } = await supabase.from('profiles').select('id').limit(1).maybeSingle();
+      PRACTITIONER_ID = profileData?.id || null;
+    }
+    if (!PRACTITIONER_ID) throw new Error("No practitioner account found (practice_practitioners / PRACTITIONER_USER_ID).");
 
     // Flow: Pull all clients from Notion into Supabase
     if (action === 'pull-from-notion') {
@@ -983,6 +1029,103 @@ serve(async (req) => {
       });
     }
 
+    // ── Health check: what does the Notion database actually look like? ──
+    // Read-only. Used by the debugger/CLI to confirm property names, select
+    // options (e.g. the AP / CH / OPCH status codes) and relation shape before
+    // changing the sync.
+    if (action === 'notion-schema') {
+      const describe = (schema: Record<string, any>) =>
+        Object.fromEntries(Object.entries(schema).map(([name, prop]: [string, any]) => [
+          name,
+          {
+            type: prop.type,
+            options: (prop.select?.options || prop.status?.options || prop.multi_select?.options || [])
+              .map((o: any) => o.name),
+          },
+        ]));
+      return new Response(JSON.stringify({
+        success: true,
+        appointments_db: describe(await fetchDatabaseSchema(MAIN_DB_ID, notionHeaders)),
+        planner_db: describe(await fetchDatabaseSchema(PLANNER_DB_ID, notionHeaders)),
+      }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // ── Health check: the most recent Notion appointment rows + Status ──
+    // Read-only. Answers "did the session I just marked complete/paid actually
+    // land in Notion as CH/OPCH?" without opening the workspace.
+    if (action === 'notion-appointments') {
+      const pageSize = Math.min(Number(body.limit) || 15, 50);
+      const queryRes = await fetchWithRetry(`https://api.notion.com/v1/databases/${MAIN_DB_ID}/query`, {
+        method: 'POST',
+        headers: notionHeaders,
+        body: JSON.stringify({
+          page_size: pageSize,
+          sorts: [{ property: 'Date', direction: 'descending' }],
+        }),
+      });
+      if (!queryRes.ok) {
+        throw new Error(`Notion query failed: ${JSON.stringify(await queryRes.json())}`);
+      }
+      const queryData = await queryRes.json();
+      const rows = (queryData.results || []).map((page: any) => {
+        const props = page.properties || {};
+        const pick = (names: string[]) => {
+          const key = Object.keys(props).find(k => names.some(n => k.toLowerCase().trim() === n.toLowerCase()));
+          return key ? extractNotionPropertyValue(props[key]) : null;
+        };
+        return {
+          id: page.id,
+          name: pick(['Name']),
+          date: pick(['Date']),
+          status: pick(['Status']),
+          issue: pick(['Issue']),
+          notes: (pick(['Notes']) || '').toString().slice(0, 300),
+        };
+      });
+      return new Response(JSON.stringify({ success: true, rows }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ── Safety net: sync appointments that never got a Notion page ──
+    // The database trigger only fires on live inserts/updates. Anything that
+    // failed while the trigger was broken, or that arrived while Notion/Cal.com
+    // was down, is picked up here. Runs on a pg_cron schedule.
+    if (action === 'sync-missing-appointments') {
+      const sinceDays = Number(body.sinceDays) || 30;
+      const limit = Math.min(Number(body.limit) || 25, 100);
+      const since = new Date(Date.now() - sinceDays * 24 * 60 * 60 * 1000).toISOString();
+
+      const { data: pending, error: pendingError } = await supabase
+        .from('appointments')
+        .select('id, date, status, clients (name, is_practitioner)')
+        .is('notion_page_id', null)
+        .gte('date', since)
+        .order('date', { ascending: true })
+        .limit(limit);
+
+      if (pendingError) throw pendingError;
+
+      let synced = 0;
+      const failed: Array<{ id: string; error: string }> = [];
+      for (const appt of pending || []) {
+        if (appt.clients?.is_practitioner) continue; // practice sessions never go to Notion
+        try {
+          await syncSingleAppointment(appt.id, supabase, notionHeaders, origin);
+          synced++;
+        } catch (syncErr) {
+          failed.push({ id: appt.id, error: syncErr.message });
+          await recordFailure(`sync-missing-appointments: ${syncErr.message}`, appt.id);
+        }
+      }
+
+      const msg = `Synced ${synced}/${(pending || []).length} unsynced appointments (${failed.length} failed).`;
+      console.log(`[${functionName}] ${msg}`);
+      return new Response(JSON.stringify({ success: true, synced, failed, message: msg }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     // Flow 1: Sync Client Only
     if (clientId && !appointmentId) {
       const { data: client, error: clientError } = await supabase
@@ -1023,6 +1166,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error(`[${functionName}] CRITICAL FAILURE:`, error.message);
+    await recordFailure(error.message);
     return new Response(JSON.stringify({ error: error.message }), { 
       status: 400, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

@@ -85,6 +85,10 @@ export const mapValueToNotionProperty = (value: any, propertySchema: any) => {
       return isNaN(num) ? null : { number: num };
     case 'select':
       return { select: { name: String(value).substring(0, 100) } };
+    // Notion status properties accept `status`, not `select` — sending the
+    // wrong key is a validation error, so callers must switch on the type.
+    case 'status':
+      return { status: { name: String(value).substring(0, 100) } };
     case 'multi_select':
       const items = Array.isArray(value) ? value : [value];
       return { multi_select: items.map(item => ({ name: String(item).substring(0, 100) })) };
@@ -115,6 +119,8 @@ export const extractNotionPropertyValue = (property: any) => {
       return property.number !== undefined ? property.number : null;
     case 'select':
       return property.select?.name || null;
+    case 'status':
+      return property.status?.name || null;
     case 'multi_select':
       return property.multi_select?.map((m: any) => m.name) || [];
     case 'url':

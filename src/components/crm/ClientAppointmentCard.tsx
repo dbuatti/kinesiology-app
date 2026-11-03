@@ -10,6 +10,7 @@ import { Appointment } from "@/types/crm";
 import type { ClientGridData } from "@/hooks/useClientGridData";
 import { GridSessionChips } from "./GridSessionChips";
 import PathwayReflexStimGridSummary from "./PathwayReflexStimGridSummary";
+import { PaymentStatusBadge } from "./PaymentStatusBadge";
 
 interface ClientAppointmentCardProps {
   app: Appointment;
@@ -59,11 +60,14 @@ export const ClientAppointmentCard = ({
                   )}>
                     {app.status}
                   </span>
-                  {app.is_paid && !app.payment_received && (
-                    <Badge className="bg-muted text-muted-foreground border-none font-semibold text-[11px]">
-                      Payment Due
-                    </Badge>
-                  )}
+                  <PaymentStatusBadge
+                    paid={app.payment_received}
+                    isPaidService={app.is_paid}
+                    priceAmount={app.price_amount}
+                    paymentMethod={app.payment_method}
+                    status={app.status}
+                    size="sm"
+                  />
                 </div>
                 <GridSessionChips grid={grid} />
               </div>

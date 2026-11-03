@@ -42,7 +42,17 @@ All routes are defined in `src/App.tsx` — do not split them into separate rout
 
 ### Auth (`src/components/AuthProvider.tsx`)
 
-Supabase auth. `session === undefined` = loading, `session === null` = logged out, `session = Session` = authenticated. Protected routes use `session ? <Page/> : <Navigate to="/login"/>` inline.
+Supabase auth. `session === undefined` = loading, `session === null` = logged out, `session = Session` = authenticated. `isPractitioner === undefined` = still resolving, `true` = the practice owner, `false` = a client-portal account.
+
+**A session is not authorisation.** The practitioner and the client portal share one Supabase Auth pool, so a client's OTP session is a perfectly valid `authenticated` user. Every CRM route is wrapped in `practitionerOnly(<Page/>)` (`src/App.tsx`), which renders only when `isPractitioner === true` and otherwise sends the caller to `/portal` (client) or `/login` (signed out) — never add a bare `session ? …` route guard. `isPractitioner` comes from `public.is_practitioner()`, which reads `practice_practitioners` (migration `0213_practitioner_identity_and_rls_hardening.sql`); that table plus RLS is the real boundary, the route guard is only what keeps the UI honest. The same rule applies at the edge: `requirePractitioner()` in `supabase/functions/_shared/auth.ts` rejects a client's valid token.
+
+Client-zone pages (`/portal`, `/portal/login`) mount `<NoIndex/>`; the admin shell does too (`MainLayout`), and `vercel.json` sends `X-Robots-Tag: noindex` on every admin path.
+
+### Server-to-server calls (`supabase/functions/_shared/auth.ts`)
+
+Database triggers and `pg_cron` call edge functions without a user. They send `x-rk-internal-token`, whose value lives in Vault (`internal_fn_token`) and is mirrored into the `RK_INTERNAL_TOKEN` function secret. `requireUser` / `requirePractitioner` / `requireServiceRole` accept that token, plus an exact match against `SUPABASE_SERVICE_ROLE_KEY`.
+
+Why not just use the service key? The project's `SUPABASE_SERVICE_ROLE_KEY` is the new-style `sb_secret_…` key, so any code or SQL snippet holding the *legacy JWT* service-role key silently compares unequal and 401s — which is exactly how the Notion sync died quietly. When adding an internal caller: read `internal_fn_token` from `vault.decrypted_secrets`, send the header, and set `timeout_milliseconds := 30000` on `net.http_post` (the 5s default is shorter than a Notion sync).
 
 ### Zones (`src/lib/zones.ts`, `src/components/ModeProvider.tsx`)
 
@@ -157,8 +167,17 @@ The day across kinesiology, voice and piano: stats (today, booked this week, ear
 - **Paid**: kinesiology = `payment_received` (NOT `is_paid`, which only means "chargeable" and is set at booking); voice = Notion Payment or a `voice_bookings` row marked paid. Raw appointment rows: `appointmentRowIsPaid`.
 - **Unpaid** (`isUnpaid` / `unpaidItems`): already happened, not cancelled, not free, has a price, not paid; Today and the metrics look back `UNPAID_LOOKBACK_DAYS` (60).
 - Kinesiology statuses are capitalised (`"Cancelled"`) — compare case-insensitively.
+- **At-a-glance badge**: `<PaymentStatusBadge/>` (`src/components/crm/PaymentStatusBadge.tsx`) is the visual form of those rules — `paid` → green "Paid", free → "Free", otherwise amber "Due $X". Used in the session header, `ClientAppointmentCard` (client page) and All Appointments; never invent a second paid/unpaid test.
 
 Calendar deep links (read once, then internal state): `/calendar?show=unpaid` (Past, Unpaid filter), `/calendar?show=lessons` (voice & piano only).
+
+### Notion Appointments DB (`supabase/functions/sync-to-notion/appointment-sync.ts`)
+
+Every appointment change fires `sync_appointment_to_notion()` → the `sync-to-notion` function (`sync-missing-appointments` on a 15-minute cron catches anything the trigger missed; `notion-appointments` / `notion-schema` are read-only health checks).
+
+- **Status** is a Notion *status* property (not select — the payload keys differ): `AP` booked, `CH` session done, `OPCH` done and paid, `Cancelled` never happened. It only ever moves forward (`AP → CH → OPCH`), so a hand-set value is never rolled back; a cancellation overwrites AP/OPEN but never CH/OPCH, because the session did happen.
+- **Clinical fields** (`Notes`, Key Findings, BOLT, Homework, …) are written on create and only into *empty* Notion properties afterwards — Notion is where the session write-up happens, and re-sending the CRM copy used to wipe it.
+- Failures land in `webhook_failures` (Settings), not just the function log.
 
 ## Planning (`src/lib/planning.ts`, Money → Planning)
 
@@ -186,4 +205,6 @@ Notion voice lessons and Cal.com voice_bookings are merged in `buildCalendarItem
 
 ## Database migrations
 
-SQL migration files live at the repo root (`supabase_*.sql`). Apply them manually via the Supabase dashboard or CLI — there is no automated migration runner.
+SQL migration files live at the repo root (`supabase_*.sql`) and in `supabase/migrations/NNNN_*.sql` (the numbered series is the newer, ordered history). Apply them manually via the Supabase dashboard or CLI — there is no automated migration runner.
+
+`supabase db push` is not used here, and `supabase db dump --linked` prints short-lived CLI credentials (see `pg.sh` in the session scratch dir) — so `psql -c "set role postgres" -f <file>` is the usual way to apply one.

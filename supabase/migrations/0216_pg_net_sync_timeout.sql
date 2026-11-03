@@ -1,0 +1,126 @@
+-- pg_net 5s default timeout is shorter than a Notion sync.
+-- 2026-11-03
+--
+-- After 0215 the trigger authenticated correctly but pg_net still recorded
+-- "Timeout of 5000 ms reached" for every fire: `net.http_post` defaults to
+-- `timeout_milliseconds = 5000`, and syncSingleAppointment makes several Notion
+-- round-trips (schema + page + planner). The request itself completed server
+-- side, so nothing was lost — but every sync looked like a failure in
+-- `net._http_response`, which is exactly how the original 401 outage hid.
+--
+-- Raise the timeout for the appointment trigger and the three scheduled jobs.
+
+create or replace function public.sync_appointment_to_notion()
+returns trigger
+language plpgsql
+security definer
+set search_path to ''
+as $fn$
+declare
+  v_token text;
+begin
+  select decrypted_secret
+    into v_token
+    from vault.decrypted_secrets
+   where name = 'internal_fn_token';
+
+  if v_token is null or v_token = '' then
+    insert into public.webhook_failures (source, event_type, reference, detail, resolved)
+    select 'sync_appointment_to_notion', 'appointment-trigger', NEW.id::text,
+           'No internal_fn_token in vault — appointment was not synced to Notion. Set RK_INTERNAL_TOKEN and vault.create_secret(...).',
+           false
+     where not exists (
+       select 1 from public.webhook_failures
+        where source = 'sync_appointment_to_notion' and resolved = false
+     );
+    raise warning 'sync_appointment_to_notion: missing vault secret internal_fn_token (appointment %)', NEW.id;
+    return NEW;
+  end if;
+
+  perform net.http_post(
+    url                  := 'https://xebtjnvfkroiplyzftas.supabase.co/functions/v1/sync-to-notion',
+    headers              := jsonb_build_object(
+      'Content-Type',        'application/json',
+      'x-rk-internal-token', v_token
+    ),
+    body                 := jsonb_build_object('appointmentId', NEW.id),
+    timeout_milliseconds := 30000
+  );
+
+  return NEW;
+end;
+$fn$;
+
+do $do$
+begin
+  perform cron.unschedule('weekly-session-reminders');
+exception when others then null;
+end;
+$do$;
+
+select cron.schedule(
+  'weekly-session-reminders',
+  '0 5,6 * * 0',
+  $cmd$
+    select net.http_post(
+      url                  := 'https://xebtjnvfkroiplyzftas.supabase.co/functions/v1/send-session-reminders',
+      headers              := jsonb_build_object(
+        'Content-Type',        'application/json',
+        'x-rk-internal-token', coalesce((select decrypted_secret from vault.decrypted_secrets where name = 'internal_fn_token'), '')
+      ),
+      body                 := '{"scheduled": true}'::jsonb,
+      timeout_milliseconds := 30000
+    );
+  $cmd$
+);
+
+do $do$
+begin
+  perform cron.unschedule('reconcile-calcom-every-10min');
+exception when others then null;
+end;
+$do$;
+
+select cron.schedule(
+  'reconcile-calcom-every-10min',
+  '*/10 * * * *',
+  $cmd$
+    select net.http_post(
+      url                  := 'https://xebtjnvfkroiplyzftas.supabase.co/functions/v1/reconcile-calcom',
+      headers              := jsonb_build_object(
+        'Content-Type',        'application/json',
+        'x-rk-internal-token', coalesce((select decrypted_secret from vault.decrypted_secrets where name = 'internal_fn_token'), '')
+      ),
+      body                 := '{}'::jsonb,
+      timeout_milliseconds := 30000
+    );
+  $cmd$
+);
+
+do $do$
+begin
+  perform cron.unschedule('notion-sync-sweep-15min');
+exception when others then null;
+end;
+$do$;
+
+select cron.schedule(
+  'notion-sync-sweep-15min',
+  '*/15 * * * *',
+  $cmd$
+    select net.http_post(
+      url                  := 'https://xebtjnvfkroiplyzftas.supabase.co/functions/v1/sync-to-notion',
+      headers              := jsonb_build_object(
+        'Content-Type',        'application/json',
+        'x-rk-internal-token', coalesce((select decrypted_secret from vault.decrypted_secrets where name = 'internal_fn_token'), '')
+      ),
+      body                 := '{"action":"sync-missing-appointments","sinceDays":60,"limit":25}'::jsonb,
+      timeout_milliseconds := 30000
+    );
+  $cmd$
+);
+
+update public.webhook_failures
+   set resolved = true
+ where source = 'sync-to-notion'
+   and resolved = false;

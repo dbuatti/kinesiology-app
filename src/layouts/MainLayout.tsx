@@ -4,6 +4,7 @@ import { takeStartRedirect } from "@/lib/start-page";
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/crm/Sidebar';
 import BackToTop from '@/components/shared/BackToTop';
+import NoIndex from '@/components/shared/NoIndex';
 import FooterLinks from '@/components/crm/FooterLinks';
 import TopBar from '@/components/layout/TopBar';
 import ErrorBoundary from '@/components/shared/ErrorBoundary';
@@ -110,6 +111,8 @@ const MainLayout = () => {
 
   return (
     <div className="relative flex h-[100dvh] overflow-hidden bg-background">
+      {/* Nothing behind the practice login may be indexed or previewed. */}
+      <NoIndex />
       {/* Sidebar — rendered in every non-hidden mode so its drawer is
           available; iPad Mode sets drawerOnly so just the drawer exists and
           the full width is handed back to content. */}

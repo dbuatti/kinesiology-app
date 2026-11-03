@@ -6,6 +6,7 @@ import { CALCOM_CONFIG } from "@/config/integrations";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { showError, showSuccess } from "@/utils/toast";
+import NoIndex from "@/components/shared/NoIndex";
 import { Loader2, CalendarPlus, LogOut, Send, X, Mail, ExternalLink, Activity } from "lucide-react";
 
 type Service = "fnh" | "voice";
@@ -76,7 +77,7 @@ function voiceLessonToRow(v: MyVoiceLesson): SessionRow | null {
 }
 
 export default function ClientPortalPage() {
-  const { session } = useAuth();
+  const { session, isPractitioner } = useAuth();
   const [loading, setLoading] = useState(true);
   const [linkError, setLinkError] = useState<string | null>(null);
   const [profile, setProfile] = useState<{ name: string; email: string } | null>(null);
@@ -231,11 +232,18 @@ export default function ClientPortalPage() {
 
   return (
     <div className="min-h-screen bg-muted">
+      {/* A client's own portal — never indexed. */}
+      <NoIndex />
       <header className="bg-background border-b border-border px-6 py-5 flex items-center justify-between max-w-3xl mx-auto">
         <div>
           <div className="text-lg font-serif font-bold text-foreground">✦ {isVoiceClient ? "Voice Studio — Daniele Buatti" : "Resonance Kinesiology"}</div>
           {profile && <div className="text-sm text-muted-foreground mt-0.5">Welcome back, {firstName}</div>}
         </div>
+        {isPractitioner && (
+          <Button variant="ghost" size="sm" onClick={() => { window.location.href = "/"; }} className="gap-1.5 text-xs">
+            <ExternalLink className="h-3.5 w-3.5" /> Open CRM
+          </Button>
+        )}
         {profile?.email === "daniele.buatti@gmail.com" && (
           <Button variant="ghost" size="sm" onClick={() => setSelfCheckOpen(true)} className="gap-1.5 text-xs">
             <Activity className="h-3.5 w-3.5" /> Self-check

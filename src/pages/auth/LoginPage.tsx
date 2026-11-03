@@ -11,14 +11,23 @@ import { showError, showSuccess } from '@/utils/toast';
 import { Loader2, Mail, Lock, ShieldCheck } from 'lucide-react';
 
 const Login = () => {
-  const { session } = useAuth();
+  const { session, isPractitioner } = useAuth();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  if (session) return <Navigate to="/" replace />;
+  // Already signed in: the practitioner goes to the app, a client account goes
+  // to its own portal (same Supabase Auth pool — see AuthProvider).
+  if (session && isPractitioner === undefined) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <BrandMark className="h-10 w-10 animate-pulse-soft" />
+      </div>
+    );
+  }
+  if (session) return <Navigate to={isPractitioner ? "/" : "/portal"} replace />;
 
   const emailLooksValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const passwordTooShort = isSignUp && password.length > 0 && password.length < 8;

@@ -37,10 +37,21 @@ const QuickNotesDialog = ({
   const [isSaving, setIsSaving] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saved" | "error">("idle");
   const [copied, setCopied] = useState(false);
+  const [editingField, setEditingField] = useState<"goal" | "issue" | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const [fieldSaving, setFieldSaving] = useState(false);
+  const [localGoal, setLocalGoal] = useState(goal);
+  const [localIssue, setLocalIssue] = useState(issue);
   const taRef = useRef<HTMLTextAreaElement>(null);
+  const editRef = useRef<HTMLTextAreaElement>(null);
   const debounceTimer = useRef<number | undefined>(undefined);
   const lastCommittedRef = useRef(initialValue || "");
   const { isPrivate } = usePrivacyMode();
+
+  useEffect(() => {
+    setLocalGoal(goal);
+    setLocalIssue(issue);
+  }, [goal, issue]);
 
   useEffect(() => {
     if (open) {
@@ -48,6 +59,8 @@ const QuickNotesDialog = ({
       lastCommittedRef.current = initialValue || "";
       setSaveState("idle");
       setIsFocused(true);
+      setEditingField(null);
+      setEditValue("");
       requestAnimationFrame(() => {
         taRef.current?.focus();
       });
@@ -99,6 +112,27 @@ const QuickNotesDialog = ({
     onOpenChange(next);
   };
 
+  const handleEditField = (field: "goal" | "issue", value: string | null) => {
+    setEditingField(field);
+    setEditValue(value || "");
+    requestAnimationFrame(() => editRef.current?.focus());
+  };
+
+  const handleSaveFieldInline = async () => {
+    if (!editingField) return;
+    setFieldSaving(true);
+    try {
+      await onSave(editingField, editValue.trim() === "" ? null : editValue.trim());
+      if (editingField === "goal") setLocalGoal(editValue.trim() || null);
+      else setLocalIssue(editValue.trim() || null);
+      setEditingField(null);
+    } catch {
+      // leave open so user can retry
+    } finally {
+      setFieldSaving(false);
+    }
+  };
+
   const handleDone = async () => {
     await flush();
     onOpenChange(false);
@@ -130,22 +164,62 @@ const QuickNotesDialog = ({
           {/* Session context — editable goal & concern */}
           <section className="mb-3">
             <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => onEditField?.("goal", goal)}
-                className="text-left rounded-xl border border-border bg-card p-3 shadow-sm hover:bg-muted transition-colors"
-              >
-                <p className="text-[9px] font-semibold uppercase text-muted-foreground tracking-wide mb-1">Session goal</p>
-                <p className="text-xs font-medium text-foreground leading-snug truncate">{goal || "—"}</p>
-              </button>
-              <button
-                type="button"
-                onClick={() => onEditField?.("issue", issue)}
-                className="text-left rounded-xl border border-border bg-card p-3 shadow-sm hover:bg-muted transition-colors"
-              >
-                <p className="text-[9px] font-semibold uppercase text-muted-foreground tracking-wide mb-1">Primary concern</p>
-                <p className="text-xs font-medium text-foreground leading-snug truncate">{issue || "—"}</p>
-              </button>
+              {editingField === "goal" ? (
+                <div className="rounded-xl border border-chart-primary/40 bg-card p-3 shadow-sm space-y-2">
+                  <p className="text-[9px] font-semibold uppercase text-muted-foreground tracking-wide">Session goal</p>
+                  <textarea
+                    ref={editRef}
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    rows={3}
+                    className="w-full resize-none rounded-lg border border-border bg-muted/30 p-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-chart-primary/50"
+                  />
+                  <div className="flex justify-end gap-2">
+                    <button type="button" onClick={() => setEditingField(null)} className="text-[10px] text-muted-foreground hover:text-foreground">Cancel</button>
+                    <button type="button" onClick={handleSaveFieldInline} disabled={fieldSaving} className="text-[10px] font-semibold text-chart-primary hover:underline disabled:opacity-50">
+                      {fieldSaving ? "Saving…" : "Save"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => handleEditField("goal", goal)}
+                  className="text-left rounded-xl border border-border bg-card p-3 shadow-sm hover:bg-muted transition-colors"
+                >
+                  <p className="text-[9px] font-semibold uppercase text-muted-foreground tracking-wide mb-1">Session goal</p>
+                  <p className="text-xs font-medium text-foreground leading-snug truncate">{localGoal || "—"}</p>
+                  <p className="text-[9px] text-muted-foreground/60 mt-1">Tap to edit</p>
+                </button>
+              )}
+              {editingField === "issue" ? (
+                <div className="rounded-xl border border-chart-primary/40 bg-card p-3 shadow-sm space-y-2">
+                  <p className="text-[9px] font-semibold uppercase text-muted-foreground tracking-wide">Primary concern</p>
+                  <textarea
+                    ref={editRef}
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    rows={3}
+                    className="w-full resize-none rounded-lg border border-border bg-muted/30 p-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-chart-primary/50"
+                  />
+                  <div className="flex justify-end gap-2">
+                    <button type="button" onClick={() => setEditingField(null)} className="text-[10px] text-muted-foreground hover:text-foreground">Cancel</button>
+                    <button type="button" onClick={handleSaveFieldInline} disabled={fieldSaving} className="text-[10px] font-semibold text-chart-primary hover:underline disabled:opacity-50">
+                      {fieldSaving ? "Saving…" : "Save"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => handleEditField("issue", issue)}
+                  className="text-left rounded-xl border border-border bg-card p-3 shadow-sm hover:bg-muted transition-colors"
+                >
+                  <p className="text-[9px] font-semibold uppercase text-muted-foreground tracking-wide mb-1">Primary concern</p>
+                  <p className="text-xs font-medium text-foreground leading-snug truncate">{localIssue || "—"}</p>
+                  <p className="text-[9px] text-muted-foreground/60 mt-1">Tap to edit</p>
+                </button>
+              )}
             </div>
           </section>
 
@@ -201,7 +275,7 @@ const QuickNotesDialog = ({
             <button
               type="button"
               onClick={async () => {
-                const parts = [goal ? `Session Goal: ${goal}` : "", issue ? `Primary Concern: ${issue}` : "", draft].filter(Boolean);
+                const parts = [localGoal ? `Session Goal: ${localGoal}` : "", localIssue ? `Primary Concern: ${localIssue}` : "", draft].filter(Boolean);
                 try {
                   await navigator.clipboard.writeText(parts.join("\\n\\n"));
                   setCopied(true);

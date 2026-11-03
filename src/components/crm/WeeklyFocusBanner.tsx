@@ -43,13 +43,31 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
     };
 
     loadFocus();
-    const channel = supabase
-      .channel('weekly-focus-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'weekly_focus' }, loadFocus)
-      .subscribe();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    const subscribe = () => {
+      if (channel || document.visibilityState === "hidden") return;
+      channel = supabase
+        .channel('weekly-focus-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'weekly_focus' }, loadFocus)
+        .subscribe();
+    };
+    const unsubscribe = () => {
+      if (channel && channel.state !== "joining" && channel.state !== "leaving") {
+        try { supabase.removeChannel(channel); } catch { /* ignore */ }
+      }
+      channel = null;
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === "hidden") unsubscribe();
+      else subscribe();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    subscribe();
+
     return () => {
       cancelled = true;
-      supabase.removeChannel(channel);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      unsubscribe();
     };
   }, []);
 

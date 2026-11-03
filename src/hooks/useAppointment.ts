@@ -205,36 +205,58 @@ export function useAppointment(id: string | undefined) {
 
     if (!id || isDemo) return;
 
-    const channel = supabase
-      .channel(`appointment-updates-${id}`)
-      .on('postgres_changes', { 
-        event: 'UPDATE', 
-        schema: 'public', 
-        table: 'appointments', 
-        filter: `id=eq.${id}` 
-      }, (payload) => {
-        setAppointment((prev) => {
-          if (!prev) return prev;
-          const updatedData = { ...payload.new };
-          
-          // If the update came from elsewhere, sync our ref
-          if (updatedData.priority_pattern) {
-            latestPatternRef.current = safeParse(updatedData.priority_pattern, {});
-          }
-          if (updatedData.metadata !== undefined) {
-            latestMetadataRef.current = normalizeMetadata(updatedData.metadata);
-          }
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
-          if (updatedData.date && typeof updatedData.date === 'string') {
-            updatedData.date = new Date(updatedData.date);
-          }
-          return { ...prev, ...updatedData } as AppointmentWithClient;
-        });
-      })
-      .subscribe();
+    const subscribe = () => {
+      if (channel || document.visibilityState === "hidden") return;
+      channel = supabase
+        .channel(`appointment-updates-${id}`)
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'appointments',
+          filter: `id=eq.${id}`
+        }, (payload) => {
+          setAppointment((prev) => {
+            if (!prev) return prev;
+            const updatedData = { ...payload.new };
+
+            if (updatedData.priority_pattern) {
+              latestPatternRef.current = safeParse(updatedData.priority_pattern, {});
+            }
+            if (updatedData.metadata !== undefined) {
+              latestMetadataRef.current = normalizeMetadata(updatedData.metadata);
+            }
+
+            if (updatedData.date && typeof updatedData.date === 'string') {
+              updatedData.date = new Date(updatedData.date);
+            }
+            return { ...prev, ...updatedData } as AppointmentWithClient;
+          });
+        })
+        .subscribe();
+    };
+
+    const unsubscribe = () => {
+      if (channel && channel.state !== "joining" && channel.state !== "leaving") {
+        try { supabase.removeChannel(channel); } catch { /* ignore */ }
+      }
+      channel = null;
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "hidden") unsubscribe();
+      else subscribe();
+    };
+
+    // Pause the realtime socket while backgrounded so the page stays
+    // bfcache-eligible and doesn't full-reload on Cmd+Tab.
+    document.addEventListener("visibilitychange", handleVisibility);
+    subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      unsubscribe();
     };
   }, [id, fetchData, isDemo]);
 

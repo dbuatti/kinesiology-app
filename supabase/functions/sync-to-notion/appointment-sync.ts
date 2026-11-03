@@ -58,12 +58,94 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
   const mainSchema = await fetchDatabaseSchema(MAIN_DB_ID, notionHeaders);
 
   // Prepare properties for Main Appointments DB
+  // NB: `Notes` is deliberately NOT here — it is the clinical write-up field in
+  // Notion, so it is written only on create / while empty (see clinicalProps).
   const mainProps: Record<string, any> = {
     "Name": { title: [{ text: { content: appointmentName } }] },
     "Date": { date: { start: appointment.date } },
     "Goal": { rich_text: [{ text: { content: appointment.goal || "" } }] },
-    "Issue": { multi_select: [{ name: appointment.tag || "Kinesiology" }] },
-    "Notes": { rich_text: [{ text: { content: `${appointment.issue ? `ISSUE: ${appointment.issue}\n\n` : ''}${appointment.notes || ""}` } }] }
+    "Issue": { multi_select: [{ name: appointment.tag || "Kinesiology" }] }
+  };
+
+  // ─── Status (practice codes AP / CH / OPCH) ───
+  // The Appointments DB's Status select is the one-glance answer to "has this
+  // session happened, and was it paid for?":
+  //   AP   — booked, nothing has happened yet
+  //   CH   — session completed
+  //   OPCH — session completed and paid
+  // Nothing here reads or writes clinical fields; the clinical props below keep
+  // their Notion-wins guard.
+  //
+  // Codes are resolved against the option names actually present in the
+  // database (they may be "AP", "AP — Appointment", …), and the status only
+  // ever moves forwards, so a hand-set Notion status is never rolled back.
+  const STATUS_RANK: Record<string, number> = { AP: 0, CH: 1, OPCH: 2 };
+  const statusProp = findSchemaProperty(mainSchema, ['Status', 'Session Status', 'Appointment Status']);
+  // The Appointments DB uses a Notion `status` property (options Cancelled /
+  // AP / OPEN / OPCH / CH). A `status` property is written with `status:` and a
+  // `select` with `select:` — using the wrong key is a 400, so both the option
+  // lookup and the patch shape switch on the real type.
+  const statusPropType: 'select' | 'status' | null =
+    statusProp?.schema?.type === 'select' ? 'select'
+    : statusProp?.schema?.type === 'status' ? 'status'
+    : null;
+  const statusOptions: Array<{ name: string }> =
+    statusPropType === 'select' ? (statusProp.schema.select?.options || [])
+    : statusPropType === 'status' ? (statusProp.schema.status?.options || [])
+    : [];
+
+  const statusValue = (name: string) =>
+    statusPropType === 'status' ? { status: { name } } : { select: { name } };
+
+  const isCancelled = String(appointment.status || '').toLowerCase() === 'cancelled';
+
+  const wantedStatusCode = (appointment.payment_received ? 'OPCH'
+    : String(appointment.status || '').toLowerCase() === 'completed' ? 'CH'
+    : isCancelled ? null
+    : 'AP');
+
+  const optionForCode = (code: string | null) => {
+    if (!code) return null;
+    const upper = (s: string) => (s || '').trim().toUpperCase();
+    return statusOptions.find(o => upper(o.name) === code)
+      || statusOptions.find(o => upper(o.name).startsWith(`${code} `))
+      || statusOptions.find(o => upper(o.name).startsWith(`${code}-`))
+      || statusOptions.find(o => upper(o.name).startsWith(code))
+      || null;
+  };
+
+  const wantedStatusOption = optionForCode(wantedStatusCode);
+  const cancelledStatusOption = optionForCode('CANCELLED');
+
+  // A cancelled appointment has no forward status to advance to, so on CREATE
+  // it must not fall through to the database default (AP) — that reads as
+  // "still booked", which is exactly the confusing state this sync exists to
+  // remove.
+  const createStatusOption = wantedStatusOption || cancelledStatusOption;
+
+  /** Status patch for an update — only when it advances the current value. */
+  const statusPatchFor = (existingStatusName: string | null | undefined): Record<string, any> => {
+    if (!statusProp) return {};
+    const current = (existingStatusName || '').trim().toUpperCase();
+    const currentCode = Object.keys(STATUS_RANK).find(c => current === c || current.startsWith(`${c} `) || current.startsWith(c));
+
+    // Cancellation is not part of the AP → CH → OPCH ladder: a session that
+    // never happened should read Cancelled even if it was sitting on AP. It is
+    // only written over AP/OPEN/empty — a completed or paid session keeps its
+    // CH/OPCH, because the session did happen.
+    if (isCancelled) {
+      if (!cancelledStatusOption) return {};
+      if (current === cancelledStatusOption.name.trim().toUpperCase()) return {};
+      if (currentCode === 'CH' || currentCode === 'OPCH') return {};
+      return { [statusProp.name]: statusValue(cancelledStatusOption.name) };
+    }
+
+    if (!wantedStatusOption) return {};
+    const currentRank = currentCode ? STATUS_RANK[currentCode] : -1;
+    const wantedRank = wantedStatusCode ? (STATUS_RANK[wantedStatusCode] ?? 0) : -1;
+    if (current === wantedStatusOption.name.trim().toUpperCase()) return {};
+    if (currentRank >= wantedRank) return {};
+    return { [statusProp.name]: statusValue(wantedStatusOption.name) };
   };
 
   // ─── Clinical fields (consolidated from the retired Session Notes DB) ───
@@ -90,6 +172,22 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
       if (!isNaN(num)) clinicalProps[prop.name] = { number: num };
     } else {
       clinicalProps[prop.name] = { rich_text: [{ text: { content: String(value) } }] };
+    }
+  }
+
+  // The session write-up lives in Notion's Notes once the practitioner has
+  // worked through a session. The CRM copy is the pre-session scratchpad, so it
+  // seeds Notes on create and then steps aside — same "Notion wins" rule as the
+  // fields above. (Previously every appointment update re-sent Notes, wiping
+  // hand-written session findings whenever the CRM copy was blank.)
+  if (appointment.issue || appointment.notes) {
+    const notesProp = findSchemaProperty(mainSchema, ['Notes', 'Session Notes', 'Additional Notes']);
+    if (notesProp && notesProp.schema?.type === 'rich_text') {
+      clinicalProps[notesProp.name] = {
+        rich_text: [{
+          text: { content: `${appointment.issue ? `ISSUE: ${appointment.issue}\n\n` : ''}${appointment.notes || ""}` },
+        }],
+      };
     }
   }
 
@@ -134,7 +232,10 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
     if (pageRes.ok) {
       const pageData = await pageRes.json();
       const filteredClinical = filterClinicalAgainstNotion(pageData.properties || {});
-      patchProps = { ...mainProps, ...filteredClinical };
+      const existingStatus = statusProp
+        ? extractNotionPropertyValue(pageData.properties?.[statusProp.name])
+        : null;
+      patchProps = { ...mainProps, ...statusPatchFor(existingStatus), ...filteredClinical };
     } else {
       console.warn(`[appointment-sync] Could not fetch existing page for clinical guard; sending base props only.`);
     }
@@ -192,7 +293,10 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
           mainPageId = existing.id;
           mainPageUrl = existing.url;
           const filteredClinical = filterClinicalAgainstNotion(existing.properties || {});
-          const dedupPatchProps = { ...mainProps, ...filteredClinical };
+          const existingStatus = statusProp
+            ? extractNotionPropertyValue(existing.properties?.[statusProp.name])
+            : null;
+          const dedupPatchProps = { ...mainProps, ...statusPatchFor(existingStatus), ...filteredClinical };
           const updRes = await fetchWithRetry(`https://api.notion.com/v1/pages/${mainPageId}`, {
             method: 'PATCH',
             headers: notionHeaders,
@@ -391,7 +495,13 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
       headers: notionHeaders,
       body: JSON.stringify({
         parent: { database_id: MAIN_DB_ID },
-        properties: { ...mainProps, ...clinicalProps },
+        properties: {
+          ...mainProps,
+          ...(statusProp && createStatusOption
+            ? { [statusProp.name]: statusValue(createStatusOption.name) }
+            : {}),
+          ...clinicalProps
+        },
         children: childrenBlocks
       })
     });
@@ -468,7 +578,17 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
     if (paidProp.schema.type === 'checkbox') {
       plannerProps[paidProp.name] = { checkbox: isPaid };
     } else if (paidProp.schema.type === 'select') {
-      plannerProps[paidProp.name] = { select: { name: isPaid ? "Paid" : "Unpaid" } };
+      // Some planner schemas use the practice status codes (AP / CH / OPCH)
+      // on this property rather than Paid/Unpaid. Writing "Paid" into a
+      // code-only select silently creates a new option, so resolve the code
+      // first and only fall back to Paid/Unpaid when the property really is
+      // that kind of select.
+      const opts: Array<{ name: string }> = paidProp.schema.select?.options || [];
+      const upper = (v: string) => (v || '').trim().toUpperCase();
+      const code = wantedStatusCode || (isPaid ? 'OPCH' : 'AP');
+      const byCode = opts.find(o => upper(o.name) === code || upper(o.name).startsWith(code));
+      const byPaidWord = opts.find(o => ['PAID', 'RECEIVED', 'YES'].includes(upper(o.name)));
+      plannerProps[paidProp.name] = { select: { name: byCode?.name ?? byPaidWord?.name ?? (isPaid ? "Paid" : "Unpaid") } };
     } else if (paidProp.schema.type === 'rich_text') {
       plannerProps[paidProp.name] = { rich_text: [{ text: { content: isPaid ? "Paid" : "Unpaid" } }] };
     }

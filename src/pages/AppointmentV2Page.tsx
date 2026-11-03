@@ -27,6 +27,7 @@ import {
   LayoutGrid,
   Archive,
   StickyNote,
+  Mail,
   MoreHorizontal,
   Zap,
   Brain,
@@ -45,6 +46,7 @@ import CorrectionDock from "@/components/crm/corrections/CorrectionDock";
 import CorrectionDockButton from "@/components/crm/corrections/CorrectionDockButton";
 import ImageReferenceModal from "@/components/crm/ImageReferenceModal";
 import SessionReportModal from "@/components/crm/SessionReportModal";
+import { SessionSummaryEmailDialog } from "@/components/crm/SessionSummaryEmailDialog";
 import CorrectionDockShortcuts from "@/components/crm/corrections/CorrectionDockShortcuts";
 import { QuickSessionDialog } from "@/components/crm/QuickSessionDialog";
 import PathwayReflexStimGrid from "@/components/crm/PathwayReflexStimGrid";
@@ -57,6 +59,7 @@ import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
 import type { ProtocolLog, ProtocolLogPatch } from "@/data/protocol-log";
 import ClientIntakeSummary from "@/components/crm/ClientIntakeSummary";
 import ClientIntakeEditModal from "@/components/crm/ClientIntakeEditModal";
+import { PaymentStatusBadge } from "@/components/crm/PaymentStatusBadge";
 
 const AppointmentV2Page = () => {
   const { id } = useParams<{ id: string }>();
@@ -92,6 +95,7 @@ const AppointmentV2Page = () => {
   const [notesOpen, setNotesOpen] = useState(false);
   const [imageRefOpen, setImageRefOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [sessionSummaryOpen, setSessionSummaryOpen] = useState(false);
   const [ctmOpen, setCtmOpen] = useState(false);
   const [intakeEditOpen, setIntakeEditOpen] = useState(false);
   const [activePhase, setActivePhase] = useState(0);
@@ -435,6 +439,16 @@ const AppointmentV2Page = () => {
                   Demo
                 </span>
               )}
+              <span className="hidden sm:inline-flex shrink-0">
+                <PaymentStatusBadge
+                  paid={appointment.payment_received}
+                  isPaidService={appointment.is_paid}
+                  priceAmount={appointment.price_amount ?? appointment.clients?.standard_rate ?? null}
+                  paymentMethod={appointment.payment_method}
+                  status={appointment.status}
+                  size="sm"
+                />
+              </span>
             </div>
             <div className="hidden items-center gap-1.5 text-[11px] text-muted-foreground/70 sm:flex">
               <Calendar size={11} className="shrink-0" />
@@ -523,6 +537,11 @@ const AppointmentV2Page = () => {
                 <DropdownMenuItem onClick={() => { setIntakeOpen(true); }} className="flex items-center gap-2">
                   <User size={14} /> Client Intake
                 </DropdownMenuItem>
+                {appointment.status === "Completed" && (
+                  <DropdownMenuItem onClick={() => setSessionSummaryOpen(true)} className="flex items-center gap-2">
+                    <Mail size={14} /> Session summary email
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -777,6 +796,12 @@ const AppointmentV2Page = () => {
         onClose={() => setReportOpen(false)}
         appointment={appointment}
         updateMetadata={async (metadata) => { await updateMetadata(metadata); }}
+      />
+      <SessionSummaryEmailDialog
+        open={sessionSummaryOpen}
+        onOpenChange={setSessionSummaryOpen}
+        appointment={appointment}
+        refresh={refresh}
       />
       <CTMModal
         open={ctmOpen}

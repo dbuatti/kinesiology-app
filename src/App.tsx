@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import type { ReactNode } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -108,11 +109,27 @@ const FullScreenLoader = ({ label }: { label: string }) => (
 );
 
 const AppRoutes = () => {
-  const { session } = useAuth();
+  const { session, isPractitioner } = useAuth();
 
   if (session === undefined) {
     return <FullScreenLoader label="Opening your practice…" />;
   }
+
+  // A session alone is not enough: clients sign into the portal with the same
+  // Supabase Auth pool, and their session must never open the CRM. Until the
+  // database has told us who this is, show a loader — never the admin shell.
+  if (session && isPractitioner === undefined) {
+    return <FullScreenLoader label="Checking access…" />;
+  }
+
+  /**
+   * The only way a CRM route may render:
+   *   practitioner → the page
+   *   client session → their own portal (they are definitely not the practice)
+   *   no session → the practitioner login
+   */
+  const practitionerOnly = (element: ReactNode) =>
+    isPractitioner ? element : session ? <Navigate to="/portal" replace /> : <Navigate to="/login" replace />;
 
   return (
     <Suspense fallback={<FullScreenLoader label="Loading…" />}>
@@ -166,24 +183,24 @@ const AppRoutes = () => {
         </Route>
 
         {/* Protected App Routes */}
-        <Route path="/notes-doc" element={session ? <PracticeNotes /> : <Navigate to="/login" replace />} />
-        <Route path="/resources/cranial-nerves/print" element={session ? <CranialNervePrintPage /> : <Navigate to="/login" replace />} />
-        <Route path="/resources/cranial-nerves/worksheet" element={session ? <CranialNerveWorksheetPage /> : <Navigate to="/login" replace />} />
-        <Route path="/resources/primitive-reflexes/worksheet" element={session ? <PrimitiveReflexWorksheetPage /> : <Navigate to="/login" replace />} />
-        <Route path="/resources/pathway-reflex-stim/print" element={session ? <PathwayReflexStimPage /> : <Navigate to="/login" replace />} />
-        <Route path="/appointments/:id/grid-sheet" element={session ? <GridSheetPage /> : <Navigate to="/login" replace />} />
-        <Route path="/resources/heart-wall/print" element={session ? <HeartWallPrintPage /> : <Navigate to="/login" replace />} />
-        <Route path="/resources/brain-zones/print" element={session ? <BrainZonePrintPage /> : <Navigate to="/login" replace />} />
-        <Route path="/resources/joint-actions/print" element={session ? <JointActionPrintPage /> : <Navigate to="/login" replace />} />
+        <Route path="/notes-doc" element={practitionerOnly(<PracticeNotes />)} />
+        <Route path="/resources/cranial-nerves/print" element={practitionerOnly(<CranialNervePrintPage />)} />
+        <Route path="/resources/cranial-nerves/worksheet" element={practitionerOnly(<CranialNerveWorksheetPage />)} />
+        <Route path="/resources/primitive-reflexes/worksheet" element={practitionerOnly(<PrimitiveReflexWorksheetPage />)} />
+        <Route path="/resources/pathway-reflex-stim/print" element={practitionerOnly(<PathwayReflexStimPage />)} />
+        <Route path="/appointments/:id/grid-sheet" element={practitionerOnly(<GridSheetPage />)} />
+        <Route path="/resources/heart-wall/print" element={practitionerOnly(<HeartWallPrintPage />)} />
+        <Route path="/resources/brain-zones/print" element={practitionerOnly(<BrainZonePrintPage />)} />
+        <Route path="/resources/joint-actions/print" element={practitionerOnly(<JointActionPrintPage />)} />
         {/* Reference pages now live in the Library (Phase 4). */}
         <Route path="/resources/print" element={<Navigate to="/library?tab=print" replace />} />
         <Route path="/practice/corrections-manual" element={<Navigate to="/library?tab=corrections-manual" replace />} />
-        <Route path="/practice/clinical-hub" element={session ? <ClinicalHubPage /> : <Navigate to="/login" replace />} />
-        <Route path="/practice/trial/peace" element={session ? <SandboxV2Page /> : <Navigate to="/login" replace />} />
-        <Route path="/practice/trial/doc" element={session ? <SandboxV2Page /> : <Navigate to="/login" replace />} />
+        <Route path="/practice/clinical-hub" element={practitionerOnly(<ClinicalHubPage />)} />
+        <Route path="/practice/trial/peace" element={practitionerOnly(<SandboxV2Page />)} />
+        <Route path="/practice/trial/doc" element={practitionerOnly(<SandboxV2Page />)} />
 
         <Route
-          element={session ? <MainLayout /> : <Navigate to="/login" replace />}
+          element={practitionerOnly(<MainLayout />)}
         >
           <Route path="/" element={<DashboardPage />} />
 
@@ -290,7 +307,7 @@ const AppRoutes = () => {
         </Route>
 
         {/* Self Work - standalone, no MainLayout chrome */}
-        <Route path="/self-work" element={<SelfWorkPage />} />
+        <Route path="/self-work" element={practitionerOnly(<SelfWorkPage />)} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

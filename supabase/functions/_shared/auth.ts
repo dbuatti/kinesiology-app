@@ -2,6 +2,35 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 /**
+ * Credential for server-to-server calls (database triggers, pg_cron, functions
+ * calling each other).
+ *
+ * The project's service-role credential is now the new-style secret key
+ * (`sb_secret_…`), which is injected as SUPABASE_SERVICE_ROLE_KEY — while
+ * anything that used to send the legacy JWT no longer matches it, so a plain
+ * string comparison silently 401'd every trigger and cron job. Rather than
+ * depend on which shape the platform injects, the database holds its own token
+ * (Vault `internal_fn_token`, mirrored into the RK_INTERNAL_TOKEN function
+ * secret) and sends it on every internal call.
+ */
+function getInternalToken(): string {
+  return Deno.env.get("RK_INTERNAL_TOKEN") || "";
+}
+
+function hasInternalToken(req: Request): boolean {
+  const expected = getInternalToken();
+  if (!expected) return false;
+  const sent = req.headers.get("x-rk-internal-token")
+    || (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+  return !!sent && sent === expected;
+}
+
+function isServiceKey(token: string): boolean {
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+  return !!token && !!serviceKey && token === serviceKey;
+}
+
+/**
  * Authorisation guard for CRM-only edge functions.
  *
  * Supabase's `verify_jwt` accepts the public anon key (it's a valid signed JWT),
@@ -18,8 +47,7 @@ export async function requireUser(req: Request, corsHeaders: Record<string, stri
   const token = authHeader.replace(/^Bearer\s+/i, "");
 
   // Internal service-role calls (e.g. webhook → function) are trusted.
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (token && serviceKey && token === serviceKey) return null;
+  if (isServiceKey(token) || hasInternalToken(req)) return null;
 
   try {
     const sb = createClient(
@@ -58,8 +86,7 @@ export async function requirePractitioner(req: Request, corsHeaders: Record<stri
   const token = authHeader.replace(/^Bearer\s+/i, "");
 
   // Internal service-role calls (e.g. webhook -> function, cron -> function) are trusted.
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (token && serviceKey && token === serviceKey) return null;
+  if (isServiceKey(token) || hasInternalToken(req)) return null;
 
   const practitionerId = Deno.env.get("PRACTITIONER_USER_ID");
 
@@ -98,8 +125,7 @@ export async function requirePractitioner(req: Request, corsHeaders: Record<stri
 export async function requireServiceRole(req: Request, corsHeaders: Record<string, string>): Promise<Response | null> {
   const authHeader = req.headers.get("Authorization") || "";
   const token = authHeader.replace(/^Bearer\s+/i, "");
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (token && serviceKey && token === serviceKey) return null;
+  if (isServiceKey(token) || hasInternalToken(req)) return null;
 
   return new Response(JSON.stringify({ error: "Unauthorized" }), {
     status: 401,

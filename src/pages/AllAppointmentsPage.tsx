@@ -87,7 +87,7 @@ const AllAppointmentsPage = () => {
             tag: a.tag,
             clientId: a.client_id,
             clientName: a.clients?.name ?? null,
-            priceAmount: a.clients?.standard_rate ?? a.price_amount ?? null,
+            priceAmount: a.price_amount ?? a.clients?.standard_rate ?? null,
             isPaid: a.payment_received === true,
             boltScore: a.bolt_score ?? null,
             source: "kinesiology" as SourceType,

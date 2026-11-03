@@ -183,12 +183,12 @@ export function calcSummary(
       fnhCount++;
     }
 
-    if (ev.standardRate != null) {
-      if (isVoice) voiceIncome += ev.standardRate;
-      else fnhIncome += ev.standardRate;
-    } else if (ev.priceAmount !== undefined && ev.priceAmount !== null) {
+    if (ev.priceAmount != null) {
       if (isVoice) voiceIncome += ev.priceAmount;
       else fnhIncome += ev.priceAmount;
+    } else if (ev.standardRate != null) {
+      if (isVoice) voiceIncome += ev.standardRate;
+      else fnhIncome += ev.standardRate;
     } else {
       const rate = isVoice ? voiceRate : fnhRate;
       if (isVoice) voiceIncome += (dur / 60) * rate;
@@ -578,7 +578,7 @@ const WeeklyTimeGrid = ({
                         ? paymentStyles[event.paymentStatus as string]
                         : null;
                       const tier = event.variant === "kinesiology"
-                        ? rateTierStyles[getRateTier(event.standardRate ?? event.priceAmount)]
+                        ? rateTierStyles[getRateTier(event.priceAmount ?? event.standardRate)]
                         : null;
                       const vs = event.variant
                         ? variantStyles[event.variant]
@@ -587,10 +587,10 @@ const WeeklyTimeGrid = ({
                       const Icon = event.variant ? (variantIcons[event.variant] || Clock) : Clock;
                       const durMin = (event.endMin ?? 0) - (event.startMin ?? 0);
                       const durHr = durMin / 60;
-                      const rateLabel = event.standardRate != null
-                        ? `$${event.standardRate}`
-                        : event.priceAmount != null
+                      const rateLabel = event.priceAmount != null
                         ? `$${event.priceAmount}`
+                        : event.standardRate != null
+                        ? `$${event.standardRate}`
                         : `$${Math.round((event.variant === "voice" ? voiceRatePerHour : fnhRatePerHour) * durHr)}`;
                       const isConflict = conflictIds.has(event.id);
 

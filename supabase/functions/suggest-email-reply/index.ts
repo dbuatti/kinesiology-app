@@ -57,6 +57,7 @@ async function generateDraft(prompt: string): Promise<any> {
     const resData = await response.json().catch(() => ({}));
     if (response.ok) return resData;
     lastError = resData?.error?.message || `Gemini error (status ${response.status})`;
+    console.error(`[suggest-email-reply] GEMINI_KEY_EXHAUSTED (${response.status})`, JSON.stringify(resData).slice(0, 500));
     // Only quota/overload is worth another key; anything else fails the same way.
     if (response.status !== 429 && response.status !== 503) break;
     console.error(`[suggest-email-reply] GEMINI_KEY_EXHAUSTED (${response.status}), trying next key`);
@@ -164,10 +165,18 @@ serve(async (req) => {
     const upcoming = await findUpcomingBookings(
       createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""),
       client_email || null, client_id || null,
-    ).catch(() => []);
+    ).catch((e) => {
+      console.error("[suggest-email-reply] UPCOMING_BOOKINGS_FAILED", e?.message || e);
+      return [];
+    });
     const slotEventType = upcoming.find((b) => b.eventTypeId)?.eventTypeId || undefined;
     const [{ styleSummary, sessionNotesBlock }, availableSlots] = await Promise.all([
-      client_id ? loadClientContext(client_id) : Promise.resolve({ styleSummary: "", sessionNotesBlock: "" }),
+      (client_id
+        ? loadClientContext(client_id) : Promise.resolve({ styleSummary: "", sessionNotesBlock: "" }))
+        .catch((e) => {
+          console.error("[suggest-email-reply] CLIENT_CONTEXT_FAILED", e?.message || e);
+          throw e;
+        }),
       (available_slots || []).length ? Promise.resolve((available_slots as string[]).slice(0, 40)) : fetchSlotsLabels(slotEventType),
     ]);
     const upcomingBlock = upcoming.length

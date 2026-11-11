@@ -188,10 +188,11 @@ serve(async (req) => {
     // Find existing client by email to avoid unique constraint issues
     // A voice/piano student booking kinesiology is the same person: keep one
     // row and add the practice (supabase_people_practices.sql).
+    // ilike: voice rows store lowercased emails; Cal.com casing varies.
     const { data: existingClient } = await supabase
       .from('clients')
       .select('id, practices')
-      .eq('email', email)
+      .ilike('email', email)
       .maybeSingle();
 
     let dbClient;

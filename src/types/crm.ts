@@ -52,6 +52,10 @@ export interface Appointment {
   goal: string;
   issue: string;
   acupoints: string;
+  /** Practice that owns this event. Kinesiology rows default to 'kinesiology';
+   *  voice/piano lessons use 'voice'/'piano' so sync-to-notion can route to
+   *  the Voice Lessons DB instead of FNH Appointments. */
+  discipline?: 'kinesiology' | 'voice' | 'piano' | null;
   is_paid?: boolean;
   payment_received?: boolean;
   payment_link?: string | null;
@@ -157,6 +161,15 @@ export interface Client {
   practices?: ('kinesiology' | 'voice' | 'piano')[];
   notion_voice_client_id?: string | null;
   source?: string | null;
+  onboarding_submitted_at?: string | null;
+  notes?: string | null;
+  /** Voice onboarding (unified people: stored on the person, mirrored from voice_onboarding). */
+  voice_goals?: string | null;
+  voice_experience_level?: string | null;
+  voice_mobile?: string | null;
+  voice_additional_notes?: string | null;
+  voice_onboarding_completed?: boolean | null;
+  voice_onboarding_submitted_at?: string | null;
 }
 
 export interface AppointmentWithClient extends Appointment {

@@ -59,6 +59,13 @@ export const syncClientToNotion = async (client: any, supabase: any, notionHeade
     { value: emergencyContact, possibleNames: ['Emergency Contact', 'Emergency Contact Details'] },
     { value: client.referral_source, possibleNames: ['Referral Source', 'Referral', 'How did you find me'] },
     { value: `${origin}/clients/${client.id}`, possibleNames: ['CRM Link', 'Link', 'URL', 'Client Link'] },
+    // Unified People: voice onboarding mirrors (so Notion analysis sees them)
+    { value: (client.practices || []).join(', '), possibleNames: ['Practices', 'Practice', 'Disciplines'] },
+    { value: client.voice_goals, possibleNames: ['Voice Goals', 'Goals', 'Singing Goals'] },
+    { value: client.voice_experience_level, possibleNames: ['Experience Level', 'Voice Experience', 'Level'] },
+    { value: client.voice_mobile || client.phone, possibleNames: ['Mobile', 'Voice Mobile'] },
+    { value: client.voice_additional_notes, possibleNames: ['Voice Notes', 'Student Notes', 'Additional Notes'] },
+    { value: client.voice_onboarding_completed ? true : null, possibleNames: ['Voice Onboarding Complete', 'Onboarding Complete'] },
     // New clinical tracking fields
     { value: client.status, possibleNames: ['Status'] },
     { value: client.programme, possibleNames: ['Programme', 'Program'] },
@@ -77,7 +84,7 @@ export const syncClientToNotion = async (client: any, supabase: any, notionHeade
     // Admin
     { value: client.intake_submitted_at ? true : false, possibleNames: ['Intake Form Completed?', 'Intake Completed', 'Intake Form'] },
     { value: client.consent_signed, possibleNames: ['Consent Signed?', 'Consent Signed', 'Consent'] },
-    { value: client.additional_notes || client.medical_history, possibleNames: ['Notes', 'General Notes'] },
+    { value: client.additional_notes || client.notes || client.medical_history, possibleNames: ['Notes', 'General Notes'] },
     // Intake form goals
     { value: client.goal_working, possibleNames: ['Goal — Working', 'Goal Working', 'What "working" looks like'] },
     { value: client.goal_12_sessions, possibleNames: ['Goal — 12 Sessions', 'Goal 12 Sessions', '12 Session Goal'] },

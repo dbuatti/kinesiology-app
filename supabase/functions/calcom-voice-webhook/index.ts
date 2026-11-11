@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { classifyEventType, resolveEventType } from "../_shared/event-types.ts";
+import { ensurePerson } from "../_shared/people.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -416,11 +417,13 @@ serve(async (req) => {
     };
 
     // When the Notion side fails, still record the booking (same minimal row the
-    // reconcile sweep writes) so the Calendar shows it and later replays see it
+    // reconcile sweep writes to) so the Calendar shows it and later replays see it
     // as logged — otherwise each reconcile run would replay it and re-email.
+    // Unified people: attach client_id so the lesson joins the person's history.
     const logBookingWithoutNotion = async () => {
       if (!calcomBookingUid) return;
-      const { error: fbErr } = await supabase.from("voice_bookings").upsert({
+      const personId = await ensurePerson(supabase, { email: attendeeEmail, name: attendee.name || null, practice: metadata.discipline || "voice", notionVoiceClientId: null });
+      const row: Record<string, unknown> = {
         calcom_booking_id: calcomBookingUid,
         student_name: attendee.name || attendeeEmail.split("@")[0],
         student_email: attendeeEmail,
@@ -429,8 +432,13 @@ serve(async (req) => {
         cost: cost || null,
         discipline: metadata.discipline || "voice",
         status: "scheduled",
-      }, { onConflict: "calcom_booking_id", ignoreDuplicates: true });
-      if (fbErr) console.error(`[${functionName}] fallback voice_bookings row failed:`, fbErr.message);
+      };
+      const withId = personId ? { ...row, client_id: personId } : row;
+      const { error: fbErr } = await supabase.from("voice_bookings").upsert(withId, { onConflict: "calcom_booking_id", ignoreDuplicates: true });
+      if (fbErr && String(fbErr.message || '').includes('client_id')) {
+        const { error: retryErr } = await supabase.from("voice_bookings").upsert(row, { onConflict: "calcom_booking_id", ignoreDuplicates: true });
+        if (retryErr) console.error(`[${functionName}] fallback voice_bookings row failed:`, retryErr.message);
+      } else if (fbErr) console.error(`[${functionName}] fallback voice_bookings row failed:`, fbErr.message);
     };
 
     // Find the student in Notion Voice Clients DB by email

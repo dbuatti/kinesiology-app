@@ -92,8 +92,8 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientTa
                         "font-semibold text-foreground text-sm group-hover:text-primary transition-colors",
                         isPrivate && "blur-sm select-none"
                       )}>{client.name}</span>
-                      {!isVoice && <IntakeStatusBadge client={client} />}
-                      <NewInfoBadge submittedAt={(client as any).onboarding_submitted_at} />
+                      <IntakeStatusBadge client={client} />
+                      <NewInfoBadge submittedAt={(client as any).onboarding_submitted_at || (client as any).voice_onboarding_submitted_at} />
                       {!isVoice && client.stripe_customer_id && (
                         <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-semibold border-primary/20 text-primary-strong bg-primary/5">
                           <CreditCard size={8} className="mr-1" /> Synced

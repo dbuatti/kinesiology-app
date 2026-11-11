@@ -30,7 +30,9 @@ const FIELDS_TO_MERGE = [
   'marital_status', 'children', 'medical_history', 'medications_supplements',
   'emergency_contact_name', 'emergency_contact_phone', 'referral_source',
   'current_stress_level', 'sleep_quality', 'digestive_health', 'chatgpt_url',
-  'journal', 'stripe_customer_id', 'notion_page_id', 'notion_link'
+  'journal', 'stripe_customer_id', 'notion_page_id', 'notion_link',
+  'practices', 'notion_voice_client_id', 'source',
+  'voice_goals', 'voice_experience_level', 'voice_mobile', 'voice_additional_notes',
 ];
 
 const DuplicateResolutionCenter = () => {
@@ -49,6 +51,8 @@ const DuplicateResolutionCenter = () => {
   const fetchClients = async () => {
     setLoadingClients(true);
     try {
+      // Unified People: scan every person, not just kinesiology — voice-only
+      // rows (Lizzy x2) are exactly the duplicates this center must catch.
       const { data, error } = await supabase
         .from('clients')
         .select(`
@@ -56,9 +60,10 @@ const DuplicateResolutionCenter = () => {
           marital_status, children, chatgpt_url, journal, is_practitioner,
           emergency_contact_name, emergency_contact_phone, medications_supplements,
           current_stress_level, sleep_quality, digestive_health, medical_history,
-          referral_source, stripe_customer_id, notion_page_id, notion_link, created_at
+          referral_source, stripe_customer_id, notion_page_id, notion_link, created_at,
+          practices, notion_voice_client_id, source,
+          voice_goals, voice_experience_level, voice_mobile, voice_additional_notes
         `)
-        .contains("practices", ["kinesiology"])
         .or('is_practitioner.eq.false,is_practitioner.is.null')
         .order('name');
       
@@ -259,6 +264,11 @@ const DuplicateResolutionCenter = () => {
     if (error) throw error;
   };
 
+  const unionArrayField = (a: unknown, b: unknown) => {
+    const combined = [...((a as string[]) || []), ...((b as string[]) || [])];
+    return Array.from(new Set(combined.map((s) => String(s).trim()).filter(Boolean)));
+  };
+
   const startMergeSession = (primary: any, duplicate: any) => {
     const initialFields: Record<string, any> = {};
 
@@ -266,9 +276,8 @@ const DuplicateResolutionCenter = () => {
       const valPrimary = primary[field];
       const valDuplicate = duplicate[field];
 
-      if (field === 'suburbs') {
-        const combined = [...(valPrimary || []), ...(valDuplicate || [])];
-        initialFields[field] = Array.from(new Set(combined.map(s => s.trim()).filter(Boolean)));
+      if (field === 'suburbs' || field === 'practices') {
+        initialFields[field] = unionArrayField(valPrimary, valDuplicate);
       } else if (valPrimary !== null && valPrimary !== undefined && valPrimary !== "" && (Array.isArray(valPrimary) ? valPrimary.length > 0 : true)) {
         initialFields[field] = valPrimary;
       } else if (valDuplicate !== null && valDuplicate !== undefined && valDuplicate !== "" && (Array.isArray(valDuplicate) ? valDuplicate.length > 0 : true)) {
@@ -292,9 +301,8 @@ const DuplicateResolutionCenter = () => {
       const valPrimary = primary[field];
       const valDuplicate = duplicate[field];
 
-      if (field === 'suburbs') {
-        const combined = [...(valPrimary || []), ...(valDuplicate || [])];
-        merged[field] = Array.from(new Set(combined.map(s => s.trim()).filter(Boolean)));
+      if (field === 'suburbs' || field === 'practices') {
+        merged[field] = unionArrayField(valPrimary, valDuplicate);
       } else if (valPrimary !== null && valPrimary !== undefined && valPrimary !== "" && (Array.isArray(valPrimary) ? valPrimary.length > 0 : true)) {
         merged[field] = valPrimary;
       } else if (valDuplicate !== null && valDuplicate !== undefined && valDuplicate !== "" && (Array.isArray(valDuplicate) ? valDuplicate.length > 0 : true)) {

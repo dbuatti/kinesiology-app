@@ -610,6 +610,27 @@ serve(async (req) => {
         if (updateError) throw updateError;
       }
 
+      // 1.6 Unified People: union practices + fill voice gaps not covered by
+      // the UI field picker, so a voice+kinesiology merge never drops a practice.
+      try {
+        const { data: targetRow } = await supabase.from('clients').select('practices, email, phone, born, standard_rate, notion_voice_client_id, voice_goals, voice_experience_level, voice_mobile, voice_additional_notes, onboarding_submitted_at, voice_onboarding_submitted_at, voice_onboarding_completed').eq('id', targetClientId).single();
+        const srcPractices = sourceClient.practices || ['kinesiology'];
+        const tgtPractices = (targetRow?.practices) || (mergedFields?.practices) || ['kinesiology'];
+        const unionPractices = [...new Set([...tgtPractices, ...srcPractices])];
+        const unionPatch: Record<string, unknown> = {};
+        if (JSON.stringify([...unionPractices].sort()) !== JSON.stringify([...tgtPractices].sort())) unionPatch.practices = unionPractices;
+        if (!targetRow?.notion_voice_client_id && sourceClient.notion_voice_client_id) unionPatch.notion_voice_client_id = sourceClient.notion_voice_client_id;
+        if (!targetRow?.email && sourceClient.email) unionPatch.email = sourceClient.email;
+        if (!targetRow?.phone && (sourceClient.phone || sourceClient.voice_mobile)) unionPatch.phone = sourceClient.phone || sourceClient.voice_mobile;
+        if (!targetRow?.voice_goals && sourceClient.voice_goals) unionPatch.voice_goals = sourceClient.voice_goals;
+        if (!targetRow?.voice_experience_level && sourceClient.voice_experience_level) unionPatch.voice_experience_level = sourceClient.voice_experience_level;
+        if (!targetRow?.voice_mobile && sourceClient.voice_mobile) unionPatch.voice_mobile = sourceClient.voice_mobile;
+        if (!targetRow?.voice_additional_notes && sourceClient.voice_additional_notes) unionPatch.voice_additional_notes = sourceClient.voice_additional_notes;
+        if (Object.keys(unionPatch).length) await supabase.from('clients').update(unionPatch).eq('id', targetClientId);
+      } catch (unionErr) {
+        console.warn(`[${functionName}] practices union failed (non-fatal):`, unionErr?.message);
+      }
+
       // 2. Move all appointments in Supabase and get their IDs
       const { data: movedApps, error: appError } = await supabase
         .from('appointments')
@@ -643,10 +664,31 @@ serve(async (req) => {
         }
       }
 
-      // 3. Archive the source client's Notion page if it exists
+      // 2.7 Unified People: move voice lessons by client_id, plus email
+      // fallback for rows booked before client_id existed (Lizzy x2 case).
+      try {
+        await supabase.from('voice_bookings').update({ client_id: targetClientId }).eq('client_id', sourceClientId);
+        const srcEmail = (sourceClient.email || '').toLowerCase().trim();
+        if (srcEmail) {
+          await supabase.from('voice_bookings').update({ client_id: targetClientId }).ilike('student_email', srcEmail);
+        }
+      } catch (vbErr) {
+        console.warn(`[${functionName}] Failed to move voice_bookings:`, vbErr?.message);
+      }
+
+      // 3. Archive the source client's Notion page(s) if they exist.
+      // FNH Clients page and Voice Clients card are separate DBs — archive both.
       if (sourceClient.notion_page_id) {
         console.log(`[${functionName}] Archiving source client page in Notion: ${sourceClient.notion_page_id}`);
         await fetch(`https://api.notion.com/v1/pages/${sourceClient.notion_page_id}`, {
+          method: 'PATCH',
+          headers: notionHeaders,
+          body: JSON.stringify({ archived: true })
+        });
+      }
+      if (sourceClient.notion_voice_client_id && sourceClient.notion_voice_client_id !== sourceClient.notion_page_id) {
+        console.log(`[${functionName}] Archiving source voice client page in Notion: ${sourceClient.notion_voice_client_id}`);
+        await fetch(`https://api.notion.com/v1/pages/${sourceClient.notion_voice_client_id}`, {
           method: 'PATCH',
           headers: notionHeaders,
           body: JSON.stringify({ archived: true })

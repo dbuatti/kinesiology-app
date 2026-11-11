@@ -11,6 +11,11 @@ import { syncClientToNotion } from "./client-sync.ts";
 
 const MAIN_DB_ID = "171f7156cdc645e8b689af13d217bc7c";
 const PLANNER_DB_ID = "11caad21cd0980d8a3eeeffb27fc43c0";
+// Voice Lessons DB1 (lessons log) + Voice Clients DB (student cards).
+// Unified People keeps Supabase as the single source; Notion DBs stay split so
+// CLAUDE analysis + note-taking see unchanged structure.
+const VOICE_LESSONS_DB_1_ID = "8d6369c637c8425fb007adf2618e576";
+const VOICE_CLIENTS_DB_ID = "af3e38f400d84dc8975eff4b6269157b";
 
 export const syncSingleAppointment = async (appId: string, supabase: any, notionHeaders: any, origin: string) => {
   // Fetch full appointment details including client
@@ -30,14 +35,25 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
   }
 
   const clientName = appointment.clients?.name || "Unknown Client";
+  // Unified People routing: voice/piano lessons sync to the Voice Lessons DB,
+  // kinesiology sessions to FNH Appointments. Notion DBs stay split for analysis.
+  const discipline = String(appointment.discipline || "").toLowerCase();
+  const tagLower = String(appointment.tag || "").toLowerCase();
+  const isVoiceLesson = discipline === "voice" || discipline === "piano"
+    || tagLower.includes("voice") || tagLower.includes("piano");
+  const lessonPractice = discipline === "piano" || tagLower.includes("piano") ? "piano" : "voice";
+  const targetMainDbId = isVoiceLesson ? VOICE_LESSONS_DB_1_ID : MAIN_DB_ID;
   // Preserve a user-set custom name, but if the stored name looks generic
   // (e.g. "Session — Aug 3, 2026" without a client), rebuild it client-first so
   // the Notion page is properly named and dedup-able by client+date.
   const storedName = appointment.name || "";
-  const looksGeneric = !storedName || /^(Session|FNH Session|Kinesiology Session)\b/i.test(storedName) && !storedName.toLowerCase().includes(clientName.toLowerCase());
-  const appointmentName = looksGeneric
-    ? `${clientName} — Kinesiology (${new Date(appointment.date).toISOString().split("T")[0]})`
-    : (storedName || `Session with ${clientName}`);
+  const looksGeneric = !storedName || /^(Session|FNH Session|Kinesiology Session|Voice Lesson|Piano Lesson)\b/i.test(storedName) && !storedName.toLowerCase().includes(clientName.toLowerCase());
+  const lessonType = lessonPractice === "piano" ? "Piano Lesson" : "Voice Lesson";
+  const appointmentName = isVoiceLesson
+    ? (looksGeneric ? `${lessonType} — ${clientName} — ${new Date(appointment.date).toISOString().split("T")[0]}` : storedName)
+    : (looksGeneric
+      ? `${clientName} — Kinesiology (${new Date(appointment.date).toISOString().split("T")[0]})`
+      : (storedName || `Session with ${clientName}`));
 
   console.log(`[appointment-sync] Syncing appointment: ${appointmentName} (${appId})`);
 
@@ -53,19 +69,39 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
       console.error(`[appointment-sync] Failed to sync client as part of appointment sync:`, clientSyncErr);
     }
   }
+  // Voice lessons link to the Voice Clients card, not the FNH Clients page.
+  const voiceClientPageId = (appointment.clients as unknown as { notion_voice_client_id?: string })?.notion_voice_client_id || null;
+  const linkClientPageId = isVoiceLesson ? (voiceClientPageId || clientPageId) : clientPageId;
 
   // Fetch database schema to map properties dynamically
-  const mainSchema = await fetchDatabaseSchema(MAIN_DB_ID, notionHeaders);
+  const mainSchema = await fetchDatabaseSchema(targetMainDbId, notionHeaders);
 
-  // Prepare properties for Main Appointments DB
-  // NB: `Notes` is deliberately NOT here — it is the clinical write-up field in
-  // Notion, so it is written only on create / while empty (see clinicalProps).
-  const mainProps: Record<string, any> = {
-    "Name": { title: [{ text: { content: appointmentName } }] },
-    "Date": { date: { start: appointment.date } },
-    "Goal": { rich_text: [{ text: { content: appointment.goal || "" } }] },
-    "Issue": { multi_select: [{ name: appointment.tag || "Kinesiology" }] }
-  };
+  // Prepare properties for Main Appointments DB (FNH) or Voice Lessons DB1.
+  // NB (FNH): `Notes` is deliberately NOT here — it is the clinical write-up
+  // field in Notion, so it is written only on create / while empty (see clinicalProps).
+  const mainProps: Record<string, any> = isVoiceLesson
+    ? {
+      "Name": { title: [{ text: { content: appointmentName } }] },
+      "Date": { date: { start: appointment.date } },
+    }
+    : {
+      "Name": { title: [{ text: { content: appointmentName } }] },
+      "Date": { date: { start: appointment.date } },
+      "Goal": { rich_text: [{ text: { content: appointment.goal || "" } }] },
+      "Issue": { multi_select: [{ name: appointment.tag || "Kinesiology" }] }
+    };
+
+  if (isVoiceLesson) {
+    // Voice Lessons DB1 shape (mirrors voice-schedule-lesson): time in
+    // Breakthroughs, cost in Cost, paid state in Payment, instrument in Discipline.
+    const timeStr = (() => { try { return new Date(appointment.date).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", timeZone: "Australia/Melbourne" }); } catch { return ""; } })();
+    if (timeStr) mainProps["Breakthroughs"] = { rich_text: [{ text: { content: timeStr } }] };
+    const price = Number(appointment.price_amount) || Number(appointment.clients?.standard_rate) || 0;
+    if (price > 0) mainProps["Cost"] = { number: price };
+    const paid = Boolean(appointment.payment_received);
+    mainProps["Payment"] = { select: { name: paid ? "Paid" : "Unpaid" } };
+    mainProps["Discipline"] = { select: { name: lessonPractice === "piano" ? "Piano" : "Voice" } };
+  }
 
   // ─── Status (practice codes AP / CH / OPCH) ───
   // The Appointments DB's Status select is the one-glance answer to "has this
@@ -80,7 +116,8 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
   // database (they may be "AP", "AP — Appointment", …), and the status only
   // ever moves forwards, so a hand-set Notion status is never rolled back.
   const STATUS_RANK: Record<string, number> = { AP: 0, CH: 1, OPCH: 2 };
-  const statusProp = findSchemaProperty(mainSchema, ['Status', 'Session Status', 'Appointment Status']);
+  // Voice Lessons DB1 tracks paid state via Payment (set above), not AP/CH/OPCH.
+  const statusProp = isVoiceLesson ? null : findSchemaProperty(mainSchema, ['Status', 'Session Status', 'Appointment Status']);
   // The Appointments DB uses a Notion `status` property (options Cancelled /
   // AP / OPEN / OPCH / CH). A `status` property is written with `status:` and a
   // `select` with `select:` — using the wrong key is a 400, so both the option
@@ -114,8 +151,8 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
       || null;
   };
 
-  const wantedStatusOption = optionForCode(wantedStatusCode);
-  const cancelledStatusOption = optionForCode('CANCELLED');
+  const wantedStatusOption = isVoiceLesson ? null : optionForCode(wantedStatusCode);
+  const cancelledStatusOption = isVoiceLesson ? null : optionForCode('CANCELLED');
 
   // A cancelled appointment has no forward status to advance to, so on CREATE
   // it must not fall through to the database default (AP) — that reads as
@@ -155,7 +192,9 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
   // CRM data (e.g. `issue` = presenting complaint) from overwriting hand-written
   // session findings already in Notion.
   const clinicalProps: Record<string, any> = {};
-  const clinicalMappings: Array<[string[], string | number | null, 'rich_text' | 'number']> = [
+  // Voice lessons carry no clinical payload — FNH fields must never create
+  // stray properties on the Lessons DB.
+  const clinicalMappings: Array<[string[], string | number | null, 'rich_text' | 'number']> = isVoiceLesson ? [] : [
     [['BOLT Score (s)', 'BOLT Score', 'BOLT'], appointment.bolt_score, 'number'],
     [['Key Findings', 'Findings'], appointment.issue, 'rich_text'],
     [['Corrections Made', 'Corrections'], appointment.modes_balances, 'rich_text'],
@@ -180,7 +219,8 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
   // seeds Notes on create and then steps aside — same "Notion wins" rule as the
   // fields above. (Previously every appointment update re-sent Notes, wiping
   // hand-written session findings whenever the CRM copy was blank.)
-  if (appointment.issue || appointment.notes) {
+  // Voice lessons skip this: the Lessons DB is not a clinical write-up surface.
+  if (!isVoiceLesson && (appointment.issue || appointment.notes)) {
     const notesProp = findSchemaProperty(mainSchema, ['Notes', 'Session Notes', 'Additional Notes']);
     if (notesProp && notesProp.schema?.type === 'rich_text') {
       clinicalProps[notesProp.name] = {
@@ -204,15 +244,28 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
     return filtered;
   };
 
-  // Dynamically find the relation property pointing to the Clients DB
-  const clientRelationProp = Object.keys(mainSchema).find(k => {
-    const prop = mainSchema[k];
-    return prop.type === 'relation' && prop.relation?.database_id && normalizeId(prop.relation.database_id) === normalizeId(CLIENTS_DB_ID);
-  });
+  // Dynamically find the relation property pointing to the Clients DB.
+  // Voice lessons link to the Voice Clients DB ("Client CRM"); FNH sessions
+  // link to the FNH Clients DB. Fall back to any relation so a renamed schema
+  // never silently drops the link.
+  const clientRelationProp = (() => {
+    const ids = isVoiceLesson ? [VOICE_CLIENTS_DB_ID] : [CLIENTS_DB_ID];
+    for (const want of ids) {
+      const hit = Object.keys(mainSchema).find(k => {
+        const prop = mainSchema[k];
+        return prop.type === 'relation' && prop.relation?.database_id && normalizeId(prop.relation.database_id) === normalizeId(want);
+      });
+      if (hit) return hit;
+    }
+    // Voice DB1's relation is literally named "Client CRM".
+    const byName = findSchemaProperty(mainSchema, ['Client CRM', 'Client', 'Student', 'Voice Students']);
+    if (byName) return byName.name;
+    return Object.keys(mainSchema).find(k => mainSchema[k].type === 'relation');
+  })();
 
-  if (clientRelationProp && clientPageId) {
-    console.log(`[appointment-sync] Linking appointment to client page: ${clientPageId} via property: ${clientRelationProp}`);
-    mainProps[clientRelationProp] = { relation: [{ id: clientPageId }] };
+  if (clientRelationProp && linkClientPageId) {
+    console.log(`[appointment-sync] Linking appointment to client page: ${linkClientPageId} via property: ${clientRelationProp}`);
+    mainProps[clientRelationProp] = { relation: [{ id: linkClientPageId }] };
   }
 
   let mainPageId = appointment.notion_page_id;
@@ -262,25 +315,20 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
   if (!mainPageId) {
     const dedupFilters = [];
     if (appointment.date) {
+      const dateProp = findSchemaProperty(mainSchema, ['Date', 'Session Date', 'Created'])?.name || "Date";
       dedupFilters.push({
-        property: "Date",
+        property: dateProp,
         date: { equals: appointment.date.split("T")[0] }
       });
     }
-    if (clientPageId) {
-      const relProp = Object.keys(mainSchema).find(k => {
-        const p = mainSchema[k];
-        return p.type === 'relation' && p.relation?.database_id && normalizeId(p.relation.database_id) === normalizeId(CLIENTS_DB_ID);
+    if (linkClientPageId && clientRelationProp) {
+      dedupFilters.push({
+        property: clientRelationProp,
+        relation: { contains: linkClientPageId }
       });
-      if (relProp) {
-        dedupFilters.push({
-          property: relProp,
-          relation: { contains: clientPageId }
-        });
-      }
     }
     if (dedupFilters.length >= 2) {
-      const dedupRes = await fetchWithRetry(`https://api.notion.com/v1/databases/${MAIN_DB_ID}/query`, {
+      const dedupRes = await fetchWithRetry(`https://api.notion.com/v1/databases/${targetMainDbId}/query`, {
         method: 'POST',
         headers: notionHeaders,
         body: JSON.stringify({ filter: { and: dedupFilters }, page_size: 5 })
@@ -318,8 +366,9 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
   if (!mainPageId) {
     console.log(`[appointment-sync] Creating new Main page in DB: ${MAIN_DB_ID}`);
 
-    // Prepare onboarding blocks for the page body
-    const childrenBlocks = [
+    // Prepare onboarding blocks for the page body (FNH clinical context).
+    // Voice lessons get a minimal block set below — no clinical intake dump.
+    const fnhChildrenBlocks = [
       {
         object: "block",
         type: "heading_2",
@@ -490,11 +539,41 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
       }
     ];
 
+    const voiceChildrenBlocks = [
+      {
+        object: "block",
+        type: "heading_2",
+        heading_2: {
+          rich_text: [{ text: { content: `🎙️ ${lessonType} Notes` } }]
+        }
+      },
+      {
+        object: "block",
+        type: "paragraph",
+        paragraph: {
+          rich_text: [
+            { text: { content: "Use this page to record lesson notes. Student onboarding answers sync from the CRM and are never overwritten here." } }
+          ]
+        }
+      },
+      {
+        object: "block",
+        type: "paragraph",
+        paragraph: {
+          rich_text: [
+            { text: { content: "🔗 Open in CRM: " }, annotations: { bold: true } },
+            { text: { content: `${origin}/appointments/${appointment.id}`, link: { url: `${origin}/appointments/${appointment.id}` } } }
+          ]
+        }
+      }
+    ];
+    const childrenBlocks = isVoiceLesson ? voiceChildrenBlocks : fnhChildrenBlocks;
+
     const createRes = await fetchWithRetry('https://api.notion.com/v1/pages', {
       method: 'POST',
       headers: notionHeaders,
       body: JSON.stringify({
-        parent: { database_id: MAIN_DB_ID },
+        parent: { database_id: targetMainDbId },
         properties: {
           ...mainProps,
           ...(statusProp && createStatusOption
@@ -540,19 +619,20 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
     plannerProps["Date"] = { date: { start: appointment.date } };
   }
 
-  // 3. Project/Category
+  // 3. Project/Category (FNH sessions vs Coaching lessons — keeps Money/Planner split)
+  const plannerProjectName = isVoiceLesson ? "Coaching" : "FNH";
   const projectProp = findSchemaProperty(plannerSchema, ['Project', 'Category', 'Type', 'Source', 'Service']);
   if (projectProp) {
     if (projectProp.schema.type === 'select') {
-      plannerProps[projectProp.name] = { select: { name: "FNH" } };
+      plannerProps[projectProp.name] = { select: { name: plannerProjectName } };
     } else if (projectProp.schema.type === 'multi_select') {
-      plannerProps[projectProp.name] = { multi_select: [{ name: "FNH" }] };
+      plannerProps[projectProp.name] = { multi_select: [{ name: plannerProjectName }] };
     } else if (projectProp.schema.type === 'rich_text') {
-      plannerProps[projectProp.name] = { rich_text: [{ text: { content: "FNH" } }] };
+      plannerProps[projectProp.name] = { rich_text: [{ text: { content: plannerProjectName } }] };
     }
   } else {
     // Fallback
-    plannerProps["Project"] = { select: { name: "FNH" } };
+    plannerProps["Project"] = { select: { name: plannerProjectName } };
   }
 
   // 4. Amount/Price (Finance specific)
@@ -605,11 +685,21 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
     }
   }
 
-  // 7. Client relation for Planner DB (links to Client CRM)
-  const clientKinProp = findSchemaProperty(plannerSchema, ['Client (Kin)', 'Client', 'Client Name', 'Client Profile', 'Linked Client']);
-  if (clientKinProp && clientPageId) {
-    console.log(`[appointment-sync] Linking planner page to client: ${clientPageId} via property: ${clientKinProp.name}`);
-    plannerProps[clientKinProp.name] = { relation: [{ id: clientPageId }] };
+  // 7. Client relation for Planner DB.
+  // FNH sessions link via Client (Kin); voice/piano lessons via Voice Students
+  // (same Planner/Finance DB, different relation — mirrors voice-schedule-lesson).
+  if (isVoiceLesson) {
+    const voiceRelProp = findSchemaProperty(plannerSchema, ['Voice Students', 'Voice Student', 'Student', 'Students']);
+    if (voiceRelProp && voiceClientPageId) {
+      console.log(`[appointment-sync] Linking planner page to voice student: ${voiceClientPageId} via property: ${voiceRelProp.name}`);
+      plannerProps[voiceRelProp.name] = { relation: [{ id: voiceClientPageId }] };
+    }
+  } else {
+    const clientKinProp = findSchemaProperty(plannerSchema, ['Client (Kin)', 'Client', 'Client Name', 'Client Profile', 'Linked Client']);
+    if (clientKinProp && clientPageId) {
+      console.log(`[appointment-sync] Linking planner page to client: ${clientPageId} via property: ${clientKinProp.name}`);
+      plannerProps[clientKinProp.name] = { relation: [{ id: clientPageId }] };
+    }
   }
 
   let plannerPageId = appointment.notion_planner_id;

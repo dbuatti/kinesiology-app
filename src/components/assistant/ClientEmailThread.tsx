@@ -325,6 +325,14 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
   };
 
   const handleSuggestReply = async () => {
+    if (!clientName.trim()) {
+      showError("Client name is required to draft a reply.");
+      return;
+    }
+    if (messages.length === 0) {
+      showError("Add some messages to the thread before suggesting a reply.");
+      return;
+    }
     setLoadingSuggestion(true);
     try {
       // Real availability, not invented — lets the model actually answer a

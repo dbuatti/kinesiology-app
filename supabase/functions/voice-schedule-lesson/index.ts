@@ -114,31 +114,43 @@ serve(async (req) => {
     if (calcomBookingUid && studentEmail && result1.success) {
       try {
         const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
-        const { error: upsertError } = await supabase
-          .from("voice_bookings")
-          .upsert({
-            calcom_booking_id: calcomBookingUid,
-            student_id: studentId,
-            student_name: studentName || null,
-            student_email: studentEmail,
-            lesson_date: date,
-            lesson_time: time,
-            duration: null,
-            cost: cost || null,
-            discipline: discipline || "voice",
-            notion_lesson_id_1: result1.id || null,
-            notion_lesson_id_2: result2.id || null,
-            series_id: seriesId || null,
-            series_frequency: seriesFrequency || null,
-            series_occurrence: seriesOccurrence || null,
-            series_total: seriesTotal || null,
-          }, { onConflict: 'calcom_booking_id' });
+        // New students join the one People list (Phase 5) — resolve first so
+        // the lesson attaches by client_id, not just email (unified people).
+        const personId = await ensurePerson(supabase, { email: studentEmail, name: studentName, practice: discipline || "voice", notionVoiceClientId: studentId || null });
+        const row: Record<string, unknown> = {
+          calcom_booking_id: calcomBookingUid,
+          student_id: studentId,
+          student_name: studentName || null,
+          student_email: studentEmail,
+          lesson_date: date,
+          lesson_time: time,
+          duration: null,
+          cost: cost || null,
+          discipline: discipline || "voice",
+          notion_lesson_id_1: result1.id || null,
+          notion_lesson_id_2: result2.id || null,
+          series_id: seriesId || null,
+          series_frequency: seriesFrequency || null,
+          series_occurrence: seriesOccurrence || null,
+          series_total: seriesTotal || null,
+        };
+        // client_id exists after supabase_unified_people.sql; older DBs retry without it.
+        let upsertError: unknown = null;
+        if (personId) {
+          const withId = await supabase.from("voice_bookings").upsert({ ...row, client_id: personId }, { onConflict: 'calcom_booking_id' });
+          upsertError = (withId as { error?: unknown }).error || null;
+          if (upsertError && String((upsertError as { message?: string }).message || '').includes('client_id')) {
+            const fallback = await supabase.from("voice_bookings").upsert(row, { onConflict: 'calcom_booking_id' });
+            upsertError = (fallback as { error?: unknown }).error || null;
+          }
+        } else {
+          const res = await supabase.from("voice_bookings").upsert(row, { onConflict: 'calcom_booking_id' });
+          upsertError = (res as { error?: unknown }).error || null;
+        }
         if (upsertError) {
-          console.error(`[${functionName}] voice_bookings upsert error:`, upsertError.message);
+          console.error(`[${functionName}] voice_bookings upsert error:`, (upsertError as { message?: string }).message);
         }
         console.log(`[${functionName}] voice_bookings record saved for ${calcomBookingUid}`);
-        // New students join the one People list (Phase 5).
-        await ensurePerson(supabase, { email: studentEmail, name: studentName, practice: discipline || "voice", notionVoiceClientId: studentId || null });
       } catch (dbErr) {
         console.error(`[${functionName}] voice_bookings upsert error (non-fatal):`, dbErr.message);
       }

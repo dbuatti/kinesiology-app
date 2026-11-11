@@ -1,6 +1,5 @@
 import { lazy, Suspense } from "react";
 import type { ReactNode } from "react";
-import { Analytics } from "@vercel/analytics/react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -307,7 +306,8 @@ const AppRoutes = () => {
         </Route>
 
         {/* Self Work - standalone, no MainLayout chrome */}
-        <Route path="/self-work" element={practitionerOnly(<SelfWorkPage />)} />
+        {/* TEMP-DEBUG: public for phone debugging — re-guard with practitionerOnly before committing */}
+        <Route path="/self-work" element={<SelfWorkPage />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
@@ -324,7 +324,7 @@ const App = () => (
             <ThemeColorSync />
             <Toaster />
             <Sonner position="top-center" />
-            {import.meta.env.PROD && <Analytics />}
+
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <ScrollToTop />
               <AppRoutes />

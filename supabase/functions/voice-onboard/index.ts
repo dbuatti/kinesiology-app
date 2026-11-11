@@ -23,7 +23,7 @@ const richText = (text: string) => {
 
 // The app is the main record for students: make sure they're in People and keep
 // the onboarding notes on their row. Non-fatal — Notion already has the copy.
-async function saveToPeople(opts: { email: string; name: string; practice: string; notes: string; notionPageId: string }) {
+async function saveToPeople(opts: { email: string; name: string; phone: string; practice: string; notes: string; notionPageId: string }) {
   if (!opts.email) return null;
   const admin = createClient(Deno.env.get("SUPABASE_URL"), Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"));
   const clientId = await ensurePerson(admin, {
@@ -32,13 +32,19 @@ async function saveToPeople(opts: { email: string; name: string; practice: strin
     practice: opts.practice,
     notionVoiceClientId: opts.notionPageId,
   });
-  if (clientId && opts.notes) {
-    const { data: row } = await admin.from("clients").select("notes").eq("id", clientId).single();
-    const existing = (row?.notes || "").trim();
-    if (!existing.includes(opts.notes)) {
-      const notes = existing ? `${existing}\n\n${opts.notes}` : opts.notes;
-      const { error } = await admin.from("clients").update({ notes }).eq("id", clientId);
-      if (error) console.error("[voice-onboard] notes update failed:", error.message);
+  if (clientId) {
+    const { data: row } = await admin.from("clients").select("notes, phone").eq("id", clientId).single();
+    const patch: Record<string, unknown> = {};
+    if (opts.notes) {
+      const existing = ((row as unknown as { notes?: string })?.notes || "").trim();
+      if (!existing.includes(opts.notes)) {
+        patch.notes = existing ? `${existing}\n\n${opts.notes}` : opts.notes;
+      }
+    }
+    if (opts.phone && !(row as unknown as { phone?: string })?.phone) patch.phone = opts.phone;
+    if (Object.keys(patch).length) {
+      const { error } = await admin.from("clients").update(patch).eq("id", clientId);
+      if (error) console.error("[voice-onboard] people patch failed:", error.message);
     }
   }
   return clientId;
@@ -126,6 +132,7 @@ serve(async (req) => {
       const clientId = await saveToPeople({
         email: (email || "").trim(),
         name: name.trim(),
+        phone: (phone || "").trim(),
         practice: practice === "piano" ? "piano" : "voice",
         notes: (notes || "").trim(),
         notionPageId: existingPageId,
@@ -185,6 +192,7 @@ serve(async (req) => {
     const clientId = await saveToPeople({
       email: (email || "").trim(),
       name: name.trim(),
+      phone: (phone || "").trim(),
       practice: practice === "piano" ? "piano" : "voice",
       notes: (notes || "").trim(),
       notionPageId: data.id,

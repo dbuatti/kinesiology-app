@@ -148,6 +148,19 @@ serve(async (req) => {
   try {
     const { client_id, client_name, client_email, is_voice, thread_messages, goal, available_slots } = await req.json();
 
+    if (typeof client_name !== "string" || !client_name.trim()) {
+      return new Response(JSON.stringify({ error: "client_name is required." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!Array.isArray(thread_messages)) {
+      return new Response(JSON.stringify({ error: "thread_messages must be an array." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Same fallback pattern used elsewhere (send-manual-onboarding etc.) —
     // if a draft mentions the self-serve portal, it needs the real domain,
     // not a bare "/portal/login" (meaningless with no host in email text).
@@ -248,8 +261,11 @@ Return ONLY a JSON object: {"subject": "...", "body": "..."} — body may contai
     });
   } catch (error) {
     console.error("[suggest-email-reply] Error:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 400,
+    // Runtime errors (Gemini failures, missing env vars, etc.) are returned as
+    // 200 with { error } so the client can surface a helpful message without
+    // cluttering the browser console with a 400 for an expected AI hiccup.
+    return new Response(JSON.stringify({ error: error.message || "Couldn't draft a reply." }), {
+      status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

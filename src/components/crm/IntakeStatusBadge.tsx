@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-const INTAKE_FIELDS = [
+const KINESIOLOGY_INTAKE_FIELDS = [
   'name', 'email', 'phone', 'born', 'home_address',
   'referral_source', 'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship',
   'occupation', 'children', 'change_one_thing', 'never_been_same_since', 'chief_complaint',
@@ -15,15 +15,30 @@ const INTAKE_FIELDS = [
   'most_craved_human_need', 'startled_by_loud_noises', 'emotional_regulation_time', 'additional_notes',
 ];
 
+// Voice/piano student onboarding: shared contact + voice-specific answers.
+// Unified People stores these on `clients` (mirrored from voice_onboarding).
+const VOICE_INTAKE_FIELDS = [
+  'name', 'email', 'phone',
+  'voice_goals', 'voice_experience_level', 'voice_mobile',
+];
+
+const isFilled = (val: unknown) =>
+  val != null && val !== '' && !(Array.isArray(val) && val.length === 0);
+
+function fieldsFor(client: Record<string, any>): { fields: string[]; label: string } {
+  const practices: string[] = client.practices || ['kinesiology'];
+  const isVoiceOnly = !practices.includes('kinesiology');
+  if (isVoiceOnly) return { fields: VOICE_INTAKE_FIELDS, label: 'Voice onboarding' };
+  return { fields: KINESIOLOGY_INTAKE_FIELDS, label: 'Intake' };
+}
+
 export function calculateIntakeCompletion(client: Record<string, any>): { filled: number; total: number; percent: number } {
+  const { fields } = fieldsFor(client);
   let filled = 0;
-  for (const field of INTAKE_FIELDS) {
-    const val = client[field];
-    if (val != null && val !== '' && !(Array.isArray(val) && val.length === 0)) {
-      filled++;
-    }
+  for (const field of fields) {
+    if (isFilled(client[field])) filled++;
   }
-  return { filled, total: INTAKE_FIELDS.length, percent: Math.round((filled / INTAKE_FIELDS.length) * 100) };
+  return { filled, total: fields.length, percent: Math.round((filled / fields.length) * 100) };
 }
 
 interface IntakeStatusBadgeProps {
@@ -33,6 +48,7 @@ interface IntakeStatusBadgeProps {
 
 export const IntakeStatusBadge = ({ client, showLabel }: IntakeStatusBadgeProps) => {
   const { filled, total, percent } = calculateIntakeCompletion(client);
+  const { label } = fieldsFor(client);
 
   const getColor = () => {
     if (percent === 0) return "bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground";
@@ -50,10 +66,10 @@ export const IntakeStatusBadge = ({ client, showLabel }: IntakeStatusBadgeProps)
       </TooltipTrigger>
       <TooltipContent className="rounded-xl text-xs font-medium">
         {percent === 0
-          ? "Intake form not started"
+          ? `${label} not started`
           : percent === 100
-          ? "Intake form complete"
-          : `Intake ${percent}% complete (${filled}/${total} fields)`}
+          ? `${label} complete`
+          : `${label} ${percent}% complete (${filled}/${total} fields)`}
       </TooltipContent>
     </Tooltip>
   );

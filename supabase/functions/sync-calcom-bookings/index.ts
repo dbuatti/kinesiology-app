@@ -72,10 +72,11 @@ serve(async (req) => {
       const startTime = booking.start;
 
       // Find existing client by email to avoid unique constraint issues
+      // ilike: voice rows store lowercased emails; Cal.com casing varies.
       const { data: existingClient } = await supabase
         .from('clients')
         .select('id, practices')
-        .eq('email', email)
+        .ilike('email', email)
         .maybeSingle();
 
       let dbClient;

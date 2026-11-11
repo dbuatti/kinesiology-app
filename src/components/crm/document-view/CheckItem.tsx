@@ -1,5 +1,5 @@
 
-import type { MouseEvent } from 'react';
+import type { SyntheticEvent } from 'react';
 import { Check, ArrowDown, ArrowUp, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -35,7 +35,7 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
     ? (baseStatus === 'Inhibition' || baseStatus === 'Inhibited' ? 'Inhibited' : baseStatus === 'Hypertonic' ? 'Hypertonic' : null)
     : (baseStatus === 'Inhibited' ? 'Inhibited' : null);
 
-  const handleCycle = (e: MouseEvent) => {
+  const handleCycle = (e: SyntheticEvent) => {
     e.stopPropagation();
     let nextStatus: string;
 
@@ -98,7 +98,6 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
             "text-[10px] font-semibold truncate",
             status === 'Inhibited' && !isCleared && "text-rose-600 dark:text-rose-300",
             status === 'Hypertonic' && !isCleared && "text-amber-600 dark:text-amber-300",
-            status === 'Hypotonic' && !isCleared && "text-sky-600 dark:text-sky-300",
             isCleared && "text-muted-foreground line-through"
           )}>
             {side ? `${side}: ${name}` : name}

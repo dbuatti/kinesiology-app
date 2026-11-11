@@ -17,6 +17,12 @@ interface Finding {
   cleared?: boolean;
 }
 
+interface SessionMetadata {
+  corrections?: any[];
+  cleared_findings?: string[];
+  [key: string]: any;
+}
+
 interface SessionReportModalProps {
   open: boolean;
   onClose: () => void;
@@ -41,8 +47,8 @@ export default function SessionReportModal({ open, onClose, appointment, updateM
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
 
-  const pattern = useMemo(() => safeParse(appointment?.priority_pattern, {}), [appointment?.priority_pattern]);
-  const metadata = useMemo(() => safeParse(appointment?.metadata, {}), [appointment?.metadata]);
+  const pattern = useMemo(() => safeParse(appointment?.priority_pattern, {}) as Record<string, any>, [appointment?.priority_pattern]);
+  const metadata = useMemo(() => safeParse(appointment?.metadata, {}) as SessionMetadata, [appointment?.metadata]);
 
   // Build corrections lookup
   const correctionsMap = useMemo(() => {
@@ -204,7 +210,7 @@ export default function SessionReportModal({ open, onClose, appointment, updateM
         pathway: {
           processId: pid,
           phase: finding.category.toLowerCase().replace(/\s+/g, ''),
-          side: finding.side || 'midline',
+          side: (finding.side || 'midline') as 'R' | 'L' | 'midline',
           notes: finding.name,
         },
         status: finding.status === 'Hypertonic' ? 'hypertonic' : 'inhibited' as InhibitionPathwayStatus,
@@ -369,7 +375,9 @@ export default function SessionReportModal({ open, onClose, appointment, updateM
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium">{pathway.name}</span>
                           {pathway.cleared && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
-                          <BookOpen className="w-3.5 h-3.5 text-muted-foreground/40" title="Open in manual" />
+                          <span title="Open in manual">
+                            <BookOpen className="w-3.5 h-3.5 text-muted-foreground/40" />
+                          </span>
                         </div>
                         {pathway.entries.length} correction{pathway.entries.length !== 1 ? 's' : ''}
                         {pathway.cleared ? <span className="text-xs text-emerald-600">Cleared</span> : (

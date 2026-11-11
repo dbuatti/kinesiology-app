@@ -55,6 +55,7 @@ export interface CorrectionTarget {
   item: string;
   /** Bumped on every openDock() so re-opening the same target re-applies it. */
   nonce: number;
+  group?: string;
   /**
    * "process" deep-links straight into the instructions (finding rows);
    * "folder" lands on the folder listing (A / E keyboard shortcuts).

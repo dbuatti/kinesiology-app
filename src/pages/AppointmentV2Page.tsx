@@ -764,7 +764,7 @@ const AppointmentV2Page = () => {
               </div>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6">
-              <ClientIntakeSummary data={appointment.clients as Record<string, unknown>} />
+              <ClientIntakeSummary data={(appointment.clients as unknown) as Record<string, unknown>} />
             </div>
           </div>
         </div>
@@ -773,7 +773,7 @@ const AppointmentV2Page = () => {
       {intakeEditOpen && (
         <ClientIntakeEditModal
           clientId={appointment.clients?.id || ""}
-          initialData={appointment.clients as Record<string, unknown>}
+          initialData={(appointment.clients as unknown) as Record<string, unknown>}
           onClose={() => setIntakeEditOpen(false)}
           onSave={() => { refresh(); setIntakeOpen(true); }}
         />

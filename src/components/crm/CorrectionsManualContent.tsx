@@ -803,7 +803,7 @@ const CorrectionsManualContent = ({
     };
 
     const belief = (lbLog.belief ?? "") as string;
-    const aeFilled = lbAE.filter((item) => (lbLog[item.step.toLowerCase()] ?? "").trim().length > 0).length;
+    const aeFilled = lbAE.filter((item) => ((lbLog[item.step.toLowerCase()] ?? "") as string).trim().length > 0).length;
     const checkpointsAnswered = lbCheckpoints.filter((cp) => lbLog[cp.id.toLowerCase()]).length;
     const total = lbAE.length + lbCheckpoints.length + 1;
 

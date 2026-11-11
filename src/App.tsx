@@ -12,6 +12,7 @@ import ThemeColorSync from "./components/ThemeColorSync";
 import { Loader2 } from "lucide-react";
 import { BrandMark } from "./components/layout/BrandMark";
 import ScrollToTop from "./components/shared/ScrollToTop";
+import ErrorBoundary from "./components/shared/ErrorBoundary";
 
 // Layouts (kept eager — needed on every authenticated route)
 import MainLayout from "./layouts/MainLayout";
@@ -306,8 +307,7 @@ const AppRoutes = () => {
         </Route>
 
         {/* Self Work - standalone, no MainLayout chrome */}
-        {/* TEMP-DEBUG: public for phone debugging — re-guard with practitionerOnly before committing */}
-        <Route path="/self-work" element={<SelfWorkPage />} />
+        <Route path="/self-work" element={practitionerOnly(<SelfWorkPage />)} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
@@ -327,7 +327,9 @@ const App = () => (
 
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <ScrollToTop />
-              <AppRoutes />
+              <ErrorBoundary>
+                <AppRoutes />
+              </ErrorBoundary>
             </BrowserRouter>
           </ModeProvider>
         </AuthProvider>

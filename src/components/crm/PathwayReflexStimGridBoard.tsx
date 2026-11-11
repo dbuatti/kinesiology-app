@@ -594,9 +594,9 @@ export function PathwayReflexStimGridBoard({
           ).map(({ group, muscles }) => {
             const filteredMuscles = showOnlyInhibited
               ? muscles.filter((m) => {
-                  const midline = muscleMidlineKey(m);
-                  const left = muscleSideKey(m, "L");
-                  const right = muscleSideKey(m, "R");
+                  const midline = muscleMidlineKey(m.name);
+                  const left = muscleSideKey(m.name, "L");
+                  const right = muscleSideKey(m.name, "R");
                   const state = muscleState[midline] ?? muscleState[left] ?? muscleState[right];
                   return state === "Inhibited" || state === "Hypertonic";
                 })

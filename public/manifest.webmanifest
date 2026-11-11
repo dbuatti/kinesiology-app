@@ -1,14 +1,26 @@
 {
-  "name": "Resonance Kinesiology CRM",
+  "name": "Resonance Kinesiology",
   "short_name": "Resonance",
-  "description": "Clinical practice management for kinesiology — sessions, grids, and client records.",
+  "description": "Clinical practice management for kinesiology and voice — sessions, client records, and Self Work tools.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F8FAFC",
-  "theme_color": "#F8FAFC",
+  "background_color": "#0A1411",
+  "theme_color": "#0A1411",
   "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/apple-touch-icon.png",
       "sizes": "180x180",
@@ -19,12 +31,7 @@
       "src": "/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "/favicon.ico",
-      "sizes": "48x48",
-      "type": "image/x-icon"
+      "purpose": "any maskable"
     }
   ]
 }

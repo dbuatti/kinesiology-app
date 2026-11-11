@@ -61,6 +61,27 @@ export default function BreathRecoveryTool({ onSave, onDone }: Props) {
     if ("vibrate" in navigator) navigator.vibrate(type === "light" ? 10 : type === "medium" ? 20 : 30);
   };
 
+  // Soft in-app chime using the Web Audio API — no external asset needed.
+  const playChime = () => {
+    try {
+      const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(528, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(264, ctx.currentTime + 0.6);
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.6);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.65);
+    } catch { /* audio blocked or unsupported — non-fatal */ }
+  };
+
   // Keep the screen awake during the practice (iPhone sleeps mid-session otherwise).
   const lockScreen = useCallback(async () => {
     try {
@@ -80,6 +101,7 @@ export default function BreathRecoveryTool({ onSave, onDone }: Props) {
     if (!running || done || phase.key === "holds") return;
     if (secsLeft <= 0) {
       haptic("medium");
+      playChime();
       if (phaseIdx + 1 >= PHASES.length) {
         setRunning(false);
         setPhaseIdx(PHASES.length);
@@ -106,6 +128,7 @@ export default function BreathRecoveryTool({ onSave, onDone }: Props) {
     if (recoverLeft > 0) {
       if (recoverLeft <= 1) {
         haptic("medium");
+        playChime();
         if (holdRound >= HOLD_ROUNDS) {
           const next = PHASES[phaseIdx + 1];
           setPhaseIdx(phaseIdx + 1);

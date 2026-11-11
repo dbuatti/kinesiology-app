@@ -58,13 +58,20 @@ async function generateDraft(prompt: string): Promise<any> {
     if (response.ok) return resData;
     lastError = resData?.error?.message || `Gemini error (status ${response.status})`;
     console.error(`[suggest-email-reply] GEMINI_KEY_EXHAUSTED (${response.status})`, JSON.stringify(resData).slice(0, 500));
+    // Leaked/revoked/invalid key — try the next one in the pool in case others are still valid.
+    if (/leaked|revoked|invalid api key|api key not valid|permission denied/i.test(lastError)) {
+      console.error(`[suggest-email-reply] KEY_INVALID, trying next key`);
+      continue;
+    }
     // Only quota/overload is worth another key; anything else fails the same way.
     if (response.status !== 429 && response.status !== 503) break;
     console.error(`[suggest-email-reply] GEMINI_KEY_EXHAUSTED (${response.status}), trying next key`);
   }
-  throw new Error(/quota|resource_exhausted|429/i.test(lastError)
-    ? "The AI is out of capacity right now — try Suggest reply again in a minute."
-    : lastError);
+  throw new Error(/leaked|revoked/i.test(lastError)
+    ? "The Gemini API key has been flagged as leaked. Rotate GEMINI_API_KEY (and any GEMINI_API_KEY_2/3/4) in Supabase secrets, then redeploy this function."
+    : /quota|resource_exhausted|429/i.test(lastError)
+      ? "The AI is out of capacity right now — try Suggest reply again in a minute."
+      : lastError);
 }
 
 // Real Cal.com availability, fetched straight from this function so the reply

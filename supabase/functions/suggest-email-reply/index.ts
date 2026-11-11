@@ -30,7 +30,84 @@ function geminiKeys(): string[] {
     Deno.env.get("GEMINI_API_KEY_2"),
     Deno.env.get("GEMINI_API_KEY_3"),
     Deno.env.get("GEMINI_API_KEY_4"),
+    Deno.env.get("GEMINI_API_KEY_5"),
   ].filter((k): k is string => !!k);
+}
+
+// OpenRouter free-tier fallback when every Gemini key is exhausted or invalid.
+// Models are tried in order; the list should be re-verified with OpenRouter's
+// /api/v1/models endpoint when free-tier availability changes.
+const OPENROUTER_FALLBACK_MODELS = [
+  "qwen/qwen3.8-27b:free",
+  "google/gemma-4-31b-it:free",
+  "nvidia/nemotron-3-super-120b-a12b:free",
+];
+
+function openRouterKeys(): string[] {
+  return [
+    Deno.env.get("OPENROUTER_API_KEY"),
+    Deno.env.get("OPENROUTER_API_KEY_2"),
+  ].filter((k): k is string => !!k);
+}
+
+async function callGemini(key: string, prompt: string): Promise<any> {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.5,
+          response_mime_type: "application/json",
+          maxOutputTokens: MAX_OUTPUT_TOKENS,
+          thinkingConfig: { thinkingBudget: THINKING_BUDGET },
+        },
+      }),
+    },
+  );
+  const resData = await response.json().catch(() => ({}));
+  if (response.ok) return resData;
+  throw new Error(resData?.error?.message || `Gemini error (status ${response.status})`);
+}
+
+// Translate the Gemini-shaped prompt into an OpenAI-compatible chat completion
+// and return the result in the same { candidates: [...] } shape so the rest of
+// the function doesn't need to know which provider answered.
+async function callOpenRouter(prompt: string): Promise<any> {
+  const keys = openRouterKeys();
+  if (!keys.length) throw new Error("OPENROUTER_API_KEY is missing.");
+  let lastErr: Error | null = null;
+  for (const openRouterKey of keys) {
+    for (const model of OPENROUTER_FALLBACK_MODELS) {
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${openRouterKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: "You are a helpful assistant that writes email replies. Return ONLY valid JSON in the shape {\"subject\":\"...\",\"body\":\"...\"}." },
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.5,
+          max_tokens: MAX_OUTPUT_TOKENS,
+          response_format: { type: "json_object" },
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        const text = data?.choices?.[0]?.message?.content || "";
+        return { candidates: [{ content: { parts: [{ text }] } }] };
+      }
+      lastErr = new Error(`OpenRouter ${res.status} (${model}): ${JSON.stringify(data?.error || data)}`);
+      console.error("[suggest-email-reply] OPENROUTER_MODEL_FAILED (trying next if any):", lastErr.message);
+    }
+  }
+  throw lastErr || new Error("All OpenRouter fallback keys/models failed.");
 }
 
 async function generateDraft(prompt: string): Promise<any> {
@@ -38,39 +115,38 @@ async function generateDraft(prompt: string): Promise<any> {
   if (!keys.length) throw new Error("GEMINI_API_KEY is missing.");
   let lastError = "Gemini error";
   for (const key of keys) {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.5,
-            response_mime_type: "application/json",
-            maxOutputTokens: MAX_OUTPUT_TOKENS,
-            thinkingConfig: { thinkingBudget: THINKING_BUDGET },
-          },
-        }),
-      },
-    );
-    const resData = await response.json().catch(() => ({}));
-    if (response.ok) return resData;
-    lastError = resData?.error?.message || `Gemini error (status ${response.status})`;
-    console.error(`[suggest-email-reply] GEMINI_KEY_EXHAUSTED (${response.status})`, JSON.stringify(resData).slice(0, 500));
-    // Leaked/revoked/invalid key — try the next one in the pool in case others are still valid.
-    if (/leaked|revoked|invalid api key|api key not valid|permission denied/i.test(lastError)) {
-      console.error(`[suggest-email-reply] KEY_INVALID, trying next key`);
-      continue;
+    try {
+      const resData = await callGemini(key, prompt);
+      return resData;
+    } catch (err: any) {
+      lastError = err.message || `Gemini error`;
+      console.error(`[suggest-email-reply] GEMINI_KEY_FAILED`, lastError);
+      // Leaked/revoked/invalid key — try the next one in the pool in case others are still valid.
+      if (/leaked|revoked|invalid api key|api key not valid|permission denied/i.test(lastError)) {
+        console.error(`[suggest-email-reply] KEY_INVALID, trying next key`);
+        continue;
+      }
+      // Only quota/overload is worth another key; anything else fails the same way.
+      if (!/quota|resource_exhausted|429|503|overloaded/i.test(lastError)) break;
+      console.error(`[suggest-email-reply] GEMINI_KEY_EXHAUSTED, trying next key`);
     }
-    // Only quota/overload is worth another key; anything else fails the same way.
-    if (response.status !== 429 && response.status !== 503) break;
-    console.error(`[suggest-email-reply] GEMINI_KEY_EXHAUSTED (${response.status}), trying next key`);
   }
+
+  // Fall back to OpenRouter if every Gemini key failed for retryable reasons.
+  if (openRouterKeys().length) {
+    console.error("[suggest-email-reply] GEMINI_ALL_KEYS_FAILED — falling back to OpenRouter:", lastError);
+    try {
+      return await callOpenRouter(prompt);
+    } catch (err: any) {
+      console.error("[suggest-email-reply] OPENROUTER_FALLBACK_FAILED:", err.message);
+      lastError = `${lastError} — and OpenRouter fallback failed: ${err.message}`;
+    }
+  }
+
   throw new Error(/leaked|revoked/i.test(lastError)
-    ? "The Gemini API key has been flagged as leaked. Rotate GEMINI_API_KEY (and any GEMINI_API_KEY_2/3/4) in Supabase secrets, then redeploy this function."
+    ? "The Gemini API key has been flagged as leaked. Set OPENROUTER_API_KEY in Supabase secrets for an immediate fallback, then rotate GEMINI_API_KEY (and any GEMINI_API_KEY_2/3/4/5)."
     : /quota|resource_exhausted|429/i.test(lastError)
-      ? "The AI is out of capacity right now — try Suggest reply again in a minute."
+      ? "The AI is out of capacity right now — try Suggest reply again in a minute, or set OPENROUTER_API_KEY in Supabase secrets for a fallback."
       : lastError);
 }
 

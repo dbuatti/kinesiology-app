@@ -35,6 +35,7 @@ import {
   eachDayOfInterval,
   isToday,
   parseISO,
+  isValid,
   setHours,
   setMinutes,
 } from "date-fns";
@@ -100,6 +101,7 @@ function parseTimeToEvent(item: CalendarItem): CalendarEvent | null {
   }
 
   const itemDate = new Date(item.date);
+  if (!isValid(itemDate)) return null;
 
   return {
     id: item.id,
@@ -419,6 +421,7 @@ const UnifiedCalendarPage = () => {
       for (const i of calendarItems) {
         if (i.cancelled) continue;
         const d = parseISO(i.date);
+        if (!isValid(d)) continue;
         if (d < ms || d > me) continue;
         const amt = i.isFree ? 0 : (i.amount ?? 0);
         if (i.source === "voice") voiceIncome += amt; else fnhIncome += amt;
@@ -436,6 +439,7 @@ const UnifiedCalendarPage = () => {
       for (const i of calendarItems) {
         if (i.cancelled) continue;
         const d = parseISO(i.date);
+        if (!isValid(d)) continue;
         if (d >= monthStart && d <= monthEnd) count++;
       }
       return count;
@@ -445,14 +449,14 @@ const UnifiedCalendarPage = () => {
   const ws = startOfWeek(weekStart);
   const we = endOfWeek(weekStart);
   return calendarItems
-    .filter((item) => !item.cancelled && item.time && new Date(item.date) >= ws && new Date(item.date) <= we)
+    .filter((item) => !item.cancelled && item.time && isValid(new Date(item.date)) && new Date(item.date) >= ws && new Date(item.date) <= we)
     .map(parseTimeToEvent)
     .filter((e): e is CalendarEvent => e !== null);
   }, [calendarItems, weekStart]);
 
   const monthlyEvents: CalendarEvent[] = useMemo(() => {
     return calendarItems
-      .filter((item) => !item.cancelled && item.time && new Date(item.date) >= monthStart && new Date(item.date) <= monthEnd)
+      .filter((item) => !item.cancelled && item.time && isValid(new Date(item.date)) && new Date(item.date) >= monthStart && new Date(item.date) <= monthEnd)
       .map(parseTimeToEvent)
       .filter((e): e is CalendarEvent => e !== null);
   }, [calendarItems, monthStart, monthEnd]);
@@ -463,7 +467,7 @@ const UnifiedCalendarPage = () => {
   );
 
   const getItemsForDay = (day: Date) =>
-  calendarItems.filter((item) => !item.cancelled && isSameDay(new Date(item.date), day));
+  calendarItems.filter((item) => !item.cancelled && isValid(new Date(item.date)) && isSameDay(new Date(item.date), day));
 
  const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
  const isLoading = voiceLoading || kinesiologyLoading;
@@ -824,7 +828,7 @@ const UnifiedCalendarPage = () => {
    <p className="font-semibold text-foreground text-sm">{item.title}</p>
    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
    <CalendarIcon size={10} />
-   {format(new Date(item.date), "EEE, MMM d, yyyy")}
+   {isValid(new Date(item.date)) ? format(new Date(item.date), "EEE, MMM d, yyyy") : item.date || "No date"}
    {item.time && (
    <>
    <span className="opacity-40">·</span>

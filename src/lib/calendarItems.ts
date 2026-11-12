@@ -3,7 +3,7 @@
 // UnifiedCalendarPage.tsx — see CLAUDE.md "Voice Calendar Fallback": Notion
 // lessons are primary, voice_bookings rows without a Notion lesson are the
 // fallback, and every dedup layer below is additive. Never replace a layer.
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { CALCOM_CONFIG } from "@/config/integrations";
 import { formatVoiceTime, voiceTimeDuration, voiceDateISO } from "@/utils/availability";
@@ -250,6 +250,7 @@ export function buildCalendarItems(inputs: CalendarInputs): CalendarItem[] {
 
    (kinesiologyAppts || []).forEach((a) => {
   const appDate = new Date(a.date);
+  if (!isValid(appDate)) return; // skip corrupt row instead of crashing the calendar
   // An explicit price_amount of 0 is the persisted "free" state (set from the
   // Bookings list / session doc) and always wins. Otherwise use the session's
   // charge (price_amount), falling back to the client's current standard rate.

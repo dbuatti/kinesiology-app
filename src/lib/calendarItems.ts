@@ -142,6 +142,9 @@ export function buildCalendarItems(inputs: CalendarInputs): CalendarItem[] {
          (b.student_name && l.studentName &&
           b.student_name.trim().toLowerCase() === l.studentName.trim().toLowerCase()))
     );
+    // If the Notion lesson has no time but the Cal.com booking does, use the
+    // Cal.com time so the lesson still shows a time and groups correctly.
+    const effectiveTime = l.time || booking?.lesson_time || null;
     if (booking) {
     matchedEmail.add(`${startKey(booking.lesson_date, booking.lesson_time)}|${booking.student_email}`);
     if (booking.student_name) matchedName.add(`${startKey(booking.lesson_date, booking.lesson_time)}|${booking.student_name.trim().toLowerCase()}`);
@@ -164,8 +167,8 @@ export function buildCalendarItems(inputs: CalendarInputs): CalendarItem[] {
     id: `v-${l.id}`,
     source: "voice",
     date: l.date,
-    datetime: l.date && l.time ? voiceDateISO(l.date, l.time) : l.date,
-    time: l.date && l.time ? formatVoiceTime(l.date, l.time) : null,
+    datetime: l.date && effectiveTime ? voiceDateISO(l.date, effectiveTime) : l.date,
+    time: l.date && effectiveTime ? formatVoiceTime(l.date, effectiveTime) : null,
     title: l.name || "Voice Lesson",
     subtitle: l.studentName || null,
     url: l.notionUrl || null,

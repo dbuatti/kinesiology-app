@@ -58,7 +58,14 @@ serve(async (req) => {
             id: page.id,
             notionUrl: page.url,
             name: props.Name?.title?.map((t) => t.plain_text).join("") || null,
-            date: props.Date?.date?.start || null,
+            date: (() => {
+              const start = props.Date?.date?.start;
+              if (!start) return null;
+              // Notion returns full ISO datetime strings like "2026-11-13T14:00:00.000+11:00".
+              // The rest of the app expects a plain "yyyy-MM-dd" date key.
+              const m = String(start).match(/^(\d{4}-\d{2}-\d{2})/);
+              return m ? m[1] : start;
+            })(),
             time: props.Breakthroughs?.rich_text?.map((t) => t.plain_text).join("") || null,
             studentIds: (props["Client CRM"]?.relation || []).map((r) => r.id),
             paymentStatus: props.Payment?.select?.name || null,

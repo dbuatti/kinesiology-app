@@ -471,12 +471,18 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
   );
 
   // Group rows by date for sticky headers
+  const dateKey = (raw: string): string => {
+    // Notion can hand us a full ISO datetime ("2026-11-13T14:00:00.000+11:00").
+    // Everything downstream expects a plain "yyyy-MM-dd" grouping key.
+    const m = String(raw || "").match(/^(\d{4}-\d{2}-\d{2})/);
+    return m ? m[1] : String(raw || "");
+  };
   const grouped = useMemo(() => {
     const map = new Map<string, BookingListItem[]>();
     for (const r of rows) {
-      const g = map.get(r.date);
+      const g = map.get(dateKey(r.date));
       if (g) g.push(r);
-      else map.set(r.date, [r]);
+      else map.set(dateKey(r.date), [r]);
     }
     return [...map.entries()];
   }, [rows]);

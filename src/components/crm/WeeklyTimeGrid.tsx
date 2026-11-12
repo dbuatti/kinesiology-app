@@ -6,6 +6,7 @@ import {
   endOfWeek,
   addDays,
   isToday,
+  isValid,
 } from "date-fns";
 import {
   ChevronLeft,
@@ -132,6 +133,7 @@ function parseTimeEvent(lesson: VoiceLesson): TimeEvent | null {
   const endDate = isUTC
     ? new Date(Date.UTC(year, month - 1, day, endT.h, endT.m))
     : new Date(year, month - 1, day, endT.h, endT.m);
+  if (!isValid(startDate) || !isValid(endDate)) return null;
 
   return {
     id: lesson.id,
@@ -392,7 +394,7 @@ const WeeklyTimeGrid = ({
       .filter((e): e is TimeEvent => e !== null)
       .filter((e) => {
         const lessonDate = new Date(lessons.find((l) => l.id === e.id)?.date || "");
-        return !isNaN(lessonDate.getTime()) &&
+        return isValid(lessonDate) &&
           lessonDate >= startOfWeek(weekStart) &&
           lessonDate <= endOfWeek(weekStart);
       })

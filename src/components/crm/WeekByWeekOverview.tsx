@@ -7,6 +7,7 @@ import {
   isToday,
   isSameDay,
   parseISO,
+  isValid,
 } from "date-fns";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -139,7 +140,8 @@ const WeekByWeekOverview = ({
     mutationFn: async ({ clientId, isoTime }: { clientId: string; isoTime: string }) => {
       const client = (clients || []).find((c: any) => c.id === clientId);
       const clientName = client?.name || "Unknown Client";
-      const sessionLabel = `${clientName} — Kinesiology (${format(parseISO(isoTime), "MMM d, yyyy")})`;
+      const parsed = parseISO(isoTime);
+      const sessionLabel = `${clientName} — Kinesiology (${isValid(parsed) ? format(parsed, "MMM d, yyyy") : isoTime})`;
       const { data: calcomData, error: invokeError } = await supabase.functions.invoke(
         "create-calcom-booking",
         {
@@ -221,6 +223,7 @@ const WeekByWeekOverview = ({
 
     (slotsByDate[dateKey] || []).forEach((s: any) => {
       const date = parseISO(s.time);
+      if (!isValid(date)) return;
       const timeMin = date.getHours() * 60 + date.getMinutes();
       if (timeMin >= DAY_START_HOUR * 60 && timeMin < DAY_END_HOUR * 60) {
         slots.push({
@@ -234,6 +237,7 @@ const WeekByWeekOverview = ({
 
     dedupedKinesiologyAppts.forEach((a) => {
       const appDate = new Date(a.date);
+      if (!isValid(appDate)) return;
       if (isSameDay(appDate, day)) {
         const timeMin = appDate.getHours() * 60 + appDate.getMinutes();
         if (timeMin >= DAY_START_HOUR * 60 && timeMin < DAY_END_HOUR * 60) {
@@ -284,6 +288,7 @@ const WeekByWeekOverview = ({
     week.forEach((day) => {
       dedupedKinesiologyAppts.forEach((a) => {
         const appDate = new Date(a.date);
+        if (!isValid(appDate)) return;
         if (isSameDay(appDate, day)) {
           const startMin = appDate.getHours() * 60 + appDate.getMinutes();
           events.push({

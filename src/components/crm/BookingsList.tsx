@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { Mic, User, MoreHorizontal, CalendarClock, X, CreditCard, Loader2, ExternalLink, Plus, CheckCircle2, Circle, Gift, Copy, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { TIMEZONE } from "@/config/integrations";
@@ -684,7 +684,12 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                   });
                 }}
               />
-              <span className="font-serif text-sm font-semibold text-foreground/85 tracking-tight">{format(new Date(dateLabel + "T12:00:00"), "EEEE, MMMM d")}</span>
+              <span className="font-serif text-sm font-semibold text-foreground/85 tracking-tight">
+                {(() => {
+                  const d = new Date(dateLabel + "T12:00:00");
+                  return isValid(d) ? format(d, "EEEE, MMMM d") : dateLabel;
+                })()}
+              </span>
               <span className="text-[10px] font-bold text-muted-foreground bg-muted rounded-full px-1.5 py-0.5">{dateItems.length}</span>
             </div>
             {dateItems.map((item) => {
@@ -801,7 +806,12 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
               </div>
 
               <div className="text-right shrink-0 hidden sm:block w-24">
-                <div className="text-xs font-medium text-foreground">{format(new Date(item.datetime || item.date), "EEE, d MMM")}</div>
+                <div className="text-xs font-medium text-foreground">
+                  {(() => {
+                    const d = new Date(item.datetime || item.date);
+                    return isValid(d) ? format(d, "EEE, d MMM") : item.date || "—";
+                  })()}
+                </div>
                 {item.time && <div className="text-[11px] text-muted-foreground">{item.time}</div>}
               </div>
 
@@ -1006,7 +1016,10 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                         selected ? "border-chart-primary/30 bg-chart-primary/5 text-chart-primary font-semibold" : "border-border hover:border-chart-primary/20"
                       )}
                     >
-                      {format(new Date(iso), "EEE d MMM · h:mma").toLowerCase()}
+                      {(() => {
+                        const d = new Date(iso);
+                        return isValid(d) ? format(d, "EEE d MMM · h:mma").toLowerCase() : iso;
+                      })()}
                     </button>
                   );
                 })}

@@ -108,4 +108,4 @@ export const NOTION_CONFIG = {
   VOICE_LESSONS_DB_2_ID: "11caad21cd0980d8a3eeeffb27fc43c0"
 };
 /** The practitioner's profile photo — landing page, sidebar account menu, docs header. */
-export const PROFILE_IMAGE_URL = "https://resonance-kinesiology.vercel.app/daniele-buatti-hero.jpeg";
+export const PROFILE_IMAGE_URL = "https://kinesiology.danielebuatti.com/daniele-buatti-hero.jpeg";

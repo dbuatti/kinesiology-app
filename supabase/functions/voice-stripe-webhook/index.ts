@@ -121,6 +121,17 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+
+      // Gift voucher checkouts (danielebuatti.com) share the same Stripe account.
+      // They carry type: "gift_voucher" — skip so we don't email a voice
+      // "lesson confirmed" or log a webhook_failure for a voucher purchase.
+      if (session.metadata?.type === "gift_voucher") {
+        console.log(`[${functionName}] ${session.id} is a gift voucher checkout — skipping`);
+        return new Response(JSON.stringify({ received: true, skipped: "gift_voucher" }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       let lessonId = session.metadata?.lesson_id || session.metadata?.lessonId;
       let calcomBookingId = null;
       const customerEmail = session.customer_details?.email || session.customer_email;

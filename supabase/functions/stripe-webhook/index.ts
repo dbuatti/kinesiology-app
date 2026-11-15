@@ -223,6 +223,17 @@ serve(async (req) => {
         });
       }
 
+      // Gift voucher checkouts (danielebuatti.com) share the same Stripe account.
+      // They carry type: "gift_voucher" — skip so we don't treat a voucher
+      // purchase as an FNH payment or send an FNH confirmation email.
+      const isGiftVoucher = payment.metadata?.type === "gift_voucher";
+      if (isGiftVoucher) {
+        console.log(`[stripe-webhook] ${payment.paymentIntentId}: gift voucher checkout — skipping`);
+        return new Response(JSON.stringify({ received: true, skipped: "gift_voucher" }), {
+          status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
       const supabase = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''

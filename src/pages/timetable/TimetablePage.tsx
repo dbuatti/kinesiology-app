@@ -1114,7 +1114,9 @@ const TimetablePage = () => {
       setManageOpen(false);
       // Confirmed proposals render as rose booking chips from `bookings`, which
       // only the Cal.com fetch populates — refetch so the new booking shows up
-      // immediately instead of on the next page reload.
+      // immediately instead of on the next page reload. Also invalidate the
+      // appointment linkage query so client linkage catches up after the webhook.
+      await queryClient.invalidateQueries({ queryKey: ["timetable-client-appointments"] });
       fetchData();
     } catch (err) {
       showError(err instanceof Error ? err.message : "Could not confirm proposal.");

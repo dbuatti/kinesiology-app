@@ -409,7 +409,10 @@ const TimetablePage = () => {
     }).sort((a, b) => b.attention_score - a.attention_score);
   }, [voiceStudents, voiceBookingsData, now]);
 
+  const fetchTokenRef = useRef(0);
   const fetchData = useCallback(async () => {
+    const token = ++fetchTokenRef.current;
+    const stale = () => token !== fetchTokenRef.current;
     setLoading(true);
     setError(null);
     try {
@@ -429,6 +432,7 @@ const TimetablePage = () => {
       );
 
       if (invokeError) throw invokeError;
+      if (stale()) return;
       if (!data || data.status === "error") {
         setError(data?.message || "Could not load availability.");
         setSlots({});
@@ -466,12 +470,14 @@ const TimetablePage = () => {
           }
         }),
       );
+      if (stale()) return;
       setVoiceSlotsByDur(byDur);
     } catch (err) {
+      if (stale()) return;
       console.error("Failed to load timetable:", err);
       setError(err instanceof Error ? err.message : "An unexpected error occurred.");
     } finally {
-      setLoading(false);
+      if (!stale()) setLoading(false);
     }
   }, []);
 

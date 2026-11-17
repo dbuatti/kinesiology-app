@@ -688,6 +688,10 @@ export default function AutoDraftPanel({
       showError("Select at least one available client to draft.");
       return;
     }
+    if (openSlots.length === 0) {
+      showError("No open Cal.com slots loaded — refresh the timetable first.");
+      return;
+    }
     // Expand each client into a RECURRING series across the planning window:
     // a weekly client gets a session ~every 7 days, fortnightly ~every 14, etc.
     // Each instance carries the date it should land near.

@@ -191,3 +191,55 @@ describe("computeCapacityInsights", () => {
     expect(Array.isArray(insights)).toBe(true);
   });
 });
+
+describe("computePreferredTime - multiple sessions", () => {
+  it("prefers the most common weekday", () => {
+    const mon = new Date("2026-10-05T10:00:00");
+    const mon2 = new Date("2026-10-12T10:00:00");
+    const wed = new Date("2026-10-07T14:00:00");
+    const p = computePreferredTime([mon, mon2, wed]);
+    expect(p).not.toBeNull();
+    // Monday appears twice, Wednesday once → Monday should win
+    expect(p!.weekday).toBe(1); // Monday
+  });
+
+  it("confidence increases with more sessions", () => {
+    const sessions = [
+      new Date("2026-10-05T10:00:00"),
+      new Date("2026-10-12T10:00:00"),
+      new Date("2026-10-19T10:00:00"),
+    ];
+    const p = computePreferredTime(sessions);
+    expect(p!.confidence).toBeGreaterThan(0.35);
+  });
+});
+
+describe("slotMatchesAvailability - windows", () => {
+  it("filters by day of week", () => {
+    const monday = new Date("2026-11-02T10:00:00"); // Monday
+    const slot = { start: monday, durationMin: 60 } as any;
+    const windows = [{ days: [1], from: null, to: null }]; // Monday only
+    expect(slotMatchesAvailability(slot, windows)).toBe(true);
+  });
+
+  it("rejects slot on wrong day", () => {
+    const tuesday = new Date("2026-11-03T10:00:00"); // Tuesday
+    const slot = { start: tuesday, durationMin: 60 } as any;
+    const windows = [{ days: [1], from: null, to: null }]; // Monday only
+    expect(slotMatchesAvailability(slot, windows)).toBe(false);
+  });
+
+  it("filters by time range", () => {
+    const morning = new Date("2026-11-02T09:00:00");
+    const slot = { start: morning, durationMin: 60 } as any;
+    const windows = [{ days: [], from: "10:00", to: "14:00" }];
+    expect(slotMatchesAvailability(slot, windows)).toBe(false);
+  });
+
+  it("accepts slot within time range", () => {
+    const midday = new Date("2026-11-02T12:00:00");
+    const slot = { start: midday, durationMin: 60 } as any;
+    const windows = [{ days: [], from: "10:00", to: "14:00" }];
+    expect(slotMatchesAvailability(slot, windows)).toBe(true);
+  });
+});

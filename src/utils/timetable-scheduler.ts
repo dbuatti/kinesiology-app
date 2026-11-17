@@ -184,6 +184,9 @@ export interface SchedulerClient {
   /** Real bookings already in the future — used to anchor their home slot to the
    *  day/time they're actually booked at, and never re-draft those weeks. */
   upcomingSessions?: Date[];
+  /** Practice week keys occupied by this same person's sessions in the OTHER
+   *  kind (FNH vs voice) — never draft here. */
+  blockedWeeks?: string[];
 }
 
 export interface OpenSlot {
@@ -452,6 +455,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     return slot.eventDurationMin === nearest;
   };
   const preBufOf = (c: SchedulerClient) => c.preBufferMin ?? 0;
+  const postBufOf = (c: SchedulerClient) => c.postBufferMin ?? (c.kind === "fnh" ? 30 : 0);
 
   // Group instances by base client.
   const groups = new Map<string, { rep: SchedulerClient; instances: SchedulerClient[] }>();
@@ -558,14 +562,12 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     candByBase.set(b, list);
   }
 
-  const FNH_BREAK = 30; // minutes clear required AFTER an FNH session
   // Gap needed between an earlier session and a later one: the later session's
   // pre-buffer, and a 30-min break if the earlier session was FNH.
-  const gapNeeded = (earlierKind: SessionKind, laterPre: number) =>
-    Math.max(laterPre, earlierKind === "fnh" ? FNH_BREAK : 0);
+  const gapNeeded = (earlierPost: number, laterPre: number) =>
+    Math.max(laterPre, earlierPost);
   const home = new Map<string, HomePattern | null>();
-  // Raw session minutes-of-day + kind + this client's pre-buffer (no buffers baked in).
-  const assignedPatterns: { weekday: number; sMin: number; eMin: number; kind: SessionKind; preMin: number }[] = [];
+  const assignedPatterns: { weekday: number; sMin: number; eMin: number; kind: SessionKind; preMin: number; postMin: number }[] = [];
   const patternConflicts = (rep: SchedulerClient, p: HomePattern) => {
     const aS = p.minutes;
     const aE = p.minutes + durationOf(rep);
@@ -573,8 +575,8 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     return assignedPatterns.some((ap) => {
       if (ap.weekday !== p.weekday) return false;
       if (aS < ap.eMin && aE > ap.sMin) return true; // hard overlap
-      if (ap.eMin <= aS && aS - ap.eMin < gapNeeded(ap.kind, aPre)) return true; // A after ap
-      if (aE <= ap.sMin && ap.sMin - aE < gapNeeded(rep.kind, ap.preMin)) return true; // A before ap
+      if (ap.eMin <= aS && aS - ap.eMin < gapNeeded(ap.postMin, aPre)) return true; // A after ap
+      if (aE <= ap.sMin && ap.sMin - aE < gapNeeded(postBufOf(rep), ap.preMin)) return true; // A before ap
       return false;
     });
   };
@@ -624,6 +626,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
       eMin: best.minutes + durationOf(rep),
       kind: rep.kind,
       preMin: preBufOf(rep),
+      postMin: postBufOf(rep),
     });
   }
 
@@ -632,20 +635,22 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
   const unplaced: Unplaced[] = [];
   // Raw session ranges (ms) + kind + pre-buffer. Busy blocks are treated as
   // sessions of no particular kind and no pre-buffer.
-  const occupied: { s: number; e: number; kind: SessionKind | "busy"; pre: number }[] = busyBlocks.map((b) => ({
+  const occupied: { s: number; e: number; kind: SessionKind | "busy"; pre: number; post: number }[] = busyBlocks.map((b) => ({
     s: b.start.getTime(),
     e: b.end.getTime(),
     kind: "busy",
     pre: 0,
+    post: 0,
   }));
   const rangeFree = (c: SchedulerClient, startMs: number) => {
     const aS = startMs;
     const aE = startMs + durationOf(c) * 60_000;
     const aPre = preBufOf(c) * 60_000;
+    const aPost = postBufOf(c) * 60_000;
     return !occupied.some((o) => {
       if (aS < o.e && aE > o.s) return true; // hard overlap
-      if (o.e <= aS && aS - o.e < Math.max(aPre, o.kind === "fnh" ? FNH_BREAK * 60_000 : 0)) return true;
-      if (aE <= o.s && o.s - aE < Math.max(o.pre, c.kind === "fnh" ? FNH_BREAK * 60_000 : 0)) return true;
+      if (o.e <= aS && aS - o.e < Math.max(aPre, o.post * 60_000)) return true;
+      if (aE <= o.s && o.s - aE < Math.max(o.pre, aPost)) return true;
       return false;
     });
   };
@@ -663,11 +668,8 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     const instances = [...g.instances].sort(
       (a, b2) => (a.targetDate?.getTime() ?? 0) - (b2.targetDate?.getTime() ?? 0),
     );
-    // Weeks this client already occupies, so two instances can't collide in one
-    // calendar week (a weekly client should appear once per week, not Mon + Fri).
-    // Seeded with the weeks they're already booked in, so a draft never lands on
-    // top of a real booking even when that booking isn't in takenSlotStarts.
     const usedWeeks = new Set<string>((rep.upcomingSessions ?? []).map(weekKeyOf));
+    for (const w of rep.blockedWeeks ?? []) usedWeeks.add(w);
     for (const inst of instances) {
       const cands = freeSlots.filter((slot) => {
         if (!gridOk(slot, inst)) return false; // this client's own kind + duration grid
@@ -734,7 +736,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
       const best = cands[0];
       const start = best.start;
       const dur = durationOf(inst);
-      occupied.push({ s: start.getTime(), e: start.getTime() + dur * 60_000, kind: inst.kind, pre: preBufOf(inst) * 60_000 });
+      occupied.push({ s: start.getTime(), e: start.getTime() + dur * 60_000, kind: inst.kind, pre: preBufOf(inst) * 60_000, post: postBufOf(inst) * 60_000 });
       usedWeeks.add(weekKeyOf(start));
       const pref = computePreferredTime(rep.pastSessions);
       const slotMin = practiceMinuteOfDay(start);

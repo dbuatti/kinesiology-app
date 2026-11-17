@@ -41,6 +41,9 @@ export interface AutoDraftClient {
   pastSessions: Date[];
   /** Real bookings already in the future — don't re-draft these weeks. */
   upcomingSessions?: Date[];
+  /** Practice week keys (Mon-based) that are already occupied by this same
+   *  person's sessions in the OTHER kind (FNH vs voice) — never draft here. */
+  blockedWeeks?: string[];
   lastSessionAt: Date | null;
   timeKnown: boolean;
   /** Their usual session length in minutes (30/45/60), inferred from history. */
@@ -674,9 +677,38 @@ export default function AutoDraftPanel({
     // Build the recurring instances for everyone. `stretch` = push inferred-weekly
     // clients to a fortnight (only ever inferred cadence — an explicit Weekly is
     // never stretched).
+    const personKey = (c: AutoDraftClient) =>
+      c.email ? `e:${c.email.trim().toLowerCase()}` : `n:${c.name.trim().toLowerCase()}`;
+
+    // For each person, collect the weeks they're already booked in the OTHER
+    // kind, so a draft never lands in a week where they already have a session
+    // of the other service (e.g. an FNH draft in a week they already have a
+    // voice lesson).
+    const blockedByPerson = new Map<string, Set<string>>();
+    for (const c of chosen) {
+      const pk = personKey(c);
+      if (!blockedByPerson.has(pk)) blockedByPerson.set(pk, new Set());
+    }
+    for (const c of chosen) {
+      const pk = personKey(c);
+      const otherWeeks = new Set<string>();
+      for (const o of chosen) {
+        if (o === c || personKey(o) !== pk || o.kind === c.kind) continue;
+        for (const d of o.upcomingSessions ?? []) otherWeeks.add(practiceWeekKey(d));
+      }
+      // also account for all clients (not just chosen) of the other kind
+      for (const o of clients) {
+        if (o === c || personKey(o) !== pk || o.kind === c.kind) continue;
+        for (const d of o.upcomingSessions ?? []) otherWeeks.add(practiceWeekKey(d));
+      }
+      for (const w of otherWeeks) blockedByPerson.get(pk)!.add(w);
+    }
+
     const buildClients = (stretch: boolean): SchedulerClient[] => {
     const schedulerClients: SchedulerClient[] = [];
     for (const c of chosen) {
+      const pk = personKey(c);
+      const blockedWeeks = [...(blockedByPerson.get(pk) ?? new Set())];
       let interval = availabilityByKey[c.key]?.cadenceDays ?? medianGapDays(c.pastSessions);
       if (stretch && interval && interval < 14 && availabilityByKey[c.key]?.cadenceDays == null) {
         interval = 14;
@@ -697,6 +729,7 @@ export default function AutoDraftPanel({
         availability: availabilityByKey[c.key]?.windows,
         preBufferMin: availabilityByKey[c.key]?.bufferBeforeMin ?? undefined,
         upcomingSessions: c.upcomingSessions,
+        blockedWeeks: blockedWeeks,
       };
 
       if (!interval) {
@@ -716,6 +749,7 @@ export default function AutoDraftPanel({
       const placeBand = 3;
       const upcoming = (c.upcomingSessions ?? []).map((d) => d.getTime()).filter((u) => !isNaN(u));
       const bookedWeeks = new Set(upcoming.map((u) => practiceWeekKey(new Date(u))));
+      for (const w of blockedWeeks ?? []) bookedWeeks.add(w);
       const anchor = upcoming.length ? Math.min(...upcoming) : c.lastSessionAt?.getTime() ?? 0;
       let t = anchor ? anchor + interval * DAY : nowMs;
       if (t < nowMs) t = nowMs;

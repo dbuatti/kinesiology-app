@@ -1413,9 +1413,9 @@ export default function AutoDraftPanel({
           <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
             <CalendarClock size={13} /> Client cadence check
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             {/* Left: selected clients */}
-            <div className="w-40 shrink-0 space-y-1 max-h-[420px] overflow-y-auto pr-1">
+            <div className="w-full sm:w-40 sm:shrink-0 space-y-1 max-h-[420px] overflow-y-auto pr-1">
               {clients.filter((c) => selected.has(c.key)).map((c) => (
                 <button
                   key={c.key}

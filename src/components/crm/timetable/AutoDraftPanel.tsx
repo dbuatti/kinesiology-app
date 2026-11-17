@@ -99,7 +99,27 @@ function medianGapDays(dates: Date[]): number | null {
   gaps.sort((a, b) => a - b);
   const mid = Math.floor(gaps.length / 2);
   const val = gaps.length % 2 ? gaps[mid] : (gaps[mid - 1] + gaps[mid]) / 2;
-  return val >= 3 && val <= 180 ? Math.round(val) : null;
+  const rounded = Math.round(val);
+  if (rounded >= 3 && rounded <= 180) return rounded;
+
+  // Fallback: if the median is out of range, try the most common gap (mode).
+  // Helps irregular histories where the median lands on an unusable value but
+  // a clear modal cadence exists (e.g. a mix of 7- and 14-day gaps).
+  const counts = new Map<number, number>();
+  for (const g of gaps) {
+    const r = Math.round(g);
+    if (r < 3 || r > 180) continue;
+    counts.set(r, (counts.get(r) ?? 0) + 1);
+  }
+  let bestGap = 0;
+  let bestCount = 0;
+  counts.forEach((c, g) => {
+    if (c > bestCount) {
+      bestCount = c;
+      bestGap = g;
+    }
+  });
+  return bestCount > 0 ? bestGap : null;
 }
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

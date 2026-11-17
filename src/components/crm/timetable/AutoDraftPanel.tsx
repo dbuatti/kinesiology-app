@@ -653,7 +653,17 @@ export default function AutoDraftPanel({
     });
 
   const generate = () => {
-    const chosen = clients.filter((c) => selected.has(c.key) && !awayByKey[c.key]);
+    const rawChosen = clients.filter((c) => selected.has(c.key) && !awayByKey[c.key]);
+    // Drop duplicate records for the same person + kind (e.g. two client rows
+    // with the same email), keeping the first, so they aren't scheduled twice.
+    const seenPersonKind = new Set<string>();
+    const chosen = rawChosen.filter((c) => {
+      const pk = c.email ? `e:${c.email.trim().toLowerCase()}` : `n:${c.name.trim().toLowerCase()}`;
+      const key = `${pk}:${c.kind}`;
+      if (seenPersonKind.has(key)) return false;
+      seenPersonKind.add(key);
+      return true;
+    });
     if (chosen.length === 0) {
       showError("Select at least one available client to draft.");
       return;

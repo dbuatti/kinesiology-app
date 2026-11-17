@@ -1,4 +1,4 @@
-const CACHE_NAME = "resonance-v1";
+const CACHE_NAME = "resonance-v2";
 
 const PRECACHE = ["/", "/index.html", "/manifest.webmanifest"];
 
@@ -15,7 +15,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -29,23 +29,38 @@ self.addEventListener("fetch", (event) => {
 
   // Navigation requests: serve the cached SPA shell.
   if (request.mode === "navigate") {
-    event.respondWith(caches.match("/index.html").then((r) => r || fetch(request)));
-    return;
-  }
-
-  // Static assets: cache as we go, then serve from cache.
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      const fetchPromise = fetch(request)
+    event.respondWith(
+      fetch(request)
         .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
+          if (networkResponse && networkResponse.ok) {
             const clone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }
           return networkResponse;
         })
-        .catch(() => cached);
-      return cached || fetchPromise;
-    })
+        .catch(() => caches.match("/index.html").then((r) => r || fetch(request)))
+    );
+    return;
+  }
+
+  // Static assets: network-first, cache as we go. Never cache an HTML
+  // response for a non-HTML request (that's the SPA fallback leaking in).
+  event.respondWith(
+    fetch(request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.ok) {
+          const contentType = (networkResponse.headers.get("content-type") || "").toLowerCase();
+          const isAsset = /\.(js|css|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|ico|json|webmanifest)$/i.test(url.pathname);
+          const looksLikeHtml = contentType.includes("text/html");
+          if (!(isAsset && looksLikeHtml)) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+        }
+        return networkResponse;
+      })
+      .catch(() =>
+        caches.match(request).then((cached) => cached || new Response("", { status: 404, statusText: "Not Found" }))
+      )
   );
 });

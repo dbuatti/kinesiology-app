@@ -17,6 +17,8 @@ self.addEventListener("activate", (event) => {
       .keys()
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: "window" }))
+      .then((clients) => clients.forEach((client) => client.postMessage({ type: "SW_UPDATED" })))
   );
 });
 
@@ -27,7 +29,10 @@ self.addEventListener("fetch", (event) => {
   // Skip non-GET requests and cross-origin requests.
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
 
-  // Navigation requests: serve the cached SPA shell.
+  // Never let the service worker intercept its own script (would block updates).
+  if (url.pathname === "/sw.js") return;
+
+  // Navigation requests: network-first, cache as we go.
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
@@ -63,4 +68,10 @@ self.addEventListener("fetch", (event) => {
         caches.match(request).then((cached) => cached || new Response("", { status: 404, statusText: "Not Found" }))
       )
   );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });

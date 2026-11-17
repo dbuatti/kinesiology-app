@@ -194,14 +194,6 @@ const TimetablePage = () => {
   });
   const [fortnightIndex, setFortnightIndex] = useState(0);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [slots, setSlots] = useState<Record<string, SlotInfo[]>>({});
-  // Voice slots per duration grid (30/45/60), so each voice client is matched to
-  // the exact grid for their booked length and every offered start is bookable.
-  const [voiceSlotsByDur, setVoiceSlotsByDur] = useState<Record<number, Record<string, SlotInfo[]>>>({});
-  const [bookings, setBookings] = useState<Record<string, BookingInfo[]>>({});
-  const [blockedDates, setBlockedDates] = useState<string[]>([]);
 
   // ── Phase 2: manual planning state ─────────────────────────────
   const [kind, setKind] = useState<SessionKind>("fnh");
@@ -409,83 +401,86 @@ const TimetablePage = () => {
     }).sort((a, b) => b.attention_score - a.attention_score);
   }, [voiceStudents, voiceBookingsData, now]);
 
-  const fetchTokenRef = useRef(0);
-  const fetchData = useCallback(async () => {
-    const token = ++fetchTokenRef.current;
-    const stale = () => token !== fetchTokenRef.current;
-    setLoading(true);
-    setError(null);
-    try {
-      const start = practiceStartOfWeek(new Date());
-      const end = practiceAddDays(start, VIEW_RANGE_WEEKS * 7 - 1);
-      const endIso = practiceEndOfDay(end);
+  const fetchCalcomSlots = useCallback(async () => {
+    const start = practiceStartOfWeek(new Date());
+    const end = practiceAddDays(start, VIEW_RANGE_WEEKS * 7 - 1);
+    const endIso = practiceEndOfDay(end);
 
-      const { data, error: invokeError } = await supabase.functions.invoke<SlotsResponse>(
-        "get-calcom-slots",
-        {
-          body: {
-            start: start.toISOString(),
-            end: endIso.toISOString(),
-            timeZone: PRACTICE_TIMEZONE,
-          },
-        }
-      );
-
-      if (invokeError) throw invokeError;
-      if (stale()) return;
-      if (!data || data.status === "error") {
-        setError(data?.message || "Could not load availability.");
-        setSlots({});
-        setBookings({});
-        setBlockedDates([]);
-        return;
+    const { data, error: invokeError } = await supabase.functions.invoke<SlotsResponse>(
+      "get-calcom-slots",
+      {
+        body: {
+          start: start.toISOString(),
+          end: endIso.toISOString(),
+          timeZone: PRACTICE_TIMEZONE,
+        },
       }
+    );
 
-      setSlots(data.data || {});
-      setBookings(data.bookings || {});
-      setBlockedDates(data.blockedDates || []);
-
-      // Second pass: fetch each voice duration grid so voice clients match the
-      // exact grid for their booked length.
-      const voiceGrids: { dur: number; id: string }[] = [
-        { dur: 30, id: CALCOM_CONFIG.VOICE_EVENT_TYPE_30 },
-        { dur: 45, id: CALCOM_CONFIG.VOICE_EVENT_TYPE_45 },
-        { dur: 60, id: CALCOM_CONFIG.VOICE_EVENT_TYPE_60 },
-      ];
-      const byDur: Record<number, Record<string, SlotInfo[]>> = {};
-      await Promise.all(
-        voiceGrids.map(async ({ dur, id }) => {
-          try {
-            const { data: vData } = await supabase.functions.invoke<SlotsResponse>("get-calcom-slots", {
-              body: {
-                start: start.toISOString(),
-                end: endIso.toISOString(),
-                eventTypeId: id,
-                timeZone: PRACTICE_TIMEZONE,
-              },
-            });
-            byDur[dur] = vData && vData.status !== "error" ? vData.data || {} : {};
-          } catch {
-            byDur[dur] = {};
-          }
-        }),
-      );
-      if (stale()) return;
-      setVoiceSlotsByDur(byDur);
-    } catch (err) {
-      if (stale()) return;
-      console.error("Failed to load timetable:", err);
-      setError(err instanceof Error ? err.message : "An unexpected error occurred.");
-    } finally {
-      if (!stale()) {
-        setLoading(false);
-      }
+    if (invokeError) throw invokeError;
+    if (!data || data.status === "error") {
+      throw new Error(data?.message || "Could not load availability.");
     }
+
+    const voiceGrids: { dur: number; id: string }[] = [
+      { dur: 30, id: CALCOM_CONFIG.VOICE_EVENT_TYPE_30 },
+      { dur: 45, id: CALCOM_CONFIG.VOICE_EVENT_TYPE_45 },
+      { dur: 60, id: CALCOM_CONFIG.VOICE_EVENT_TYPE_60 },
+    ];
+    const byDur: Record<number, Record<string, SlotInfo[]>> = {};
+    await Promise.all(
+      voiceGrids.map(async ({ dur, id }) => {
+        try {
+          const { data: vData } = await supabase.functions.invoke<SlotsResponse>("get-calcom-slots", {
+            body: {
+              start: start.toISOString(),
+              end: endIso.toISOString(),
+              eventTypeId: id,
+              timeZone: PRACTICE_TIMEZONE,
+            },
+          });
+          byDur[dur] = vData && vData.status !== "error" ? vData.data || {} : {};
+        } catch {
+          byDur[dur] = {};
+        }
+      }),
+    );
+
+    return {
+      slots: (data.data || {}) as Record<string, SlotInfo[]>,
+      bookings: (data.bookings || {}) as Record<string, BookingInfo[]>,
+      blockedDates: (data.blockedDates || []) as string[],
+      voiceSlotsByDur: byDur,
+    };
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const {
+    data: calcomData,
+    isLoading: calcomLoading,
+    error: calcomError,
+    refetch: refetchCalcom,
+  } = useQuery({
+    queryKey: ["timetable-calcom-slots"],
+    queryFn: fetchCalcomSlots,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  const slots = calcomData?.slots ?? {};
+  const bookings = calcomData?.bookings ?? {};
+  const blockedDates = calcomData?.blockedDates ?? [];
+  const voiceSlotsByDur = calcomData?.voiceSlotsByDur ?? {};
+  const loading = calcomLoading;
+  const error = calcomError
+    ? calcomError instanceof Error
+      ? calcomError.message
+      : "An unexpected error occurred."
+    : null;
+
+  const fetchData = useCallback(() => {
+    refetchCalcom();
+  }, [refetchCalcom]);
+
+  // react-query fetches on mount automatically.
 
   // Pull-down-to-refresh: drag down at the top of the page's scroll container
   // past a threshold to refetch the timetable.

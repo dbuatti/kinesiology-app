@@ -1168,6 +1168,8 @@ export default function AutoDraftPanel({
             <button
               key={w}
               onClick={() => setHorizonWeeks(w)}
+              aria-pressed={horizonWeeks === w}
+              aria-label={`Draft ${w} weeks ahead`}
               className={cn(
                 "text-[11px] font-bold rounded-md px-1.5 py-0.5 border",
                 horizonWeeks === w ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:text-foreground",
@@ -1186,6 +1188,8 @@ export default function AutoDraftPanel({
           <button
             key={d}
             onClick={() => togglePreferDay(d)}
+            aria-pressed={preferDays.includes(d)}
+            aria-label={`Prioritise ${l}`}
             className={cn(
               "text-[11px] font-bold rounded-md px-1.5 py-0.5 border",
               preferDays.includes(d) ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:text-foreground",

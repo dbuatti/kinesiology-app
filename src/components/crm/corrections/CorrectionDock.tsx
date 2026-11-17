@@ -6,13 +6,11 @@ import { processLabel } from "@/data/correction-process-list";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { useCorrectionDock, inhibitionPathwayLabel } from "./CorrectionDockContext";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+  } from "@/components/ui/dropdown-menu";
 
 const statusLabel = (status) => {
   switch (status) {
@@ -26,7 +24,7 @@ const statusLabel = (status) => {
 };
 
 const CorrectionDock = () => {
-  const { isOpen, target, selection, openDock, closeDock, rememberSelection, protocolLogs, logProtocol, inhibitionPathway, inhibitionPathwayState, setInhibitionStatus, clearInhibitionStatus, selectInhibitionPathway, availableInhibitionPathways } =
+  const { isOpen, target, selection, openDock, closeDock, rememberSelection, protocolLogs, logProtocol, inhibitionPathway, inhibitionPathwayState, setInhibitionStatus, selectInhibitionPathway, availableInhibitionPathways } =
     useCorrectionDock();
   const [depth, setDepth] = useState(0);
   const [backSignal, setBackSignal] = useState(0);
@@ -40,7 +38,6 @@ const CorrectionDock = () => {
   const dockWidthPx = dockWidth ?? 560;
 
   const handleRef = useRef(null);
-  const asideRef = useRef(null);
   const widthRef = useRef(dockWidthPx);
 
   useEffect(() => {
@@ -104,6 +101,7 @@ const CorrectionDock = () => {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [isOpen, depth, closeDock]);
 
   if (!isOpen) {

@@ -38,6 +38,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
     if (initialScore !== null && initialScore !== undefined && !isRunning && !isFinished) {
       setTime(initialScore);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [initialScore]);
 
   useEffect(() => {

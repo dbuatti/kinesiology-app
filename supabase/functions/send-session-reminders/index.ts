@@ -264,7 +264,7 @@ serve(async (req) => {
     try {
       body = await req.json();
       isDebug = body.debug === true;
-    } catch (e) {
+    } catch {
       // If body is not JSON, treat as normal request
       isDebug = false;
     }

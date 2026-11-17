@@ -97,13 +97,12 @@ serve(async (req) => {
 
     const body = await req.text();
     const signature = req.headers.get("stripe-signature");
-    let event;
 
     if (!WEBHOOK_SECRET || !signature) {
       console.error(`[${functionName}] Missing webhook secret or signature — rejecting unverified event`);
       return new Response(JSON.stringify({ error: 'Missing signature' }), { status: 401, headers: corsHeaders });
     }
-    event = await stripe.webhooks.constructEventAsync(body, signature, WEBHOOK_SECRET);
+    const event = await stripe.webhooks.constructEventAsync(body, signature, WEBHOOK_SECRET);
 
     console.log(`[${functionName}] Processing event: ${event.type}`);
 
@@ -133,7 +132,6 @@ serve(async (req) => {
         });
       }
       let lessonId = session.metadata?.lesson_id || session.metadata?.lessonId;
-      let calcomBookingId = null;
       const customerEmail = session.customer_details?.email || session.customer_email;
 
       console.log(`[${functionName}] Session ${session.id}, lessonId: "${lessonId}", email: ${customerEmail || "none"}`);
@@ -156,7 +154,6 @@ serve(async (req) => {
 
           if (booking?.notion_lesson_id_1) {
             lessonId = booking.notion_lesson_id_1;
-            calcomBookingId = booking.calcom_booking_id;
             console.log(`[${functionName}] Resolved lesson_id ${lessonId} via calcom_booking_uid`);
           }
         }
@@ -176,7 +173,6 @@ serve(async (req) => {
 
         if (booking?.notion_lesson_id_1) {
           lessonId = booking.notion_lesson_id_1;
-          calcomBookingId = booking.calcom_booking_id;
           console.log(`[${functionName}] Resolved lesson_id ${lessonId} from booking ${booking.id}`);
         } else {
           console.log(`[${functionName}] No matching scheduled booking found for ${customerEmail}`);

@@ -79,7 +79,6 @@ serve(async (req) => {
     if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH || !SENDER) throw new Error("Gmail is not configured.");
 
     const token = await gmailAccessToken();
-    const firstName = String(client.name || "").trim().split(/\s+/)[0];
     const subj = subject || `Your session summary — ${formatDate(appt.date)}`;
     const esc = (s: string) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const htmlBody = esc(body).split(/\n+/).map((p: string) => `<p style="margin:0 0 14px;">${p}</p>`).join("");

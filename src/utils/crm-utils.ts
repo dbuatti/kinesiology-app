@@ -89,7 +89,7 @@ export const isMeridianPeakNow = (peakTimeStr: string, currentHour: number): boo
       return currentHour >= start || currentHour < end;
     }
     return currentHour >= start && currentHour < end;
-  } catch (e) {
+  } catch {
     return false;
   }
 };

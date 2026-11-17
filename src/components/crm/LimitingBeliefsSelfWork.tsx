@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Brain, Check, ThumbsUp, ThumbsDown, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,20 +33,7 @@ const getCyclePrompt = (stepIdx: number, belief: string): string => {
 
 const CYCLE_LETTERS: Record<number, string> = { 0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E' };
 
-const CHECKPOINTS = ['F', 'G', 'H'] as const;
-type CheckpointId = typeof CHECKPOINTS[number];
-
-interface RoundData {
-  responses: Record<number, string>;
-  checkpoint: CheckpointId | null;
-  checkpointResult: 'Yes' | 'No' | null;
-}
-
-const EMPTY_ROUND: RoundData = {
-  responses: { 0: '', 1: '', 2: '', 3: '', 4: '' },
-  checkpoint: null,
-  checkpointResult: null,
-};
+type CheckpointId = 'F' | 'G' | 'H';
 
 interface LimitingBeliefsSelfWorkProps {
   onComplete: (summary: string) => void;
@@ -54,11 +41,9 @@ interface LimitingBeliefsSelfWorkProps {
 
 export default function LimitingBeliefsSelfWork({ onComplete }: LimitingBeliefsSelfWorkProps) {
   const [belief, setBelief] = useState('');
-  const [started, setStarted] = useState(false);
   const [cycleStep, setCycleStep] = useState(0);
   const [responses, setResponses] = useState<Record<number, string>>({ 0: '', 1: '', 2: '', 3: '', 4: '' });
   const [checkpoint, setCheckpoint] = useState<CheckpointId | null>(null);
-  const [checkpointResult, setCheckpointResult] = useState<'Yes' | 'No' | null>(null);
   const [phase, setPhase] = useState<'input' | 'cycle' | 'checkpoint' | 'complete'>('input');
   const [rounds, setRounds] = useState(1);
 
@@ -76,12 +61,10 @@ export default function LimitingBeliefsSelfWork({ onComplete }: LimitingBeliefsS
 
   const handleStart = () => {
     if (!belief.trim()) return;
-    setStarted(true);
     setPhase('cycle');
     setCycleStep(0);
     setResponses({ 0: '', 1: '', 2: '', 3: '', 4: '' });
     setCheckpoint(null);
-    setCheckpointResult(null);
   };
 
   const handleResponse = (value: string) => {
@@ -99,7 +82,6 @@ export default function LimitingBeliefsSelfWork({ onComplete }: LimitingBeliefsS
   };
 
   const handleCheckpoint = (result: 'Yes' | 'No') => {
-    setCheckpointResult(result);
     if (result === 'Yes') {
       // Belief still holds, loop
       setRounds(r => r + 1);
@@ -107,7 +89,6 @@ export default function LimitingBeliefsSelfWork({ onComplete }: LimitingBeliefsS
       setCycleStep(0);
       setResponses({ 0: '', 1: '', 2: '', 3: '', 4: '' });
       setCheckpoint(null);
-      setCheckpointResult(null);
     } else {
       // Belief dissolved
       setPhase('complete');

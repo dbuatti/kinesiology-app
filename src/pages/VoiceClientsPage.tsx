@@ -241,6 +241,7 @@ const VoiceClientsPage = () => {
  !s.hasUpcoming &&
  (!s.lastSeenDate || s.lastSeenDate < threeMonthsAgo)
  ).sort(sortByLastSeen),
+ // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
  }), [filtered]);
 
  const toggleCollapse = (key: string) =>

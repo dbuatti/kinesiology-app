@@ -109,18 +109,6 @@ const DEFAULT_ITEM: Record<CorrectionTab, string> = {
   efferent: "cortical",
 };
 
-const DEFAULT_PATHWAY: Record<string, string> = {
-  mechanoreceptor: "afferent_facilitate",
-  nociceptive: "threat_check",
-  physiological: "physio_check",
-  cortical: "top_down",
-  subcortical: "autonomic",
-  emotional: "emotional_esr",
-  "hw-screen": "heart_wall",
-  "lb-process": "limiting_beliefs",
-  // add more as needed
-};
-
 const storageKey = (id?: string) => `rk_corrections_dock_${id || "default"}`;
 
 const noop = () => {};

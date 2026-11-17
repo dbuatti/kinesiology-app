@@ -30,6 +30,7 @@ import { cn } from '@/lib/utils';
 import { isToday } from 'date-fns';
 import { showSuccess } from '@/utils/toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { clickableProps } from '@/lib/a11y';
 
 const STORAGE_KEY = "rk_morning_program";
 
@@ -145,9 +146,9 @@ const MorningProgramPage = () => {
 
             <div className="space-y-3">
               {RITUAL_STEPS.map((step) => (
-                <div 
+                <div
                   key={step.id}
-                  onClick={() => toggleTask(step.id)}
+                  {...clickableProps(() => toggleTask(step.id))}
                   className={cn(
                     "p-6 rounded-xl border-2 transition-all duration-500 cursor-pointer flex items-center justify-between group",
                     completedTasks.includes(step.id) 

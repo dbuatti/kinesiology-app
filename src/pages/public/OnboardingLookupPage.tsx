@@ -42,6 +42,7 @@ const OnboardingLookupPage = () => {
     if (emailParam) {
       performLookup(emailParam);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [emailParam]);
 
   const handleManualSubmit = (e: React.FormEvent) => {

@@ -134,7 +134,7 @@ Please provide the final output ready to be reviewed.`;
  setTemplateCopied(true);
  showSuccess("Clean HTML Template copied!");
  setTimeout(() => setTemplateCopied(false), 2000);
- } catch (err) {
+ } catch {
  showError("Failed to load template file.");
  }
  };

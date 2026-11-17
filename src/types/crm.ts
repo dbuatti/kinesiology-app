@@ -170,6 +170,15 @@ export interface Client {
   voice_additional_notes?: string | null;
   voice_onboarding_completed?: boolean | null;
   voice_onboarding_submitted_at?: string | null;
+  /** Programme / progress fields shown on the client profile header. */
+  status?: string | null;
+  programme?: string | null;
+  first_session_date?: string | null;
+  most_recent_session?: string | null;
+  corrections_holding?: string | null;
+  priority_pathways?: string | null;
+  homework_assigned?: string | null;
+  next_session_focus?: string | null;
 }
 
 export interface AppointmentWithClient extends Appointment {

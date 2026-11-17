@@ -12,7 +12,7 @@
 //  - Missing fields degrade gracefully (sections omitted).
 
 import { format } from "date-fns";
-import { detectTechniqueCategories, explainTechniqueDetection } from "@/lib/session-summary-techniques";
+import { explainTechniqueDetection } from "@/lib/session-summary-techniques";
 
 export interface SessionSummaryInput {
   appointment: any;
@@ -79,7 +79,6 @@ export function generateSessionSummaryEmail(input: SessionSummaryInput): string 
 
   const detection = explainTechniqueDetection(appointment);
   const categories = detection.categories;
-  const recordedProtocols = detection.recordedProtocols;
   const phrases = categories.map((c) => c.phrase);
 
   // Sentence 1: stem appears once, phrases join with commas + final "and".

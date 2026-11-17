@@ -24,14 +24,14 @@ serve(async (req) => {
 
     const result = { unlinked: [] as string[], archived: [] as string[], errors: [] as string[] };
 
-    async function archivePage(pageId: string | null | undefined) {
+    const archivePage = async (pageId: string | null | undefined) => {
       if (!pageId || !NOTION_KEY) return;
       await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${NOTION_KEY}`, "Content-Type": "application/json", "Notion-Version": "2022-06-28" },
         body: JSON.stringify({ archived: true }),
       }).catch(() => {});
-    }
+    };
 
     // Mark stale Georg Gleeson appointment as cancelled (rescheduled from Jul 8 to Jul 15)
     const { data: staleGeorg } = await supabase.from("appointments")

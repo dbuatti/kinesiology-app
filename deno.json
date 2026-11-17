@@ -1,0 +1,14 @@
+{
+  // Deno config for the Supabase edge functions in supabase/functions.
+  // The web app is linted by ESLint (eslint.config.js); this file only covers
+  // the Deno runtime.
+  "lint": {
+    "rules": {
+      // Pre-existing, app-wide debt in the edge functions — not new code:
+      //   no-explicit-any  ~231 uses, mostly untyped Supabase/HTTP payloads
+      //   ban-ts-comment   every function opens with // @ts-nocheck
+      //   no-import-prefix functions import std/SDKs straight from https: URLs
+      "exclude": ["no-explicit-any", "ban-ts-comment", "no-import-prefix"]
+    }
+  }
+}

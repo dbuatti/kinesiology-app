@@ -46,7 +46,7 @@ interface IntakeStatusBadgeProps {
   showLabel?: boolean;
 }
 
-export const IntakeStatusBadge = ({ client, showLabel }: IntakeStatusBadgeProps) => {
+export const IntakeStatusBadge = ({ client, showLabel: _showLabel }: IntakeStatusBadgeProps) => {
   const { filled, total, percent } = calculateIntakeCompletion(client);
   const { label } = fieldsFor(client);
 

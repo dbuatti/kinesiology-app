@@ -9,6 +9,8 @@
     "build:dev": "vite build --mode development",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "lint": "eslint .",
+    "lint:functions": "deno lint supabase/functions",
+    "lint:all": "npm run lint && npm run lint:functions",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"

@@ -65,6 +65,7 @@ const BusinessModelWorksheet = ({ submissionId, onComplete }) => {
       }
     };
     init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [userId, submissionId]);
 
   // Auto-save form data
@@ -159,7 +160,7 @@ const BusinessModelWorksheet = ({ submissionId, onComplete }) => {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold">Business Model Worksheet</h2>
         {isSaving && (
-          <Button variant="outline" size="icon" disabled>
+          <Button variant="outline" size="icon" disabled aria-label="Saving">
             <Loader className="h-4 w-4 animate-spin" />
           </Button>
         )}

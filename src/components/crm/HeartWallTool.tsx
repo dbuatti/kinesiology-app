@@ -1195,7 +1195,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
               className="h-11 rounded-xl font-medium"
             >
               {saving ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
-              Save
+              Save & continue
             </Button>
 
             {/* Skip context */}

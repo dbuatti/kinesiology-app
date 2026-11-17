@@ -38,7 +38,7 @@ interface VagusNerveProcessProps {
   onUpdate: () => void;
 }
 
-const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate }: VagusNerveProcessProps) => {
+const VagusNerveProcess = ({ appointmentId: _appointmentId, initialNotes, onSaveField, onUpdate }: VagusNerveProcessProps) => {
   const [isOpen, setIsOpen] = useState(false);
   
   const [reflexPoint, setReflexPoint] = useState<string>("Occiput");

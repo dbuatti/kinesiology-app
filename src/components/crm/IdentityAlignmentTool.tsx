@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import IdentityAlignmentReport from './IdentityAlignmentReport';
 import JournalRefresher from './JournalRefresher';
 import BacklogSelector from './BacklogSelector';
+import { clickableProps } from '@/lib/a11y';
 
 type Phase = 1 | 2 | 3 | 4 | 5;
 
@@ -108,6 +109,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
       fetchBacklogItem(currentBacklogId);
       checkForDraft(currentBacklogId);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [currentBacklogId, clientId]);
 
   const fetchBacklogItem = async (id: string) => {
@@ -212,7 +214,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
 
       if (isComplete) toast.success("Alignment session completed!");
       fetchPastSessions();
-    } catch (error) {
+    } catch {
       toast.error("Failed to save session.");
     } finally {
       setIsSaving(false);
@@ -250,7 +252,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
       } else {
         toast.info("AI scan complete. No new patterns detected this time.");
       }
-    } catch (err) {
+    } catch {
       toast.error("AI scan failed.");
     } finally {
       setIsAnalyzing(false);
@@ -294,7 +296,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
       toast.success("Session deleted.");
       if (formData.id === deleteTargetId) reset();
       fetchPastSessions();
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete session.");
     }
   };
@@ -504,7 +506,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
   const renderPhase3 = () => {
     let question = "";
     let value = "";
-    let onChange = (val: string) => {};
+    let onChange = (_val: string) => {};
     let placeholder = "";
 
     if (loopStep === 1) {
@@ -714,7 +716,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
             </p>
             <div className="grid grid-cols-1 gap-3">
               {activeDrafts.map((session) => (
-                <div key={session.id} className="p-3 bg-card rounded-xl border border-amber-100 hover:border-amber-400 transition-all cursor-pointer group flex items-center justify-between" onClick={() => loadSession(session)}>
+                <div key={session.id} className="p-3 bg-card rounded-xl border border-amber-100 hover:border-amber-400 transition-all cursor-pointer group flex items-center justify-between" {...clickableProps(() => loadSession(session))}>
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
                       <Zap size={14} />
@@ -741,7 +743,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
           ) : (
             <div className="grid grid-cols-1 gap-3">
               {completedSessions.map((session) => (
-                <div key={session.id} className="p-3 bg-card rounded-xl border border-border hover:border-emerald-400 transition-all cursor-pointer group flex items-center justify-between" onClick={() => setViewingReportId(session.id)}>
+                <div key={session.id} className="p-3 bg-card rounded-xl border border-border hover:border-emerald-400 transition-all cursor-pointer group flex items-center justify-between" {...clickableProps(() => setViewingReportId(session.id))}>
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-chart-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                       <FileText size={14} />

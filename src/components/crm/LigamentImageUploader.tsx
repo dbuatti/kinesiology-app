@@ -24,6 +24,7 @@ const LigamentImageUploader = ({ userId, category, imageIndex, initialUrl, onUpl
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   const handleUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       showError("Please upload an image file.");
@@ -79,7 +80,7 @@ const LigamentImageUploader = ({ userId, category, imageIndex, initialUrl, onUpl
 
       onUploadComplete(category, imageIndex, null);
       showSuccess("Image removed.");
-    } catch (error: any) {
+    } catch {
       showError("Failed to remove image.");
     }
   };
@@ -90,7 +91,7 @@ const LigamentImageUploader = ({ userId, category, imageIndex, initialUrl, onUpl
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (file) handleUpload(file);
-  }, [userId, category, imageIndex]);
+  }, [handleUpload]);
 
   return (
     <div className="space-y-2">

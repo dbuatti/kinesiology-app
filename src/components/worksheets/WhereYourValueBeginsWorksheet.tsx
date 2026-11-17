@@ -64,6 +64,7 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onComplete, onBack }) => 
       }
     };
     init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [userId, submissionId]);
 
   useEffect(() => {
@@ -165,7 +166,7 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onComplete, onBack }) => 
           <h2 className="text-xl font-bold">Where Your Value Begins Worksheet</h2>
         </div>
         {isSaving && (
-          <Button variant="outline" size="icon" disabled>
+          <Button variant="outline" size="icon" disabled aria-label="Saving">
             <Loader className="h-4 w-4 animate-spin" />
           </Button>
         )}

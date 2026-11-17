@@ -2,11 +2,24 @@ import { useEffect, useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
-  ArrowDownCircle, ArrowUpCircle, ArrowRightCircle, ArrowDown,
-  Activity, AlertTriangle, Droplets, Brain, Zap, Heart,
-  Search, Layers, Hand, RefreshCw, Eye, MessageSquare,
-  Printer, ChevronLeft, Check, Maximize2
-} from "lucide-react";
+    ArrowDownCircle,
+    ArrowUpCircle,
+    ArrowRightCircle,
+    ArrowDown,
+    Activity,
+    AlertTriangle,
+    Droplets,
+    Brain,
+    Zap,
+    Heart,
+    Search,
+    Hand,
+    MessageSquare,
+    Printer,
+    ChevronLeft,
+    Check,
+    Maximize2,
+  } from "lucide-react";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 import type { BrainReflexPoint } from "@/data/brain-reflex-data";
 import BrainReflexModal from "@/components/crm/BrainReflexModal";
@@ -283,7 +296,6 @@ const CorrectionsManualContent = ({
   
   // Stop scroll events from bubbling up to parent elements
   useEffect(() => {
-    const stopPropagation = (e: Event) => e.stopPropagation();
     const captureWheel = (e: WheelEvent) => {
       if ((e.target as HTMLElement).closest('.scroll-isolated')) {
         e.stopPropagation();
@@ -361,6 +373,7 @@ const CorrectionsManualContent = ({
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [activeTab, activeId, instructionsOpen]);
 
   // Scroll the requested Heart Wall section into view once it's rendered.
@@ -480,21 +493,6 @@ const CorrectionsManualContent = ({
       </span>
     );
   };
-
-  const logSheet = (processId: string, heading?: string) => (
-    <ProtocolLogSheet
-      processId={processId}
-      fields={PROTOCOL_FIELDS[processId] ?? []}
-      log={protocolLogs?.[processId]}
-      onChange={
-        onProtocolLogChange
-          ? (patch) => onProtocolLogChange(processId, patch)
-          : undefined
-      }
-      heading={heading}
-      pathwayLabel={pathwayLabel}
-    />
-  );
 
   /** The controls for one instruction step, rendered under that step. */
   const inlineLog = (processId: string, step: number) => (

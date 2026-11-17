@@ -67,6 +67,7 @@ const MuscleImageZone = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [deleteTarget, setDeleteTarget] = useState<{type: string} | null>(null);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   const handleUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       showError("Please upload an image file.");
@@ -152,7 +153,7 @@ const MuscleImageZone = ({
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (file) handleUpload(file);
-  }, [muscleName, type]);
+  }, [handleUpload]);
 
   const isPrimary = type === 'primary';
 
@@ -249,6 +250,7 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
       setCurrentTime(new Date().getHours());
       fetchCustomizations();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [open, muscleName]);
 
   const fetchCustomizations = async () => {

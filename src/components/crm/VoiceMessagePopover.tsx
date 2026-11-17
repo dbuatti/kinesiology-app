@@ -93,7 +93,7 @@ interface VoiceMessagePopoverProps {
   onContactLogged?: (studentId: string) => void;
 }
 
-const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMessagePopoverProps) => {
+const VoiceMessagePopover = ({ student, hasUpcoming: _hasUpcoming, onContactLogged }: VoiceMessagePopoverProps) => {
   const [open, setOpen] = useState(false);
   const [lastContacted, setLastContacted] = useState<string | null>(null);
   const [lastChannel, setLastChannel] = useState<string | null>(null);

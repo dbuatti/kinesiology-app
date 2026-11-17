@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion, animate, useMotionValue } from "framer-motion";
-import { Heart, History, Eye, Zap, Sparkles, Brain, Download, Share2, Trash2, Home, BookOpen, Clock, User, CheckCircle2, Wind, X } from "lucide-react";
+import { Heart, History, Eye, Sparkles, Brain, Download, Share2, Trash2, Home, BookOpen, Clock, User, CheckCircle2, Wind, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PRIMARY_EMOTIONS, EYE_POSITIONS } from "@/data/emotion-data";
 import LimitingBeliefsSelfWork from "@/components/crm/LimitingBeliefsSelfWork";
@@ -26,10 +26,6 @@ interface SessionLog {
   eyePos: string;
   timeline?: string;
   age?: string;
-}
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
 }
 
 const footerItems = [
@@ -667,7 +663,7 @@ export default function SelfWorkPage() {
             </div>
             <p className="mt-3 text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>Tip: challenge in blocks (1–10, 10–20) then narrow down.</p>
             <div className="mt-4">
-              <button disabled={!age} onClick={() => { haptic(); setPhase("emotion"); }} className={cn(SMALL_BTN, "w-full", C.accentSolid, C.accentHover, !age && "opacity-50")}>Continue</button>
+              <button disabled={!age} onClick={() => { haptic(); setPhase("emotion"); }} className={cn(SMALL_BTN, "w-full", C.accentSolid, C.accentHover, !age && "opacity-50")}>Choose emotion</button>
             </div>
           </StepCard>
         )}

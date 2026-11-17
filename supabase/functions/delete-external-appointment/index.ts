@@ -57,7 +57,7 @@ serve(async (req) => {
             results.calcom = 'failed';
           }
         }
-      } catch (e) {
+      } catch {
         results.calcom = 'failed';
       }
     }

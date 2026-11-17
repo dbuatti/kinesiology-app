@@ -79,6 +79,7 @@ const DuplicateResolutionCenter = () => {
 
   useEffect(() => {
     fetchClients();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, []);
 
   const detectDuplicates = (clientsList: any[]) => {
@@ -240,7 +241,7 @@ const DuplicateResolutionCenter = () => {
       } else if (key === 'born') {
         try {
           cleaned[key] = val ? new Date(val).toISOString().split('T')[0] : null;
-        } catch (e) {
+        } catch {
           cleaned[key] = null;
         }
       } else {

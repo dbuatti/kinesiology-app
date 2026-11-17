@@ -175,7 +175,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
       return dc !== 0 ? dc : (parseAmPmToMinutes(b.time || "") ?? 0) - (parseAmPmToMinutes(a.time || "") ?? 0);
     });
     return { upcoming, past, cancelled };
-  }, [items, now, sourceFilter, statusFilter, searchQuery]);
+  }, [items, now, sourceFilter, statusFilter, searchQuery, GRACE_MS]);
 
   const rows = buckets[tab];
 

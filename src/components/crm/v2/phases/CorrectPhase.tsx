@@ -236,7 +236,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
                     onClick={saveCustom}
                     className="rounded-xl h-10 px-4 text-xs font-medium"
                   >
-                    Save
+                    Save pathway
                   </Button>
                 </div>
               )}

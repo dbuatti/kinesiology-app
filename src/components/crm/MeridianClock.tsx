@@ -8,6 +8,8 @@ import { format } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
 import { isMeridianPeakNow } from "@/utils/crm-utils";
 
+const CLOCK_ORDER = ["LU", "LI", "ST", "SP", "HT", "SI", "BL", "KI", "PC", "SJ", "GB", "LV"];
+
 const MeridianClock = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -24,15 +26,15 @@ const MeridianClock = () => {
     return channel?.id || null;
   };
 
-  const clockOrder = ["LU", "LI", "ST", "SP", "HT", "SI", "BL", "KI", "PC", "SJ", "GB", "LV"];
   const activeId = getActiveId(currentHour);
   
   const nextId = useMemo(() => {
     if (!activeId) return null;
-    const currentIndex = clockOrder.indexOf(activeId);
-    const nextIndex = (currentIndex + 1) % clockOrder.length;
-    return clockOrder[nextIndex];
-  }, [activeId]);
+    const currentIndex = CLOCK_ORDER.indexOf(activeId);
+    const nextIndex = (currentIndex + 1) % CLOCK_ORDER.length;
+    return CLOCK_ORDER[nextIndex];
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
+  }, [activeId, CLOCK_ORDER]);
 
   const displayId = hoveredId || activeId;
   const displayChannel = TCM_CHANNELS.find(c => c.id === displayId);
@@ -46,8 +48,8 @@ const MeridianClock = () => {
         <div className="relative aspect-square max-w-[240px] mx-auto w-full">
           <div className="absolute inset-0 rounded-full border-4 border-muted shadow-inner" />
           
-          {clockOrder.map((id, index) => {
-            const channel = TCM_CHANNELS.find(c => {
+          {CLOCK_ORDER.map((id, index) => {
+            const channel = TCM_CHANNELS.find(_c => {
               const ch = TCM_CHANNELS.find(item => item.id === id);
               return ch;
             })!;

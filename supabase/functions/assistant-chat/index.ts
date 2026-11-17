@@ -102,7 +102,8 @@ function parseAvailabilityText(text: string): { days: number[]; from: string | n
     else {
       const dr = s.match(/(sun|mon|tue|tues|wed|weds|thu|thur|thurs|fri|sat)[a-z]*\s*(?:-|to|thru|through)\s*(sun|mon|tue|tues|wed|weds|thu|thur|thurs|fri|sat)[a-z]*/);
       if (dr && DAY_WORDS[dr[1]] != null && DAY_WORDS[dr[2]] != null) {
-        let a = DAY_WORDS[dr[1]], b = DAY_WORDS[dr[2]];
+        let a = DAY_WORDS[dr[1]];
+        const b = DAY_WORDS[dr[2]];
         for (let i = 0; i < 7; i++) { days.push(a); if (a === b) break; a = (a + 1) % 7; }
       } else {
         const found = new Set<number>();

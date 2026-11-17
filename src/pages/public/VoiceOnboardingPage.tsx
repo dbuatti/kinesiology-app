@@ -18,6 +18,7 @@ const VoiceOnboardingPage = () => {
   const [submitted, setSubmitted] = useState(false);
   const [studentName, setStudentName] = useState("");
   const [mobile, setMobile] = useState("");
+  const [suburb, setSuburb] = useState("");
   const [goals, setGoals] = useState("");
   const [experienceLevel, setExperienceLevel] = useState("");
   const [additionalNotes, setAdditionalNotes] = useState("");
@@ -53,6 +54,7 @@ const VoiceOnboardingPage = () => {
           email: decodedEmail,
           name: studentName.trim() || null,
           mobile: mobile.trim() || null,
+          suburb: suburb.trim() || null,
           goals: goals.trim() || null,
           experienceLevel: experienceLevel.trim() || null,
           additionalNotes: additionalNotes.trim() || null,
@@ -139,6 +141,18 @@ const VoiceOnboardingPage = () => {
                 onChange={(e) => setMobile(e.target.value)}
                 placeholder="e.g. 0412 345 678"
                 type="tel"
+                className="h-12 rounded-2xl border-border text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-[13px] font-medium text-foreground">
+                Suburb <span className="text-muted-foreground font-normal normal-case tracking-normal">(optional)</span>
+              </Label>
+              <Input
+                value={suburb}
+                onChange={(e) => setSuburb(e.target.value)}
+                placeholder="e.g. Toorak"
                 className="h-12 rounded-2xl border-border text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
               />
             </div>

@@ -51,8 +51,14 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import AppLayout from "@/components/crm/AppLayout";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import PageHeader from "@/components/shared/PageHeader";
+import OverflowMenu from "@/components/shared/OverflowMenu";
 import WeeklyTimeGrid, { CalendarEvent, calcSummary, EarningsPanel } from "@/components/crm/WeeklyTimeGrid";
 import WeekByWeekOverview from "@/components/crm/WeekByWeekOverview";
 import BookingsList, { type BookingListItem } from "@/components/crm/BookingsList";
@@ -145,6 +151,7 @@ const UnifiedCalendarPage = () => {
   const [fnhPrefillPrice, setFnhPrefillPrice] = useState<number>(70);
   const [fnhClientSearch, setFnhClientSearch] = useState("");
   const [rebookFrom, setRebookFrom] = useState<string | null>(null);
+  const [remindersOpen, setRemindersOpen] = useState(false);
   // Slot-click flow (Week/Overview): chosen service for the clicked slot
   const [bookSvc, setBookSvc] = useState<string | null>(null);
   const [bookClientSearch, setBookClientSearch] = useState("");
@@ -509,27 +516,30 @@ const UnifiedCalendarPage = () => {
   icon={CalendarIcon}
   iconClassName="bg-primary/10 text-primary-strong"
   actions={
-<div className="flex flex-wrap gap-2 items-center">
-  <Popover>
-    <PopoverTrigger asChild>
-      <Button variant="outline" size="sm" className="h-9 gap-2 rounded-lg px-3 text-[13px] font-medium">
-        <Bell size={14} /> Reminders
-      </Button>
-    </PopoverTrigger>
-    <PopoverContent align="end" sideOffset={8} className="w-[min(420px,calc(100vw-24px))] rounded-2xl border-none bg-transparent p-0">
-      <CalendarReminderPanel />
-    </PopoverContent>
-  </Popover>
+<div className="flex flex-wrap items-center gap-2">
   <ShareAvailabilityButton />
-  <Button
-    variant="outline"
-    size="sm"
-    onClick={() => navigate(-1)}
-    className="h-9 gap-2 rounded-lg px-3 text-[13px] font-medium"
-  >
-            <ArrowLeft size={14} />
-            Back
-          </Button>
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button className="h-9 gap-2 rounded-lg px-3.5 text-[13px] font-medium shadow-sm">
+        <Plus size={15} /> New booking
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuItem onSelect={() => handleNewBooking("fnhStandard")}>
+        <User size={15} className="mr-2" /> FNH session
+      </DropdownMenuItem>
+      <DropdownMenuItem onSelect={() => handleNewBooking("voice60")}>
+        <Mic size={15} className="mr-2" /> Voice / piano lesson
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+  <OverflowMenu
+    label="Calendar options"
+    actions={[
+      { label: "Email reminders", icon: Bell, onSelect: () => setRemindersOpen(true) },
+      { label: "Back", icon: ArrowLeft, onSelect: () => navigate(-1) },
+    ]}
+  />
           </div>
 }
  />
@@ -1163,6 +1173,22 @@ const UnifiedCalendarPage = () => {
       </DialogContent>
     </Dialog>
   )}
+
+  {/* Reminders moved out of the header into a dialog so the toolbar keeps a
+      single primary action. */}
+  <Dialog open={remindersOpen} onOpenChange={setRemindersOpen}>
+    <DialogContent className="w-[95vw] max-w-[460px] rounded-2xl p-0">
+      <div className="p-6">
+        <DialogHeader className="mb-4">
+          <DialogTitle className="text-lg font-semibold">Email reminders</DialogTitle>
+          <DialogDescription className="text-[13px]">
+            Send a friendly reminder to clients with upcoming sessions.
+          </DialogDescription>
+        </DialogHeader>
+        <CalendarReminderPanel />
+      </div>
+    </DialogContent>
+  </Dialog>
 
   </div>
   </AppLayout>

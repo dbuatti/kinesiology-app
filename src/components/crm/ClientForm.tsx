@@ -87,12 +87,12 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
       digestive_health: initialData?.digestive_health || "",
       medical_history: initialData?.medical_history || "",
       referral_source: initialData?.referral_source || "",
-      status: (initialData as any)?.status || "",
-      programme: (initialData as any)?.programme || "",
-      priority_pathways: (initialData as any)?.priority_pathways || "",
-      corrections_holding: (initialData as any)?.corrections_holding || "",
-      homework_assigned: (initialData as any)?.homework_assigned || "",
-      next_session_focus: (initialData as any)?.next_session_focus || "",
+      status: initialData?.status || "",
+      programme: initialData?.programme || "",
+      priority_pathways: initialData?.priority_pathways || "",
+      corrections_holding: initialData?.corrections_holding || "",
+      homework_assigned: initialData?.homework_assigned || "",
+      next_session_focus: initialData?.next_session_focus || "",
     },
   });
 

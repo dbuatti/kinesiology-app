@@ -83,7 +83,7 @@ const PathwayAssessment = ({
         }
       }
       showSuccess("Synced unresolved findings.");
-    } catch (e) {
+    } catch {
       showError("Failed to sync previous session data.");
     }
   };

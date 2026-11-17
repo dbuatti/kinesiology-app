@@ -92,7 +92,7 @@ export default function DraftEmailCard({ draft, onSent, onDiscard }: Props) {
           </Button>
           <Button size="sm" onClick={handleSend} disabled={isSending}>
             {isSending ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
-            Send
+            Send email
           </Button>
         </div>
       </CardContent>

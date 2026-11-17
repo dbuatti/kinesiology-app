@@ -215,7 +215,7 @@ function FactsPanel({
 function TextPanel({
   panel,
   image,
-  index,
+  index: _index,
 }: {
   panel: Extract<GuidePanel, { kind: "text" }>;
   image?: GuideImage;

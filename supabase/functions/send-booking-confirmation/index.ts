@@ -94,6 +94,7 @@ serve(async (req) => {
     const FROM_ADDRESS = "Daniele Buatti <info@danielebuatti.com>";
 
     const { name, email, startTime, sessionName, durationMin, price, calcomBookingUid, location } = await req.json();
+    const resolvedLocation = (typeof location === "string" && location.trim()) ? location.trim() : "685 Toorak Road, Toorak VIC 3142";
     if (!email || !startTime) throw new Error("Missing required fields: email, startTime");
     to = String(email).trim();
 
@@ -165,8 +166,8 @@ serve(async (req) => {
                     <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin: 18px 0 6px;">Time</div>
                     <div style="font-size: 20px; font-weight: 700; color: #1E293B;">${friendlyTime}</div>
 ${durationMin ? `                    <div style="font-size: 14px; color: #94A3B8; margin-top: 6px;">${Number(durationMin)} minutes</div>` : ''}
-${location ? `                    <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin: 18px 0 6px;">Where</div>
-                    <div style="font-size: 16px; color: #1E293B;">${escapeHtml(location)}</div>` : ''}
+${resolvedLocation ? `                    <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin: 18px 0 6px;">Where</div>
+                    <div style="font-size: 16px; color: #1E293B;">${escapeHtml(resolvedLocation)}</div>` : ''}
                   </div>
                   ${paymentSection}
                   <p>If anything changes, just reply to this email.</p>

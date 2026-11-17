@@ -759,7 +759,7 @@ serve(async (req) => {
         return p.type === 'relation' && p.relation?.database_id && normalizeId(p.relation.database_id) === normalizeId(CLIENTS_DB_ID);
       });
 
-      function formatTitle(dateStr: string, clientName: string): string {
+      const formatTitle = (dateStr: string, clientName: string): string => {
         const d = new Date(dateStr);
         const tz = 'Australia/Sydney';
         const weekday = d.toLocaleDateString('en-US', { timeZone: tz, weekday: 'short' });
@@ -768,9 +768,9 @@ serve(async (req) => {
         if (!dateStr.includes('T')) return `FNH · ${clientName} · ${weekday} ${month} ${day}`;
         const time = d.toLocaleTimeString('en-US', { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true });
         return `FNH · ${clientName} · ${weekday} ${month} ${day}, ${time}`;
-      }
+      };
 
-      function extractClientNameFromTitle(title: string): string | null {
+      const extractClientNameFromTitle = (title: string): string | null => {
         // "Jacqui Dwyer - Kinesiology (Jul 8, 2026)" → "Jacqui Dwyer"
         const dash = title.split(' - ')[0]?.trim();
         if (dash && dash !== 'Appointment' && dash !== 'Session' && dash !== 'Follow Up' && dash !== 'Self Practice' && dash !== 'Initial Checkup' && dash !== 'VHS balance') {
@@ -781,7 +781,7 @@ serve(async (req) => {
         const sw = title.match(/^Session with (.+)$/);
         if (sw) return sw[1].trim();
         return null;
-      }
+      };
 
       let hasMore = true;
       let startCursor = undefined;
@@ -897,7 +897,6 @@ serve(async (req) => {
     // Flow: Cancel appointments whose Notion pages are archived (ghost bookings)
     if (action === 'cancel-ghost-appointments') {
       console.log(`[${functionName}] Looking for archived Notion pages with active Supabase rows...`);
-      const schema = await fetchDatabaseSchema(MAIN_DB_ID, notionHeaders);
       let totalArchived = 0;
       let cancelled = 0;
       let hasMore = true;

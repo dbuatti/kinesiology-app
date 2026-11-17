@@ -332,6 +332,7 @@ const BUSINESS_STRATEGY_DIAGNOSTIC = ({ onBack }: { onBack?: () => void }) => {
       }
     };
     init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [userId]);
 
   useEffect(() => {

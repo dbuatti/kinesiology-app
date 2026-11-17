@@ -45,7 +45,7 @@ const ImportPage = () => {
  }
  };
  reader.readAsText(file);
- } catch (error) {
+ } catch {
  showError("An unexpected error occurred during file reading.");
  setLoading(false);
  }

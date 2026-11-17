@@ -145,7 +145,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
         .eq('id', sessionId);
       if (error) throw error;
       showSuccess("Session finalised.");
-    } catch (err) {
+    } catch {
       showError("Failed to complete session.");
     }
   };

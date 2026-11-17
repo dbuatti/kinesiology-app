@@ -248,7 +248,7 @@ export function useSessionDocumentState({
   // Extract all currently inhibited findings from the unified pattern
   const inhibitedFindings = useMemo(() => {
     const list: string[] = [];
-    Object.entries(unifiedPattern).forEach(([category, items]: [string, any]) => {
+    Object.entries(unifiedPattern).forEach(([, items]: [string, any]) => {
       Object.entries(items).forEach(([name, status]) => {
         if (status === 'Inhibited' || status === 'Inhibition' || status === 'Hypertonic') {
           list.push(name);
@@ -297,7 +297,7 @@ export function useSessionDocumentState({
           }
           await fetchCurrentMuscleTests();
           showSuccess(`${fullName} marked as ${nextStatus}`);
-        } catch (err) {
+        } catch {
           showError("Failed to update muscle status");
         }
         setLastSaved(new Date());

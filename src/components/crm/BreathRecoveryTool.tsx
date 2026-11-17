@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Heart, Wind, Play, Pause, RotateCcw, ArrowRight, CheckCircle2, Plus, TriangleAlert } from "lucide-react";
+import { Heart, Play, Pause, RotateCcw, ArrowRight, CheckCircle2, Plus, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ─── Breath Recovery Exercise (FNH Phase E · Embed) ──────────────────────────
@@ -242,7 +242,7 @@ export default function BreathRecoveryTool({ onSave, onDone }: Props) {
           </div>
           <h2 className="text-xl font-sans font-bold mb-1 text-emerald-200">Practice Complete</h2>
           <p className="text-[11px] text-emerald-200/80 mb-6">Logged — twice daily builds CO₂ tolerance.</p>
-          <button onClick={() => { haptic("light"); onDone(); }} className="w-full rounded-xl px-6 py-3.5 text-sm font-semibold uppercase tracking-wider transition-all min-h-[48px] bg-emerald-300 text-[#07120D] hover:bg-emerald-200 active:bg-emerald-200 active:scale-[0.99]">Done</button>
+          <button onClick={() => { haptic("light"); onDone(); }} className="w-full rounded-xl px-6 py-3.5 text-sm font-semibold uppercase tracking-wider transition-all min-h-[48px] bg-emerald-300 text-[#07120D] hover:bg-emerald-200 active:bg-emerald-200 active:scale-[0.99]">Finish practice</button>
         </div>
       );
     }

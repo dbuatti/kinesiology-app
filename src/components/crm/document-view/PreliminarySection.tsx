@@ -81,7 +81,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
       currentPattern.brainZones[zoneName] = status;
       await saveField('priority_pattern', JSON.stringify(currentPattern));
       showSuccess(`${zoneName} marked as ${status}`);
-    } catch (err) {
+    } catch {
       showError("Failed to update status");
     }
   };
@@ -129,7 +129,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
       await saveField('bolt_score', boltTime);
       showSuccess(`BOLT score of ${boltTime}s saved.`);
       setBoltFinished(false);
-    } catch (err) {
+    } catch {
       showError("Failed to save BOLT score.");
     } finally {
       setSavingBolt(false);
@@ -160,7 +160,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
         saveField('coherence_score', coherenceScore)
       ]);
       showSuccess("Coherence metrics saved.");
-    } catch (err) {
+    } catch {
       showError("Failed to save coherence.");
     } finally {
       setSavingCoherence(false);

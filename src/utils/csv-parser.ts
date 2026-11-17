@@ -81,7 +81,7 @@ function parseCSVLine(line: string): string[] {
   return values;
 }
 
-function parseCSVRow(lines: string[], startIndex: number, expectedColumns: number): { values: string[], linesConsumed: number } {
+function parseCSVRow(lines: string[], startIndex: number, _expectedColumns: number): { values: string[], linesConsumed: number } {
   const values: string[] = [];
   let current = '';
   let inQuotes = false;

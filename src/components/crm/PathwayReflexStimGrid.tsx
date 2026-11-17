@@ -18,20 +18,19 @@ import {
   type MuscleGridState,
 } from "./muscle-grid-data";
 import {
-  PRIMITIVE_TRACKS,
-  NERVE_GROUPS,
-  NUCLEI_COLORS,
-  nerveStimLines,
-  primitiveStimKey,
-  primitiveStimKeyAt,
-  primitiveSideKey,
-  cranialStimKey,
-  cranialSideKey,
-  isLateralStim,
-  nerveStimEntries,
-  primitiveReflexMatches,
-  cranialLineMatches,
-} from "./pathway-reflex-stim-data";
+    PRIMITIVE_TRACKS,
+    NERVE_GROUPS,
+    NUCLEI_COLORS,
+    primitiveStimKey,
+    primitiveStimKeyAt,
+    primitiveSideKey,
+    cranialStimKey,
+    cranialSideKey,
+    isLateralStim,
+    nerveStimEntries,
+    primitiveReflexMatches,
+    cranialLineMatches,
+  } from "./pathway-reflex-stim-data";
 
 type GridTab = "reflexes" | "nerves" | "muscles";
 
@@ -91,6 +90,7 @@ export function PathwayReflexStimGrid({
     setChecked(buildCheckedMap({ reflexTests, nerveTests, priorityPattern }));
     setMuscleState(seedMuscleState(safeParse(priorityPattern, {})));
     seeded.current = true;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [reflexTests, nerveTests, reflexLoading, nerveLoading]);
 
   const writeQueue = useRef<Promise<void>>(Promise.resolve());

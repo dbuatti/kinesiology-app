@@ -29,6 +29,7 @@ import {
 } from "@/utils/timetable-scheduler";
 import { Lightbulb } from "lucide-react";
 import { DRAFT_SERVICES, defaultServiceId, serviceFor } from "@/config/integrations";
+import { clickableProps } from "@/lib/a11y";
 
 // ── Inputs from the parent page (already-loaded data) ────────────────────────
 export interface AutoDraftClient {
@@ -526,7 +527,7 @@ export default function AutoDraftPanel({
       // Drop the penciled-in item from the fortnight preview — it now exists as
       // a real proposal, so the sky draft chip would otherwise keep showing.
       if (result) onDraftChange?.(result.assignments.filter((x) => !next.has(x.clientId)));
-    } catch (e) {
+    } catch {
       /* toast handled upstream */
     } finally {
       setPencilingKey(null);
@@ -887,7 +888,7 @@ export default function AutoDraftPanel({
             return (
               <div
                 key={c.key}
-                onClick={() => !away && toggle(c.key)}
+                {...(!away ? clickableProps(() => toggle(c.key)) : {})}
                 className={cn(
                   "px-3 py-2.5 rounded-xl border transition-colors",
                   away
@@ -1498,7 +1499,7 @@ export default function AutoDraftPanel({
               className="bg-sky-600 hover:bg-sky-700 text-white"
             >
               {emailModal && emailingKey === emailModal.a.clientId ? <Loader2 size={14} className="animate-spin mr-1.5" /> : <Mail size={14} className="mr-1.5" />}
-              Send
+              Send email
             </Button>
           </DialogFooter>
         </DialogContent>

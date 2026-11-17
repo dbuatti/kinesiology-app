@@ -1,10 +1,9 @@
-import { Settings, Mail, Link as LinkIcon, Sparkles, Globe, Calendar, ExternalLink, FileText, Bug, FlaskConical, Workflow, ClipboardList, Eye, Share2, ArrowLeft, Heart } from "lucide-react";
+import { Settings, Mail, Link as LinkIcon, Sparkles, Globe, Calendar, ExternalLink, FileText, Bug, FlaskConical, Workflow, ClipboardList, Eye, Share2, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 import IntegrationStatus from "../components/crm/settings/IntegrationStatus";
 import StripeSettings from "../components/crm/settings/StripeSettings";
@@ -58,11 +57,6 @@ const SettingsPage = () => {
           title="Settings"
           subtitle="Manage your account, appearance, integrations, and client experience."
           icon={Settings}
-          actions={
-            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
-              <ArrowLeft size={14} /> Back
-            </Button>
-          }
         />
 
         <Tabs defaultValue={["account", "integrations", "data"].includes(new URLSearchParams(window.location.search).get("tab") || "") ? new URLSearchParams(window.location.search).get("tab")! : "account"} className="space-y-8">

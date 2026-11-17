@@ -52,6 +52,7 @@ import { useTimetableAppointments, EnrichedBooking } from "@/hooks/useTimetableA
 import { useSuggestionEngine, Suggestion } from "@/hooks/useSuggestionEngine";
 import AutoDraftPanel, { AutoDraftClient } from "@/components/crm/timetable/AutoDraftPanel";
 import { PageHeader } from "@/components/shared/PageHeader";
+import OverflowMenu from "@/components/shared/OverflowMenu";
 import PendingBookingsPanel from "@/components/assistant/PendingBookingsPanel";
 import { OpenSlot, BusyBlock, Assignment, AvailabilityWindow } from "@/utils/timetable-scheduler";
 import { CALCOM_CONFIG } from "@/config/integrations";
@@ -77,6 +78,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
+import { clickableProps } from "@/lib/a11y";
 
 interface SlotInfo {
   start: string;
@@ -1276,37 +1278,32 @@ const TimetablePage = () => {
             <Badge className="bg-muted text-muted-foreground border-none" variant="outline">
               {summary.blocked} blocked
             </Badge>
-            <Button variant="ghost" size="sm" onClick={fetchData} disabled={loading} className="gap-1.5">
-              <RefreshCw size={14} className={cn(loading && "animate-spin")} /> Refresh
+            <Button variant="ghost" size="icon" onClick={fetchData} disabled={loading} aria-label="Refresh timetable" title="Refresh">
+              <RefreshCw size={15} className={cn(loading && "animate-spin")} />
             </Button>
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSendEmail(14)}
-              disabled={sendingEmail}
-              className="gap-1.5"
-              title="Email the next 14 days' agenda to your inbox"
-            >
-              <Mail size={14} className={cn(sendingEmail && "animate-pulse")} /> Email schedule
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setOooOpen(true)}
-              className="gap-1.5"
-              title="Block a block of time as out-of-office on Cal.com"
-            >
-              <Plane size={14} /> Out of office
-            </Button>
-            <Button
-              variant={showAllDay ? "default" : "outline"}
-              size="sm"
+              variant="ghost"
+              size="icon"
               onClick={() => setShowAllDay((v) => !v)}
-              className="gap-1.5"
-              title="Show or hide all-day events (retreat, flights, personal) on the grid"
+              aria-pressed={showAllDay}
+              aria-label="Toggle all-day events"
+              title={showAllDay ? "Hide all-day events" : "Show all-day events"}
+              className={cn(showAllDay && "bg-primary/10 text-primary-strong hover:bg-primary/15")}
             >
-              <CalendarDays size={14} /> All-day
+              <CalendarDays size={15} />
             </Button>
+            <OverflowMenu
+              label="Timetable options"
+              actions={[
+                {
+                  label: "Email schedule",
+                  icon: Mail,
+                  onSelect: () => handleSendEmail(14),
+                  disabled: sendingEmail,
+                },
+                { label: "Out of office", icon: Plane, onSelect: () => setOooOpen(true) },
+              ]}
+            />
           </>
         }
       />
@@ -2557,7 +2554,7 @@ function DayCell({
 
   return (
     <div
-      onClick={() => onOpenDay(date)}
+      {...(state === DayState.OPEN ? clickableProps(() => onOpenDay(date)) : {})}
       className={cn(
         "rounded-xl border p-2.5 min-h-[140px] flex flex-col transition-all",
         state === DayState.BLOCKED && "bg-muted/40 border-border/60 opacity-70 cursor-default",

@@ -9,7 +9,7 @@
  * statistics, credentials, or health claims.
  */
 
-import { CALCOM_CONFIG, PROFILE_IMAGE_URL } from "@/config/integrations";
+import { CALCOM_CONFIG } from "@/config/integrations";
 
 /** Real booking URL (used by page CTA and meta). */
 export const BOOKING_URL = CALCOM_CONFIG.BOOKING_URL;

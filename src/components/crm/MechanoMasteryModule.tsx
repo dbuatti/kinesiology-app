@@ -30,6 +30,7 @@ import RandomJointCard from './RandomJointCard';
 import MechanoTheoryDrills from './MechanoTheoryDrills';
 import MechanoLessons from './MechanoLessons';
 import { Progress } from '@/components/ui/progress';
+import { clickableProps } from '@/lib/a11y';
 
 type TabType = 'academy' | 'anatomy' | 'sandbox' | 'lessons' | 'drills' | 'challenge' | 'explorer';
 
@@ -226,11 +227,11 @@ const MechanoMasteryModule = () => {
                     {lessonDetails.map((lesson) => {
                       const isCompleted = lessonProgress[lesson.id];
                       return (
-                        <div 
+                        <div
                           key={lesson.id}
-                          onClick={() => {
+                          {...clickableProps(() => {
                             setActiveTab('lessons');
-                          }}
+                          })}
                           className={cn(
                             "p-4 rounded-xl border-2 transition-all flex items-center justify-between cursor-pointer group",
                             isCompleted 
@@ -294,7 +295,7 @@ const MechanoMasteryModule = () => {
                         { step: "Stimulate", icon: Zap, desc: "Aggravate the threat or movement." },
                         { step: "Localize", icon: Target, desc: "Find the joint and plane of motion." },
                         { step: "Calibrate", icon: RefreshCw, desc: "Apply the specific correction." }
-                      ].map((item, i) => (
+                      ].map((item, _i) => (
                         <div key={item.step} className="flex flex-col items-center text-center space-y-2 p-5 bg-card rounded-xl border border-border shadow-sm">
                           <div className="w-10 h-10 rounded-xl bg-muted/50 border border-border flex items-center justify-center text-foreground/80">
                             <item.icon size={18} />

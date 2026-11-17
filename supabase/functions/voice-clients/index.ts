@@ -28,7 +28,7 @@ serve(async (req) => {
       "Notion-Version": "2022-06-28",
     };
 
-    let allResults = [];
+    const allResults = [];
     let hasMore = true;
     let startCursor = undefined;
 

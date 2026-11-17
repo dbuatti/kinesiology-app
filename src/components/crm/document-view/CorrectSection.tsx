@@ -29,7 +29,7 @@ const parseCorrectionString = (str: string) => {
 
   // Extract Finding and System
   // Format: "Direction Correction: Finding (System) ->"
-  const mainRegex = /^(?:Afferent|Efferent)\s+Correction:\s*([^\(->]+)(?:\s*\(([^)]+)\))?\s*(?:->)?/i;
+  const mainRegex = /^(?:Afferent|Efferent)\s+Correction:\s*([^(->]+)(?:\s*\(([^)]+)\))?\s*(?:->)?/i;
   const mainMatch = cleanStr.match(mainRegex);
   
   const finding = mainMatch ? mainMatch[1].trim() : "";
@@ -37,7 +37,7 @@ const parseCorrectionString = (str: string) => {
 
   // Extract Coordinates
   // Format: "-> Coord1 + Coord2 via" or "-> Coord1 via"
-  const coordRegex = /->\s*([^\[]+?)(?:\s*via|\s*\[|$)/i;
+  const coordRegex = /->\s*([^[]+?)(?:\s*via|\s*\[|$)/i;
   const coordMatch = cleanStr.match(coordRegex);
   const coordsStr = coordMatch ? coordMatch[1].trim() : "";
   
@@ -70,7 +70,7 @@ const parseCorrectionString = (str: string) => {
   }
 
   // Extract Method
-  const methodRegex = /via\s+([^\[]+)/i;
+  const methodRegex = /via\s+([^[]+)/i;
   const methodMatch = cleanStr.match(methodRegex);
   const method = methodMatch ? methodMatch[1].trim() : null;
 
@@ -115,7 +115,7 @@ const CorrectSectionProtocolBlock = ({ title, icon: Icon, color, steps, desc, ch
 
 const CorrectSection = ({ 
   metadata, 
-  acupoints, 
+  acupoints: _acupoints, 
   brainZoneOptions, 
   inhibitedFindings,
   updateMetadataFields, 
@@ -188,7 +188,7 @@ Correction Method: ${method}`;
       await updateMetadataFields(parsedFields);
       setShowLog(false);
       showSuccess("Correction loaded into Wizard!");
-    } catch (err) {
+    } catch {
       showError("Failed to parse and load correction.");
     }
   };
@@ -203,7 +203,7 @@ Correction Method: ${method}`;
       const updatedText = updatedLogs.join('\n');
       await saveField('modes_balances', updatedText === "" ? null : updatedText);
       showSuccess("Correction removed from log.");
-    } catch (err) {
+    } catch {
       showError("Failed to delete correction.");
     }
   };
@@ -290,7 +290,7 @@ Correction Method: ${method}`;
 
       onTogglePatternItem(category, baseName, 'Clear', side);
       showSuccess(`Logged correction for "${metadata.wizard_finding}"!`);
-    } catch (err) {
+    } catch {
       showError("Failed to log correction.");
     }
   };

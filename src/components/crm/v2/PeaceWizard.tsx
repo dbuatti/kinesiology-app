@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import {
   Activity,
@@ -36,7 +36,7 @@ interface PeaceWizardProps {
   activePhase?: number;
 }
 
-const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriorityPattern, onFinalise, onPhaseChange, activePhase: activePhaseProp }: PeaceWizardProps) => {
+const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriorityPattern, onFinalise: _onFinalise, onPhaseChange, activePhase: activePhaseProp }: PeaceWizardProps) => {
   const [internalActivePhase, setInternalActivePhase] = useState(0);
   const [phaseDirection, setPhaseDirection] = useState<'forward' | 'backward'>('forward');
   const wizardRef = useRef<HTMLDivElement>(null);
@@ -48,6 +48,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
       isPropSyncRef.current = true;
       setInternalActivePhase(activePhaseProp);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [activePhaseProp]);
 
   // Report phase changes to the page frame — only from user interaction, not prop sync
@@ -61,31 +62,10 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
 
   const activePhase = internalActivePhase; // alias for readability in the rest of the component
 
-  const phaseStatus = useMemo(() => ({
-    p: !!(appointment.goal && appointment.issue),
-    e1: !!(appointment.lymphatic_notes || appointment.harmonic_rocking_notes ||
-           appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes),
-    a: !!(appointment.priority_pattern && appointment.priority_pattern !== "{}"),
-    c: !!(appointment.modes_balances),
-    e2: !!(appointment.session_north_star),
-  }), [appointment]);
-
   const scrollToTop = useCallback(() => {
     wizardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
-
-  const goNext = useCallback(() => {
-    setPhaseDirection('forward');
-    setInternalActivePhase(prev => Math.min(prev + 1, PEACE_PHASES.length - 1));
-    scrollToTop();
-  }, [scrollToTop]);
-
-  const goBack = useCallback(() => {
-    setPhaseDirection('backward');
-    setInternalActivePhase(prev => Math.max(prev - 1, 0));
-    scrollToTop();
-  }, [scrollToTop]);
 
   // Arrow key navigation removed — use the Back/Next buttons or click phases directly.
 

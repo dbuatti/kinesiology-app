@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { format, isToday, differenceInMinutes } from "date-fns";
 import FooterLinks from "@/components/crm/FooterLinks";
+import PageHeader from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/PageState";
 
 interface RecentSession {
   id: string;
@@ -143,43 +145,33 @@ const ClinicalHubPage = () => {
     <div className="min-h-screen bg-background">
       <div className="w-full px-4 md:px-8 py-6">
         {/* Header */}
-        <div className="mb-10">
-          <div className="flex items-center justify-between gap-3 mb-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Zap size={20} className="text-primary" />
-              </div>
-              <div>
-                <h1 className="font-serif text-[26px] font-medium tracking-[-0.02em]">Sessions</h1>
-                <p className="text-xs text-muted-foreground font-medium">Start, continue or review client sessions.</p>
-              </div>
+        <PageHeader
+          className="mb-10"
+          icon={Zap}
+          title="Sessions"
+          subtitle="Start, continue or review client sessions."
+          actions={
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleIpadMode}
+                className={cn(
+                  "flex h-9 items-center gap-2 rounded-lg px-3 text-[12px] font-medium transition-colors",
+                  ipadMode
+                    ? "bg-primary/10 text-primary-strong"
+                    : "text-muted-foreground hover:bg-foreground/[0.05] hover:text-foreground"
+                )}
+                title={ipadMode ? "Exit iPad Mode — restore the sidebar" : "Enter iPad Mode — no sidebar, straight to the hub"}
+                aria-pressed={ipadMode}
+              >
+                <Tablet size={14} />
+                <span className="hidden sm:inline">{ipadMode ? "iPad mode on" : "iPad mode"}</span>
+              </button>
+              <Button onClick={() => setQuickSessionOpen(true)} className="h-9 gap-1.5 rounded-lg px-3.5 text-[13px] font-medium shadow-sm">
+                <Plus size={15} /> New session
+              </Button>
             </div>
-            <button
-              onClick={toggleIpadMode}
-              className={cn(
-                "flex items-center gap-2 px-3 h-9 rounded-xl text-[11px] font-bold border transition-colors shrink-0",
-                ipadMode
-                  ? "bg-primary/10 border-primary/30 text-primary-strong"
-                  : "border-border text-muted-foreground hover:text-foreground hover:bg-muted"
-              )}
-              title={ipadMode ? "Exit iPad Mode — restore the sidebar" : "Enter iPad Mode — no sidebar, straight to the hub"}
-            >
-              <Tablet size={14} />
-              {ipadMode ? "iPad Mode: On" : "iPad Mode"}
-            </button>
-          </div>
-        </div>
-
-        {/* New Session CTA */}
-        <div className="mb-10">
-          <button
-            onClick={() => setQuickSessionOpen(true)}
-            className="group w-full flex items-center justify-center gap-2.5 h-14 rounded-xl border border-dashed border-foreground/15 bg-card/50 text-[14px] font-medium text-muted-foreground transition-all hover:border-primary/40 hover:bg-primary/[0.04] hover:text-primary-strong"
-          >
-            <Plus size={20} />
-            <span className="font-semibold text-sm">New session</span>
-          </button>
-        </div>
+          }
+        />
 
         {/* Up Next — Today & Upcoming */}
         <div className="mb-10">
@@ -194,9 +186,17 @@ const ClinicalHubPage = () => {
             )}
           </div>
           {upNext.length === 0 ? (
-            <div className="text-center py-8 border border-dashed border-border rounded-xl">
-              <p className="text-xs text-muted-foreground font-medium">Nothing scheduled from today onward.</p>
-            </div>
+            <EmptyState
+              icon={Calendar}
+              title="Nothing scheduled from today onward"
+              hint="When a session or lesson is booked it will appear here, ready to start."
+              className="rounded-xl border border-dashed border-border bg-muted/20 py-12"
+              action={
+                <Button variant="outline" className="h-10 rounded-lg px-4 text-sm font-medium" onClick={() => setQuickSessionOpen(true)}>
+                  <Plus size={16} className="mr-1.5" /> Start a session
+                </Button>
+              }
+            />
           ) : (
             <div className="space-y-1">
               {upNext.map((s) => (

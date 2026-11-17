@@ -10,30 +10,25 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 import {
-  ArrowLeft,
-  ChevronLeft,
-  ChevronRight,
-  CheckCircle2,
-  Loader2,
-  Activity,
-  FileText,
-  Maximize2,
-  Minimize2,
-  Calendar,
-  Clock,
-  User,
-  BookOpen,
-  Plus,
-  LayoutGrid,
-  Archive,
-  StickyNote,
-  Mail,
-  MoreHorizontal,
-  Zap,
-  Brain,
-  X,
-} from "lucide-react";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+    ArrowLeft,
+    ChevronRight,
+    CheckCircle2,
+    Loader2,
+    Activity,
+    FileText,
+    Maximize2,
+    Minimize2,
+    Calendar,
+    Clock,
+    User,
+    Plus,
+    LayoutGrid,
+    Archive,
+    StickyNote,
+    Mail,
+    MoreHorizontal,
+    X,
+  } from "lucide-react";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import PeaceWizardV3 from "@/components/crm/v3/PeaceWizardV3";
 // V3 is the canonical PEACE implementation — the demo and real appointments
@@ -53,7 +48,6 @@ import PathwayReflexStimGrid from "@/components/crm/PathwayReflexStimGrid";
 import QuickNotesDialog from "@/components/crm/QuickNotesDialog";
 import HowToSearch from "@/components/crm/HowToSearch";
 import { CTMModal } from "@/components/ctm/CTMModal";
-import { parseClientJournal } from "@/utils/journal-helper";
 import { safeParse } from "@/utils/safe-json";
 import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
 import type { ProtocolLog, ProtocolLogPatch } from "@/data/protocol-log";
@@ -99,10 +93,6 @@ const AppointmentV2Page = () => {
   const [ctmOpen, setCtmOpen] = useState(false);
   const [intakeEditOpen, setIntakeEditOpen] = useState(false);
   const [activePhase, setActivePhase] = useState(0);
-
-  // Report → Manual navigation: deep-link a finding/pathway into the clinical workspace.
-  const [pendingManualPathwayId, setPendingManualPathwayId] = useState<string | null>(null);
-  const [pendingManualTab, setPendingManualTab] = useState<string | null>(null);
 
   // Correction logs written at the table (metadata.protocol_logs).
   const metadata = useMemo<Record<string, unknown>>(() => {
@@ -244,10 +234,6 @@ const AppointmentV2Page = () => {
   }, [appointment]);
 
   /** PEACE phase navigation — moved up from PeaceWizard/PeaceWizardV3 into the unified header. */
-  const goBack = useCallback(() => {
-    setActivePhase(prev => Math.max(prev - 1, 0));
-  }, []);
-
   const goNext = useCallback(() => {
     setActivePhase(prev => Math.min(prev + 1, PEACE_PHASES.length - 1));
   }, []);
@@ -260,7 +246,8 @@ const AppointmentV2Page = () => {
   const phaseHint = useMemo(() => {
     const activeIsComplete = (phaseStatus as any)[PEACE_PHASES[activePhase].id];
     return activeIsComplete ? "" : PEACE_PHASES[activePhase].hint;
-  }, [activePhase, appointment]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
+  }, [activePhase, appointment, phaseStatus]);
 
   useEffect(() => {
     const handler = () => setIsFullScreen(localStorage.getItem('rk_fullscreen') === 'true');
@@ -299,6 +286,7 @@ const AppointmentV2Page = () => {
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [ctmOpen]);
 
   const toggleFullScreen = () => {
@@ -307,26 +295,6 @@ const AppointmentV2Page = () => {
     setIsFullScreen(next);
     window.dispatchEvent(new Event('rk_fullscreen_change'));
   };
-
-  // Navigation from SessionReportModal → Grid/Manual
-  const handleNavigateToPathway = useCallback((pathwayId: string) => {
-    setPendingManualPathwayId(pathwayId);
-    setPendingManualTab('muscles'); // Default to Muscles tab for corrections
-    setReportOpen(false);
-    setViewMode('grid');
-  }, []);
-
-  const handleNavigateToMuscles = useCallback(() => {
-    setPendingManualTab('muscles');
-    setReportOpen(false);
-    setViewMode('grid');
-  }, []);
-
-  const handleNavigateToReflexes = useCallback(() => {
-    setPendingManualTab('reflexes');
-    setReportOpen(false);
-    setViewMode('grid');
-  }, []);
 
   /** Single completion path for both the header Finalise button and the wizard. */
   const handleFinalise = useCallback(async () => {
@@ -346,16 +314,6 @@ const AppointmentV2Page = () => {
       showError("Failed to complete session. Please try again.");
     }
   }, [isDemo, id, navigate]);
-
-  // React to pending manual navigation
-  useEffect(() => {
-    if (pendingManualPathwayId) {
-      // Navigate to the manual workspace with this pathway loaded
-      console.log('[Manual] Loading pathway:', pendingManualPathwayId);
-      setPendingManualPathwayId(null);
-      // This will be handled by PreliminaryPhaseV3 or another mechanism
-    }
-  }, [pendingManualPathwayId, viewMode, setViewMode]);
 
   if (loading) {
     return (
@@ -807,11 +765,6 @@ const AppointmentV2Page = () => {
         open={ctmOpen}
         onOpenChange={setCtmOpen}
         inhibitionState={inhibitionPathwayState}
-        onSelectPathway={(key) => {
-          // Push the selected pathway into the clinical workspace so the
-          // practitioner can deep-link back into it after the CTM run.
-          setPendingManualPathwayId(key);
-        }}
       />
     </CorrectionDockProvider>
   );

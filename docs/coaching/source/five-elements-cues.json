@@ -1,0 +1,52 @@
+[
+  {
+    "element": "Wood",
+    "organs": "Liver / Gallbladder",
+    "reachesFor": "Acceptance",
+    "defendsAgainst": "Rejection — often expressed as anger, judgement, perfectionism, or control",
+    "coreBelief": "I am not good enough.",
+    "cues": "Sharp, fast, pointed voice; direct gaze; tension through brow, shoulders, and hips; language of must, should, right, and control.",
+    "stuckExpressions": "Over-assertive / controlling or timid / victimised.",
+    "controlledBy": "Metal"
+  },
+  {
+    "element": "Fire",
+    "organs": "Heart / Small Intestine",
+    "reachesFor": "Love",
+    "defendsAgainst": "Hurt — often expressed as control, blame, rapid emotional shifts, or self-abandonment",
+    "coreBelief": "I am not loveable.",
+    "cues": "Quick, animated, warm expression; eyes and face lead; expansive gestures or a high/armoured chest; relationship language and approval seeking.",
+    "stuckExpressions": "Dominant / controlling or submitting / doormat.",
+    "controlledBy": "Water"
+  },
+  {
+    "element": "Earth",
+    "organs": "Spleen / Stomach",
+    "reachesFor": "Care",
+    "defendsAgainst": "Worry — often expressed as over-giving, over-sympathy, absorption, or resentment",
+    "coreBelief": "I am not important.",
+    "cues": "Sing-song voice; speaks in “we”; scans for who needs help; heaviness through the middle; service-wrapped requests.",
+    "stuckExpressions": "Smothering / controlling or clinging / self-neglecting.",
+    "controlledBy": "Wood"
+  },
+  {
+    "element": "Metal",
+    "organs": "Lung / Large Intestine",
+    "reachesFor": "Worth and value",
+    "defendsAgainst": "Grief — often expressed as disconnection, image/performance, perfectionism, or withdrawal",
+    "coreBelief": "I am not worthy.",
+    "cues": "Breathy, measured voice with sighs; composed face; brief gaze then withdrawal; chest, neck, and upper-trap tension; apology in the tone.",
+    "stuckExpressions": "Image / performance or detached / floating.",
+    "controlledBy": "Fire"
+  },
+  {
+    "element": "Water",
+    "organs": "Kidney / Bladder",
+    "reachesFor": "Safety",
+    "defendsAgainst": "Fear — often expressed as over-control, withdrawal, hypervigilance, or paralysis",
+    "coreBelief": "I am not safe.",
+    "cues": "Low or gravelly voice; tired, hooded, or hyper-alert eyes; driven/restless or withdrawn/still presentation; low-back, knee, or ankle complaints.",
+    "stuckExpressions": "Over-driven or impotent / withdrawn.",
+    "controlledBy": "Earth"
+  }
+]

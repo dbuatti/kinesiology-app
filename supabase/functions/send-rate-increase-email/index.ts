@@ -79,23 +79,6 @@ serve(async (req) => {
     }
 
     const firstName = clientName.split(' ')[0];
-    const body = `
-Hi ${firstName},
-
-I hope this finds you well!
-
-I just wanted to take a moment to say a huge thank you for working with me and for trusting me with your health and integration journey. It is always a privilege to support you.
-
-I'm writing to let you know that from ${effectiveMonth || 'next month'} onwards, my session rate for you will be moving from $${currentRate} to $${targetRate} per session.
-
-This allows me to continue investing in advanced clinical training, specialist protocols, and high-quality integration resources — all to ensure I'm able to support you in the very best way possible.
-
-Please don't hesitate to reply directly to this email if you have any questions or would like to have a chat about it.
-
-Looking forward to our next session!
-
-Warmly,
-Daniele`;
 
     const htmlBody = `
       <!DOCTYPE html>

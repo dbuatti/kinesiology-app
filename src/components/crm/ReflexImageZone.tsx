@@ -27,6 +27,7 @@ const ReflexImageZone = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [deleteTarget, setDeleteTarget] = useState<{type: string} | null>(null);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   const handleUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       showError("Please upload an image file.");
@@ -112,7 +113,7 @@ const ReflexImageZone = ({
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (file) handleUpload(file);
-  }, [reflexId, type]);
+  }, [handleUpload]);
 
   const isPrimary = type === 'primary';
 

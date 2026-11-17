@@ -33,7 +33,7 @@ export function parseClientJournal(raw: string | null | undefined): ClientJourna
         contact_log: parsed.contact_log || [],
       };
     }
-  } catch (e) {
+  } catch {
     // Not JSON, treat as raw notes
   }
   return { notes: raw || "", contact_log: [] };

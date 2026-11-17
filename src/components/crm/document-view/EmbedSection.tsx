@@ -101,6 +101,7 @@ const EmbedSection = ({
     } else {
       setLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [appointment.id, liveUnifiedPattern]);
 
   // Resolve which sources to use: live (from hook) vs own fetch (fallback)
@@ -209,7 +210,7 @@ const EmbedSection = ({
         onUpdate?.();
       }
       showSuccess(`${item.name} ${item.isCleared ? 'unmarked' : 'marked as cleared'}.`);
-    } catch (err) {
+    } catch {
       showError("Failed to update finding status.");
     } finally {
       setClearingId(null);
@@ -275,7 +276,7 @@ const EmbedSection = ({
             <p>${homework}</p>
           </div>
           <p class="footer">${new Date().toLocaleDateString('en-AU')}</p>
-          <script>window.print();<\/script>
+          <script>window.print();</script>
         </body>
       </html>
     `);

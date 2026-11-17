@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { ArrowRight, AlertTriangle, CheckCircle2, ShieldAlert, Dumbbell, Baby, Zap, Brain, Activity, Compass, RotateCcw, ClipboardList, Eye, FileText, Search } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { differenceInDays } from "date-fns";
 import EditableField from "@/components/shared/EditableField";
 import BoltTestSection from "@/components/crm/BoltTestSection";

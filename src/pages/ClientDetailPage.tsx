@@ -355,7 +355,7 @@ const ClientDetailPage = () => {
     if (!client || !contactLogNote.trim()) return;
     setSavingContact(true);
     try {
-      const currentLog = (client as any).contact_log || [];
+      const currentLog = client.contact_log || [];
       const entry = { timestamp: new Date().toISOString(), note: contactLogNote.trim() };
       const updatedLog = [...currentLog, entry];
       const { error } = await supabase
@@ -437,6 +437,7 @@ const ClientDetailPage = () => {
 
   useEffect(() => {
     fetchClientData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [id]);
 
   if (loading) return (
@@ -478,49 +479,35 @@ const ClientDetailPage = () => {
           
 
           actions={
-            <div className="flex flex-wrap gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="bg-card border-border text-foreground rounded-lg font-medium text-[13px] h-9 px-4"
-                onClick={() => navigate("/clients")}
-              >
-                <ArrowLeft size={14} className="mr-2" /> Back
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="bg-card border-border text-chart-primary rounded-lg font-medium text-[13px] h-9 px-4"
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                className="h-9 rounded-lg px-4 text-[13px] font-medium shadow-sm"
                 onClick={() => setAssessmentModal({ open: true, type: 'bolt' })}
               >
                 <FlaskConical size={14} className="mr-2" /> Log BOLT
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="bg-card border-border text-chart-destructive rounded-lg font-medium text-[13px] h-9 px-4"
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 rounded-lg border-border px-4 text-[13px] font-medium"
                 onClick={() => setAssessmentModal({ open: true, type: 'coherence' })}
               >
                 <Activity size={14} className="mr-2" /> Log COH
               </Button>
               <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="bg-card rounded-lg border-border h-9 px-4 font-medium text-[13px]">
-                    <Edit3 size={14} className="mr-2" /> Edit Profile
-                  </Button>
-                </DialogTrigger>
                 <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-xl p-0">
                   <div className="p-8">
                     <DialogHeader className="mb-6">
                       <DialogTitle className="text-2xl font-semibold">Edit Client Profile</DialogTitle>
                       <DialogDescription className="font-medium">Update the personal and clinical details for this client.</DialogDescription>
                     </DialogHeader>
-                    <ClientForm 
+                    <ClientForm
                       initialData={client}
                       onSuccess={() => {
                         setEditOpen(false);
                         fetchClientData();
-                      }} 
+                      }}
                     />
                   </div>
                 </DialogContent>
@@ -533,6 +520,19 @@ const ClientDetailPage = () => {
                       </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="rounded-xl p-2 shadow-sm border-none bg-card">
+                      <DropdownMenuItem
+                        onClick={() => setEditOpen(true)}
+                        className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
+                      >
+                        <Edit3 size={16} className="text-chart-primary" /> Edit profile
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => navigate("/clients")}
+                        className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
+                      >
+                        <ArrowLeft size={16} className="text-chart-primary" /> Back to people
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="my-2" />
                       <DropdownMenuItem
                         onClick={handleSendOnboardingEmail}
                         disabled={sendingEmail || !client.email}
@@ -630,8 +630,8 @@ const ClientDetailPage = () => {
                         <span className="text-xs font-medium text-foreground">Stripe</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={cn("text-[10px] font-semibold uppercase tracking-wider", (client as any).stripe_customer_id ? "text-chart-emerald" : "text-muted-foreground/70")}>
-                          {(client as any).stripe_customer_id ? "Linked" : "Not linked"}
+                        <span className={cn("text-[10px] font-semibold uppercase tracking-wider", client.stripe_customer_id ? "text-chart-emerald" : "text-muted-foreground/70")}>
+                          {client.stripe_customer_id ? "Linked" : "Not linked"}
                         </span>
                         <Button
                           variant="ghost"
@@ -837,46 +837,46 @@ const ClientDetailPage = () => {
                       <div className="space-y-1">
                         <span className="text-xs font-medium text-muted-foreground">Status</span>
                         <Badge className={cn("text-[10px] font-semibold uppercase tracking-wider border-none w-fit",
-                          (client as any).status === 'Active' ? "bg-chart-emerald/10 text-chart-emerald" :
-                          (client as any).status === 'On Hold' ? "bg-yellow-500/10 text-yellow-600" :
-                          (client as any).status === 'Completed Programme' ? "bg-chart-primary/10 text-chart-primary" :
-                          (client as any).status === 'Inactive' ? "bg-muted text-muted-foreground" :
+                          client.status === 'Active' ? "bg-chart-emerald/10 text-chart-emerald" :
+                          client.status === 'On Hold' ? "bg-yellow-500/10 text-yellow-600" :
+                          client.status === 'Completed Programme' ? "bg-chart-primary/10 text-chart-primary" :
+                          client.status === 'Inactive' ? "bg-muted text-muted-foreground" :
                           "bg-muted text-muted-foreground"
                         )}>
-                          {(client as any).status || 'Not set'}
+                          {client.status || 'Not set'}
                         </Badge>
                       </div>
                       <div className="space-y-1">
                         <span className="text-xs font-medium text-muted-foreground">Programme</span>
-                        <span className="text-sm font-medium text-foreground block">{(client as any).programme || '—'}</span>
+                        <span className="text-sm font-medium text-foreground block">{client.programme || '—'}</span>
                       </div>
                       <div className="space-y-1">
                         <span className="text-xs font-medium text-muted-foreground">First Session</span>
-                        <span className="text-sm font-medium text-foreground block">{(client as any).first_session_date ? format(new Date((client as any).first_session_date), "MMM d, yyyy") : '—'}</span>
+                        <span className="text-sm font-medium text-foreground block">{client.first_session_date ? format(new Date(client.first_session_date), "MMM d, yyyy") : '—'}</span>
                       </div>
                       <div className="space-y-1">
                         <span className="text-xs font-medium text-muted-foreground">Last Session</span>
-                        <span className="text-sm font-medium text-foreground block">{(client as any).most_recent_session ? format(new Date((client as any).most_recent_session), "MMM d, yyyy") : '—'}</span>
+                        <span className="text-sm font-medium text-foreground block">{client.most_recent_session ? format(new Date(client.most_recent_session), "MMM d, yyyy") : '—'}</span>
                       </div>
                     </div>
-                    {(client as any).corrections_holding && (
+                    {client.corrections_holding && (
                       <div className="mt-4 pt-4 border-t border-border">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-medium text-muted-foreground">Corrections Holding:</span>
                           <Badge className={cn("text-[10px] font-semibold uppercase tracking-wider border-none",
-                            (client as any).corrections_holding?.includes('holding well') ? "bg-chart-emerald/10 text-chart-emerald" :
-                            (client as any).corrections_holding?.includes('Partially') ? "bg-yellow-500/10 text-yellow-600" :
+                            client.corrections_holding?.includes('holding well') ? "bg-chart-emerald/10 text-chart-emerald" :
+                            client.corrections_holding?.includes('Partially') ? "bg-yellow-500/10 text-yellow-600" :
                             "bg-chart-destructive/10 text-chart-destructive"
                           )}>
-                            {(client as any).corrections_holding}
+                            {client.corrections_holding}
                           </Badge>
                         </div>
                       </div>
                     )}
-                    {(client as any).priority_pathways && (
+                    {client.priority_pathways && (
                       <div className="mt-3">
                         <span className="text-xs font-medium text-muted-foreground">Priority Pathways</span>
-                        <p className="text-sm text-foreground mt-1">{(client as any).priority_pathways}</p>
+                        <p className="text-sm text-foreground mt-1">{client.priority_pathways}</p>
                       </div>
                     )}
                   </CardContent>
@@ -1104,13 +1104,13 @@ const ClientDetailPage = () => {
                       </DialogContent>
                     </Dialog>
                   </div>
-                  {(!(client as any).contact_log || (client as any).contact_log.length === 0) ? (
+                  {(!client.contact_log || client.contact_log.length === 0) ? (
                     <div className="text-sm text-muted-foreground/70 py-6 text-center border border-dashed border-border rounded-xl">
                       No contact events logged yet.
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {(client as any).contact_log.slice().reverse().map((entry: any, i: number) => (
+                      {client.contact_log.slice().reverse().map((entry: any, i: number) => (
                         <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-muted/30 border border-border">
                           <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
                             <Phone size={14} className="text-muted-foreground" />

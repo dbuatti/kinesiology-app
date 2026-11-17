@@ -1,6 +1,7 @@
 import { useState } from 'react'; import type { FC } from 'react';
 import { Button } from "@/components/ui/button";
 import { Check, X, RotateCw } from "lucide-react";
+import { clickableProps } from '@/lib/a11y';
 
 interface FlashcardQuestionProps {
   question: string;
@@ -19,9 +20,9 @@ const FlashcardQuestion: FC<FlashcardQuestionProps> = ({
 
   return (
     <div className="space-y-8">
-      <div 
+      <div
         className={`relative w-full min-h-[300px] transition-all duration-500 [transform-style:preserve-3d] cursor-pointer ${isFlipped ? '[transform:rotateY(180deg)]' : ''}`}
-        onClick={() => setIsFlipped(!isFlipped)}
+        {...clickableProps(() => setIsFlipped(!isFlipped))}
       >
         {/* Front */}
         <div className="absolute inset-0 w-full h-full bg-card dark:bg-card border-2 border-border dark:border-border rounded-2xl p-8 flex flex-col items-center justify-center text-center [backface-visibility:hidden] shadow-xl">

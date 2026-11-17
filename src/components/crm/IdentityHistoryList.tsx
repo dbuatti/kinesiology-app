@@ -75,7 +75,7 @@ const IdentityHistoryList = () => {
       if (error) throw error;
       showSuccess("Session deleted.");
       setSessions(prev => prev.filter(s => s.id !== session.id));
-    } catch (err) {
+    } catch {
       showError("Failed to delete session.");
     }
   };

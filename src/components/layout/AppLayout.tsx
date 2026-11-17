@@ -1,7 +1,5 @@
 import type { FC, ReactNode } from 'react';
-import { Settings, HelpCircle, LogOut, User } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useAppMode } from '@/components/ModeProvider';
+import { Settings, User } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,10 +11,6 @@ interface AppLayoutProps {
 export const AppLayout: FC<AppLayoutProps> = ({ children, variant = 'default' }) => {
   const { session } = useAuth();
   const navigate = useNavigate();
-
-  const handleSignOut = async () => {
-    // Sign out handled by AuthProvider
-  };
 
   return (
     <div className="min-h-screen bg-background">

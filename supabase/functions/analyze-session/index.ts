@@ -27,9 +27,12 @@ serve(async (req) => {
       throw new Error("GEMINI_API_KEY is missing.");
     }
 
-    const prompt = `Act as a master clinical supervisor. Analyze this identity session data to find DEEPER, hidden patterns.
-    
-    Return the result as a JSON object with a key "suggestions" containing an array of objects:
+    const prompt = `Act as a master clinical supervisor. Analyze this ${type || "identity"} session data to find DEEPER, hidden patterns.
+
+Session data:
+${JSON.stringify(data ?? {}).slice(0, 12000)}
+
+Return the result as a JSON object with a key "suggestions" containing an array of objects:
     - "content": The text of the insight.
     - "type": "identity", "belief", or "goal".
     - "reasoning": A 1-sentence explanation.

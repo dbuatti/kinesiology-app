@@ -23,7 +23,7 @@ const OVERDUE_MULTIPLIER = 1.5; // if gap since last session > avg gap Ã— this â
 
 function detectPattern(
   pastDates: Date[],
-  todayMs: number
+  _todayMs: number
 ): { gapDays: number; confidence: number; lastDate: Date } | null {
   if (pastDates.length < 2) return null;
 
@@ -101,7 +101,7 @@ export function useSuggestionEngine({
   enrichedVoiceStudents,
   slots,
   proposals,
-  calcomBookings,
+  calcomBookings: _calcomBookings,
 }: {
   appointmentsData: { client_id: string; date: string; status: string | null }[];
   voiceBookingsData: { student_email: string | null; lesson_date: string; status: string | null }[];

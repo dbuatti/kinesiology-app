@@ -22,7 +22,7 @@ serve(async (req) => {
     )
 
     // Perform a tiny query to ensure the DB engine is active
-    const { data, error } = await supabase.from('profiles').select('id').limit(1);
+    const { error } = await supabase.from('profiles').select('id').limit(1);
 
     if (error) throw error;
 

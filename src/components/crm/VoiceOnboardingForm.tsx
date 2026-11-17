@@ -14,6 +14,7 @@ export interface VoiceOnboardingInitial {
   name?: string;
   email?: string;
   phone?: string;
+  suburb?: string;
   notes?: string;
   practice?: "voice" | "piano";
 }
@@ -29,6 +30,7 @@ const VoiceOnboardingForm = ({ onSuccess, initial }: VoiceOnboardingFormProps) =
   const [name, setName] = useState(initial?.name ?? "");
   const [email, setEmail] = useState(initial?.email ?? "");
   const [phone, setPhone] = useState(initial?.phone ?? "");
+  const [suburb, setSuburb] = useState(initial?.suburb ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [practice, setPractice] = useState<"voice" | "piano">(initial?.practice ?? "voice");
   const [submitting, setSubmitting] = useState(false);
@@ -46,6 +48,7 @@ const VoiceOnboardingForm = ({ onSuccess, initial }: VoiceOnboardingFormProps) =
           name: name.trim(),
           email: email.trim() || null,
           phone: phone.trim() || null,
+          suburb: suburb.trim() || null,
           notes: notes.trim() || null,
           practice,
         },
@@ -91,6 +94,7 @@ const VoiceOnboardingForm = ({ onSuccess, initial }: VoiceOnboardingFormProps) =
               setName("");
               setEmail("");
               setPhone("");
+              setSuburb("");
               setNotes("");
               setPractice("voice");
               setClientId(null);
@@ -150,6 +154,19 @@ const VoiceOnboardingForm = ({ onSuccess, initial }: VoiceOnboardingFormProps) =
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder="+61 4XX XXX XXX"
+          className="h-12 rounded-2xl border-border dark:border-border bg-card dark:bg-card text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="suburb" className="text-[13px] font-medium text-foreground/80">
+          Suburb
+        </Label>
+        <Input
+          id="suburb"
+          value={suburb}
+          onChange={(e) => setSuburb(e.target.value)}
+          placeholder="e.g. Toorak"
           className="h-12 rounded-2xl border-border dark:border-border bg-card dark:bg-card text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
         />
       </div>

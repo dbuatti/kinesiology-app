@@ -287,9 +287,6 @@ serve(async (req) => {
         : "."}`
       : "";
 
-    const pianoTitle = "Piano Lesson";
-    const voiceTitle = "Voice Lesson";
-    const lessonTitle = isPiano ? pianoTitle : voiceTitle;
     const studioName = isPiano ? "Piano Studio" : "Voice Studio";
     const coachTitle = isPiano ? "Piano Coach" : "Voice Coach";
     const emoji = isPiano ? "🎹" : "🎵";

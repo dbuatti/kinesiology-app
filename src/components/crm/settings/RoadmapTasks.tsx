@@ -42,7 +42,7 @@ const PHASE_META = [
   { phase: 4, label: "Phase 4", sub: "Q4 2027", colour: "bg-emerald-600", light: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/40", text: "text-emerald-700 dark:text-emerald-400" },
 ];
 
-const RoadmapTasks = ({ rateDistribution, averageSessionRate }: RoadmapTasksProps) => {
+const RoadmapTasks = ({ rateDistribution, averageSessionRate: _averageSessionRate }: RoadmapTasksProps) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -307,7 +307,7 @@ const RoadmapTasks = ({ rateDistribution, averageSessionRate }: RoadmapTasksProp
                           onClick={() => handleAdd(phase)}
                           className="h-8 px-3 rounded-xl text-[11px] font-semibold"
                         >
-                          Save
+                          Add task
                         </Button>
                       </div>
                     )}

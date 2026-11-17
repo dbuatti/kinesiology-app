@@ -272,26 +272,34 @@ export default function FollowUpTab() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-60">
-                        {isSnoozed ? (
-                          <DropdownMenuItem onSelect={() => unsnooze(c)}><Bell className="mr-2 h-4 w-4" /> Unsnooze</DropdownMenuItem>
+                        {filter === "closed" ? (
+                          <DropdownMenuItem onSelect={() => reopen(c)}>
+                            <RotateCcw className="mr-2 h-4 w-4" /> Reopen
+                          </DropdownMenuItem>
                         ) : (
                           <>
-                            <DropdownMenuItem onSelect={() => snooze(c, 1)}><BellOff className="mr-2 h-4 w-4" /> Snooze until tomorrow</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => snooze(c, 7)}><BellOff className="mr-2 h-4 w-4" /> Snooze for a week</DropdownMenuItem>
-                          </>
-                        )}
-                        {!voice && (
-                          <>
+                            {isSnoozed ? (
+                              <DropdownMenuItem onSelect={() => unsnooze(c)}><Bell className="mr-2 h-4 w-4" /> Unsnooze</DropdownMenuItem>
+                            ) : (
+                              <>
+                                <DropdownMenuItem onSelect={() => snooze(c, 1)}><BellOff className="mr-2 h-4 w-4" /> Snooze until tomorrow</DropdownMenuItem>
+                                <DropdownMenuItem onSelect={() => snooze(c, 7)}><BellOff className="mr-2 h-4 w-4" /> Snooze for a week</DropdownMenuItem>
+                              </>
+                            )}
+                            {!voice && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild>
+                                  <Link to={`/clients/${c.id}`}><ArrowUpRight className="mr-2 h-4 w-4" /> Open profile</Link>
+                                </DropdownMenuItem>
+                              </>
+                            )}
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild>
-                              <Link to={`/clients/${c.id}`}><ArrowUpRight className="mr-2 h-4 w-4" /> Open profile</Link>
+                            <DropdownMenuItem onSelect={() => close(c)} className="text-muted-foreground">
+                              <CircleSlash className="mr-2 h-4 w-4" /> Close — don't follow up
                             </DropdownMenuItem>
                           </>
                         )}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onSelect={() => close(c)} className="text-muted-foreground">
-                          <CircleSlash className="mr-2 h-4 w-4" /> Close — don't follow up
-                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>

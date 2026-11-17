@@ -167,7 +167,7 @@ const SessionDocumentView = ({
   // Extract all currently and historically inhibited findings from the unified pattern
   const activeInhibitedFindings = useMemo(() => {
     const list: string[] = [];
-    Object.entries(unifiedPattern).forEach(([category, items]: [string, any]) => {
+    Object.entries(unifiedPattern).forEach(([, items]: [string, any]) => {
       Object.entries(items).forEach(([name, status]) => {
         const strStatus = status as string;
         const baseStatus = strStatus.replace('_Cleared', '');

@@ -128,6 +128,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
       }
     };
     fetchMuscles();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [appointmentId, isSandbox]);
 
   const effectiveItem = selectedFinding === 'CUSTOM' ? customText : selectedFinding;

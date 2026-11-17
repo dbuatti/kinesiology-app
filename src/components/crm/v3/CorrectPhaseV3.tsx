@@ -299,7 +299,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
                   onClick={saveCustom}
                   className="h-10 shrink-0 px-4 text-[13px]"
                 >
-                  Save
+                  Save pathway
                 </PrimaryButton>
               </div>
             )}
@@ -671,7 +671,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
                     onClick={saveCustom}
                     className="h-10 shrink-0 px-4 text-[13px]"
                   >
-                    Save
+                    Save pathway
                   </PrimaryButton>
                 </div>
               )}

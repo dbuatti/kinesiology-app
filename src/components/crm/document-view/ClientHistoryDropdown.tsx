@@ -19,6 +19,7 @@ import {
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { processNeurologicalHistory } from '@/utils/neurological-history';
+import { clickableProps } from '@/lib/a11y';
 
 interface ClientHistoryDropdownProps {
   history: any[];
@@ -160,8 +161,8 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
 
                       return (
                         <div key={finding.name} className="flex flex-col">
-                          <div 
-                            onClick={() => toggleExpandFinding(finding.name)}
+                          <div
+                            {...clickableProps(() => toggleExpandFinding(finding.name))}
                             className={cn(
                               "grid grid-cols-12 p-3 items-center hover:bg-muted/50 transition-colors cursor-pointer",
                               isExpanded && "bg-muted/20"

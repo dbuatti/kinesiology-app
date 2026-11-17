@@ -221,7 +221,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
     } finally {
       setLoading(false);
     }
-  }, [clientEmail, clientId, hasClientRecord, firstName, composeMode, threadIdsKey]);
+  }, [clientEmail, firstName, composeMode, threadIdsKey]);
 
   useEffect(() => { load(); }, [load]);
 

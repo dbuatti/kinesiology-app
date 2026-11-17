@@ -19,9 +19,8 @@ interface FollowUpTrackerProps {
 }
 
 const FollowUpTracker = ({ clients }: FollowUpTrackerProps) => {
-  const now = new Date();
-
   const clientsNeedingFollowUp = useMemo(() => {
+    const now = new Date();
     return clients.map(client => {
       const apps = client.appointments || [];
       const pastApps = apps.filter((a: any) => isBefore(new Date(a.date), now))

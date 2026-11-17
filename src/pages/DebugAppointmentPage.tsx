@@ -218,7 +218,7 @@ const DebugAppointmentPage = () => {
  setDebugClient(null);
  setDebugApp(null);
  showSuccess("Test data purged.");
- } catch (err) {
+ } catch {
  showError("Cleanup failed.");
  } finally {
  setLoading(false);

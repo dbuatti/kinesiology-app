@@ -214,7 +214,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
       if (error) throw error;
       showSuccess(`Added ${suggestedIds.length} identities to your active map.`);
       fetchData();
-    } catch (err) {
+    } catch {
       showError("Failed to accept all suggestions.");
     } finally {
       setIsAcceptingAll(false);
@@ -260,7 +260,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
       if (error) throw error;
       showSuccess("Identity added to active map.");
       fetchData();
-    } catch (err) {
+    } catch {
       showError("Failed to accept suggestion.");
     }
   };
@@ -275,7 +275,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
       if (error) throw error;
       showSuccess("Identity integrated and archived.");
       fetchData();
-    } catch (err) {
+    } catch {
       showError("Failed to update status.");
     }
   };
@@ -290,7 +290,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
       if (error) throw error;
       showSuccess("Identity reactivated.");
       fetchData();
-    } catch (err) {
+    } catch {
       showError("Failed to reactivate.");
     }
   };
@@ -301,7 +301,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
       if (error) throw error;
       setBacklog(prev => prev.filter(item => item.id !== id));
       showSuccess("Removed from map.");
-    } catch (err) {
+    } catch {
       showError("Failed to remove.");
     }
   };
@@ -469,7 +469,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
                     asChild
                   >
                     <Link to={rec.path} state={{ prefill: item.content, backlogId: item.id, reflectionId: item.reflection_id }}>
-                      {isWIP ? <><RefreshCw size={16} className="mr-2 animate-spin-slow" /> Continue</> : <>Process <ChevronRight size={16} className="ml-1" /></>}
+                      {isWIP ? <><RefreshCw size={16} className="mr-2 animate-spin-slow" /> Resume</> : <>Start session <ChevronRight size={16} className="ml-1" /></>}
                     </Link>
                   </Button>
                 )}

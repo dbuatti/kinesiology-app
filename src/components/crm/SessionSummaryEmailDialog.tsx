@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Copy, Sparkles, RefreshCw, Mail, Send as SendIcon } from "lucide-react";
+import { Loader2, Copy, RefreshCw, Mail, Send as SendIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -111,7 +111,7 @@ export function SessionSummaryEmailDialog({ open, onOpenChange, appointment, ref
         setPreviewHtml(data.html || "");
         setPreviewHeaders({ from: data.from, to: data.to, subject: data.subject, date: data.date });
         setScopeError(false);
-      } catch (e: any) {
+      } catch {
         if (!cancelled) {
           // Fall back to local render so preview still works offline.
           setPreviewHtml(renderSessionSummaryEmailHtml({
@@ -336,7 +336,7 @@ export function SessionSummaryEmailDialog({ open, onOpenChange, appointment, ref
           </Button>
           <Button onClick={() => handleAction("send")} disabled={!!sending || !draft} className="gap-1.5">
             {sending === "send" ? <Loader2 size={14} className="animate-spin" /> : <SendIcon size={14} />}
-            Send
+            Send email
           </Button>
         </DialogFooter>
       </DialogContent>

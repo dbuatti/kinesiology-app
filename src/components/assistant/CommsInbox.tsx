@@ -300,7 +300,7 @@ export default function CommsInbox({ clients, voiceStudents, people: peopleOptio
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="h-7 gap-1 px-2 text-[11px] text-muted-foreground hover:text-foreground" title="Mark as done">
-                    <Check className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Done</span>
+                    <Check className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Complete</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">

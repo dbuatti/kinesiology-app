@@ -31,7 +31,7 @@ serve(async (req) => {
     const authErr = await requirePractitioner(req, corsHeaders);
     if (authErr) return authErr;
 
-    let { start, end, eventTypeId, timeZone, bookingUidToReschedule } = await req.json()
+    const { start, end, eventTypeId, timeZone, bookingUidToReschedule } = await req.json()
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
 
     if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY in Supabase Secrets.")

@@ -68,7 +68,7 @@ async function callAI(prompt: string, config: { openRouterKey?: string, geminiKe
           continue;
         }
         break;
-      } catch (e) {
+      } catch {
         break;
       }
     }

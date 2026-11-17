@@ -232,6 +232,7 @@ export function ClientsTool() {
 
   useEffect(() => {
     loadAllClients();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, []);
 
   const handleReopen = async (client: ClientWithStats) => {

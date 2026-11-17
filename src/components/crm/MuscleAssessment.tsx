@@ -1,26 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from "@/data/muscle-data";
-import { Badge } from "@/components/ui/badge";
-import { Zap, Search, CheckCircle2, Info } from "lucide-react";
+import { Search, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MuscleInfoModal from "@/components/crm/MuscleInfoModal";
-import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { safeParse } from "@/utils/safe-json";
 import { getMuscleInfo } from "@/data/muscle-info-data";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
-interface MuscleTestItemProps {
-  name: string;
-  statusL?: 'Clear' | 'Inhibited' | 'Hypertonic' | null;
-  statusR?: 'Clear' | 'Inhibited' | 'Hypertonic' | null;
-  statusMidline?: 'Clear' | 'Inhibited' | 'Hypertonic' | null;
-  isLateralized: boolean;
-  imageUrl?: string | null;
-  showImage: boolean;
-  compact?: boolean;
-  onUpdate: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | null, side?: 'L' | 'R') => Promise<void>;
-}
 
 const STATUS_CONFIG = {
   Inhibited: { label: "Inh", fullLabel: "Inhibited", color: "bg-rose-500 text-white border-rose-500", muted: "border-rose-300 text-rose-600 hover:bg-rose-50 dark:border-rose-700 dark:text-rose-400" },
@@ -119,8 +105,8 @@ const MuscleRow = ({ name, statusL, statusR, statusMidline, isLateralized, info,
 export function MuscleAssessment({
   priorityPattern,
   updatePriorityPattern,
-  showImages,
-  compactMode
+  showImages: _showImages,
+  compactMode: _compactMode
 }: {
   priorityPattern?: string | null;
   updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | null, side?: 'L' | 'R') => Promise<void>;
@@ -128,29 +114,10 @@ export function MuscleAssessment({
   compactMode?: boolean;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [customImages, setCustomImages] = useState<Record<string, string | null>>({});
   const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
 
   const pattern = useMemo(() => safeParse(priorityPattern, {} as any), [priorityPattern]);
-  const musclePattern = pattern.muscles || {};
-
-  useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-        const { data } = await supabase.from('muscle_customizations').select('muscle_name, image_url').eq('user_id', user.id);
-        const mapping: Record<string, string | null> = {};
-        data?.forEach(item => {
-          mapping[item.muscle_name] = item.image_url;
-        });
-        setCustomImages(mapping);
-      } catch (err) {
-        console.error("Error fetching muscle images:", err);
-      }
-    };
-    fetchImages();
-  }, []);
+  const musclePattern = useMemo(() => pattern.muscles || {}, [pattern]);
 
   const filteredGroups = useMemo(() => {
     const filtered: Record<string, string[]> = {};

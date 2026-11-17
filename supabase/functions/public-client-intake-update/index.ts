@@ -21,7 +21,7 @@ const corsHeaders = {
 // fields it sets on submit (intake_submitted_at, status). Anything else in
 // the incoming payload is silently dropped.
 const ALLOWED_FIELDS = [
-  "name", "email", "phone", "born", "home_address", "referral_source",
+  "name", "email", "phone", "born", "home_address", "suburbs", "referral_source",
   "emergency_contact_name", "emergency_contact_phone", "emergency_contact_relationship",
   "occupation", "children", "change_one_thing", "never_been_same_since", "chief_complaint",
   "health_problem_severity", "seen_medical_doctor", "symptoms_worse_stress", "symptoms_worse_fatigue",

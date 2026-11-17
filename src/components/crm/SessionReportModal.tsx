@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { FileText, CheckCircle2, ChevronDown, ChevronUp, Search, BookOpen } from "lucide-react";
+import { FileText, CheckCircle2, ChevronDown, Search, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { safeParse } from "@/utils/safe-json";
 import { Button } from "@/components/ui/button";
 import { useCorrectionDock, type InhibitionPathwayStatus } from "@/components/crm/corrections/CorrectionDockContext";
+import { clickableProps } from "@/lib/a11y";
 
 interface Finding {
   type: string;
@@ -44,25 +45,10 @@ const CORRECTION_PROCESS_MAP: Record<string, { tab: 'afferent' | 'efferent'; ite
 export default function SessionReportModal({ open, onClose, appointment, updateMetadata }: SessionReportModalProps) {
   const { openDock, selectInhibitionPathway, availableInhibitionPathways } = useCorrectionDock();
   const [activeTab, setActiveTab] = useState<'all' | 'findings' | 'pathways'>('all');
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
 
   const pattern = useMemo(() => safeParse(appointment?.priority_pattern, {}) as Record<string, any>, [appointment?.priority_pattern]);
   const metadata = useMemo(() => safeParse(appointment?.metadata, {}) as SessionMetadata, [appointment?.metadata]);
-
-  // Build corrections lookup
-  const correctionsMap = useMemo(() => {
-    const map: Record<string, any> = {};
-    (metadata.corrections || []).forEach((c: any) => {
-      if (c.pathway) {
-        map[c.pathway] = c;
-      }
-    });
-    (metadata.cleared_findings || []).forEach((k: string) => {
-      map[k] = { ...map[k], cleared: true };
-    });
-    return map;
-  }, [metadata]);
 
   const findings = useMemo(() => {
     const items: Finding[] = [];
@@ -371,7 +357,7 @@ export default function SessionReportModal({ open, onClose, appointment, updateM
                 <div className="space-y-2">
                   {pathways.map((pathway) => (
                     <div key={pathway.id} className="border rounded-lg overflow-hidden">
-                      <div className="flex items-center justify-between p-3 bg-muted/30 cursor-pointer" onClick={() => handleOpenPathwayInManual(pathway.id)}>
+                      <div className="flex items-center justify-between p-3 bg-muted/30 cursor-pointer" {...clickableProps(() => handleOpenPathwayInManual(pathway.id))}>
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium">{pathway.name}</span>
                           {pathway.cleared && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}

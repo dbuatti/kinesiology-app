@@ -42,7 +42,7 @@ const PracticeSimulator = ({
   sandboxJoint,
   sandboxTissue,
   sandboxAction,
-  sandboxProtocol,
+  sandboxProtocol: _sandboxProtocol,
   setSimHoldReflex,
   setSimApplyStretch,
   setSimApplyIsometric,

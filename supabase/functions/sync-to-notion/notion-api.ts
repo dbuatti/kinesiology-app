@@ -80,18 +80,20 @@ export const mapValueToNotionProperty = (value: any, propertySchema: any) => {
       return { phone_number: String(value) };
     case 'date':
       return { date: { start: String(value).split('T')[0] } };
-    case 'number':
+    case 'number': {
       const num = Number(value);
       return isNaN(num) ? null : { number: num };
+    }
     case 'select':
       return { select: { name: String(value).substring(0, 100) } };
     // Notion status properties accept `status`, not `select` — sending the
     // wrong key is a validation error, so callers must switch on the type.
     case 'status':
       return { status: { name: String(value).substring(0, 100) } };
-    case 'multi_select':
+    case 'multi_select': {
       const items = Array.isArray(value) ? value : [value];
       return { multi_select: items.map(item => ({ name: String(item).substring(0, 100) })) };
+    }
     case 'url':
       return { url: String(value) };
     case 'checkbox':

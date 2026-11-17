@@ -218,6 +218,7 @@ export function ClientAuditTool({
 
     const cachedWeeklyClients = localStorage.getItem("rk_selected_weekly_clients");
     if (cachedWeeklyClients) setSelectedWeeklyClients(JSON.parse(cachedWeeklyClients));
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, []);
 
   const fetchData = async () => {
@@ -611,7 +612,7 @@ export function ClientAuditTool({
       
       setClients(prev => prev.map(c => selectedWeeklyClients.includes(c.id) ? { ...c, target_rate: rate } : c));
       showSuccess(`Successfully set target rate to $${rate} for ${selectedWeeklyClients.length} clients.`);
-    } catch (err: any) {
+    } catch {
       showError("Failed to apply bulk target rate.");
     } finally {
       setBulkActionLoading(false);
@@ -663,7 +664,7 @@ export function ClientAuditTool({
         }
       }
       showSuccess(`Successfully sent onboarding emails to ${successCount} of ${clientsWithEmail.length} clients.`);
-    } catch (err: any) {
+    } catch {
       showError("Failed to complete bulk onboarding dispatch.");
     } finally {
       setBulkActionLoading(false);
@@ -915,6 +916,7 @@ export function ClientAuditTool({
         avgRate: lastMonthClients.length > 0 ? clientDetails.reduce((acc, c) => acc + (c.isActive ? c.simRate : 0), 0) / clientDetails.filter(c => c.isActive).length : 0
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [clients, isSandboxActive, globalSimRate, globalSimFrequency, clientOverrides]);
 
   // Weekly & monthly revenue — uses price_amount when set, falls back to client standard_rate

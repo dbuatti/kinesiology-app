@@ -102,7 +102,7 @@ const DemoSessionPage = () => {
  setAppointment((prev: any) => ({ ...prev, [field]: value }));
  };
 
- const updatePriorityPattern = async (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => {
+ const updatePriorityPattern = async (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, _side?: 'L' | 'R') => {
  const currentPattern = JSON.parse(appointment.priority_pattern || "{}");
  if (!currentPattern[category]) currentPattern[category] = {};
  if (status === null) delete currentPattern[category][itemName];

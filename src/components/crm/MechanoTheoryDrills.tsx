@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MECHANO_FLASHCARDS } from '@/data/mechano-quiz-data';
+import { clickableProps } from '@/lib/a11y';
 
 const MechanoTheoryDrills = () => {
   const [cardIndex, setCardIndex] = useState(0);
@@ -38,9 +39,9 @@ const MechanoTheoryDrills = () => {
         <p className="text-muted-foreground font-medium">Test your knowledge of Functional Neurology principles.</p>
       </div>
 
-      <div 
+      <div
         className="perspective-1000 h-[400px] cursor-pointer group"
-        onClick={() => setIsFlipped(!isFlipped)}
+        {...clickableProps(() => setIsFlipped(!isFlipped))}
       >
         <div className={cn(
           "relative w-full h-full transition-all duration-700 preserve-3d",

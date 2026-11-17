@@ -32,9 +32,12 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ChevronsUpDown,
+  ChevronDown,
+  MoreHorizontal,
   X,
 } from "lucide-react";
 import { BrandMark } from "@/components/layout/BrandMark";
+import type { NavItem } from "@/lib/zones";
 
 // Zones, nav groups and the switcher all come from src/lib/zones.ts.
 const WORKSPACES = ZONE_ORDER.map((id) => ZONES[id]);
@@ -111,7 +114,10 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
 
   // Mode is kept in sync with the route by MainLayout; each zone shows only its own nav.
   const activeWorkspace = mode;
-  const groups = ZONES[mode].groups;
+  const zone = ZONES[mode];
+  const groups = zone.groups;
+  const more = zone.more ?? [];
+  const [moreOpen, setMoreOpen] = useState(false);
 
   // Most specific match wins, so "/clients/x" lights up People rather than Today.
   const activePath = activeNavPath(groups.flatMap((g) => g.items.map((i) => i.path)), location.pathname);
@@ -140,6 +146,39 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
     const isDrawer = scope === "drawer";
     // Touch-sized rows in the drawer; compact rows on the desktop rail.
     const rowH = isDrawer ? "h-11 text-[15px]" : "h-8";
+
+    const renderItem = (item: NavItem) => {
+      const active = item.path === activePath;
+      return (
+        <RailTip key={item.path + item.label} show={isRail} label={item.label}>
+          <Link
+            to={item.path}
+            onClick={close}
+            aria-current={active ? "page" : undefined}
+            className={cn(
+              cn("group relative flex items-center gap-2.5 rounded-[7px] font-medium outline-none", rowH),
+              isRail ? "justify-center px-0" : "px-2.5",
+              active ? "text-foreground" : "text-muted-foreground hover:bg-foreground/[0.045] hover:text-foreground"
+            )}
+          >
+            {active && (
+              <motion.span
+                layoutId={`nav-pill-${scope}`}
+                className="absolute inset-0 rounded-[7px] bg-sidebar-active shadow-sm ring-1 ring-border/70"
+                transition={{ type: "spring", stiffness: 520, damping: 42 }}
+              />
+            )}
+            <item.icon
+              size={16}
+              strokeWidth={active ? 2 : 1.75}
+              className={cn("relative shrink-0", active ? "text-primary" : "text-muted-foreground/90 group-hover:text-foreground")}
+            />
+            {!isRail && <span className="relative truncate">{item.label}</span>}
+          </Link>
+        </RailTip>
+      );
+    };
+
     return (
     <div className={cn("flex h-full flex-col bg-sidebar", isDrawer ? "pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] text-[15px]" : "text-[13px]")}>
       {/* Brand */}
@@ -242,43 +281,39 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
               {isRail ? (
                 gi > 0 && <div className="mx-auto mb-3 h-px w-5 bg-border" />
               ) : (
-                <div className="mb-1 px-2.5 text-[11px] font-medium text-muted-foreground/80">{group.label}</div>
+                <div className="mb-1 px-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">{group.label}</div>
               )}
-              <div className="space-y-px">
-                {group.items.map((item) => {
-                  const active = item.path === activePath;
-                  return (
-                    <RailTip key={item.path + item.label} show={isRail} label={item.label}>
-                      <Link
-                        to={item.path}
-                        onClick={close}
-                        aria-current={active ? "page" : undefined}
-                        className={cn(
-                          cn("group relative flex items-center gap-2.5 rounded-[7px] font-medium outline-none", rowH),
-                          isRail ? "justify-center px-0" : "px-2.5",
-                          active ? "text-foreground" : "text-muted-foreground hover:bg-foreground/[0.045] hover:text-foreground"
-                        )}
-                      >
-                        {active && (
-                          <motion.span
-                            layoutId={`nav-pill-${scope}`}
-                            className="absolute inset-0 rounded-[7px] bg-sidebar-active shadow-sm ring-1 ring-border/70"
-                            transition={{ type: "spring", stiffness: 520, damping: 42 }}
-                          />
-                        )}
-                        <item.icon
-                          size={16}
-                          strokeWidth={active ? 2 : 1.75}
-                          className={cn("relative shrink-0", active ? "text-primary" : "text-muted-foreground/90 group-hover:text-foreground")}
-                        />
-                        {!isRail && <span className="relative truncate">{item.label}</span>}
-                      </Link>
-                    </RailTip>
-                  );
-                })}
-              </div>
+              <div className="space-y-px">{group.items.map(renderItem)}</div>
             </div>
           ))}
+
+          {/* Secondary destinations, disclosed rather than always competing
+              with the five primary ones above. */}
+          {more.length > 0 && (
+            <div className={cn(groups.length > 0 && "mt-5")}>
+              <button
+                type="button"
+                onClick={() => setMoreOpen((v) => !v)}
+                aria-expanded={moreOpen}
+                className={cn(
+                  "flex w-full items-center gap-2.5 rounded-[7px] font-medium text-muted-foreground/80 transition-colors hover:bg-foreground/[0.045] hover:text-foreground",
+                  rowH,
+                  isRail ? "justify-center" : "px-2.5"
+                )}
+                title={isRail ? "More destinations" : undefined}
+              >
+                <MoreHorizontal size={16} strokeWidth={1.75} className="shrink-0" />
+                {!isRail && (
+                  <>
+                    <span className="flex-1 text-left">More</span>
+                    <span className="text-[10px] tabular-nums text-muted-foreground/60">{more.length}</span>
+                    <ChevronDown size={14} className={cn("text-muted-foreground/60 transition-transform duration-200", moreOpen && "rotate-180")} />
+                  </>
+                )}
+              </button>
+              {moreOpen && <div className="mt-1 space-y-px">{more.map(renderItem)}</div>}
+            </div>
+          )}
         </nav>
       </LayoutGroup>
 

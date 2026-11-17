@@ -164,6 +164,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
   const customImageUrl = activeMapping ? dbImages[`${activeMapping.category}_${activeMapping.index}`] : null;
 
   // Handle Image Upload
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   const handleUpload = async (file: File) => {
     if (!userId || !activeMapping || !selectedStructure) return;
     if (!file.type.startsWith('image/')) {
@@ -222,7 +223,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
       showSuccess("Reference image removed.");
       fetchImages();
       setImageSourceMode('sourced');
-    } catch (error) {
+    } catch {
       showError("Failed to remove image.");
     }
   };
@@ -233,7 +234,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
     setIsDragging(false);
     const file = e.dataTransfer.files?.[0];
     if (file) handleUpload(file);
-  }, [userId, activeMapping, selectedStructure]);
+  }, [handleUpload]);
 
   const handleCompleteLesson = (id: string) => {
     const nextProgress = { ...lessonProgress, [id]: true };

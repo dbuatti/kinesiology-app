@@ -28,6 +28,7 @@ import {
   CheckCircle2,
   Plus,
 } from "lucide-react";
+import { clickableProps } from "@/lib/a11y";
 
 interface VoiceStudent {
   id: string;
@@ -133,6 +134,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
       setStep("details");
       if (prefillDuration) setDuration(prefillDuration);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [open, prefillDate, prefillTime, prefillDuration]);
 
   useEffect(() => {
@@ -649,7 +651,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
           {/* Onboarding toggle (only before booking) */}
           {!bookingDone && selectedStudent && (
             <div
-              onClick={() => setSendOnboarding(!sendOnboarding)}
+              {...clickableProps(() => setSendOnboarding(!sendOnboarding))}
               className={cn(
                 "flex items-center justify-between rounded-xl border-2 p-4 transition-all cursor-pointer",
                 sendOnboarding ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200" : "bg-card border-border hover:border-emerald-300"

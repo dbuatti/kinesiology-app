@@ -1,6 +1,6 @@
-import type { MouseEvent } from 'react';
 import { ArrowDown, ArrowUp, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { clickableProps } from '@/lib/a11y';
 
 export type AssessmentStatus = 'Normotonic' | 'Inhibited' | 'Hypertonic' | null;
 
@@ -36,8 +36,7 @@ export const AssessmentItem = ({
   showFullInstructions = false,
   onStatusChange,
 }: AssessmentItemProps) => {
-  const handleCycle = (e: MouseEvent) => {
-    e.stopPropagation();
+  const handleCycle = () => {
     const cycle = isMuscle ? CYCLE_MUSCLE : CYCLE_NON_MUSCLE;
     const next = cycle[String(status)] ?? null;
     onStatusChange(name, next, side);
@@ -53,7 +52,7 @@ export const AssessmentItem = ({
             ? "bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800"
             : "hover:bg-muted/50 border-transparent"
       )}
-      onClick={handleCycle}
+      {...clickableProps(handleCycle)}
     >
       <div className="flex items-center gap-2 min-w-0">
         {/* Status indicator */}

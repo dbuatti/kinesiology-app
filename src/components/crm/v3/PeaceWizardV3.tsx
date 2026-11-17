@@ -1,6 +1,5 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { AppointmentWithClient } from "@/types/crm";
-import { PHASE_SPECS } from "./DesignSystem";
 
 import PreliminaryPhaseV3 from "./PreliminaryPhaseV3";
 import EasePhaseV3 from "./EasePhaseV3";
@@ -21,7 +20,7 @@ export interface PeaceWizardProps {
   activePhase?: number;
 }
 
-const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriorityPattern, onFinalise, onPhaseChange, activePhase: activePhaseProp }: PeaceWizardProps) => {
+const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriorityPattern, onFinalise: _onFinalise, onPhaseChange, activePhase: activePhaseProp }: PeaceWizardProps) => {
   const [internalActivePhase, setInternalActivePhase] = useState(0);
   const [, setPhaseDirection] = useState<'forward' | 'backward'>('forward');
   const wizardRef = useRef<HTMLDivElement>(null);
@@ -33,6 +32,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
       isPropSyncRef.current = true;
       setInternalActivePhase(activePhaseProp);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [activePhaseProp]);
 
   // Report phase changes to the page frame — only from user interaction, not prop sync
@@ -43,15 +43,6 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
     }
     onPhaseChange?.(internalActivePhase);
   }, [internalActivePhase, onPhaseChange]);
-
-  const phaseStatus = useMemo(() => ({
-    p: !!(appointment.goal && appointment.issue),
-    e1: !!(appointment.lymphatic_notes || appointment.harmonic_rocking_notes ||
-           appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes),
-    a: !!(appointment.priority_pattern && appointment.priority_pattern !== "{}"),
-    c: !!(appointment.modes_balances),
-    e2: !!(appointment.session_north_star),
-  }), [appointment]);
 
   const scrollToTop = useCallback(() => {
     // The scrollport differs by mode: windowed pages scroll #main-scroll-container,
@@ -77,18 +68,6 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
     // layout settles — otherwise the browser keeps the previous offset.
     requestAnimationFrame(reset);
   }, []);
-
-  const goNext = useCallback(() => {
-    setPhaseDirection('forward');
-    setInternalActivePhase(prev => Math.min(prev + 1, PHASE_SPECS.length - 1));
-    scrollToTop();
-  }, [scrollToTop]);
-
-  const goBack = useCallback(() => {
-    setPhaseDirection('backward');
-    setInternalActivePhase(prev => Math.max(prev - 1, 0));
-    scrollToTop();
-  }, [scrollToTop]);
 
   const jumpTo = useCallback((index: number) => {
     setPhaseDirection(index > internalActivePhase ? 'forward' : 'backward');

@@ -1,0 +1,547 @@
+[
+  {
+    "id": "gnm-lung-alveoli",
+    "level": "Brainstem",
+    "tissueOrFunction": "Lung alveoli",
+    "symptomKeywords": [
+      "lung",
+      "alveoli",
+      "cough",
+      "sputum",
+      "blood",
+      "night sweats",
+      "breathlessness"
+    ],
+    "modelConflictTheme": "Death fright or fear of dying",
+    "activePhase": "The model describes alveolar cell growth or nodules, often with few symptoms.",
+    "healingPhase": "The model describes cough, sputum, possible blood, and night sweats.",
+    "safetyNote": "Respiratory symptoms, blood in sputum, unexplained weight change, and night sweats require medical assessment."
+  },
+  {
+    "id": "gnm-liver-parenchyma",
+    "level": "Brainstem",
+    "tissueOrFunction": "Liver parenchyma",
+    "symptomKeywords": [
+      "liver",
+      "fatigue",
+      "tenderness",
+      "night sweats",
+      "starvation",
+      "lacking"
+    ],
+    "modelConflictTheme": "Starvation or fear of lacking",
+    "activePhase": "The model describes liver cell growth.",
+    "healingPhase": "The model describes night sweats, fatigue, and tenderness."
+  },
+  {
+    "id": "gnm-kidney-collecting",
+    "level": "Brainstem",
+    "tissueOrFunction": "Kidney collecting tubules",
+    "symptomKeywords": [
+      "kidney",
+      "fluid retention",
+      "reduced urine",
+      "weight gain",
+      "urine",
+      "abandonment",
+      "existence"
+    ],
+    "modelConflictTheme": "Existence, abandonment, or ‘refugee’ conflict",
+    "activePhase": "The model describes fluid retention, reduced urine, and weight gain.",
+    "healingPhase": "The model describes increased urine output and night sweats."
+  },
+  {
+    "id": "gnm-stomach-greater",
+    "level": "Brainstem",
+    "tissueOrFunction": "Stomach greater curvature",
+    "symptomKeywords": [
+      "stomach",
+      "nausea",
+      "fullness",
+      "discomfort",
+      "bleeding",
+      "digest"
+    ],
+    "modelConflictTheme": "Can’t digest the morsel",
+    "activePhase": "The model describes glandular growth and fullness.",
+    "healingPhase": "The model describes nausea, discomfort, and possible bleeding.",
+    "safetyNote": "Gastrointestinal bleeding requires urgent medical assessment."
+  },
+  {
+    "id": "gnm-small-intestine",
+    "level": "Brainstem",
+    "tissueOrFunction": "Small intestine",
+    "symptomKeywords": [
+      "small intestine",
+      "diarrhoea",
+      "cramping",
+      "blood in stool",
+      "digest",
+      "starvation"
+    ],
+    "modelConflictTheme": "Can’t digest the morsel or starvation",
+    "activePhase": "The model describes glandular growth.",
+    "healingPhase": "The model describes diarrhoea, cramping, and possible blood.",
+    "safetyNote": "Blood in stool requires medical assessment."
+  },
+  {
+    "id": "gnm-colon",
+    "level": "Brainstem",
+    "tissueOrFunction": "Colon / sigmoid / rectal mucosa",
+    "symptomKeywords": [
+      "colon",
+      "bowel",
+      "diarrhoea",
+      "mucus",
+      "blood in stool",
+      "rectum",
+      "eliminate"
+    ],
+    "modelConflictTheme": "An ugly or indigestible situation; inability to eliminate something vile",
+    "activePhase": "The model describes glandular growth and possible obstruction.",
+    "healingPhase": "The model describes diarrhoea, mucus, discharge, or bleeding.",
+    "safetyNote": "Obstruction, rectal bleeding, or blood in stool requires medical assessment."
+  },
+  {
+    "id": "gnm-pancreas-exocrine",
+    "level": "Brainstem",
+    "tissueOrFunction": "Pancreas (exocrine)",
+    "symptomKeywords": [
+      "pancreas",
+      "pancreatic",
+      "digestive upset",
+      "fatty stool",
+      "digestion",
+      "anxiety anger",
+      "fight"
+    ],
+    "modelConflictTheme": "Anxiety-anger or a fight over the morsel",
+    "activePhase": "The model describes glandular growth and more enzyme output.",
+    "healingPhase": "The model describes digestive upset and fatty stool."
+  },
+  {
+    "id": "gnm-thyroid-glandular",
+    "level": "Brainstem",
+    "tissueOrFunction": "Thyroid (glandular)",
+    "symptomKeywords": [
+      "thyroid",
+      "swelling",
+      "tenderness",
+      "hormone",
+      "fast enough",
+      "morsel"
+    ],
+    "modelConflictTheme": "Can’t get the morsel fast enough",
+    "activePhase": "The model describes tissue growth and increased hormone output.",
+    "healingPhase": "The model describes swelling and tenderness.",
+    "safetyNote": "New thyroid swelling or persistent neck symptoms require medical assessment."
+  },
+  {
+    "id": "gnm-tonsils-middle-ear",
+    "level": "Brainstem",
+    "tissueOrFunction": "Tonsils / middle ear",
+    "symptomKeywords": [
+      "tonsil",
+      "tonsillitis",
+      "throat",
+      "ear",
+      "middle ear",
+      "ear inflammation",
+      "discharge",
+      "news",
+      "auditory"
+    ],
+    "modelConflictTheme": "Can’t catch or swallow a morsel; can’t catch an ‘auditory morsel’ such as news",
+    "activePhase": "The model describes tissue or mucosal growth.",
+    "healingPhase": "The model describes tonsillitis-type swelling or ear inflammation/discharge."
+  },
+  {
+    "id": "gnm-prostate-uterus",
+    "level": "Brainstem",
+    "tissueOrFunction": "Prostate / uterus",
+    "symptomKeywords": [
+      "prostate",
+      "uterus",
+      "pelvic",
+      "genital",
+      "discharge",
+      "night sweats",
+      "procreation"
+    ],
+    "modelConflictTheme": "Ugly genital or procreation conflict",
+    "activePhase": "The model describes glandular growth.",
+    "healingPhase": "The model describes discharge and night sweats.",
+    "safetyNote": "New pelvic symptoms, bleeding, discharge, or a palpable mass require medical assessment."
+  },
+  {
+    "id": "gnm-dermis",
+    "level": "Cerebellum",
+    "tissueOrFunction": "Dermis (corium)",
+    "symptomKeywords": [
+      "skin",
+      "dermis",
+      "rash",
+      "itch",
+      "weeping",
+      "pigmented",
+      "raised growth",
+      "lesion"
+    ],
+    "modelConflictTheme": "Attack on integrity; feeling soiled or disfigured",
+    "activePhase": "The model describes thickening or pigmented/raised growths.",
+    "healingPhase": "The model describes inflammation, weeping, and itch.",
+    "safetyNote": "Changing skin lesions require prompt medical review."
+  },
+  {
+    "id": "gnm-breast-glands",
+    "level": "Cerebellum",
+    "tissueOrFunction": "Breast glands",
+    "symptomKeywords": [
+      "breast",
+      "lump",
+      "tenderness",
+      "swelling",
+      "night sweats",
+      "nest"
+    ],
+    "modelConflictTheme": "Nest worry or an argument involving someone in the nest",
+    "activePhase": "The model describes glandular growth or a lump.",
+    "healingPhase": "The model describes swelling, tenderness, and night sweats.",
+    "safetyNote": "New breast lumps require prompt medical assessment."
+  },
+  {
+    "id": "gnm-pleura-pericardium",
+    "level": "Cerebellum",
+    "tissueOrFunction": "Pleura / pericardium",
+    "symptomKeywords": [
+      "pleura",
+      "pericardium",
+      "chest pain",
+      "breathlessness",
+      "effusion",
+      "heart"
+    ],
+    "modelConflictTheme": "Attack against the chest or heart",
+    "activePhase": "The model describes pleural or pericardial thickening.",
+    "healingPhase": "The model describes effusion, breathlessness, or pain.",
+    "safetyNote": "Chest pain and breathlessness are urgent medical presentations."
+  },
+  {
+    "id": "gnm-peritoneum-omentum",
+    "level": "Cerebellum",
+    "tissueOrFunction": "Peritoneum / greater omentum",
+    "symptomKeywords": [
+      "peritoneum",
+      "omentum",
+      "abdomen",
+      "abdominal swelling",
+      "ascites",
+      "discomfort",
+      "underhand"
+    ],
+    "modelConflictTheme": "Attack against the abdomen or an ugly, underhand conflict",
+    "activePhase": "The model describes thickening.",
+    "healingPhase": "The model describes ascites, abdominal swelling, or discomfort.",
+    "safetyNote": "New abdominal swelling or ascites requires prompt medical assessment."
+  },
+  {
+    "id": "gnm-bone-joint",
+    "level": "Cerebral medulla",
+    "tissueOrFunction": "Bone / joints / cartilage",
+    "symptomKeywords": [
+      "bone",
+      "joint",
+      "cartilage",
+      "pain",
+      "swelling",
+      "heat",
+      "stiffness",
+      "anaemia",
+      "performance"
+    ],
+    "modelConflictTheme": "Self-devaluation related to region, performance, or ability",
+    "activePhase": "The model describes bone or cartilage loss.",
+    "healingPhase": "The model describes pain, swelling, heat, stiffness, or bone rebuilding.",
+    "safetyNote": "Bone pain, swelling, or anaemia need medical assessment; do not describe them as a healing phase."
+  },
+  {
+    "id": "gnm-striated-muscle",
+    "level": "Cerebral medulla",
+    "tissueOrFunction": "Striated muscle (trophic)",
+    "symptomKeywords": [
+      "muscle",
+      "weakness",
+      "wasting",
+      "muscle pain",
+      "swelling",
+      "strength",
+      "capability"
+    ],
+    "modelConflictTheme": "Self-devaluation about strength or capability",
+    "activePhase": "The model describes muscle wasting.",
+    "healingPhase": "The model describes muscle pain and swelling.",
+    "safetyNote": "New or progressive weakness requires medical assessment."
+  },
+  {
+    "id": "gnm-tendon-ligament",
+    "level": "Cerebral medulla",
+    "tissueOrFunction": "Tendons / ligaments",
+    "symptomKeywords": [
+      "tendon",
+      "tendinitis",
+      "ligament",
+      "sprain",
+      "pain",
+      "inflammation",
+      "movement",
+      "task"
+    ],
+    "modelConflictTheme": "Self-devaluation about a specific movement or task",
+    "activePhase": "The model describes tissue loss.",
+    "healingPhase": "The model describes tendon or ligament pain and inflammation."
+  },
+  {
+    "id": "gnm-lymph-nodes",
+    "level": "Cerebral medulla",
+    "tissueOrFunction": "Lymph nodes",
+    "symptomKeywords": [
+      "lymph",
+      "lymph node",
+      "swollen",
+      "tender",
+      "node"
+    ],
+    "modelConflictTheme": "Mild self-devaluation in the related region",
+    "activePhase": "The model describes tissue loss.",
+    "healingPhase": "The model describes swollen, tender lymph nodes.",
+    "safetyNote": "Swollen lymph nodes require medical assessment when new, persistent, or unexplained."
+  },
+  {
+    "id": "gnm-blood-vessels",
+    "level": "Cerebral medulla",
+    "tissueOrFunction": "Blood vessels",
+    "symptomKeywords": [
+      "blood vessel",
+      "vascular",
+      "vessel wall",
+      "inflammation",
+      "swelling",
+      "circulation",
+      "area supplied"
+    ],
+    "modelConflictTheme": "Self-devaluation related to the area supplied",
+    "activePhase": "The model describes vessel-wall loss.",
+    "healingPhase": "The model describes vessel-wall inflammation and swelling."
+  },
+  {
+    "id": "gnm-kidney-parenchyma",
+    "level": "Cerebral medulla",
+    "tissueOrFunction": "Kidney parenchyma",
+    "symptomKeywords": [
+      "kidney",
+      "blood pressure",
+      "fluid",
+      "water",
+      "cyst",
+      "hypertension"
+    ],
+    "modelConflictTheme": "Fluid or water conflict",
+    "activePhase": "The model describes tissue loss and a linked blood-pressure rise.",
+    "healingPhase": "The model describes cyst formation.",
+    "safetyNote": "Raised blood pressure, kidney symptoms, or a suspected cyst require medical assessment."
+  },
+  {
+    "id": "gnm-ovaries-testes",
+    "level": "Cerebral medulla",
+    "tissueOrFunction": "Ovaries / testes",
+    "symptomKeywords": [
+      "ovary",
+      "ovaries",
+      "testes",
+      "testicle",
+      "swelling",
+      "cyst",
+      "loss",
+      "loved one"
+    ],
+    "modelConflictTheme": "Loss of a loved person or animal",
+    "activePhase": "The model describes tissue loss.",
+    "healingPhase": "The model describes swelling or a cyst.",
+    "safetyNote": "Testicular or ovarian swelling requires medical assessment."
+  },
+  {
+    "id": "gnm-spleen",
+    "level": "Cerebral medulla",
+    "tissueOrFunction": "Spleen",
+    "symptomKeywords": [
+      "spleen",
+      "bleeding",
+      "injury",
+      "platelet",
+      "low platelets",
+      "enlarged"
+    ],
+    "modelConflictTheme": "Bleeding or injury conflict",
+    "activePhase": "The model describes low platelets.",
+    "healingPhase": "The model describes an enlarged spleen.",
+    "safetyNote": "Low platelets, unexplained bleeding, or splenic enlargement require medical assessment."
+  },
+  {
+    "id": "gnm-adrenal-cortex",
+    "level": "Cerebral medulla",
+    "tissueOrFunction": "Adrenal cortex",
+    "symptomKeywords": [
+      "adrenal",
+      "fatigue",
+      "exhaustion",
+      "off track",
+      "wrong way"
+    ],
+    "modelConflictTheme": "Going the wrong way or being off track",
+    "activePhase": "The model describes reduced output and fatigue.",
+    "healingPhase": "The model describes restored output."
+  },
+  {
+    "id": "gnm-coronary",
+    "level": "Cerebral cortex",
+    "tissueOrFunction": "Coronary arteries / veins",
+    "symptomKeywords": [
+      "coronary",
+      "angina",
+      "heart attack",
+      "rhythm",
+      "chest pain",
+      "sexual frustration",
+      "territory"
+    ],
+    "modelConflictTheme": "Territorial loss; sexual frustration or not being ‘taken’",
+    "activePhase": "The model describes lining ulceration and angina/rhythm change.",
+    "healingPhase": "The model describes swelling and a crisis described as heart attack or rhythm disturbance.",
+    "safetyNote": "Chest pain, angina, or rhythm disturbance require emergency medical assessment."
+  },
+  {
+    "id": "gnm-bronchial-larynx",
+    "level": "Cerebral cortex",
+    "tissueOrFunction": "Bronchial lining / larynx",
+    "symptomKeywords": [
+      "bronchial",
+      "bronchitis",
+      "asthma",
+      "dry cough",
+      "larynx",
+      "voice",
+      "laryngitis",
+      "breathlessness",
+      "fright"
+    ],
+    "modelConflictTheme": "Territorial fear or scare; fright or shock",
+    "activePhase": "The model describes lining ulceration, dry cough, or voice change.",
+    "healingPhase": "The model describes bronchitis-type inflammation, asthma, laryngitis, or laryngeal spasm.",
+    "safetyNote": "Breathlessness, asthma, or persistent voice change need medical assessment; severe breathing difficulty is an emergency."
+  },
+  {
+    "id": "gnm-territory-linings",
+    "level": "Cerebral cortex",
+    "tissueOrFunction": "Stomach lesser curvature / bile ducts / pancreatic ducts / bladder lining",
+    "symptomKeywords": [
+      "stomach pain",
+      "bile",
+      "jaundice",
+      "pancreatic",
+      "bladder",
+      "cystitis",
+      "blood in urine",
+      "territory",
+      "anger"
+    ],
+    "modelConflictTheme": "Territorial or identity anger; inability to mark or organise one’s territory",
+    "activePhase": "The model describes lining ulceration, pain, or function change.",
+    "healingPhase": "The model describes inflammation, bile blockage/jaundice, or cystitis-type inflammation.",
+    "safetyNote": "Jaundice and blood in urine require medical assessment."
+  },
+  {
+    "id": "gnm-rectum-cervix-thyroid-ducts",
+    "level": "Cerebral cortex",
+    "tissueOrFunction": "Rectum lining / cervix and vagina / thyroid ducts",
+    "symptomKeywords": [
+      "rectum",
+      "haemorrhoid",
+      "bleeding",
+      "cervix",
+      "vagina",
+      "sexual",
+      "thyroid",
+      "powerlessness",
+      "belonging"
+    ],
+    "modelConflictTheme": "Not knowing where one belongs; sexual conflict; powerlessness or inability to act fast enough",
+    "activePhase": "The model describes lining ulceration or widening/function change.",
+    "healingPhase": "The model describes haemorrhoids or bleeding, rebuilding/inflammation, and swelling.",
+    "safetyNote": "Rectal bleeding, vaginal bleeding, or new thyroid swelling requires medical assessment."
+  },
+  {
+    "id": "gnm-contact-movement",
+    "level": "Cerebral cortex",
+    "tissueOrFunction": "Epidermis / periosteum / milk ducts / motor and sensory control",
+    "symptomKeywords": [
+      "epidermis",
+      "skin",
+      "rash",
+      "itch",
+      "numb",
+      "tingling",
+      "sensation",
+      "weakness",
+      "paralysis",
+      "twitch",
+      "cramp",
+      "seizure",
+      "separation",
+      "contact"
+    ],
+    "modelConflictTheme": "Separation, unwanted/lost physical contact, or being unable to escape, hold on, or move",
+    "activePhase": "The model describes dry/rough/numb skin, reduced sensation, or weakness of related muscles.",
+    "healingPhase": "The model describes rash, redness, itch, tingling, sensitivity, twitching, cramp, or seizure.",
+    "safetyNote": "New weakness, numbness, seizure, or sensory loss require neurological or medical assessment."
+  },
+  {
+    "id": "gnm-senses",
+    "level": "Cerebral cortex",
+    "tissueOrFunction": "Retina / inner ear / nasal lining",
+    "symptomKeywords": [
+      "vision",
+      "visual",
+      "retina",
+      "eye",
+      "hearing",
+      "ear",
+      "tinnitus",
+      "nose",
+      "congestion",
+      "runny nose"
+    ],
+    "modelConflictTheme": "Fear from behind; inability to believe what is heard; aversion to a situation",
+    "activePhase": "The model describes reduced vision, hearing reduction, or lining ulceration.",
+    "healingPhase": "The model describes visual disturbance, tinnitus, or a runny/congested nose.",
+    "safetyNote": "New visual loss or hearing change requires medical assessment."
+  },
+  {
+    "id": "gnm-pancreatic-islets",
+    "level": "Cerebral cortex",
+    "tissueOrFunction": "Pancreatic alpha / beta islets",
+    "symptomKeywords": [
+      "pancreatic islets",
+      "glucagon",
+      "insulin",
+      "blood sugar",
+      "low blood sugar",
+      "high blood sugar",
+      "fear disgust",
+      "resistance"
+    ],
+    "modelConflictTheme": "Fear-disgust or resistance/fighting against something",
+    "activePhase": "The model describes reduced glucagon with low blood sugar, or reduced insulin with high blood sugar.",
+    "healingPhase": "The model describes restored output.",
+    "safetyNote": "Blood-sugar disturbance requires medical assessment and must not be attributed to a model phase."
+  }
+]

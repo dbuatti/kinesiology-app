@@ -31,9 +31,9 @@ const DocumentRightSidebar = ({
   startQuickTimer,
   stopQuickTimer,
   formatCountdown,
-  currentTime,
+  currentTime: _currentTime,
   appointmentDate,
-  clientName,
+  clientName: _clientName,
 }: DocumentRightSidebarProps) => {
   const [now, setNow] = useState(new Date());
 

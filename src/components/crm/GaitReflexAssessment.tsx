@@ -37,7 +37,7 @@ interface GaitReflexAssessmentProps {
 }
 
 const GaitReflexAssessment = ({ 
-  appointmentId, 
+  appointmentId: _appointmentId, 
   initialNotes, 
   onSaveField 
 }: GaitReflexAssessmentProps) => {

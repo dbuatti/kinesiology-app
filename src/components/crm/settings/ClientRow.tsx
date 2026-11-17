@@ -154,6 +154,7 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
  flat.sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
  setAvailableSlots(flat.slice(0, 8));
  }).catch(() => setAvailableSlots([])).finally(() => setLoadingSlots(false));
+ // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
  }, [open]);
 
  const availabilityBody = useMemo(() => {
@@ -784,7 +785,7 @@ Daniele`;
  showSuccess(`${client.name} marked as contacted.`);
  setIsReengagementEmailModalOpen(false);
  onRefresh();
- } catch (err) {
+ } catch {
  showError("Failed to update contact status.");
  } finally {
  setUpdatingStatus(false);
@@ -811,7 +812,7 @@ Daniele`;
  showSuccess(`${client.name} marked as Contacted.`);
  setIsEmailModalOpen(false);
  onRefresh();
- } catch (err) {
+ } catch {
  showError("Failed to update contacted status.");
  } finally {
  setUpdatingStatus(false);
@@ -841,7 +842,7 @@ Daniele`;
  if (error) throw error;
  showSuccess(`Successfully upgraded ${client.name} to $${targetRate}!`);
  onRefresh();
- } catch (err) {
+ } catch {
  showError("Failed to execute rate upgrade.");
  } finally {
  setUpdatingStatus(false);

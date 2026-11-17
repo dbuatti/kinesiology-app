@@ -55,6 +55,7 @@ import BrainReflexModal from "@/components/crm/BrainReflexModal";
 // Data for Modals
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
+import { clickableProps } from "@/lib/a11y";
 
 const SANDBOX_ID = "00000000-0000-0000-0000-000000000000";
 
@@ -174,7 +175,7 @@ export function ProceduresTool() {
       const items = summary.priorities.map(p => p.name);
       await setWeeklyFocus(items);
       showSuccess("Weekly focus committed! You'll see these reminders in your sessions.");
-    } catch (err) {
+    } catch {
       showError("Failed to save weekly focus.");
     } finally {
       setCommitting(false);
@@ -250,9 +251,9 @@ export function ProceduresTool() {
                 <CardContent className="p-5 pt-0">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {summary.priorities.map((item) => (
-                      <div 
-                        key={item.id} 
-                        onClick={() => handleItemClick(item)}
+                      <div
+                        key={item.id}
+                        {...clickableProps(() => handleItemClick(item))}
                         className="p-5 bg-card rounded-xl border border-chart-primary/20 flex items-center justify-between group hover:shadow-sm transition-all cursor-pointer"
                       >
                         <div className="min-w-0">
@@ -495,7 +496,7 @@ export function ProceduresTool() {
                   <TabsContent value="mechanoreceptive" className="mt-0 focus-visible:ring-0">
                     <MechanoreceptiveAssessment 
                       appointmentId={SANDBOX_ID}
-                      onSave={(summary) => {}}
+                      onSave={(_summary) => {}}
                     />
                   </TabsContent>
 

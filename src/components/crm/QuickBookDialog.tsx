@@ -25,6 +25,7 @@ import {
   CheckCircle2,
   Sparkles,
 } from "lucide-react";
+import { clickableProps } from "@/lib/a11y";
 
 interface Slot {
   time: string;
@@ -112,7 +113,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
     staleTime: 30_000,
   });
 
-  const slotsByDate: Record<string, Slot[]> = slotsData?.data || {};
+  const slotsByDate: Record<string, Slot[]> = useMemo(() => slotsData?.data || {}, [slotsData]);
 
   const availableDates = useMemo(() => {
     return Object.keys(slotsByDate)
@@ -125,7 +126,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
     if (availableDates.length > 0 && !selectedDate) {
       setSelectedDate(availableDates[0]);
     }
-  }, [availableDates]);
+  }, [availableDates, selectedDate]);
 
   const currentSlots = selectedDate
     ? (slotsByDate[format(selectedDate, "yyyy-MM-dd")] || [])
@@ -516,7 +517,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
               {/* Send Onboarding Email */}
               {selectedSlot && (
                 <div
-                  onClick={() => setSendOnboarding(!sendOnboarding)}
+                  {...clickableProps(() => setSendOnboarding(!sendOnboarding))}
                   className={cn(
                     "flex flex-row items-center justify-between rounded-2xl border-2 p-5 transition-all cursor-pointer mt-3",
                     sendOnboarding ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200" : "bg-card border-border hover:border-emerald-300"

@@ -24,7 +24,7 @@ interface MechanoreceptiveAssessmentProps {
   onSave: (summary: string) => void;
 }
 
-const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveAssessmentProps) => {
+const MechanoreceptiveAssessment = ({ appointmentId: _appointmentId, onSave }: MechanoreceptiveAssessmentProps) => {
   const [showWizard, setShowWizard] = useState(false);
   const [actionTableOpen, setActionTableOpen] = useState(false);
   const [, setLigamentModalOpen] = useState(false);

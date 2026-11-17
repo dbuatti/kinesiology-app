@@ -28,6 +28,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import StimResultsSummary from "@/components/crm/StimResultsSummary";
+import { clickableProps } from '@/lib/a11y';
 
 interface NerveTestItemProps {
   nerve: CranialNerve;
@@ -53,6 +54,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
     if (test.notes !== undefined && test.notes !== localNotes) {
       setLocalNotes(test.notes || "");
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [test.notes]);
 
   const handleNotesChange = (val: string) => {
@@ -97,9 +99,9 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
     )}>
       <div className={cn("flex flex-col md:flex-row md:items-center justify-between gap-2", compact ? "pb-0" : "pb-2 border-b border-border/50")}>
         <div className="flex items-center gap-3">
-          <div 
+          <div
             className="flex items-center gap-2 cursor-pointer group/title"
-            onClick={() => onShowInfo?.(nerve.id)}
+            {...clickableProps(() => onShowInfo?.(nerve.id))}
           >
             <h2 className="text-sm font-semibold text-foreground group-hover/title:text-primary transition-colors">
               {nerve.name}: {nerve.latinName}
@@ -350,7 +352,7 @@ export function CranialNerveAssessment({
   const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
 
   const pattern = useMemo(() => safeParse(priorityPattern, {} as any), [priorityPattern]);
-  const nervePattern = pattern.cranialNerves || {};
+  const nervePattern = useMemo(() => pattern.cranialNerves || {}, [pattern]);
 
   useEffect(() => {
     const fetchImages = async () => {

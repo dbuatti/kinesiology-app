@@ -62,7 +62,6 @@ async function sendGmail(accessToken, from, to, subject, htmlBody) {
 // Format a UTC instant as Melbourne time parts without Intl (simpler + reliable).
 function melbourneParts(ms) {
   const d = new Date(ms)
-  const dme = new Date(`${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}T00:00:00Z`)
   const dstStart = dstTransitionMM(d.getUTCFullYear(), "start")
   const dstEnd = dstTransitionMM(d.getUTCFullYear(), "end")
   const inDst = ms >= dstStart && ms < dstEnd

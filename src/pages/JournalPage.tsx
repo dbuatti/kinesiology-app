@@ -230,7 +230,7 @@ const JournalPage = () => {
         totalExtracted += count;
       }
       showSuccess(`Scan complete! Extracted ${totalExtracted} new insights across ${unanalyzed.length} entries.`);
-    } catch (err) {
+    } catch {
       showError("Failed to complete full scan.");
     } finally {
       setIsScanning(false);
@@ -355,7 +355,7 @@ const JournalPage = () => {
       setRespondingToId(null);
       setTempResponse("");
       fetchData();
-    } catch (err) {
+    } catch {
       showError("Failed to save response.");
     }
   };
@@ -365,7 +365,7 @@ const JournalPage = () => {
       await supabase.from('practitioner_reflections').delete().eq('id', id);
       fetchData();
       showSuccess("Entry removed.");
-    } catch (err) {
+    } catch {
       showError("Failed to delete.");
     }
   };
@@ -388,7 +388,7 @@ const JournalPage = () => {
       }
       showSuccess("Question removed.");
       fetchData();
-    } catch (err) {
+    } catch {
       showError("Failed to delete question.");
     }
   };
@@ -655,7 +655,7 @@ const JournalPage = () => {
                                       className="h-9 px-3 rounded-xl text-chart-primary hover:bg-muted font-semibold text-[11px]"
                                     >
                                       {isAddingThis ? <Loader2 size={12} className="animate-spin mr-1.5" /> : <PlusCircle size={14} className="mr-1.5" />}
-                                      Add
+                                      Add to backlog
                                     </Button>
                                   )}
                                   {item.status === 'added' && (

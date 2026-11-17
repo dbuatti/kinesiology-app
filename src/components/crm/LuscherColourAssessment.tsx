@@ -19,7 +19,7 @@ interface LuscherColourAssessmentProps {
 }
 
 const LuscherColourAssessment = ({ 
-  appointmentId, 
+  appointmentId: _appointmentId, 
   initialColor1, 
   initialColor2, 
   onSaveColors 

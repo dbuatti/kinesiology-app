@@ -67,7 +67,7 @@ const MusclePracticeStats = () => {
                 <p className="text-sm font-bold text-indigo-900">Muscle</p>
                 <p className="text-sm font-bold text-indigo-900">Dysfunction Rate</p>
             </div>
-            {topMuscles.map((stat, index) => {
+            {topMuscles.map((stat, _index) => {
               const progress = stat.dysfunction_rate;
               const isHigh = progress >= 50;
               const isMedium = progress >= 25;

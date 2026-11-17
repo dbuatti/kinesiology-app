@@ -3,7 +3,6 @@ import { StickyNote, Loader2, CheckCircle2, AlertCircle, Copy, Check } from "luc
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import EditableField from "@/components/shared/EditableField";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 
 interface QuickNotesDialogProps {
@@ -30,7 +29,7 @@ const QuickNotesDialog = ({
   subtitle,
   goal,
   issue,
-  onEditField,
+  onEditField: _onEditField,
 }: QuickNotesDialogProps) => {
   const [draft, setDraft] = useState(initialValue || "");
   const [isFocused, setIsFocused] = useState(false);

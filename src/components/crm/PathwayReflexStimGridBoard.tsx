@@ -14,21 +14,20 @@ import {
   type MuscleGridState,
 } from "./muscle-grid-data";
 import {
-  PRIMITIVE_TRACKS,
-  NERVE_GROUPS,
-  NUCLEI_COLORS,
-  nerveStimLines,
-  nerveStimEntries,
-  primitiveStimKey,
-  primitiveStimKeyAt,
-  primitiveSideKey,
-  cranialStimKey,
-  cranialSideKey,
-  cranialNerveInhibKey,
-  isLateralStim,
-  primitiveReflexMatches,
-  cranialLineMatches,
-} from "./pathway-reflex-stim-data";
+    PRIMITIVE_TRACKS,
+    NERVE_GROUPS,
+    NUCLEI_COLORS,
+    nerveStimEntries,
+    primitiveStimKey,
+    primitiveStimKeyAt,
+    primitiveSideKey,
+    cranialStimKey,
+    cranialSideKey,
+    cranialNerveInhibKey,
+    isLateralStim,
+    primitiveReflexMatches,
+    cranialLineMatches,
+  } from "./pathway-reflex-stim-data";
 
 interface PathwayReflexStimGridBoardProps {
   checked: Record<string, boolean>;
@@ -361,7 +360,7 @@ const toneIcon = (state?: MuscleGridState, className?: string) => {
 };
 
 const MuscleMarkButton = ({
-  keyName,
+  keyName: _keyName,
   state,
   title,
   onClick,

@@ -1,17 +1,11 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { CheckCircle2, ChevronLeft, ChevronRight, X, Brain, Activity, Zap, Heart, Hand, Info, Search, Loader2 } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, X, Brain, Activity, Zap, Heart, Hand, Info, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { showSuccess, showError } from "@/utils/toast";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
-import { PRIMARY_EMOTIONS, CHANNEL_EMOTIONS, ELEMENT_EMOTIONS } from "@/data/emotion-data";
-import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import { JOINT_ACTION_LIBRARY } from "@/data/joint-action-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
-import type { CranialNerve } from "@/data/cranial-nerve-data";
-import type { TcmChannel } from "@/data/tcm-channel-data";
-import type { JointData } from "@/data/joint-action-data";
-import type { PrimaryEmotion } from "@/data/emotion-data";
 
 /* ------------------------------------------------------------------ */
 /*  CTM Content (from user's guide)                                   */
@@ -123,7 +117,7 @@ function SubModalHeader({
   title,
   subtitle,
   onClose,
-  imageRefId,
+  imageRefId: _imageRefId,
 }: {
   title: string;
   subtitle: string;
@@ -419,7 +413,7 @@ function HeartWallSubModal({ onClose, saveSelection }: { onClose: () => void; sa
 /*  Brain Zones sub-modal                                              */
 /* ------------------------------------------------------------------ */
 function BrainZonesSubModal({ onClose, saveSelection }: { onClose: () => void; saveSelection: (sel: Record<string, any>) => void }) {
-  const { selected, select, deselect } = useCTMSelection("brainZone");
+  const { selected, select } = useCTMSelection("brainZone");
   const { selected: cnSel, select: selectCN } = useCTMSelection("cranialNerve");
 
   return (
@@ -1033,7 +1027,6 @@ export interface CTMModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   inhibitionState?: Record<string, any>;
-  onSelectPathway?: (pathway: string) => void;
   onSaveCTMState?: (state: Record<string, any>) => void;
 }
 
@@ -1041,7 +1034,6 @@ export function CTMModal({
   open,
   onOpenChange,
   inhibitionState = {},
-  onSelectPathway,
   onSaveCTMState,
 }: CTMModalProps) {
   const [step, setStep] = useState(0);
@@ -1210,13 +1202,13 @@ export function CTMModal({
                     <span className="text-xs text-muted-foreground italic">No pathway state saved for this demo session.</span>
                   ) : (
                     pathways.map((key) => (
-                      <button
+                      <span
                         key={key}
-                        onClick={() => onSelectPathway?.(key)}
-                        className="text-[10px] font-medium px-2.5 py-1 rounded-full border border-border bg-card hover:bg-muted transition-colors text-foreground/80"
+                        title="Pathway state recorded for this session"
+                        className="text-[10px] font-medium px-2.5 py-1 rounded-full border border-border bg-card text-foreground/80"
                       >
                         {key}
-                      </button>
+                      </span>
                     ))
                   )}
                 </div>

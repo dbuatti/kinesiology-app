@@ -151,6 +151,7 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
   // Load stats on mount
   useEffect(() => {
     fetchStats();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [session?.user?.id]);
 
   const pending = Math.max(0, stats.total - stats.sent);

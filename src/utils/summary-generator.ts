@@ -26,7 +26,7 @@ const formatPriorityPattern = (patternStr: string | null | undefined): string =>
     });
     
     return lines.length > 0 ? '\n' + lines.join('\n') : 'None recorded';
-  } catch (e) {
+  } catch {
     return patternStr; // Fallback to raw if parsing fails
   }
 };

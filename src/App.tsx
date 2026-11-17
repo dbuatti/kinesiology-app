@@ -111,14 +111,19 @@ const FullScreenLoader = ({ label }: { label: string }) => (
 const AppRoutes = () => {
   const { session, isPractitioner } = useAuth();
 
-  if (session === undefined) {
+  // The demo session is public (it runs on a fixture and saves nothing), so it
+  // must render even while auth is still resolving — otherwise a slow or
+  // unavailable Supabase auth call leaves visitors on "Opening your practice…".
+  const isDemoRoute = window.location.pathname === "/appointments/demo";
+
+  if (session === undefined && !isDemoRoute) {
     return <FullScreenLoader label="Opening your practice…" />;
   }
 
   // A session alone is not enough: clients sign into the portal with the same
   // Supabase Auth pool, and their session must never open the CRM. Until the
   // database has told us who this is, show a loader — never the admin shell.
-  if (session && isPractitioner === undefined) {
+  if (session && isPractitioner === undefined && !isDemoRoute) {
     return <FullScreenLoader label="Checking access…" />;
   }
 

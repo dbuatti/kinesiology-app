@@ -220,7 +220,7 @@ const CalcomSlotsView = () => {
       if (data?.results?.calcom === "failed") {
         calcomFailed = true;
       }
-    } catch (err) {
+    } catch {
       calcomFailed = true;
     }
 
@@ -245,7 +245,7 @@ const CalcomSlotsView = () => {
         showSuccess(`Booking for ${attendeeName} cancelled.`);
       }
       setTimeout(fetchSlots, 2000);
-    } catch (err) {
+    } catch {
       showError("Failed to cancel booking.");
     } finally {
       setProcessingBooking(null);
@@ -321,7 +321,7 @@ const CalcomSlotsView = () => {
 
       showSuccess(isCurrentlyBlocked ? "Day unblocked." : "Day blocked.");
       setTimeout(fetchSlots, 2000);
-    } catch (err: any) {
+    } catch {
       showError("Failed to update availability.");
     } finally {
       setProcessingDate(null);
@@ -531,6 +531,7 @@ const CalcomSlotsView = () => {
 
   useEffect(() => {
     fetchSlots();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [weeks, weeksOffset]);
 
   const groupedWeeks = useMemo(() => {

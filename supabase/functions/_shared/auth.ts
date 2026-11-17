@@ -122,7 +122,7 @@ export async function requirePractitioner(req: Request, corsHeaders: Record<stri
  *
  * Returns a 401 Response when unauthorised, or null when the request may proceed.
  */
-export async function requireServiceRole(req: Request, corsHeaders: Record<string, string>): Promise<Response | null> {
+export function requireServiceRole(req: Request, corsHeaders: Record<string, string>): Response | null {
   const authHeader = req.headers.get("Authorization") || "";
   const token = authHeader.replace(/^Bearer\s+/i, "");
   if (isServiceKey(token) || hasInternalToken(req)) return null;

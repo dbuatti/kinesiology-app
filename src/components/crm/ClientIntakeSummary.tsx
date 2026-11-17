@@ -74,6 +74,7 @@ export default function ClientIntakeSummary({ data }: ClientIntakeSummaryProps) 
         <Row label="Email" value={d.email} />
         <Row label="Phone" value={d.phone} />
         <Row label="Address" value={d.home_address} />
+        <MultiRow label="Suburb" value={arr(d.suburbs)} />
         <Row label="Work / daily life" value={d.occupation} />
         <Row label="Children" value={yesNo(d.children)} />
         <Row label="How they found us" value={d.referral_source} />

@@ -111,7 +111,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { clientId, appointmentId, force } = body;
+    const { clientId, appointmentId } = body;
     const overrideEmail = String(body.to || body.email || "").trim();
 
     if (!clientId) throw new Error("Missing clientId");
@@ -119,12 +119,12 @@ serve(async (req) => {
     const GMAIL_CLIENT_ID = Deno.env.get('GMAIL_CLIENT_ID');
     const GMAIL_CLIENT_SECRET = Deno.env.get('GMAIL_CLIENT_SECRET');
     const GMAIL_REFRESH_TOKEN = Deno.env.get('GMAIL_REFRESH_TOKEN');
-    const SENDER_EMAIL = Deno.env.get('GMAIL_USER_EMAIL');
     // GMAIL_USER_EMAIL authenticates the API call; clients see the practice's
     // real, verified alias as the sender instead.
     const FROM_ADDRESS = "Daniele Buatti <info@danielebuatti.com>";
     const STRIPE_KEY = Deno.env.get('STRIPE_SECRET_KEY');
     const APP_ORIGIN = Deno.env.get('SITE_URL') || 'https://kinesiology-app.vercel.app';
+    const PRACTICE_ADDRESS = "685 Toorak Road, Toorak VIC 3142";
 
     const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
 
@@ -244,6 +244,8 @@ serve(async (req) => {
                     <div style="font-size: 22px; font-weight: 700; color: #1E293B;">${friendlyDate}</div>
                     <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin: 18px 0 6px;">Time</div>
                     <div style="font-size: 22px; font-weight: 700; color: #1E293B;">${friendlyTime}</div>
+                    <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin: 18px 0 6px;">Where</div>
+                    <div style="font-size: 16px; color: #1E293B;">${PRACTICE_ADDRESS}</div>
                   </div>
                   ` : ''}
 

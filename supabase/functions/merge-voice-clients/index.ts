@@ -8,7 +8,6 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const VOICE_CLIENTS_DB_ID = "af3e38f400d84dc8975eff4b6269157b";
 const LESSONS_DB_1_ID = "8d6369c637c8425fb007adf261f8e576";
 const LESSONS_DB_2_ID = "11caad21cd0980d8a3eeeffb27fc43c0";
 const DB1_RELATION_PROP = "Client CRM";
@@ -61,10 +60,10 @@ serve(async (req) => {
     }
 
     // 2. Helper: transfer relations from source to target in a given database
-    async function transferRelations(
+    const transferRelations = async (
       dbId: string,
       relationProp: string,
-    ): Promise<number> {
+    ): Promise<number> => {
       const lessonsToUpdate: { id: string; currentIds: string[] }[] = [];
       let hasMore = true;
       let startCursor: string | undefined;
@@ -132,7 +131,7 @@ serve(async (req) => {
       }
 
       return lessonsToUpdate.length;
-    }
+    };
 
     const db1Count = await transferRelations(LESSONS_DB_1_ID, DB1_RELATION_PROP);
     const db2Count = await transferRelations(LESSONS_DB_2_ID, DB2_RELATION_PROP);

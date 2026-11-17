@@ -64,6 +64,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
     if (test.notes !== undefined && test.notes !== localNotes) {
       setLocalNotes(test.notes || "");
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [test.notes]);
 
   const handleNotesChange = (val: string) => {
@@ -332,7 +333,7 @@ export function PrimitiveReflexAssessment({
   const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
 
   const pattern = useMemo(() => safeParse(priorityPattern, {} as any), [priorityPattern]);
-  const reflexPattern = pattern.primitiveReflexes || {};
+  const reflexPattern = useMemo(() => pattern.primitiveReflexes || {}, [pattern]);
 
   useEffect(() => {
     const fetchImages = async () => {

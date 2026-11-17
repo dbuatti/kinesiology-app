@@ -3,13 +3,16 @@
 // them; the zone decides what you're *doing*:
 //
 //   Practice  — seeing clients and teaching (today, calendar, sessions, people)
-//   Business  — a focus zone for admin and client relationships (inbox,
-//               follow-up, money, audit, planning) without clinical noise
+//   Business  — admin and client relationships (inbox, follow-up, money, audit)
 //   Growth    — the practitioner's own development and reference material
 //
 // Single source of truth for the sidebar, the phone tab bar, the route→zone
 // sync in MainLayout, breadcrumbs, and ⌘K zone switching. Edit here, not in
 // those components.
+//
+// Navigation rule: at most FIVE primary destinations per zone. Everything
+// else lives in `more`, which the sidebar keeps behind a disclosure and the
+// phone's "More" drawer already exposes. No destination appears in two zones.
 import {
   LayoutDashboard,
   CalendarDays,
@@ -28,7 +31,6 @@ import {
   Brain,
   BookOpen,
   FileText,
-  ShieldAlert,
   type LucideIcon,
 } from "lucide-react";
 
@@ -43,7 +45,8 @@ export interface ZoneDef {
   home: string;
   dot: string; // tailwind bg class for the switcher dot
   aura: [string, string]; // two radial tints for the page aura
-  groups: NavGroup[];
+  groups: NavGroup[]; // primary destinations — keep the total at five or fewer
+  more?: NavItem[]; // secondary destinations, behind the "More" disclosure
   tabs: NavItem[]; // phone/tablet bottom bar (4 max, "More" is added)
 }
 
@@ -64,7 +67,7 @@ const PRACTICE_HUB: NavItem = { label: "Practice Hub", icon: Heart, path: "/prac
 const IDENTITY: NavItem = { label: "Identity Work", icon: Brain, path: "/identity" };
 const LIBRARY: NavItem = { label: "Library", icon: BookOpen, path: "/library" };
 const WORKSHEETS: NavItem = { label: "Worksheets", icon: FileText, path: "/worksheets" };
-const LIMITING_BELIEFS: NavItem = { label: "Limiting Beliefs", icon: ShieldAlert, path: "/identity?tool=limiting" };
+const LIMITING_BELIEFS: NavItem = { label: "Limiting Beliefs", icon: Brain, path: "/identity?tool=limiting" };
 
 export const ZONES: Record<Zone, ZoneDef> = {
   practice: {
@@ -73,10 +76,12 @@ export const ZONES: Record<Zone, ZoneDef> = {
     home: "/",
     dot: "bg-chart-primary",
     aura: ["hsl(236 80% 62% / 0.11)", "hsl(266 70% 60% / 0.07)"],
+    // Four clinical destinations. Corrections live under "More" — it is a
+    // reference tool, not somewhere you start the day.
     groups: [
       { label: "Practice", items: [TODAY, CALENDAR, SESSIONS, PEOPLE] },
-      { label: "Corrections", items: [LIMITING_BELIEFS] },
     ],
+    more: [LIMITING_BELIEFS],
     tabs: [TODAY, CALENDAR, SESSIONS, PEOPLE],
   },
   business: {
@@ -85,11 +90,12 @@ export const ZONES: Record<Zone, ZoneDef> = {
     home: "/inbox",
     dot: "bg-chart-emerald",
     aura: ["hsl(160 60% 42% / 0.10)", "hsl(190 70% 45% / 0.06)"],
+    // Five destinations: the work that keeps the practice running.
     groups: [
-      { label: "Relationships", items: [INBOX, FOLLOW_UP, PEOPLE, ASSISTANT] },
-      { label: "Money & planning", items: [MONEY, AUDIT, CALENDAR, TIMETABLE, MARKETING] },
+      { label: "Business", items: [INBOX, FOLLOW_UP, ASSISTANT, MONEY, AUDIT] },
     ],
-    tabs: [INBOX, FOLLOW_UP, PEOPLE, MONEY],
+    more: [TIMETABLE, MARKETING],
+    tabs: [INBOX, FOLLOW_UP, MONEY, ASSISTANT],
   },
   growth: {
     id: "growth",
@@ -97,10 +103,11 @@ export const ZONES: Record<Zone, ZoneDef> = {
     home: "/morning-program",
     dot: "bg-chart-amber",
     aura: ["hsl(38 92% 55% / 0.10)", "hsl(18 90% 60% / 0.06)"],
+    // Five destinations: your own practice and reference material.
     groups: [
-      { label: "Daily", items: [MORNING, JOURNAL] },
-      { label: "Learn & practise", items: [PRACTICE_HUB, IDENTITY, LIMITING_BELIEFS, LIBRARY, WORKSHEETS] },
+      { label: "Growth", items: [MORNING, JOURNAL, PRACTICE_HUB, IDENTITY, LIBRARY] },
     ],
+    more: [WORKSHEETS, LIMITING_BELIEFS],
     tabs: [MORNING, JOURNAL, PRACTICE_HUB, LIBRARY],
   },
 };
@@ -138,6 +145,11 @@ export function activeNavPath(paths: string[], pathname: string): string | undef
   return paths
     .filter((p) => pathname === p || (p !== "/" && pathname.startsWith(p + "/")))
     .sort((a, b) => b.length - a.length)[0];
+}
+
+/** Every destination in a zone, primary and secondary — used by search. */
+export function zoneItems(zone: ZoneDef): NavItem[] {
+  return [...zone.groups.flatMap((g) => g.items), ...(zone.more ?? [])];
 }
 
 // Breadcrumb: first URL segment → [page title, section label, section link].

@@ -31,7 +31,7 @@ const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ComponentType
 const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway }: AlignSectionProps) => {
   const [showOnlyPriority, setShowOnlyPriority] = useState(false);
 
-  const priorities = pattern?.priorities || {};
+  const priorities = useMemo(() => pattern?.priorities || {}, [pattern]);
 
   const allFindings = useMemo(() => {
     const items: Finding[] = [];

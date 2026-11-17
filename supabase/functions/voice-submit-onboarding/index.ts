@@ -16,7 +16,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { email, name, mobile, goals, experienceLevel, additionalNotes } = await req.json();
+    const { email, name, mobile, suburb, goals, experienceLevel, additionalNotes } = await req.json();
     if (!email) throw new Error("Missing required field: email");
 
     const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
@@ -52,6 +52,7 @@ serve(async (req) => {
           voice_goals: goals || null,
           voice_experience_level: experienceLevel || null,
           voice_mobile: mobile || null,
+          ...(suburb ? { suburbs: [String(suburb).trim()] } : {}),
           voice_additional_notes: additionalNotes || null,
           voice_onboarding_completed: true,
           voice_onboarding_submitted_at: new Date().toISOString(),

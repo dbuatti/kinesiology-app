@@ -133,7 +133,7 @@ const FractalTool = () => {
       setProposedRelationships(newRels);
       updateCache(newRels, proposedMerges, proposedPrimary);
       fetchData();
-    } catch (err) {
+    } catch {
       showError("Failed to update relationship.");
     }
   };
@@ -162,7 +162,7 @@ const FractalTool = () => {
       updateCache(proposedRelationships, newMerges, proposedPrimary);
       fetchData();
       showSuccess("Identities merged successfully.");
-    } catch (err) {
+    } catch {
       showError("Failed to merge identities.");
     }
   };
@@ -183,7 +183,7 @@ const FractalTool = () => {
       updateCache(newRels, proposedMerges, proposedPrimary);
       fetchData();
       showSuccess(`Accepted ${rels.length} relationships.`);
-    } catch (err) {
+    } catch {
       showError("Failed to update relationships.");
     }
   };
@@ -204,7 +204,7 @@ const FractalTool = () => {
       updateCache(proposedRelationships, proposedMerges, null);
       fetchData();
       showSuccess("Primary Primary pattern established.");
-    } catch (err) {
+    } catch {
       showError("Failed to set primary.");
     }
   };
@@ -234,7 +234,7 @@ const FractalTool = () => {
 
       if (error) throw error;
       setBacklog(prev => prev.map(item => item.id === id ? { ...item, muscle_test_stars: rating } : item));
-    } catch (err) {
+    } catch {
       showError("Failed to update rating.");
     }
   };
@@ -249,7 +249,7 @@ const FractalTool = () => {
       if (error) throw error;
       showSuccess("Hierarchy updated.");
       fetchData();
-    } catch (err) {
+    } catch {
       showError("Failed to move item.");
     }
   };
@@ -261,7 +261,7 @@ const FractalTool = () => {
       const { error } = await supabase.from('identity_backlog').delete().eq('id', deleteTargetId);
       if (error) throw error;
       fetchData();
-    } catch (err) {
+    } catch {
       showError("Failed to delete.");
     }
   };

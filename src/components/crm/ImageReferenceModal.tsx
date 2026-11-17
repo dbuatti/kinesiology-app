@@ -3,7 +3,7 @@ import { X, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { getMuscleInfo } from "@/data/muscle-info-data";
-import type { MuscleInfo } from "@/data/muscle-info-data";
+import { clickableProps } from "@/lib/a11y";
 
 interface ImageReferenceModalProps {
   open: boolean;
@@ -132,6 +132,8 @@ const LOVETT_DATA: LovettPair[] = [
 
 type TabId = "pulse-points" | "brain-zones" | "cranial-sutures" | "organ-referral" | "cranial-nerves" | "muscle-organ" | "lovett-brothers" | "lymphatics";
 
+const TAB_ORDER: TabId[] = ["pulse-points", "brain-zones", "cranial-sutures", "organ-referral", "cranial-nerves", "muscle-organ", "lovett-brothers", "lymphatics"];
+
 export function ImageReferenceModal({ open, onClose }: ImageReferenceModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>("pulse-points");
   const [search, setSearch] = useState("");
@@ -169,8 +171,6 @@ export function ImageReferenceModal({ open, onClose }: ImageReferenceModalProps)
   }, [filteredRows, groupBy]);
 
   const muscleInfo = selectedMuscle ? getMuscleInfo(selectedMuscle) : null;
-
-  const TAB_ORDER: TabId[] = ["pulse-points", "brain-zones", "cranial-sutures", "organ-referral", "cranial-nerves", "muscle-organ", "lovett-brothers", "lymphatics"];
 
   useEffect(() => {
     if (!open) return;
@@ -397,7 +397,7 @@ export function ImageReferenceModal({ open, onClose }: ImageReferenceModalProps)
                 <div className="grid grid-cols-2 gap-4">
                   {LYMPH_IMAGES.map((img) => (
                     <div key={img.id} className="flex flex-col items-center gap-1.5">
-                      <div className="w-full overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in" style={{ aspectRatio: "4/3" }} onClick={() => setLightboxSrc(img.src)}>
+                      <div className="w-full overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in" style={{ aspectRatio: "4/3" }} {...clickableProps(() => setLightboxSrc(img.src))}>
                         <img
                           src={img.src}
                           alt={img.alt}
@@ -523,7 +523,7 @@ export function ImageReferenceModal({ open, onClose }: ImageReferenceModalProps)
             ) : (
               <div className="space-y-3">
                 <p className="text-[11px] leading-relaxed text-muted-foreground">{activeImage?.description}</p>
-                <div className="overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in" onClick={() => activeImage?.src && setLightboxSrc(activeImage.src)}>
+                <div className="overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in" {...clickableProps(() => { if (activeImage?.src) setLightboxSrc(activeImage.src); })}>
                   <img
                     src={activeImage?.src}
                     alt={activeImage?.alt}

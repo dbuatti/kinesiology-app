@@ -93,7 +93,9 @@ serve(async (req) => {
       if (cid) {
         try {
           await supabase.from("voice_bookings").update({ status: "cancelled" }).eq("calcom_booking_id", cid);
-        } catch {}
+        } catch {
+          // The booking row may already be gone; nothing else to do.
+        }
       }
     }
 

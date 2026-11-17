@@ -211,7 +211,7 @@ async function loadClientContext(client_id: string) {
       .order("date", { ascending: false })
       .limit(3),
   ]);
-  let styleSummary = profile?.style_summary || "";
+  const styleSummary = profile?.style_summary || "";
   let sessionNotesBlock = "";
   if (sessions?.length) {
     sessionNotesBlock = sessions.map((s: any) => {
@@ -252,6 +252,7 @@ serve(async (req) => {
     // confused with the kinesiology part of the domain").
     const SITE_URL = (is_voice ? Deno.env.get("VOICE_SITE_URL") : null)
       || Deno.env.get("SITE_URL") || "https://kinesiology-app.vercel.app";
+    const PRACTICE_ADDRESS = "685 Toorak Road, Toorak VIC 3142";
 
     // Client context and real availability in ONE parallel fetch — neither
     // depends on the other, so serialising them (as the old client-side flow
@@ -309,6 +310,7 @@ Write a short reply body in plain, everyday English — the way a real person ty
 - Do NOT include a greeting ("Hi X,") or a sign-off ("All the best, Daniele") — those are added automatically by the email template, so start directly with the message content.
 - Never invent a specific date/time that isn't in the REAL AVAILABLE SLOTS list above (or didn't already appear in the conversation/session notes) — prices likewise only if they already appeared above.
 - Clients have a self-serve portal at ${SITE_URL}/portal/login (email OTP, no password) to view their sessions, cancel, book a new one, or message Daniele directly — only mention it if it's actually relevant (Daniele asked for it via the instruction above, or the client seems unaware of it), and if you do, use that exact full URL, never a bare "/portal/login".
+- Daniele's FNH studio address is ${PRACTICE_ADDRESS} — only include it if the client asked for the address or it's genuinely relevant; never invent a different address.
 
 Also suggest a short subject line (only needed if this reads as a fresh email rather than a reply — otherwise reuse the natural "Re: ..." subject implied by the conversation, or leave it blank).
 

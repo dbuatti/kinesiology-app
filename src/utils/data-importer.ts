@@ -115,7 +115,7 @@ export async function importAppointmentsFromCSV(csvText: string) {
       date = new Date(dateString);
       if (isNaN(date.getTime())) throw new Error("Invalid date");
       date.setHours(10, 0, 0, 0);
-    } catch (e) {
+    } catch {
       console.error(`Invalid date for appointment ${row.Name}: ${dateString}`);
       failedCount++;
       continue;
@@ -173,7 +173,11 @@ export async function importAppointmentsFromCSV(csvText: string) {
   const successfulCount = appointmentsToInsert.length;
   
   if (skippedDuplicates > 0) {
-    showSuccess(`Import complete: ${successfulCount} imported, ${skippedDuplicates} duplicates skipped`);
+    const notes: string[] = [`${skippedDuplicates} duplicates skipped`];
+    if (failedCount > 0) notes.push(`${failedCount} rows failed`);
+    showSuccess(`Import complete: ${successfulCount} imported, ${notes.join(", ")}`);
+  } else if (failedCount > 0) {
+    showSuccess(`Import complete: ${successfulCount} imported, ${failedCount} rows failed`);
   }
   
   return { success: successfulCount, failed: rows.length - successfulCount };

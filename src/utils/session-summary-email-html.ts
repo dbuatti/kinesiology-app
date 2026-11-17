@@ -22,8 +22,7 @@ export function escapeHtml(s: string): string {
 }
 
 export function renderSessionSummaryEmailHtml(input: SessionEmailRenderInput): string {
-  const { from, to, subject, body, date } = input;
-  const utf8Subject = `=?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;
+  const { body } = input;
   const htmlBody = escapeHtml(body).split(/\n+/).map((p) => `<p style="margin:0 0 14px;">${p}</p>`).join("");
   return `<!DOCTYPE html>
 <html>

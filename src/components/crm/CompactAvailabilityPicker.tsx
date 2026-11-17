@@ -78,6 +78,7 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
 
   useEffect(() => {
     fetchSlots();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [targetEventTypeId]);
 
   // Generate all 30 days, marking which have slots

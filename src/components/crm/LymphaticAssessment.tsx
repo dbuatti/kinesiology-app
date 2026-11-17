@@ -74,7 +74,7 @@ const ZONE_INSTRUCTIONS: Record<string, { position: string; pearl?: string; imag
 };
 
 const LymphaticAssessment = ({
-  appointmentId,
+  appointmentId: _appointmentId,
   initialSutureSide,
   initialPriorityZone,
   initialNotes,

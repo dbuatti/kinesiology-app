@@ -40,8 +40,7 @@ const getCyclePrompt = (stepIdx: number, belief: string): string => {
 const CYCLE_LETTERS: Record<number, string> = { 0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E' };
 
 // Checkpoints after each A-E cycle
-const CHECKPOINTS = ['f', 'g', 'h'] as const;
-type CheckpointId = typeof CHECKPOINTS[number];
+type CheckpointId = 'f' | 'g' | 'h';
 
 interface RoundData {
   responses: Record<number, string>;
@@ -244,7 +243,7 @@ const LimitingBeliefsTool = () => {
           <p className="text-xs font-semibold text-foreground">Decision Checkpoints</p>
         </div>
         <div className="space-y-2">
-          {CHECKPOINT_DATA.map((cp, i) => {
+          {CHECKPOINT_DATA.map((cp, _i) => {
             const isActive = activeCheckpoint === cp.id;
             const isPast = phase === 'complete' || (nextCheckpoint === 'g' && cp.id === 'f') || (nextCheckpoint === 'h' && (cp.id === 'f' || cp.id === 'g'));
             const isLocked = !isActive && !isPast && phase === 'cycle';

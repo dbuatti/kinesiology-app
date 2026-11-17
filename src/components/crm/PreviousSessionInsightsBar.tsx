@@ -17,6 +17,7 @@ import { format, differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import EmptyState from "@/components/shared/EmptyState";
+import { clickableProps } from '@/lib/a11y';
 
 interface PreviousSessionInsightsBarProps {
   history?: any[];
@@ -95,9 +96,9 @@ const PreviousSessionInsightsBar = ({ history = [], manualData }: PreviousSessio
       <Card className={cn(
         "border shadow-sm overflow-hidden transition-all duration-300 bg-card text-foreground"
       )}>
-        <div 
+        <div
           className="px-4 py-1.5 flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors"
-          onClick={() => setIsOpen(!isOpen)}
+          {...clickableProps(() => setIsOpen(!isOpen))}
         >
           <div className="flex items-center gap-4 overflow-hidden">
             <div className={cn(

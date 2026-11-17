@@ -19,7 +19,7 @@ serve(async (req) => {
   if (authErr) return authErr
 
   try {
-    const { action, start, end, proposalId, reason } = await req.json().catch(() => ({}))
+    const { action, start, end, proposalId } = await req.json().catch(() => ({}))
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
     if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY in Supabase Secrets.")
     if (!start || !end) throw new Error("Missing start/end.")

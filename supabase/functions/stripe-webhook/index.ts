@@ -189,13 +189,12 @@ serve(async (req) => {
 
   try {
     const body = await req.text();
-    let event;
 
     if (!WEBHOOK_SECRET || !signature) {
       console.error(`[stripe-webhook] Missing webhook secret or signature — skipping verification`);
       return new Response(JSON.stringify({ error: 'Missing signature' }), { status: 401, headers: corsHeaders });
     }
-    event = await stripe.webhooks.constructEventAsync(body, signature, WEBHOOK_SECRET);
+    const event = await stripe.webhooks.constructEventAsync(body, signature, WEBHOOK_SECRET);
 
     console.log(`[stripe-webhook] Processing event: ${event.type}`);
 

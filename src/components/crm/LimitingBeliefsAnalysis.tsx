@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { clickableProps } from '@/lib/a11y';
 
 interface SuggestionItem {
   name: string;
@@ -250,7 +251,7 @@ const LimitingBeliefsAnalysis = () => {
             {items.map((item, i) => (
               <div
                 key={i}
-                onClick={onItemClick ? () => onItemClick(item) : undefined}
+                {...(onItemClick ? clickableProps(() => onItemClick(item)) : {})}
                 className={cn(
                   "p-2 rounded-lg bg-card/80 border border-border/40",
                   onItemClick && "cursor-pointer hover:bg-card hover:border-chart-primary/30 hover:shadow-sm transition-all"

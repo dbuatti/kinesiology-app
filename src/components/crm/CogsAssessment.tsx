@@ -186,7 +186,7 @@ const CogsAssessment = ({
               {anyNotes && (
                 <Button onClick={handleSave} disabled={loading} className="shrink-0 h-9 px-4 rounded-lg text-xs font-medium ml-auto">
                   {loading ? <Loader2 className="animate-spin mr-1" size={14} /> : <Save size={14} className="mr-1" />}
-                  Save
+                  Save notes
                 </Button>
               )}
             </div>

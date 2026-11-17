@@ -26,6 +26,7 @@ const formSchema = z.object({
   second_name: z.string().min(1, "Second name is required"),
   email: z.string().email("Invalid email"),
   phone: z.string().optional(),
+  suburbs: z.string().optional(),
   born: z.string().min(1, "Date of birth is required"),
   home_address: z.string().optional(),
   referral_source: z.string().min(1, "This field is required"),
@@ -114,6 +115,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
       second_name: secondName,
       email: initialData?.email || "",
       phone: initialData?.phone || "",
+      suburbs: initialData?.suburbs?.join(", ") || "",
       born: initialData?.born ? new Date(initialData.born).toISOString().split('T')[0] : "",
       home_address: (initialData as any)?.home_address || "",
       referral_source: initialData?.referral_source || "",
@@ -164,6 +166,10 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
     try {
       const fullName = `${values.first_name} ${values.second_name}`.trim();
 
+      const suburbsArray = values.suburbs
+        ? values.suburbs.split(",").map(s => s.trim()).filter(s => s.length > 0)
+        : [];
+
       const clientPayload: Record<string, any> = {
         name: fullName,
         // Normalise casing/whitespace so a client re-typing their email with
@@ -173,6 +179,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
         phone: values.phone || null,
         born: values.born ? new Date(values.born).toISOString() : null,
         home_address: values.home_address || null,
+        suburbs: suburbsArray,
         referral_source: values.referral_source,
         emergency_contact_name: values.emergency_contact_name,
         emergency_contact_phone: values.emergency_contact_phone,
@@ -336,6 +343,13 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
               <FormItem>
                 <FormLabel className="text-xs font-medium text-muted-foreground">Home Address</FormLabel>
                 <FormControl><Input placeholder="Street, City, Postcode" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="suburbs" render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs font-medium text-muted-foreground">Suburb</FormLabel>
+                <FormControl><Input placeholder="e.g. Toorak" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />

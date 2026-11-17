@@ -211,7 +211,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
           </div>
           <div className="flex gap-3">
             <Button variant="ghost" size="sm" onClick={goBack} className="flex-1 h-10 rounded-lg text-xs font-medium"><ChevronLeft size={14} className="mr-1" /> Back</Button>
-            <Button disabled={!age} onClick={() => goToStep('EMOTION_SELECT')} className="flex-[2] h-10 rounded-lg text-xs font-medium">Continue <ChevronRight size={14} className="ml-2" /></Button>
+            <Button disabled={!age} onClick={() => goToStep('EMOTION_SELECT')} className="flex-[2] h-10 rounded-lg text-xs font-medium">Choose emotion <ChevronRight size={14} className="ml-2" /></Button>
           </div>
         </div>
       )}

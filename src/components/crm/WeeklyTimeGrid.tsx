@@ -22,6 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { clickableProps } from "@/lib/a11y";
 
 export interface CalendarEvent {
   id: string;
@@ -558,7 +559,7 @@ const WeeklyTimeGrid = ({
                             slotClickable && "cursor-pointer hover:bg-chart-emerald/10 transition-colors"
                           )}
                           style={{ height: HOUR_HEIGHT }}
-                          onClick={() => slotClickable && onSlotClick(day, hour)}
+                          {...(slotClickable && onSlotClick ? clickableProps(() => onSlotClick(day, hour)) : {})}
                         >
                           {slotClickable && (
                             <div className="flex items-center justify-center h-full gap-1">

@@ -113,7 +113,7 @@ const TextField = ({
 );
 
 const TrackerRow = ({
-  index,
+  index: _index,
   data,
   onChange,
 }: {
@@ -218,6 +218,7 @@ const MoneySecurityFreedomWorksheet = ({ onBack }: { onBack?: () => void }) => {
       }
     };
     init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [userId]);
 
   // Auto-save

@@ -83,7 +83,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
         resultsMap[r.muscle_name] = r as MuscleTestResult;
       });
       setResults(resultsMap);
-    } catch (error: any) {
+    } catch {
       showError("Failed to load muscle test data.");
     } finally {
       setLoading(false);
@@ -231,7 +231,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
       if (error) throw error;
       setResults({});
       showSuccess("All muscle tests cleared.");
-    } catch (error: any) {
+    } catch {
       showError("Failed to clear muscle tests.");
     } finally {
       setSaving(false);
@@ -274,7 +274,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
           return newResults;
         });
         showSuccess(`${dbMuscleName} test cleared.`);
-      } catch (error: any) {
+      } catch {
         showError(`Failed to clear ${dbMuscleName} test.`);
       } finally {
         setSaving(false);

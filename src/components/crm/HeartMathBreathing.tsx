@@ -10,7 +10,7 @@ interface HeartMathBreathingProps {
   onCancel?: () => void;
 }
 
-const HeartMathBreathing = ({ onComplete, onCancel }: HeartMathBreathingProps) => {
+const HeartMathBreathing = ({ onComplete: _onComplete, onCancel }: HeartMathBreathingProps) => {
   const [isActive, setIsActive] = useState(false);
   const [phase, setPhase] = useState<'inhale' | 'exhale'>('inhale');
   const [timeLeft, setTimeLeft] = useState(4);

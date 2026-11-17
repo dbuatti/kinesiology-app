@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import plugin from "tailwindcss/plugin";
+import animate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -150,7 +151,7 @@ export default {
     },
   },
   plugins: [
-    require("tailwindcss-animate"),
+    animate,
     /**
      * Pointer-aware variants. `coarse` is iPad/iPhone (a finger), `fine` is a
      * Mac trackpad. Hover-only affordances and 36px icon buttons are fine with

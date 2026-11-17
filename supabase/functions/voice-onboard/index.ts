@@ -23,7 +23,7 @@ const richText = (text: string) => {
 
 // The app is the main record for students: make sure they're in People and keep
 // the onboarding notes on their row. Non-fatal — Notion already has the copy.
-async function saveToPeople(opts: { email: string; name: string; phone: string; practice: string; notes: string; notionPageId: string }) {
+async function saveToPeople(opts: { email: string; name: string; phone: string; suburb?: string; practice: string; notes: string; notionPageId: string }) {
   if (!opts.email) return null;
   const admin = createClient(Deno.env.get("SUPABASE_URL"), Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"));
   const clientId = await ensurePerson(admin, {
@@ -42,6 +42,7 @@ async function saveToPeople(opts: { email: string; name: string; phone: string; 
       }
     }
     if (opts.phone && !(row as unknown as { phone?: string })?.phone) patch.phone = opts.phone;
+    if (opts.suburb && !(row as unknown as { suburbs?: string[] })?.suburbs?.length) patch.suburbs = [opts.suburb.trim()];
     if (Object.keys(patch).length) {
       const { error } = await admin.from("clients").update(patch).eq("id", clientId);
       if (error) console.error("[voice-onboard] people patch failed:", error.message);
@@ -63,7 +64,7 @@ serve(async (req) => {
     const NOTION_KEY = Deno.env.get("NOTION_API_KEY");
     if (!NOTION_KEY) throw new Error("Missing NOTION_API_KEY in Supabase Secrets.");
 
-    const { name, email, phone, notes, practice } = await req.json();
+    const { name, email, phone, suburb, notes, practice } = await req.json();
     if (!name || !name.trim()) throw new Error("Full name is required.");
 
     const notionHeaders = {
@@ -133,6 +134,7 @@ serve(async (req) => {
         email: (email || "").trim(),
         name: name.trim(),
         phone: (phone || "").trim(),
+        suburb: (suburb || "").trim(),
         practice: practice === "piano" ? "piano" : "voice",
         notes: (notes || "").trim(),
         notionPageId: existingPageId,
@@ -193,6 +195,7 @@ serve(async (req) => {
       email: (email || "").trim(),
       name: name.trim(),
       phone: (phone || "").trim(),
+      suburb: (suburb || "").trim(),
       practice: practice === "piano" ? "piano" : "voice",
       notes: (notes || "").trim(),
       notionPageId: data.id,

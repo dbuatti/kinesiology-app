@@ -881,6 +881,7 @@ const WorkflowDebuggerPage = () => {
     } finally {
       setRunningTests(prev => { const next = new Set(prev); next.delete(name); return next; });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [testPayloads]);
 
   const allResults = Object.values(testResults).sort((a, b) => b.timestamp - a.timestamp);

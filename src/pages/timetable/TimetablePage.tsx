@@ -477,7 +477,9 @@ const TimetablePage = () => {
       console.error("Failed to load timetable:", err);
       setError(err instanceof Error ? err.message : "An unexpected error occurred.");
     } finally {
-      if (!stale()) setLoading(false);
+      if (!stale()) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -1134,7 +1136,8 @@ const TimetablePage = () => {
       setManageOpen(false);
       setProposalFor(null);
       // Dropping frees its Cal.com slot back to "open" — refetch so the grid
-      // reflects it immediately.
+      // reflects it immediately. Also invalidate the appointment linkage query.
+      await queryClient.invalidateQueries({ queryKey: ["timetable-client-appointments"] });
       fetchData();
     } catch (err) {
       showError(err instanceof Error ? err.message : "Could not drop proposal.");

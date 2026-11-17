@@ -978,8 +978,17 @@ const TimetablePage = () => {
       const end = new Date(start.getTime() + minutesForEventType(b.eventTypeId, b.source) * 60 * 1000);
       out.push({ start, end });
     }
+    // Pencilled/confirmed proposals also occupy their time range, so a draft
+    // can't be placed overlapping them (even at a different slot start).
+    for (const p of proposals) {
+      if (!p.slot_start || !p.slot_end || p.status === "dropped") continue;
+      const start = new Date(p.slot_start);
+      const end = new Date(p.slot_end);
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) continue;
+      out.push({ start, end });
+    }
     return out;
-  }, [icloudEvents, blockedDates, enrichedBookings]);
+  }, [icloudEvents, blockedDates, enrichedBookings, proposals]);
 
   // Slots already taken by real bookings or existing proposals.
   const autoDraftTaken = useMemo<string[]>(() => {

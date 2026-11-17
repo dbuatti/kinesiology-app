@@ -1,8 +1,10 @@
 import { describe, it, expect } from "vitest";
+import { practiceWeekKey } from "@/utils/practice-time";
 import {
   autoDraftScheduleAnchored,
   computePreferredTime,
   parseAvailabilityText,
+  slotMatchesAvailability,
 } from "@/utils/timetable-scheduler";
 
 describe("parseAvailabilityText", () => {
@@ -61,5 +63,84 @@ describe("autoDraftScheduleAnchored", () => {
     });
     // usedWeeks should prevent same-week dupes; here different days same week possible
     expect(res.assignments.length).toBeLessThanOrEqual(2);
+  });
+});
+
+describe("autoDraftScheduleAnchored - cross-kind blocking", () => {
+  it("does not place a client in a week blocked by their other kind", () => {
+    const now = new Date();
+    const weekStart = new Date(now.getTime() + 7 * 86400000);
+    weekStart.setHours(10, 0, 0, 0);
+    const blockedWeek = weekStart.toISOString().slice(0, 10); // not exact, but we use practiceWeekKey via the scheduler
+    // We'll instead rely on blockedWeeks passed as practice week keys. Compute one.
+    const bw = practiceWeekKey(weekStart);
+
+    const slot = new Date(weekStart.getTime());
+    const res = autoDraftScheduleAnchored({
+      clients: [
+        {
+          id: "fnh:alice",
+          kind: "fnh",
+          name: "Alice",
+          pastSessions: [],
+          blockedWeeks: [bw],
+        },
+      ],
+      openSlots: [{ start: slot, durationMin: 60, kind: "fnh", eventDurationMin: 60 }],
+      busyBlocks: [],
+    });
+    // The only slot is in a blocked week, so Alice should not be placed there.
+    expect(res.assignments.length).toBe(0);
+  });
+});
+
+describe("autoDraftScheduleAnchored - buffer enforcement", () => {
+  it("does not place two sessions overlapping or without enough gap", () => {
+    const now = new Date();
+    const s1 = new Date(now.getTime() + 2 * 86400000);
+    s1.setHours(10, 0, 0, 0);
+    const s2 = new Date(s1.getTime() + 30 * 60000); // 30 min later, overlaps
+    const res = autoDraftScheduleAnchored({
+      clients: [
+        { id: "c1", kind: "fnh", name: "Alice", pastSessions: [], targetDate: s1, targetWindowDays: 0 },
+        { id: "c2", kind: "fnh", name: "Bob", pastSessions: [], targetDate: s2, targetWindowDays: 0 },
+      ],
+      openSlots: [
+        { start: s1, durationMin: 60, kind: "fnh", eventDurationMin: 60 },
+        { start: s2, durationMin: 60, kind: "fnh", eventDurationMin: 60 },
+      ],
+      busyBlocks: [],
+    });
+    // At most one should be placed since they overlap.
+    expect(res.assignments.length).toBeLessThanOrEqual(1);
+  });
+});
+
+describe("autoDraftScheduleAnchored - same week placement", () => {
+  it("requires slot to be in same week as target", () => {
+    const now = new Date();
+    // Target next week Monday
+    const monday = new Date(now);
+    monday.setDate(monday.getDate() + ((8 - monday.getDay()) % 7 || 7));
+    monday.setHours(10, 0, 0, 0);
+    // Slot in the week after (should not be placed)
+    const laterSlot = new Date(monday.getTime() + 8 * 86400000);
+    laterSlot.setHours(10, 0, 0, 0);
+    const res = autoDraftScheduleAnchored({
+      clients: [
+        { id: "c1", kind: "fnh", name: "Alice", pastSessions: [], targetDate: monday, targetWindowDays: 3 },
+      ],
+      openSlots: [{ start: laterSlot, durationMin: 60, kind: "fnh", eventDurationMin: 60 }],
+      busyBlocks: [],
+    });
+    expect(res.assignments.length).toBe(0);
+  });
+});
+
+describe("slotMatchesAvailability", () => {
+  it("returns true with no windows", () => {
+    const slot = { start: new Date(), durationMin: 60 } as any;
+    expect(slotMatchesAvailability(slot)).toBe(true);
+    expect(slotMatchesAvailability(slot, [])).toBe(true);
   });
 });

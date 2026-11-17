@@ -936,7 +936,7 @@ const TimetablePage = () => {
       for (const s of list) {
         const start = new Date(s.start);
         if (isNaN(start.getTime()) || start.getTime() <= nowMs) continue;
-        out.push({ start, durationMin: 60, kind: "fnh" });
+        out.push({ start, durationMin: 60, kind: "fnh", eventDurationMin: 60 });
       }
     }
     for (const [durStr, map] of Object.entries(voiceSlotsByDur)) {

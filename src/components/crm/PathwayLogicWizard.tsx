@@ -48,6 +48,7 @@ import { EYE_POSITIONS } from '@/data/emotion-data';
 import { safeParse } from '@/utils/safe-json';
 import { format } from 'date-fns';
 import { isFindingCategory, isInhibitedStatus } from '@/components/crm/v2/v2-utils';
+import { findingNameFromPathway, isCorrectionProcessName } from '@/lib/pathway-finding';
 
 type Step = 
   | 'SELECT_START'
@@ -83,7 +84,7 @@ const stageIndexFor = (s: Step): number =>
 const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, initialFinding, appointmentId }: PathwayLogicWizardProps) => {
   const [step, setStep] = useState<Step>('SELECT_START');
   const [history, setHistory] = useState<Step[]>([]);
-  const [selectedFinding, setSelectedFinding] = useState<string>(initialFinding || "");
+  const [selectedFinding, setSelectedFinding] = useState<string>(findingNameFromPathway(initialFinding) || "");
   const [customText, setCustomText] = useState<string>("");
   const [muscleFindings, setMuscleFindings] = useState<string[]>([]);
   const [loadingMuscles, setLoadingMuscles] = useState(false);
@@ -98,13 +99,15 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
   const isSandbox = !appointmentId || appointmentId.includes('00000000');
   const isDemo = appointmentId === DEMO_APPOINTMENT_ID;
 
+  const initialFindingName = useMemo(() => findingNameFromPathway(initialFinding), [initialFinding]);
+
   useEffect(() => {
-    if (initialFinding) {
-      setSelectedFinding(initialFinding);
+    if (initialFindingName) {
+      setSelectedFinding(initialFindingName);
     } else if (isSandbox) {
       setSelectedFinding('CUSTOM');
     }
-  }, [initialFinding, isSandbox]);
+  }, [initialFindingName, isSandbox]);
 
   useEffect(() => {
     const fetchMuscles = async () => {
@@ -184,17 +187,23 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
       }
     });
 
-    // Only add initialFinding if it's an actual finding already in the pattern
-    // (not a correction process name like "Mechanoreceptor (Unconscious)").
-    if (initialFinding && initialFinding !== 'CUSTOM' && items.has(initialFinding)) {
-      // Already present from the pattern loop above.
+    // The pathway chosen in Align is the correction target even when its
+    // assessment status has since cleared (or it was never recorded as
+    // inhibited), so it must always be selectable here. Correction *process*
+    // names (e.g. "Mechanoreceptor (Unconscious)") are not findings and stay out.
+    if (
+      initialFindingName &&
+      !isCorrectionProcessName(initialFindingName) &&
+      !items.has(initialFindingName)
+    ) {
+      items.set(initialFindingName, null);
     }
 
     return {
       inhibitedItems: Array.from(items.entries()).map(([name, status]) => ({ name, status })).sort((a, b) => a.name.localeCompare(b.name)),
       hasAnyTested
     };
-  }, [priorityPattern, initialFinding, muscleFindings]);
+  }, [priorityPattern, initialFindingName, muscleFindings]);
 
   useEffect(() => {
     const fetchLigamentImages = async () => {

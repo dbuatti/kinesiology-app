@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.25.0'
 import { requirePractitioner } from "../_shared/auth.ts"
+import { createPaymentLink } from "../_shared/stripe-payment.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -165,27 +166,14 @@ serve(async (req) => {
           apiVersion: '2023-10-16',
           httpClient: Stripe.createFetchHttpClient(),
         });
-        const session = await stripe.checkout.sessions.create({
-          customer_email: recipientEmail,
-          line_items: [{
-            price_data: {
-              currency: 'aud',
-              product_data: {
-                name: 'Functional Neuro Health Session',
-                description: `FNH session${friendlyDate ? ` on ${friendlyDate}` : ''}`,
-              },
-              unit_amount: Math.round(priceAmount * 100),
-            },
-            quantity: 1,
-          }],
-          mode: 'payment',
-          payment_intent_data: { statement_descriptor: 'RESONANCE KINE' },
-          success_url: `${APP_ORIGIN}/clients`,
-          cancel_url: `${APP_ORIGIN}/clients`,
+        paymentUrl = await createPaymentLink(stripe, {
+          amount: priceAmount,
+          name: "Functional Neuro Health Session",
+          description: friendlyDate ? `FNH session on ${friendlyDate}` : undefined,
+          customerEmail: recipientEmail,
           metadata: { appointment_id: appointment?.id, client_id: clientId },
-          expires_at: Math.floor(Date.now() / 1000) + 23 * 60 * 60,
+          statementDescriptor: "RESONANCE KINE",
         });
-        paymentUrl = session.url;
         if (appointment?.id) {
           await supabase.from('appointments').update({ payment_link: paymentUrl }).eq('id', appointment.id);
         }

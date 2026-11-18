@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.25.0'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { requirePractitioner } from "../_shared/auth.ts"
+import { createPaymentLink } from "../_shared/stripe-payment.ts"
 
 // Branded confirmation for Cal.com event types that are neither FNH nor voice
 // & piano coaching (15/30 Min Meeting, 2 hour meeting, anything new). FNH uses
@@ -90,7 +91,6 @@ serve(async (req) => {
     const GMAIL_REFRESH_TOKEN = Deno.env.get("GMAIL_REFRESH_TOKEN");
     if (!GMAIL_CLIENT_ID || !GMAIL_CLIENT_SECRET || !GMAIL_REFRESH_TOKEN) throw new Error("Missing Gmail credentials in Supabase Secrets.");
     const STRIPE_KEY = Deno.env.get('STRIPE_SECRET_KEY');
-    const APP_ORIGIN = Deno.env.get('SITE_URL') || 'https://kinesiology-app.vercel.app';
     const FROM_ADDRESS = "Daniele Buatti <info@danielebuatti.com>";
 
     const { name, email, startTime, sessionName, durationMin, price, calcomBookingUid, location } = await req.json();
@@ -112,23 +112,13 @@ serve(async (req) => {
         const stripe = new Stripe(STRIPE_KEY, { apiVersion: '2023-10-16', httpClient: Stripe.createFetchHttpClient() });
         const metadata: Record<string, string> = { attendee_email: to, session: session };
         if (calcomBookingUid) metadata.calcom_booking_uid = String(calcomBookingUid);
-        const checkout = await stripe.checkout.sessions.create({
-          customer_email: to,
-          line_items: [{
-            price_data: {
-              currency: 'aud',
-              product_data: { name: session, description: `${session} on ${friendlyDate} at ${friendlyTime}` },
-              unit_amount: Math.round(amount * 100),
-            },
-            quantity: 1,
-          }],
-          mode: 'payment',
-          success_url: APP_ORIGIN,
-          cancel_url: APP_ORIGIN,
+        paymentUrl = await createPaymentLink(stripe, {
+          amount,
+          name: session,
+          description: `${session} on ${friendlyDate} at ${friendlyTime}`,
+          customerEmail: to,
           metadata,
-          expires_at: Math.floor(Date.now() / 1000) + 23 * 60 * 60,
         });
-        paymentUrl = checkout.url;
       } catch (stripeErr) {
         console.error(`[${functionName}] Stripe error (non-fatal):`, stripeErr.message);
       }

@@ -111,3 +111,13 @@ verify_jwt = false
 
 [functions.voice-transcript-profile]
 verify_jwt = false
+
+# Internal/CRM payment tooling. The gateway JWT check is off because these
+# functions authenticate themselves with requirePractitioner() — accepting a
+# practitioner session or the x-rk-internal-token — and the CRM calls them with
+# a publishable key that is not a JWT.
+[functions.check-payment-links]
+verify_jwt = false
+
+[functions.stripe-manager]
+verify_jwt = false

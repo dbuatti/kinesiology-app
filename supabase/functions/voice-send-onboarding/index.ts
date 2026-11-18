@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.25.0'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { requireAuth } from "../_shared/guard.ts"
+import { createPaymentLink } from "../_shared/stripe-payment.ts"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -215,30 +216,14 @@ serve(async (req) => {
         if (calcomBookingUid && !calcomBookingUid.startsWith("force-")) {
           metadata.calcom_booking_uid = calcomBookingUid;
         }
-        const session = await stripe.checkout.sessions.create({
-          customer_email: studentEmail,
-          line_items: [{
-            price_data: {
-              currency: 'aud',
-              product_data: {
-                name: productName,
-                description: `${duration ? `${duration} min lesson` : "Lesson"} on ${friendlyDate} at ${friendlyTime}`,
-              },
-              unit_amount: cost * 100,
-            },
-            quantity: 1,
-          }],
-          mode: 'payment',
-          payment_intent_data: {
-            statement_descriptor: 'VOICE COACHING',
-          },
-          success_url: `${APP_ORIGIN}/voice/paid`,
-          cancel_url: `${APP_ORIGIN}/voice-onboarding/${encodeURIComponent(studentEmail)}`,
+        paymentUrl = await createPaymentLink(stripe, {
+          amount: cost,
+          name: productName,
+          description: `${duration ? `${duration} min lesson` : "Lesson"} on ${friendlyDate} at ${friendlyTime}`,
+          customerEmail: studentEmail,
           metadata,
-          // Stripe caps Checkout Session expiry at < 24h from creation.
-          expires_at: Math.floor(Date.now() / 1000) + 23 * 60 * 60,
+          statementDescriptor: "VOICE COACHING",
         });
-        paymentUrl = session.url;
       } catch (stripeErr) {
         const msg = stripeErr?.message || String(stripeErr);
         console.error(`[${functionName}] Stripe error (non-fatal):`, msg);

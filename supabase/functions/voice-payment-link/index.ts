@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.25.0";
 import { requirePractitioner } from "../_shared/auth.ts";
+import { createPaymentLink } from "../_shared/stripe-payment.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,39 +33,22 @@ serve(async (req) => {
       httpClient: Stripe.createFetchHttpClient(),
     });
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      payment_method_types: ["card"],
-      payment_intent_data: {
-        statement_descriptor: 'VOICE COACHING',
-      },
-      line_items: [
-        {
-          price_data: {
-            currency: "aud",
-            product_data: {
-              name: lessonTitle,
-              description: studentName ? `Voice lesson for ${studentName}` : undefined,
-            },
-            unit_amount: amount,
-          },
-          quantity: 1,
-        },
-      ],
+    const url = await createPaymentLink(stripe, {
+      amount: Number(amount) / 100,
+      name: lessonTitle,
+      description: studentName ? `Voice lesson for ${studentName}` : undefined,
+      customerEmail: email || null,
       metadata: {
         lesson_id: lessonId || "",
         type: "voice_lesson",
       },
-      ...(email ? { customer_email: email } : {}),
-      success_url: `${Deno.env.get("SITE_URL") || "https://kinesiology-app.vercel.app"}/voice/paid`,
-      cancel_url: `${Deno.env.get("SITE_URL") || "https://kinesiology-app.vercel.app"}/voice/calendar`,
-      expires_at: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+      statementDescriptor: "VOICE COACHING",
     });
 
-    console.log(`[${functionName}] Created checkout session: ${session.id} for ${lessonTitle}`);
+    console.log(`[${functionName}] Created payment link for ${lessonTitle}`);
 
     return new Response(
-      JSON.stringify({ success: true, url: session.url, sessionId: session.id }),
+      JSON.stringify({ success: true, url, sessionId: null }),
       {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

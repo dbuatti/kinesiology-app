@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.25.0'
 import { requirePractitioner } from "../_shared/auth.ts";
+import { createPaymentLink } from "../_shared/stripe-payment.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -81,6 +82,41 @@ serve(async (req) => {
         default_price_data: { currency: 'aud', unit_amount: 5000 },
       });
       return new Response(JSON.stringify({ success: true, productId: product.id }), { status: 200, headers: corsHeaders });
+    }
+
+    if (action === 'create-checkout') {
+      // CRM "Generate payment link". The client only needs the URL — it must
+      // not expire, so this creates a Payment Link (not a 24h Checkout
+      // Session) and persists it on the appointment.
+      const { appointmentId, clientId, clientData } = body;
+      if (!appointmentId) throw new Error("appointmentId is required");
+
+      const { data: appt, error: apptErr } = await supabase
+        .from('appointments')
+        .select('id, date, price_amount, client_id')
+        .eq('id', appointmentId)
+        .single();
+      if (apptErr || !appt) throw new Error("Appointment not found");
+
+      const amount = Number(appt.price_amount ?? 0);
+      if (!amount || amount <= 0) throw new Error("Appointment has no price");
+
+      const url = await createPaymentLink(stripe, {
+        amount,
+        name: 'Functional Neuro Health Session',
+        description: appt.date
+          ? `FNH session on ${new Date(appt.date).toLocaleDateString('en-AU', { timeZone: 'Australia/Melbourne' })}`
+          : undefined,
+        customerEmail: clientData?.email || null,
+        metadata: {
+          appointment_id: appointmentId,
+          client_id: clientId || appt.client_id || '',
+        },
+        statementDescriptor: 'RESONANCE KINE',
+      });
+
+      await supabase.from('appointments').update({ payment_link: url }).eq('id', appointmentId);
+      return new Response(JSON.stringify({ success: true, url }), { status: 200, headers: corsHeaders });
     }
 
     if (action === 'sync-customer') {

@@ -13,6 +13,7 @@ import NotionSettings from "../components/crm/settings/NotionSettings";
 import CalcomSettings from "../components/crm/settings/CalcomSettings";
 import DuplicateResolutionCenter from "../components/crm/settings/DuplicateResolutionCenter";
 import PeopleBackfill from "../components/crm/settings/PeopleBackfill";
+import PaymentLinkHealth from "../components/crm/settings/PaymentLinkHealth";
 import AccountSettings from "../components/crm/settings/AccountSettings";
 import DocumentationSettings from "../components/crm/settings/DocumentationSettings";
 import AppearanceSettings from "../components/crm/settings/AppearanceSettings";
@@ -187,6 +188,7 @@ const SettingsPage = () => {
              ════════════════════════════════════════════════ */}
           <TabsContent value="data" className="space-y-6">
             <PeopleBackfill />
+            <PaymentLinkHealth />
             <DuplicateResolutionCenter />
             <DocumentationSettings />
 

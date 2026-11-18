@@ -169,13 +169,19 @@ serve(async (req) => {
           const referral_source = referralProp ? extractNotionPropertyValue(props[referralProp.name]) : null;
           const stripe_customer_id = stripeProp ? extractNotionPropertyValue(props[stripeProp.name]) : null;
 
+          // Fields a pull may fill. Listing them here (rather than scattering the
+          // names through the payload below) keeps the "don't overwrite" rule in
+          // one place.
+          const PULL_FIELDS = 'id, name, email, phone, born, pronouns, occupation, medical_history, medications_supplements, sleep_quality, digestive_health, current_stress_level, referral_source, stripe_customer_id, notion_page_id';
+
           // Check if client already exists in Supabase strictly by notion_page_id
           const { data: existingByNotion } = await supabase
             .from('clients')
-            .select('id')
+            .select(PULL_FIELDS)
             .eq('notion_page_id', page.id)
             .maybeSingle();
 
+          let existingRow = existingByNotion;
           let targetId = existingByNotion?.id;
 
           // Self-healing duplicate email logic to bypass unique constraints
@@ -183,7 +189,7 @@ serve(async (req) => {
           if (email && !targetId) {
             const { data: emailMatch } = await supabase
               .from('clients')
-              .select('id, notion_page_id')
+              .select(PULL_FIELDS)
               .eq('email', email.toLowerCase().trim())
               .maybeSingle();
             
@@ -192,6 +198,7 @@ serve(async (req) => {
                 // The client exists in Supabase but hasn't been linked to Notion yet.
                 // Link them now instead of creating a duplicate!
                 targetId = emailMatch.id;
+                existingRow = emailMatch;
                 console.log(`[pull-from-notion] Linked existing Supabase client ${name} (${targetId}) to Notion page ${page.id} via email match.`);
               } else if (emailMatch.notion_page_id !== page.id) {
                 // This is an actual duplicate client with the same email.
@@ -206,21 +213,32 @@ serve(async (req) => {
             }
           }
 
+          // A pull used to overwrite every clinical field on every run, so a Notion
+          // page that was empty — or simply older than the CRM — wiped good data in
+          // Supabase. Only fill a field the CRM doesn't already have; a brand-new
+          // row (no targetId) still takes everything. `undefined` keys are dropped
+          // by JSON.stringify, so an untouched field never reaches the UPDATE.
+          const incoming = (existingValue: any, notionValue: any) => {
+            if (!targetId) return notionValue ?? null;
+            const hasValue = existingValue !== null && existingValue !== undefined && existingValue !== "";
+            return hasValue ? undefined : (notionValue ?? null);
+          };
+
           const clientPayload = {
             user_id: PRACTITIONER_ID,
-            name,
-            email: finalEmail || null,
-            phone: phone || null,
-            born: born || null,
-            pronouns: pronouns || null,
-            occupation: occupation || null,
-            medical_history: medical_history || null,
-            medications_supplements: medications_supplements || null,
-            sleep_quality: sleep_quality || null,
-            digestive_health: digestive_health || null,
-            current_stress_level: current_stress_level || null,
-            referral_source: referral_source || null,
-            stripe_customer_id: stripe_customer_id || null,
+            name: incoming(existingRow?.name, name),
+            email: incoming(existingRow?.email, finalEmail),
+            phone: incoming(existingRow?.phone, phone),
+            born: incoming(existingRow?.born, born),
+            pronouns: incoming(existingRow?.pronouns, pronouns),
+            occupation: incoming(existingRow?.occupation, occupation),
+            medical_history: incoming(existingRow?.medical_history, medical_history),
+            medications_supplements: incoming(existingRow?.medications_supplements, medications_supplements),
+            sleep_quality: incoming(existingRow?.sleep_quality, sleep_quality),
+            digestive_health: incoming(existingRow?.digestive_health, digestive_health),
+            current_stress_level: incoming(existingRow?.current_stress_level, current_stress_level),
+            referral_source: incoming(existingRow?.referral_source, referral_source),
+            stripe_customer_id: incoming(existingRow?.stripe_customer_id, stripe_customer_id),
             notion_page_id: page.id,
             notion_link: page.url
           };
@@ -465,6 +483,7 @@ serve(async (req) => {
           "Pronouns": { "rich_text": {} },
           "Occupation": { "rich_text": {} },
           "Medical History": { "rich_text": {} },
+          "Journal": { "rich_text": {} },
           "Medications & Supplements": { "rich_text": {} },
           "Sleep Quality": { "rich_text": {} },
           "Digestive Health": { "rich_text": {} },

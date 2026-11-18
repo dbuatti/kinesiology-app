@@ -8,6 +8,24 @@ import {
   fetchWithRetry
 } from "./notion-api.ts";
 
+/**
+ * `journal` is JSON-in-a-text-column (src/utils/journal-helper.ts): the app writes
+ * {"notes": "...", "contact_log": [...], "rate_increase_contacted": ...}. Notion
+ * needs the human-readable notes, not the raw JSON — and older rows are plain
+ * text, so anything that doesn't parse is passed through unchanged.
+ */
+const journalNotes = (value: any): string => {
+  if (typeof value !== 'string') return "";
+  const trimmed = value.trim();
+  if (!trimmed.startsWith('{')) return trimmed;
+  try {
+    const parsed = JSON.parse(trimmed);
+    return typeof parsed?.notes === 'string' ? parsed.notes : "";
+  } catch {
+    return trimmed;
+  }
+};
+
 export const syncClientToNotion = async (client: any, supabase: any, notionHeaders: any, origin: string) => {
   console.log(`[client-sync] Syncing client to Client Database: ${client.name} (${client.id})`);
   const schema = await fetchDatabaseSchema(CLIENTS_DB_ID, notionHeaders);
@@ -84,7 +102,11 @@ export const syncClientToNotion = async (client: any, supabase: any, notionHeade
     // Admin
     { value: client.intake_submitted_at ? true : false, possibleNames: ['Intake Form Completed?', 'Intake Completed', 'Intake Form'] },
     { value: client.consent_signed, possibleNames: ['Consent Signed?', 'Consent Signed', 'Consent'] },
-    { value: client.additional_notes || client.notes || client.medical_history, possibleNames: ['Notes', 'General Notes'] },
+    // Practitioner reflections. Kept separate from "Notes" below, which used to
+    // fall back to medical_history and so copied the clinical history into a
+    // second property.
+    { value: journalNotes(client.journal), possibleNames: ['Journal', 'Practitioner Notes'] },
+    { value: client.additional_notes || client.notes || journalNotes(client.journal) || client.medical_history, possibleNames: ['Notes', 'General Notes'] },
     // Intake form goals
     { value: client.goal_working, possibleNames: ['Goal — Working', 'Goal Working', 'What "working" looks like'] },
     { value: client.goal_12_sessions, possibleNames: ['Goal — 12 Sessions', 'Goal 12 Sessions', '12 Session Goal'] },

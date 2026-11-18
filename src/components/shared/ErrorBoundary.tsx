@@ -21,7 +21,12 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("[ErrorBoundary]", error, errorInfo);
+    // Log the component stack separately — the minified error object alone
+    // doesn't say which subtree was rendering when it threw.
+    console.error("[ErrorBoundary]", error);
+    if (errorInfo?.componentStack) {
+      console.error("[ErrorBoundary] component stack:", errorInfo.componentStack);
+    }
   }
 
   render() {

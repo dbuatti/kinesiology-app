@@ -117,6 +117,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
     LOGGABLE.map(l => l.id).filter(id => hasData(protocolLogs?.[id]))
   );
   const loggedCount = LOGGABLE.reduce((sum, l) => sum + countCorrections(protocolLogs?.[l.id]), 0);
+  void loggedCount;
 
   /**
    * Every correction recorded this session — banked entries first, then the

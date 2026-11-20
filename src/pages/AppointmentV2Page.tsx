@@ -52,6 +52,7 @@ import type { ProtocolLog, ProtocolLogPatch } from "@/data/protocol-log";
 import ClientIntakeSummary from "@/components/crm/ClientIntakeSummary";
 import ClientIntakeEditModal from "@/components/crm/ClientIntakeEditModal";
 import ClientSideSheet, { SessionClientRail } from "@/components/crm/ClientSideSheet";
+import type { InhibitionPathwayState } from "@/components/crm/corrections/CorrectionDockContext";
 
 const initialsOf = (name?: string | null): string =>
   (name || "?")
@@ -119,7 +120,7 @@ const AppointmentV2Page = () => {
   );
 
   const inhibitionPathwayState = useMemo(
-    () => (metadata.inhibition_pathway_state ?? {}) as Record<string, unknown>,
+    () => (metadata.inhibition_pathway_state ?? {}) as Record<string, InhibitionPathwayState>,
     [metadata]
   );
 

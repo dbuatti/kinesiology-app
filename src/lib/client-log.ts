@@ -203,7 +203,7 @@ const PATHWAY_VALUE_KEYS: Record<string, string[]> = {
   emotional: ["emotion"],
 };
 
-const extractProtocolPathway = (processId: string, values?: Record<string, unknown>): string | undefined => {
+export const extractProtocolPathway = (processId: string, values?: Record<string, unknown>): string | undefined => {
   if (!values) return undefined;
   for (const key of PATHWAY_VALUE_KEYS[processId] || []) {
     const value = values[key];

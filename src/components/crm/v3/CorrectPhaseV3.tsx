@@ -8,6 +8,8 @@ import PathwayLogicWizard from "@/components/crm/PathwayLogicWizard";
 import ProtocolLogSheet from "@/components/crm/corrections/ProtocolLogSheet";
 import { PROTOCOL_FIELDS, PROTOCOL_STEP_MAP, summariseValues, type ProtocolLog, type ProtocolEntry } from "@/data/protocol-log";
 import { getInhibitedFindings, findingLabel } from "@/components/crm/v2/v2-utils";
+import { extractProtocolPathway } from "@/lib/client-log";
+import type { InhibitionPathwayStatus } from "@/components/crm/corrections/CorrectionDockContext";
 import { safeParse } from "@/utils/safe-json";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";
 import { useCorrectionDock, inhibitionPathwayLabel } from "@/components/crm/corrections/CorrectionDockContext";
@@ -61,6 +63,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
     protocolLogs,
     logProtocol,
     inhibitionPathway,
+    inhibitionPathwayState,
     setInhibitionStatus,
   } = useCorrectionDock();
   const pathwayLabel = inhibitionPathwayLabel(inhibitionPathway);
@@ -143,7 +146,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
           processId: proc.id,
           processTitle: proc.title,
           group: proc.group,
-          pathway: entry.pathway,
+          pathway: entry.pathway ?? extractProtocolPathway(proc.id, entry.values),
           summary: summariseValues(proc.id, entry.values).join(" · ") || "Logged",
           savedAt: entry.savedAt,
           entry,
@@ -157,7 +160,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
           processId: proc.id,
           processTitle: proc.title,
           group: proc.group,
-          pathway: stampedPathway,
+          pathway: stampedPathway ?? extractProtocolPathway(proc.id, log.values),
           summary: summariseValues(proc.id, log.values ?? {}).join(" · ") || "In progress",
           savedAt: log.updatedAt,
           live: true,
@@ -165,8 +168,48 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
       }
     }
 
-    return rows.sort((a, b) => (a.savedAt ?? "").localeCompare(b.savedAt ?? ""));
+    // A live form that exactly repeats an already-banked entry is noise.
+    const bankedSummaries = new Set(rows.filter(r => !r.live).map(r => r.summary));
+    return rows
+      .filter(r => (r.live ? !bankedSummaries.has(r.summary) : true))
+      .sort((a, b) => (a.savedAt ?? "").localeCompare(b.savedAt ?? ""));
   }, [protocolLogs, stampedPathway]);
+
+  /** What the corrections cluster into — the practitioner reads the pattern. */
+  const patterns = useMemo(() => {
+    const counts = new Map<string, { title: string; group: string; count: number }>();
+    for (const row of appliedCorrections) {
+      const cur = counts.get(row.processId);
+      if (cur) cur.count += 1;
+      else counts.set(row.processId, { title: row.processTitle, group: row.group, count: 1 });
+    }
+    return [...counts.values()].sort((a, b) => b.count - a.count);
+  }, [appliedCorrections]);
+
+  /** Pathways touched this session — the ones you can now state as clear / holding. */
+  const touchedPathways = useMemo(() => {
+    const names: string[] = [];
+    for (const row of appliedCorrections) {
+      if (row.pathway && !names.includes(row.pathway)) names.push(row.pathway);
+    }
+    return names;
+  }, [appliedCorrections]);
+
+  const pathwayStatusKey = (name: string) =>
+    `pathway:${name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-:]/g, "")}`;
+
+  const pathwayStatus = (name: string): InhibitionPathwayStatus | "none" => {
+    const state = inhibitionPathwayState?.[pathwayStatusKey(name)];
+    return (state?.status as InhibitionPathwayStatus) ?? "none";
+  };
+
+  const setPathwayStatus = (name: string, status: Exclude<InhibitionPathwayStatus, "priority" | "primary_priority"> | "none") => {
+    setInhibitionStatus(
+      pathwayStatusKey(name),
+      { processId: pathwayStatusKey(name), phase: "other", side: "midline", notes: name },
+      status === "none" ? "inhibited" : status,
+    );
+  };
 
   const corrections = useMemo(
     () => ((((meta as Record<string, unknown>)?.corrections || []) as { pathway: string; summary: string; timestamp: string }[])),
@@ -324,10 +367,28 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
                 What was corrected and how — every process you log lands here.
               </p>
             </div>
-            <StatusBadge variant={loggedCount > 0 ? 'recorded' : 'pending'}>
-              {loggedCount} logged
+            <StatusBadge variant={appliedCorrections.length > 0 ? 'recorded' : 'pending'}>
+              {appliedCorrections.length} logged
             </StatusBadge>
           </div>
+
+          {/* Patterns — what the corrections cluster into */}
+          {patterns.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {patterns.map(p => (
+                <span
+                  key={p.title}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card px-2.5 py-1 text-[11px] shadow-xs"
+                >
+                  <span className="font-semibold text-primary-strong">{p.title}</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">{p.group}</span>
+                  <span className="rounded-full bg-primary/10 px-1.5 text-[10px] font-bold tabular-nums text-primary-strong">
+                    ×{p.count}
+                  </span>
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Everything recorded this session, newest last */}
           {appliedCorrections.length > 0 ? (
@@ -348,23 +409,25 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
                     <Check size={12} strokeWidth={3} />
                   </span>
                   <div className="min-w-0 flex-1 space-y-0.5">
-                    {row.pathway && (
-                      <p className="truncate text-[12px] font-semibold text-primary-strong">
+                    {row.pathway ? (
+                      <p className="break-words text-[14px] font-semibold leading-snug text-foreground">
                         {row.pathway}
                       </p>
+                    ) : (
+                      <p className="text-[13px] font-medium italic leading-snug text-muted-foreground/60">
+                        Pathway not recorded
+                      </p>
                     )}
-                    <p className="text-[13px] font-semibold leading-snug text-foreground">
+                    <p className="text-[11px] font-medium text-muted-foreground">
                       {row.processTitle}
-                      <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                        {row.group}
-                      </span>
+                      <span className="ml-1.5 uppercase tracking-wide">{row.group}</span>
                       {row.live && (
                         <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide text-muted-foreground">
                           in progress
                         </span>
                       )}
                     </p>
-                    <p className="break-words text-[11.5px] leading-relaxed text-muted-foreground">
+                    <p className="break-words text-[12px] leading-relaxed text-muted-foreground">
                       {row.summary}
                     </p>
                   </div>
@@ -400,36 +463,52 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
             />
           )}
 
-          {/* Stipulate that the correction cleared the pathway */}
-          {inhibitionPathway && (
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-muted/20 px-4 py-2.5">
-              <div className="min-w-0">
-                <p className="truncate text-[12px] font-semibold text-foreground">{pathwayLabel}</p>
-                <p className="text-[12px] text-muted-foreground">
-                  {inhibitionPathway.status === 'clear'
-                    ? 'Marked clear — the correction held on retest.'
-                    : 'Confirm the correction cleared this pathway.'}
-                </p>
+          {/* Pathway status — state it once; Align, Embed and the dock read the same record */}
+          {touchedPathways.length > 0 && (
+            <div className="space-y-2 rounded-xl border border-border/70 bg-muted/20 p-4">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <p className="text-card-title">Pathway status</p>
+                <p className="text-meta">Are they holding? State each pathway once — re-checks read this.</p>
               </div>
-              {inhibitionPathway.status === 'clear' ? (
-                <span className="flex shrink-0 items-center gap-1 rounded-md bg-success/15 px-2.5 py-1 text-[11px] font-semibold text-success">
-                  <Check size={12} strokeWidth={3} /> Pathway clear
-                </span>
-              ) : (
-                <PrimaryButton
-                  onClick={() =>
-                    setInhibitionStatus(
-                      inhibitionPathway.pathway.processId,
-                      inhibitionPathway.pathway,
-                      'clear',
-                      inhibitionPathway.priorityStep
-                    )
-                  }
-                  className="h-8 shrink-0 text-[11px]"
-                >
-                  Mark pathway clear
-                </PrimaryButton>
-              )}
+              {touchedPathways.map(name => {
+                const status = pathwayStatus(name);
+                const options = [
+                  { key: "inhibited" as const, label: "Not holding", glyph: "↓", active: "bg-card text-rose-700 dark:text-rose-300 shadow-xs" },
+                  { key: "clear" as const, label: "Clear", glyph: "✓", active: "bg-card text-primary-strong dark:text-primary shadow-xs" },
+                  { key: "holding" as const, label: "Holding strong", glyph: "✓✓", active: "bg-card text-primary-strong dark:text-primary shadow-xs ring-1 ring-primary/40" },
+                ];
+                return (
+                  <div
+                    key={name}
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-background px-3 py-2"
+                  >
+                    <p className="min-w-0 truncate text-[13px] font-semibold text-foreground">{name}</p>
+                    <div className="inline-flex items-center rounded-lg bg-muted/60 p-0.5">
+                      {options.map(o => (
+                        <button
+                          key={o.key}
+                          type="button"
+                          onClick={() => setPathwayStatus(name, o.key)}
+                          aria-pressed={status === o.key}
+                          title={
+                            o.key === "inhibited"
+                              ? "Still not holding — needs more work"
+                              : o.key === "clear"
+                                ? "Cleared on re-test"
+                                : "Cleared and holding strong on re-challenge"
+                          }
+                          className={cn(
+                            "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-[11px] font-semibold transition-colors",
+                            status === o.key ? o.active : "text-muted-foreground hover:text-foreground",
+                          )}
+                        >
+                          <span aria-hidden>{o.glyph}</span> {o.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
 

@@ -13,7 +13,7 @@ export interface InhibitionPathway {
   notes?: string;
 }
 
-export type InhibitionPathwayStatus = "inhibited" | "hypertonic" | "clear" | "priority" | "primary_priority";
+export type InhibitionPathwayStatus = "inhibited" | "hypertonic" | "clear" | "holding" | "priority" | "primary_priority";
 
 export interface InhibitionPathwayState {
   pathway: InhibitionPathway;
@@ -164,12 +164,12 @@ export const CorrectionDockProvider = ({
   children,
 }: {
   appointmentId?: string;
-  priorityPattern?: Record<string, any>;
+  priorityPattern?: Record<string, Record<string, string | undefined>>;
   protocolLogs?: Record<string, ProtocolLog>;
   onLogProtocol?: (processId: string, patch: ProtocolLogPatch) => void;
-  initialInhibitionPathway?: any;
-  initialInhibitionPathwayState?: Record<string, any>;
-  onInhibitionPathwayChange?: (pathway: any, state: Record<string, any>) => void;
+  initialInhibitionPathway?: unknown;
+  initialInhibitionPathwayState?: Record<string, InhibitionPathwayState>;
+  onInhibitionPathwayChange?: (pathway: unknown, state: Record<string, InhibitionPathwayState>) => void;
   children: ReactNode;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -181,7 +181,7 @@ export const CorrectionDockProvider = ({
    * "Mechanoreceptor › Right sacroiliac" and the save lands on that pathway —
    * or, with no pathway selected, on the process itself.
    */
-  const [inhibitionPathway, setInhibitionPathway] = useState<InhibitionPathwayState | null>(initialInhibitionPathway ?? null);
+  const [inhibitionPathway, setInhibitionPathway] = useState<InhibitionPathwayState | null>((initialInhibitionPathway as InhibitionPathwayState | null) ?? null);
   const [inhibitionPathwayState, setInhibitionPathwayState] = useState<
     Record<string, InhibitionPathwayState>
   >(initialInhibitionPathwayState ?? {});

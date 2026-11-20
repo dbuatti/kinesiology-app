@@ -516,7 +516,7 @@ export function SessionClientRail({
   return (
     <aside
       data-client-rail
-      className="sticky top-0 z-10 hidden h-[100dvh] w-[320px] shrink-0 flex-col border-l border-border/60 bg-background/95 min-[1100px]:flex"
+      className="sticky top-0 z-10 hidden h-[100dvh] w-[320px] shrink-0 self-start overflow-hidden flex-col border-l border-border/60 bg-background/95 min-[1100px]:flex"
     >
       <div className="flex h-10 shrink-0 items-center justify-between border-b border-border/60 px-4">
         <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/60">

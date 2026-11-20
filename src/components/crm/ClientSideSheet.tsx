@@ -150,8 +150,10 @@ export function ClientSideContent({
             )}
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {age != null ? `${age} yrs` : "Age not set"}
-            {client?.email ? ` · ${client.email}` : ""}
+            {[
+              age != null ? `${age} yrs` : null,
+              client?.email || null,
+            ].filter(Boolean).join(" · ") || "\u00A0"}
           </p>
           <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1">
             <PaymentStatusBadge
@@ -192,7 +194,7 @@ export function ClientSideContent({
                   {vitals.map((chip, i) => (
                     <span
                       key={i}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 px-2.5 py-1 text-[11px] tabular-nums"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card px-2.5 py-1 text-[11px] tabular-nums shadow-xs"
                     >
                       <span className={cn("h-1.5 w-1.5 rounded-full", chip.accent.replace("text-", "bg-"))} />
                       <span className="font-medium text-muted-foreground">{chip.label}</span>
@@ -230,39 +232,49 @@ export function ClientSideContent({
             </section>
           )}
 
-          {/* Statistics */}
+          {/* Statistics — clean rows, graceful when empty */}
           <section>
-            <h3 className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+            <h3 className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
               Statistics
             </h3>
-            <dl className="grid grid-cols-2 overflow-hidden rounded-2xl border border-border/70">
-              {stats.map(([label, value], i) => (
-                <div
-                  key={label}
-                  className={cn(
-                    "bg-card/60 px-3.5 py-2.5",
-                    i % 2 === 1 && "border-l border-border/70",
-                    i >= 2 && "border-t border-border/70",
-                  )}
-                >
-                  <dt className="text-[11px] text-muted-foreground">{label}</dt>
-                  <dd className="mt-0.5 text-[15px] font-semibold tabular-nums text-foreground">{value}</dd>
-                </div>
-              ))}
-            </dl>
+            {completed.length === 0 && lastSession == null && latestBolt == null ? (
+              <p className="rounded-xl bg-muted/40 px-3.5 py-3 text-[12px] leading-relaxed text-muted-foreground">
+                No sessions on record yet — statistics appear after the first appointment.
+              </p>
+            ) : (
+              <dl>
+                {stats.map(([label, value]) => (
+                  <div
+                    key={label}
+                    className="flex items-baseline justify-between gap-3 border-b border-border/40 py-2 last:border-0"
+                  >
+                    <dt className="text-[12px] text-muted-foreground">{label}</dt>
+                    <dd className={cn(
+                      "text-[13px] font-medium tabular-nums",
+                      value === "—" ? "text-muted-foreground/40" : "text-foreground",
+                    )}>
+                      {value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            )}
           </section>
 
           {/* Fundamentals */}
           {fundamentals.length > 0 && (
             <section>
-              <h3 className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+              <h3 className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
                 Fundamentals
               </h3>
-              <dl className="space-y-2.5">
+              <dl>
                 {fundamentals.map(([label, value]) => (
-                  <div key={label} className="grid grid-cols-[120px_1fr] gap-3">
-                    <dt className="text-[11px] leading-relaxed text-muted-foreground">{label}</dt>
-                    <dd className="text-[13px] leading-relaxed text-foreground">{value}</dd>
+                  <div
+                    key={label}
+                    className="flex items-baseline justify-between gap-3 border-b border-border/40 py-2 last:border-0"
+                  >
+                    <dt className="shrink-0 text-[12px] text-muted-foreground">{label}</dt>
+                    <dd className="max-w-[60%] text-right text-[13px] leading-relaxed text-foreground">{value}</dd>
                   </div>
                 ))}
               </dl>
@@ -272,18 +284,18 @@ export function ClientSideContent({
           {/* Past appointments */}
           {past.length > 0 && (
             <section>
-              <h3 className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+              <h3 className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
                 Past appointments
               </h3>
-              <ul className="space-y-1">
+              <ul className="space-y-0.5">
                 {past.slice(0, 6).map((s) => (
                   <li key={s.id}>
                     <Link
                       to={`/appointments/${s.id}`}
-                      className="group flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-muted/50"
+                      className="group flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/50"
                     >
-                      <span className="w-20 shrink-0 text-[12px] font-medium tabular-nums text-foreground">
-                        {format(new Date(s.date), "d MMM yyyy")}
+                      <span className="shrink-0 rounded-md bg-muted/70 px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-foreground">
+                        {format(new Date(s.date), "d MMM")}
                       </span>
                       <span className="min-w-0 flex-1 truncate text-[12px] text-muted-foreground">
                         {s.goal || String(s.status || "Session")}
@@ -296,20 +308,29 @@ export function ClientSideContent({
                   </li>
                 ))}
               </ul>
+              {past.length > 6 && (
+                <Link
+                  to={`/clients/${clientId}/log`}
+                  onClick={() => onOpenChange?.(false)}
+                  className="mt-1 inline-flex text-[11px] font-medium text-primary hover:underline"
+                >
+                  All {past.length} in the full log
+                </Link>
+              )}
             </section>
           )}
 
           {/* Deep links */}
-          <div className="flex flex-col gap-2 border-t border-border/60 pt-4">
+          <div className="flex flex-col gap-1.5 border-t border-border/60 pt-4">
             <Link
               to={`/clients/${clientId}/log`}
               onClick={() => onOpenChange?.(false)}
-              className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-3.5 py-2.5 text-[13px] font-medium text-foreground transition-colors hover:bg-muted"
+              className="group flex items-center justify-between rounded-xl border border-border bg-card px-3.5 py-2.5 text-[13px] font-medium text-foreground shadow-xs transition-colors hover:border-primary/40 hover:bg-primary/[0.04]"
             >
               <span className="flex items-center gap-2">
                 <ScrollText size={14} className="text-primary" /> Full appointment log
               </span>
-              <ArrowUpRight size={14} className="text-muted-foreground" />
+              <ArrowUpRight size={14} className="text-muted-foreground transition-colors group-hover:text-primary" />
             </Link>
             <Link
               to={`/clients/${clientId}`}

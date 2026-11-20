@@ -34,7 +34,7 @@ import {
 
 type GridTab = "reflexes" | "nerves" | "muscles";
 
-const GRID_TABS: { id: GridTab; label: string; icon: any }[] = [
+const GRID_TABS: { id: GridTab; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
   { id: "reflexes", label: "Primitive Reflexes", icon: Baby },
   { id: "nerves", label: "Cranial Nerves", icon: Zap },
   { id: "muscles", label: "Intrinsic Muscles", icon: ShieldAlert },

@@ -55,6 +55,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const { data, error } = await supabase.rpc('is_practitioner');
         if (cancelled) return;
+        // A 4xx from the RPC means the JWT itself is dead (expired access
+        // token whose refresh also failed). Recover by signing out so the
+        // visitor reaches the login page instead of an eternally-broken
+        // portal — a healthy session never errors here (RLS answers false).
+        if (error && /jwt|401|400|invalid|expired/i.test(`${error.code || ""} ${error.message}`)) {
+          await supabase.auth.signOut();
+          if (!cancelled) {
+            setSession(null);
+            setIsPractitioner(undefined);
+          }
+          return;
+        }
         setIsPractitioner(!error && data === true);
       } catch {
         if (!cancelled) setIsPractitioner(false);

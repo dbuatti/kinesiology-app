@@ -76,13 +76,13 @@ const OnboardingPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <Card className="max-w-2xl w-full border shadow-3xl rounded-2xl overflow-hidden animate-in zoom-in-95 duration-700 bg-card">
-          <div className="bg-emerald-600 dark:bg-emerald-700 p-12 text-center text-primary-foreground relative">
+          <div className="bg-primary dark:bg-primary p-12 text-center text-primary-foreground relative">
             <div className="absolute top-0 right-0 p-8 opacity-10 hidden md:block"><Sparkles size={120} /></div>
             <div className="w-20 md:w-24 md:h-24 bg-card/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl border border-primary-foreground/20">
               <CheckCircle2 size={48} />
             </div>
             <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight mb-2">All Set, {client.name.split(' ')[0]}!</h2>
-            <p className="text-emerald-100 font-medium text-lg md:text-xl">Your information has been securely updated.</p>
+            <p className="text-primary-strong font-medium text-lg md:text-xl">Your information has been securely updated.</p>
           </div>
           <CardContent className="p-10 md:p-16 text-center space-y-8">
             <p className="text-lg text-muted-foreground font-medium leading-relaxed">
@@ -90,7 +90,7 @@ const OnboardingPage = () => {
             </p>
             <div className="pt-4">
               <div className="inline-flex items-center gap-2 px-6 py-3 bg-muted rounded-full text-xs font-medium text-muted-foreground">
-                <ShieldCheck size={16} className="text-emerald-500" /> Securely Encrypted & Private
+                <ShieldCheck size={16} className="text-primary-strong" /> Securely Encrypted & Private
               </div>
             </div>
           </CardContent>

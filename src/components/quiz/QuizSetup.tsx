@@ -20,7 +20,7 @@ interface QuizSetupProps {
 const CATEGORIES: { id: QuizCategory; label: string; icon: any; color: string; desc: string }[] = [
   { id: 'All', label: 'Full Mastery', icon: Sparkles, color: 'bg-indigo-600', desc: 'Random questions from all categories.' },
   { id: 'Anatomy', label: 'Anatomy & Nerves', icon: Brain, color: 'bg-purple-600', desc: 'Muscles, cranial nerves, and nuclei.' },
-  { id: 'TCM', label: 'TCM & Meridians', icon: Layers, color: 'bg-emerald-600', desc: 'Channels, elements, and acupoints.' },
+  { id: 'TCM', label: 'TCM & Meridians', icon: Layers, color: 'bg-primary', desc: 'Channels, elements, and acupoints.' },
   { id: 'Clinical', label: 'Clinical Reflexes', icon: Activity, color: 'bg-rose-600', desc: 'Primitive reflexes and stimuli.' },
   { id: 'Priority Logic', label: 'Priority Logic', icon: Zap, color: 'bg-amber-500', desc: 'Clinical hierarchy and reasoning.' },
   { id: 'Methodology', label: 'FNH Methodology', icon: Target, color: 'bg-primary', desc: 'PEACE process and NEI protocols.' },

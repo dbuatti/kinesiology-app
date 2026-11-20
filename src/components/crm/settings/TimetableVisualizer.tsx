@@ -745,7 +745,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  <CardHeader className="p-6 pb-4 bg-chart-emerald/10 border-b border-border ">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div className="space-y-1">
- <CardTitle className="text-base font-semibold text-emerald-900 flex items-center gap-2">
+ <CardTitle className="text-base font-semibold text-primary-strong flex items-center gap-2">
  <Sparkles size={18} className="text-chart-emerald" /> Auto-Resolved Conflicts
  </CardTitle>
  <CardDescription className="text-chart-emerald font-medium">

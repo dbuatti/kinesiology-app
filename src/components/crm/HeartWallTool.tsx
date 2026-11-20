@@ -50,7 +50,7 @@ const ASSESSMENT_STEPS: { phase: HeartWallLayerPhase; label: string; icon: React
   { phase: "screen", label: "Screen", icon: Shield, color: "text-rose-500" },
   { phase: "count", label: "Count", icon: Layers, color: "text-chart-primary" },
   { phase: "find-emotion", label: "Find Emotion", icon: Heart, color: "text-rose-600" },
-  { phase: "assess-muscles", label: "Muscles", icon: Dumbbell, color: "text-emerald-600" },
+  { phase: "assess-muscles", label: "Muscles", icon: Dumbbell, color: "text-primary-strong" },
   { phase: "brain-zones", label: "Brain Zones", icon: Brain, color: "text-indigo-600" },
   { phase: "context", label: "Context", icon: Info, color: "text-amber-600" },
   { phase: "confirm", label: "Confirm", icon: Sparkles, color: "text-amber-500" },
@@ -60,7 +60,7 @@ const CORRECTION_STEPS: { phase: HeartWallLayerPhase; label: string; icon: React
   { phase: "correct-stim", label: "Stim", icon: Activity, color: "text-rose-500" },
   { phase: "correct-hold", label: "Hold Point", icon: Dumbbell, color: "text-chart-primary" },
   { phase: "correct-tap", label: "Tap Zones", icon: Brain, color: "text-indigo-600" },
-  { phase: "recheck", label: "Recheck", icon: RefreshCw, color: "text-emerald-600" },
+  { phase: "recheck", label: "Recheck", icon: RefreshCw, color: "text-primary-strong" },
 ];
 
 const ALL_STEPS = [...ASSESSMENT_STEPS, ...CORRECTION_STEPS];
@@ -366,7 +366,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                     className={cn(
                       "flex-1 h-8 rounded-lg flex items-center justify-center transition-all",
                       isCurrent && "bg-primary text-primary-foreground shadow-sm ring-2 ring-primary/20",
-                      isPast && "bg-emerald-100 text-emerald-700",
+                      isPast && "bg-primary/15 text-primary-strong",
                       !isCurrent && !isPast && "bg-muted text-muted-foreground hover:bg-muted/80",
                     )}
                     title={step.label}
@@ -728,12 +728,12 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                   {/* ─ Assess Muscles ─ */}
                   {currentStep.phase === "assess-muscles" && (
                     <div className="space-y-3">
-                      <div className="p-5 bg-emerald-50 rounded-xl border border-emerald-100 space-y-3">
+                      <div className="p-5 bg-primary/10 rounded-xl border border-primary/25 space-y-3">
                         <div className="flex items-center gap-2">
-                          <Dumbbell size={16} className="text-emerald-600" />
-                          <p className="text-sm font-semibold text-emerald-900">Assess related muscles</p>
+                          <Dumbbell size={16} className="text-primary-strong" />
+                          <p className="text-sm font-semibold text-primary-strong">Assess related muscles</p>
                         </div>
-                        <p className="text-xs text-emerald-800 leading-relaxed">
+                        <p className="text-xs text-primary-strong leading-relaxed">
                           Every emotion row has correlated muscles. Test them — they <span className="italic font-semibold">will</span> come up inhibited.
                           This confirms the circuit is active.
                         </p>
@@ -1030,17 +1030,17 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                   {/* ─ Recheck ─ */}
                   {currentStep.phase === "recheck" && (
                     <div className="space-y-4">
-                      <div className="p-5 bg-emerald-50 rounded-xl border border-emerald-100 space-y-3">
+                      <div className="p-5 bg-primary/10 rounded-xl border border-primary/25 space-y-3">
                         <div className="flex items-center gap-2">
-                          <RefreshCw size={16} className="text-emerald-600" />
-                          <p className="text-sm font-semibold text-emerald-900">Recheck — did the correction hold?</p>
+                          <RefreshCw size={16} className="text-primary-strong" />
+                          <p className="text-sm font-semibold text-primary-strong">Recheck — did the correction hold?</p>
                         </div>
-                        <div className="space-y-2 text-xs text-emerald-800 leading-relaxed">
+                        <div className="space-y-2 text-xs text-primary-strong leading-relaxed">
                           <p><strong>1.</strong> Re-test the associated muscles — they should now <span className="italic font-semibold">lock</span> (strong).</p>
                           <p><strong>2.</strong> Challenge the emotion: state "{pendingLayer.emotion}" again — the indicator should lock.</p>
                           <p><strong>3.</strong> Re-count the heart wall layers: "More than 10? More than 20? 21, 22…?"</p>
                         </div>
-                        <p className="text-xs text-emerald-700/70 italic">
+                        <p className="text-xs text-primary-strong/70 italic">
                           Wait for a parasympathetic shift before re-testing: sigh, yawn, gurgle, or client reporting "a wave came up" or "I can feel something leaving."
                         </p>
                       </div>
@@ -1061,7 +1061,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                         <Button
                           onClick={markLayerCleared}
                           disabled={saving}
-                          className="flex-1 h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                          className="flex-1 h-11 rounded-xl bg-primary hover:bg-primary text-white font-semibold"
                         >
                           {saving ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 className="mr-2" size={18} />}
                           Layer Cleared
@@ -1089,18 +1089,18 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
               <div className={cn(
                 "p-6 rounded-xl border space-y-3",
                 session?.status === "complete"
-                  ? "bg-emerald-50 border-emerald-100"
+                  ? "bg-primary/10 border-primary/25"
                   : "bg-amber-50 border-amber-100",
               )}>
                 <div className="flex items-center gap-2">
                   {session?.status === "complete" ? (
-                    <CheckCircle2 size={18} className="text-emerald-600" />
+                    <CheckCircle2 size={18} className="text-primary-strong" />
                   ) : (
                     <XCircle size={18} className="text-amber-600" />
                   )}
                   <p className={cn(
                     "font-semibold",
-                    session?.status === "complete" ? "text-emerald-900" : "text-amber-900",
+                    session?.status === "complete" ? "text-primary-strong" : "text-amber-900",
                   )}>
                     {session?.status === "complete" ? "Session Complete" : "Session Abandoned"}
                   </p>
@@ -1111,7 +1111,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                     <p className="text-xs text-muted-foreground">Initial</p>
                   </div>
                   <div className="p-3 bg-background/60 rounded-lg">
-                    <p className="text-lg font-bold text-emerald-600">{clearedCount}</p>
+                    <p className="text-lg font-bold text-primary-strong">{clearedCount}</p>
                     <p className="text-xs text-muted-foreground">Cleared</p>
                   </div>
                   <div className="p-3 bg-background/60 rounded-lg">
@@ -1128,7 +1128,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                     <div key={layer.id} className="flex items-center gap-3 p-3 bg-card rounded-xl border border-border">
                       <div className={cn(
                         "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0",
-                        layer.status === "cleared" && "bg-emerald-100 text-emerald-700",
+                        layer.status === "cleared" && "bg-primary/15 text-primary-strong",
                         layer.status === "skipped" && "bg-amber-100 text-amber-700",
                         layer.status === "active" && "bg-muted text-muted-foreground",
                       )}>
@@ -1143,7 +1143,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                       <Badge
                         className={cn(
                           "text-[10px] border-none",
-                          layer.status === "cleared" && "bg-emerald-100 text-emerald-700",
+                          layer.status === "cleared" && "bg-primary/15 text-primary-strong",
                           layer.status === "skipped" && "bg-amber-100 text-amber-700",
                           layer.status === "active" && "bg-muted text-muted-foreground",
                         )}
@@ -1246,7 +1246,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
             <Button
               onClick={handleCompleteSession}
               disabled={saving}
-              className="h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+              className="h-11 rounded-xl bg-primary hover:bg-primary text-white font-semibold"
             >
               {saving ? <Loader2 className="animate-spin mr-2" size={16} /> : <CheckCircle2 className="mr-2" size={18} />}
               Complete Session

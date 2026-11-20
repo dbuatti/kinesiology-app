@@ -45,7 +45,7 @@ interface AppointmentContextCardsProps {
 const SESSION_STAGES = [
   { id: 'goal', name: "Goal Setting", duration: 15, icon: Target, color: "text-indigo-400", activeColor: "bg-primary" },
   { id: 'activation', name: "Activation", duration: 15, icon: Zap, color: "text-primary", activeColor: "bg-primary" },
-  { id: 'correction', name: "Correction", duration: 20, icon: Activity, color: "text-emerald-400", activeColor: "bg-emerald-600" },
+  { id: 'correction', name: "Correction", duration: 20, icon: Activity, color: "text-primary", activeColor: "bg-primary" },
   { id: 'challenge', name: "Challenge", duration: 5, icon: ShieldAlert, color: "text-amber-400", activeColor: "bg-amber-600" },
   { id: 'home', name: "Home Reinforcement", duration: 5, icon: Home, color: "text-rose-400", activeColor: "bg-rose-600" },
 ];
@@ -148,14 +148,14 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                   className={cn(
                     "flex items-center justify-between p-4 rounded-xl border transition-all duration-500 group text-left",
                     isActive ? cn("border-transparent shadow-lg scale-[1.02]", stage.activeColor) : 
-                    isDone ? "bg-emerald-500/10 border-emerald-500/20" :
+                    isDone ? "bg-primary/10 border-primary/50" :
                     "bg-card/5 border-primary-foreground/10 hover:bg-card/10"
                   )}
                 >
                   <div className="flex items-center gap-4">
                     <div className={cn(
                       "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-500",
-                      isActive ? "bg-card/20" : isDone ? "bg-emerald-500 text-primary-foreground" : "bg-card/5",
+                      isActive ? "bg-card/20" : isDone ? "bg-primary text-primary-foreground" : "bg-card/5",
                       !isActive && !isDone && stage.color
                     )}>
                       {isDone ? <Check size={16} /> : <stage.icon size={16} />}
@@ -163,7 +163,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                     <div className="flex flex-col">
                       <span className={cn(
                         "text-xs font-medium",
-                        isActive ? "text-primary-foreground" : isDone ? "text-emerald-400" : "text-muted-foreground/60"
+                        isActive ? "text-primary-foreground" : isDone ? "text-primary" : "text-muted-foreground/60"
                       )}>{stage.name}</span>
                       {isActive && (
                         <span className="text-[11px] font-medium text-primary-foreground/60 animate-pulse">
@@ -225,7 +225,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
       <Collapsible open={billingOpen} onOpenChange={setBillingOpen}>
         <Card className={cn(
           "border-none shadow-sm shadow-slate-200/50 dark:shadow-none rounded-xl overflow-hidden transition-all duration-500",
-          appointment.is_paid ? "bg-card border-2 border-emerald-100" : "bg-muted border border-border"
+          appointment.is_paid ? "bg-card border-2 border-primary/25" : "bg-muted border border-border"
         )}>
           <CollapsibleTrigger asChild>
             <CardHeader className="p-5 cursor-pointer hover:bg-muted/50 transition-colors">
@@ -244,7 +244,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                     Clinical Billing
                   </CardTitle>
                 </div>
-                <ChevronDown className={cn("h-5 w-5 transition-transform duration-500", billingOpen && "rotate-180", appointment.is_paid ? "text-emerald-400" : "text-muted-foreground/70")} />
+                <ChevronDown className={cn("h-5 w-5 transition-transform duration-500", billingOpen && "rotate-180", appointment.is_paid ? "text-primary" : "text-muted-foreground/70")} />
               </div>
             </CardHeader>
           </CollapsibleTrigger>
@@ -264,7 +264,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                   id="is-paid-toggle"
                   checked={appointment.is_paid || false}
                   onCheckedChange={(checked) => onSaveField('is_paid', checked)}
-                  className="data-[state=checked]:bg-emerald-500"
+                  className="data-[state=checked]:bg-primary"
                 />
               </div>
 
@@ -290,14 +290,14 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                       <Button 
                         variant="outline"
                         onClick={() => onSaveField('payment_received', true)}
-                        className="w-full h-14 border-emerald-200 text-chart-emerald hover:bg-emerald-50 rounded-xl font-semibold text-xs transition-all"
+                        className="w-full h-14 border-primary/30 text-chart-emerald hover:bg-primary/10 rounded-xl font-semibold text-xs transition-all"
                       >
                         <CheckCircle2 size={18} className="mr-3" /> Mark as Paid Manually
                       </Button>
                     </div>
                   ) : (
-                    <div className="p-5 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800 flex flex-col items-center justify-center gap-4 text-emerald-700">
-                      <div className="w-16 h-16 rounded-full bg-emerald-500 text-primary-foreground flex items-center justify-center shadow-sm shadow-emerald-500/30">
+                    <div className="p-5 bg-primary/10 dark:bg-primary/20 rounded-xl border border-primary/25 dark:border-primary/60 flex flex-col items-center justify-center gap-4 text-primary-strong">
+                      <div className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm shadow-primary/25">
                         <CheckCircle2 size={32} />
                       </div>
                       <div className="text-center">
@@ -362,7 +362,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
               <div className="space-y-6">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 px-2">
-                    <CreditCard size={16} className="text-emerald-400" />
+                    <CreditCard size={16} className="text-primary" />
                     <span className="text-xs font-medium text-muted-foreground">Payment Link</span>
                   </div>
                   <EditableField 

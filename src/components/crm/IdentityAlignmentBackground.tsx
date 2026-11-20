@@ -50,9 +50,9 @@ const IdentityAlignmentBackground = () => {
           What it IS vs. What it IS NOT
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="border-emerald-500/20 bg-emerald-500/5">
+          <Card className="border-primary/50 bg-primary/5">
             <CardHeader>
-              <CardTitle className="text-lg font-bold flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+              <CardTitle className="text-lg font-bold flex items-center gap-2 text-primary-strong dark:text-primary">
                 <CheckCircle2 size={20} />
                 What it IS
               </CardTitle>

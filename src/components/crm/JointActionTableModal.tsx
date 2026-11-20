@@ -58,7 +58,7 @@ const JointActionTableModal = ({ open, onOpenChange }: JointActionTableModalProp
                   <th className="p-4 text-left font-semibold text-primary text-[10px] uppercase tracking-wider flex items-center gap-1.5">
                     <Zap size={12} /> Sagittal
                   </th>
-                  <th className="p-4 text-left font-semibold text-emerald-500 text-[10px] uppercase tracking-wider">
+                  <th className="p-4 text-left font-semibold text-primary-strong text-[10px] uppercase tracking-wider">
                     <Move size={12} className="inline mr-1.5" /> Frontal
                   </th>
                   <th className="p-4 text-left font-semibold text-orange-500 text-[10px] uppercase tracking-wider">

@@ -32,6 +32,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const DashboardPage = lazy(() => import("./pages/app/DashboardPage"));
 const ClientsPage = lazy(() => import("./pages/ClientsPage"));
 const ClientDetailPage = lazy(() => import("./pages/ClientDetailPage"));
+const ClientLogPage = lazy(() => import("./pages/ClientLogPage"));
 const ClientHubPage = lazy(() => import("./pages/ClientHubPage"));
 const AssistantPage = lazy(() => import("./pages/AssistantPage"));
 const SchedulePage = lazy(() => import("./pages/SchedulePage"));
@@ -215,6 +216,7 @@ const AppRoutes = () => {
           <Route path="/inbox" element={<AssistantPage initialTab="inbox" />} />
           <Route path="/follow-up" element={<AssistantPage initialTab="followup" />} />
           <Route path="/clients/:id" element={<ClientDetailPage />} />
+          <Route path="/clients/:id/log" element={<ClientLogPage />} />
           <Route path="/clients/:id/hub" element={<ClientHubPage />} />
           <Route path="/availability" element={<SchedulePage />} />
           <Route path="/timetable" element={<TimetablePage />} />

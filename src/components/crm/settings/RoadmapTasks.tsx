@@ -39,7 +39,7 @@ const PHASE_META = [
   { phase: 1, label: "Phase 1", sub: "Now → Q3 2026", colour: "bg-amber-500", light: "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/40", text: "text-amber-700 dark:text-amber-400" },
   { phase: 2, label: "Phase 2", sub: "Q1 2027", colour: "bg-orange-500", light: "bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800/40", text: "text-orange-700 dark:text-orange-400" },
   { phase: 3, label: "Phase 3", sub: "Q3 2027", colour: "bg-indigo-500", light: "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-800/40", text: "text-indigo-700 dark:text-indigo-400" },
-  { phase: 4, label: "Phase 4", sub: "Q4 2027", colour: "bg-emerald-600", light: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/40", text: "text-emerald-700 dark:text-emerald-400" },
+  { phase: 4, label: "Phase 4", sub: "Q4 2027", colour: "bg-primary", light: "bg-primary/10 dark:bg-primary/15 border-primary/30 dark:border-primary/60", text: "text-primary-strong dark:text-primary" },
 ];
 
 const RoadmapTasks = ({ rateDistribution, averageSessionRate: _averageSessionRate }: RoadmapTasksProps) => {
@@ -264,7 +264,7 @@ const RoadmapTasks = ({ rateDistribution, averageSessionRate: _averageSessionRat
                           {savingId === task.id
                             ? <Loader2 size={16} className="animate-spin text-muted-foreground" />
                             : task.is_completed
-                            ? <CheckCircle2 size={16} className="text-emerald-500" />
+                            ? <CheckCircle2 size={16} className="text-primary-strong" />
                             : <Circle size={16} />}
                         </button>
                         <span className={cn(

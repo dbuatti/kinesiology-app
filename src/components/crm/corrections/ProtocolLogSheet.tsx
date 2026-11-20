@@ -601,10 +601,10 @@ const ELEMENT_STYLE: Record<
   { dot: string; idle: string; active: string }
 > = {
   Wood: {
-    dot: "bg-emerald-500",
-    idle: "border-border bg-card hover:border-emerald-300 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30",
+    dot: "bg-primary",
+    idle: "border-border bg-card hover:border-primary/40 hover:bg-primary/10 dark:hover:bg-primary/15",
     active:
-      "border-emerald-400 bg-emerald-50 ring-2 ring-emerald-500/20 dark:border-emerald-700 dark:bg-emerald-950/40",
+      "border-primary/40 bg-primary/10 ring-2 ring-primary/30 dark:border-primary/60 dark:bg-primary/20",
   },
   Fire: {
     dot: "bg-rose-500",
@@ -812,7 +812,7 @@ const POLARITY_OPTIONS = [
     value: "IN (+)",
     icon: Plus,
     active:
-      "border-emerald-400 bg-emerald-50 text-emerald-700 ring-2 ring-emerald-500/20 dark:bg-emerald-950/40 dark:text-emerald-300",
+      "border-primary/40 bg-primary/10 text-primary-strong ring-2 ring-primary/20 dark:bg-primary/20 dark:text-primary",
   },
   {
     value: "OUT (−)",
@@ -857,7 +857,7 @@ const PolarityControl = ({
 /* ------------------------------------------------------------------ */
 
 const TONE_ACTIVE: Record<StatusField["options"][number]["tone"], string> = {
-  success: "border-emerald-500 bg-emerald-500 text-white shadow-sm",
+  success: "border-primary bg-primary text-primary-foreground shadow-sm",
   warning: "border-amber-400 bg-amber-400 text-amber-950 shadow-sm",
   danger: "border-rose-500 bg-rose-500 text-white shadow-sm",
 };
@@ -919,9 +919,9 @@ const ToggleControl = ({
       "flex w-full items-center gap-2 rounded-lg border text-left font-medium transition-colors",
       emphasis ? "min-h-11 px-3 py-2.5" : "px-2 py-1.5 coarse:min-h-11 coarse:px-3 coarse:py-2.5",
       checked
-        ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+        ? "border-primary/40 bg-primary/10 text-primary-strong dark:border-primary/60 dark:bg-primary/20 dark:text-primary"
         : "border-border bg-card text-muted-foreground hover:text-foreground",
-      emphasis && checked && "ring-2 ring-emerald-500/10"
+      emphasis && checked && "ring-2 ring-primary/10"
     )}
   >
     <span
@@ -929,7 +929,7 @@ const ToggleControl = ({
         "flex shrink-0 items-center justify-center rounded border",
         emphasis ? "h-5 w-5 border-2" : "h-3.5 w-3.5 coarse:h-5 coarse:w-5",
         checked
-          ? "border-emerald-500 bg-emerald-500 text-white"
+          ? "border-primary bg-primary text-primary-foreground"
           : "border-muted-foreground/40"
       )}
     >
@@ -951,7 +951,7 @@ const ToggleControl = ({
       {label}
     </span>
     {emphasis && checked && (
-      <span className="animate-in fade-in text-[10px] font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+      <span className="animate-in fade-in text-[10px] font-bold uppercase tracking-wide text-primary-strong dark:text-primary">
         Anchored
       </span>
     )}

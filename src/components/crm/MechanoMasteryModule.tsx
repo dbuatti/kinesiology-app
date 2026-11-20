@@ -235,19 +235,19 @@ const MechanoMasteryModule = () => {
                           className={cn(
                             "p-4 rounded-xl border-2 transition-all flex items-center justify-between cursor-pointer group",
                             isCompleted 
-                              ? "bg-emerald-50/50 border-emerald-200" 
+                              ? "bg-primary/10 border-primary/30" 
                               : "bg-card border-border/50 hover:border-indigo-200"
                           )}
                         >
                           <div className="flex items-center gap-4">
                             <div className={cn(
                               "w-8 h-8 rounded-lg flex items-center justify-center text-primary-foreground shadow-sm",
-                              isCompleted ? "bg-emerald-500" : "bg-muted text-muted-foreground"
+                              isCompleted ? "bg-primary" : "bg-muted text-muted-foreground"
                             )}>
                               {isCompleted ? <CheckCircle size={16} /> : <BookOpen size={16} />}
                             </div>
                             <div>
-                              <p className={cn("text-sm font-bold", isCompleted ? "text-emerald-900" : "text-foreground")}>
+                              <p className={cn("text-sm font-bold", isCompleted ? "text-primary-strong" : "text-foreground")}>
                                 {lesson.title}
                               </p>
                               <p className="text-xs text-muted-foreground mt-0.5">{lesson.desc}</p>

@@ -32,7 +32,7 @@ const CalcomSettings = () => {
               {webhookUrl}
             </div>
             <Button variant="outline" size="icon" className="rounded-xl h-12 w-12 shrink-0" onClick={() => handleCopy(webhookUrl, 'web')}>
-              {copied === 'web' ? <Check size={20} className="text-emerald-500" /> : <Copy size={20} />}
+              {copied === 'web' ? <Check size={20} className="text-primary-strong" /> : <Copy size={20} />}
             </Button>
           </div>
         </div>

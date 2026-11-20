@@ -29,14 +29,14 @@ const MasteryItemCard = ({ stat, onClick }: MasteryItemCardProps) => {
     'Novice': 'bg-rose-500',
     'Competent': 'bg-amber-500',
     'Proficient': 'bg-indigo-500',
-    'Master': 'bg-emerald-500'
+    'Master': 'bg-primary'
   };
 
   const levelText = {
     'Novice': 'text-rose-600',
     'Competent': 'text-amber-600',
     'Proficient': 'text-indigo-600',
-    'Master': 'text-emerald-600'
+    'Master': 'text-primary-strong'
   };
 
   // Progress towards next level (max 15 for Master)

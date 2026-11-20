@@ -48,14 +48,14 @@ const BoltResourcesModal = ({ open, onOpenChange, currentScore, onStartBolt }: B
       }
     : isOptimal
       ? {
-          container: "border-emerald-200 bg-emerald-50",
-          bar: "bg-emerald-500",
-          badge: "bg-emerald-500 text-primary-foreground",
+          container: "border-primary/30 bg-primary/10",
+          bar: "bg-primary",
+          badge: "bg-primary text-primary-foreground",
           badgeIcon: <CheckCircle2 size={14} className="mr-1" />,
           title: "Optimal",
           detail: "Maintain with daily recovery practice",
           sub: "Keep it up — you're in the 40s+ range",
-          subClass: "text-emerald-700",
+          subClass: "text-primary-strong",
         }
       : {
           container: "border-indigo-200 bg-indigo-50",
@@ -177,16 +177,16 @@ const BoltResourcesModal = ({ open, onOpenChange, currentScore, onStartBolt }: B
           <Card className="border-border">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <Target size={20} className="text-emerald-600" />
+                <Target size={20} className="text-primary-strong" />
                 Target Goals
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
-                <TrendingUp size={24} className="text-emerald-600 flex-shrink-0" />
+              <div className="flex items-center gap-3 p-3 bg-primary/10 rounded-lg border border-primary/30">
+                <TrendingUp size={24} className="text-primary-strong flex-shrink-0" />
                 <div>
-                  <p className="font-bold text-emerald-900">Minimum Target: 25 seconds</p>
-                  <p className="text-sm text-emerald-700">Essential for optimizing health</p>
+                  <p className="font-bold text-primary-strong">Minimum Target: 25 seconds</p>
+                  <p className="text-sm text-primary-strong">Essential for optimizing health</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/20">

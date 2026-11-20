@@ -22,7 +22,7 @@ const QuizResults = ({ score, total, streak, onRestart, onExit }: QuizResultsPro
   const accuracy = total > 0 ? Math.round((score / total) * 100) : 0;
   
   const getMessage = () => {
-    if (accuracy >= 90) return { title: "Clinical Master!", desc: "Your intuition is razor sharp. You're ready for the most complex cases.", color: "text-emerald-600" };
+    if (accuracy >= 90) return { title: "Clinical Master!", desc: "Your intuition is razor sharp. You're ready for the most complex cases.", color: "text-primary-strong" };
     if (accuracy >= 70) return { title: "Proficient Practitioner", desc: "Great work! You have a solid grasp of the foundations.", color: "text-indigo-600" };
     return { title: "Keep Studying", desc: "Repetition is the path to mastery. Return to the Bible and try again.", color: "text-amber-600" };
   };

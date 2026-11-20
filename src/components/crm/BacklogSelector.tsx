@@ -55,7 +55,7 @@ const BacklogSelector = ({ type, onSelect, currentValue }: BacklogSelectorProps)
   }, [type]);
 
   const getIcon = () => {
-    if (type === 'alignment') return <Target size={16} className="text-emerald-500" />;
+    if (type === 'alignment') return <Target size={16} className="text-primary-strong" />;
     if (type === 'belief') return <ShieldAlert size={16} className="text-rose-500" />;
     return <Fingerprint size={16} className="text-indigo-500" />;
   };

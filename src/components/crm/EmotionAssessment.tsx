@@ -156,7 +156,7 @@ const EmotionAssessment = ({
                   </Button>
                 )}
                 {isComplete && (
-                  <Badge className="px-4 py-2 text-sm font-bold shadow-sm bg-emerald-500 text-primary-foreground hover:bg-emerald-600">
+                  <Badge className="px-4 py-2 text-sm font-bold shadow-sm bg-primary text-primary-foreground hover:bg-primary">
                     Balanced
                   </Badge>
                 )}
@@ -227,7 +227,7 @@ const EmotionAssessment = ({
 
             <div className="space-y-3 p-4 border border-border rounded-xl bg-muted/50">
               <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-                <Zap size={16} className="text-emerald-600" /> 3. Select Specific Emotion/Feeling
+                <Zap size={16} className="text-primary-strong" /> 3. Select Specific Emotion/Feeling
               </h3>
               {primarySelection ? (
                 <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto p-2 border border-border/50 rounded-lg bg-card">

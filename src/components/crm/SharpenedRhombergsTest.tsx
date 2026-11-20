@@ -2,8 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Scale, RotateCcw, CheckCircle2, Zap, RefreshCw, ArrowRightLeft, Timer, Play, Pause, FileText } from "lucide-react";
+import { Scale, RotateCcw, CheckCircle2, Zap, RefreshCw, ArrowRightLeft, Timer, Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
@@ -20,10 +19,10 @@ interface SharpenedRhombergsTestProps {
   onUpdate: () => void;
 }
 
-const SharpenedRhombergsTest = ({ 
-  appointmentId, 
+const SharpenedRhombergsTest = ({
+  appointmentId,
   initialNotes,
-  onUpdate 
+  onUpdate
 }: SharpenedRhombergsTestProps) => {
   const [loading, setLoading] = useState(false);
   const [notes, setNotes] = useState(initialNotes || '');
@@ -215,123 +214,139 @@ const SharpenedRhombergsTest = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-muted/50 rounded-2xl border border-border/50">
-        <div className="flex gap-2">
-          <Button 
-            size="sm" 
-            onClick={() => handleSetStatus('Clear')}
-            className={cn(
-              "h-10 px-4 rounded-md font-semibold text-[11px] transition-all",
-              currentStatus === 'Clear' ? "bg-success text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-success/5"
-            )}
-          >
-            <CheckCircle2 size={13} className="mr-2" /> Clear
-          </Button>
-          <Button 
-            size="sm" 
-            onClick={() => handleSetStatus('Inhibited')}
-            className={cn(
-              "h-10 px-4 rounded-md font-semibold text-[11px] transition-all",
-              currentStatus === 'Inhibited' ? "bg-destructive text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-destructive/5"
-            )}
-          >
-            <Zap size={13} className="mr-2" /> Inhibited
-          </Button>
-          <Button 
-            size="sm" 
-            onClick={() => handleSetStatus('Recheck')}
-            className={cn(
-              "h-10 px-4 rounded-md font-semibold text-[11px] transition-all",
-              currentStatus === 'Recheck' ? "bg-warning text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-warning/5"
-            )}
-          >
-            <RefreshCw size={13} className="mr-2" /> Recheck
-          </Button>
+    <div className="space-y-5">
+      {/* Result — segmented control */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="inline-flex items-center rounded-xl bg-muted/60 p-1">
+          {([
+            { key: 'Clear' as const, label: 'Clear', icon: CheckCircle2, active: "bg-card text-primary-strong dark:text-primary shadow-xs" },
+            { key: 'Inhibited' as const, label: 'Inhibited', icon: Zap, active: "bg-card text-rose-700 dark:text-rose-300 shadow-xs" },
+            { key: 'Recheck' as const, label: 'Recheck', icon: RefreshCw, active: "bg-card text-amber-700 dark:text-amber-300 shadow-xs" },
+          ]).map(opt => (
+            <button
+              key={opt.key}
+              onClick={() => handleSetStatus(opt.key)}
+              disabled={loading}
+              className={cn(
+                "flex h-8 items-center gap-1.5 rounded-lg px-3 text-[12px] font-semibold transition-all disabled:opacity-60",
+                currentStatus === opt.key ? opt.active : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <opt.icon size={13} /> {opt.label}
+            </button>
+          ))}
         </div>
         {currentStatus && (
-          <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
-            Auto-synced to Align phase
-          </Badge>
+          <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+            Synced to Align phase
+          </span>
         )}
       </div>
 
-      <div className="p-4 bg-muted/50 rounded-2xl border border-border/50 space-y-4">
-        <div className="flex items-center justify-between">
-          <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-            <ArrowRightLeft size={14} className="text-primary" /> Clinical Metrics
-          </h4>
+      {/* Clinical metrics */}
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+            <ArrowRightLeft size={12} /> Clinical metrics
+          </span>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 text-xs">
-              <Timer size={13} className="text-muted-foreground" />
-              <span className="font-semibold tabular-nums">{timerSeconds}s</span>
+            <span className="flex h-7 items-center gap-1.5 rounded-full bg-muted/60 px-3 text-[11px] tabular-nums text-muted-foreground">
+              <Timer size={12} />
+              <span className="font-semibold text-foreground">{timerSeconds}s</span>
+            </span>
+            <div className="inline-flex items-center gap-0.5 rounded-full border border-border/70 bg-muted/30 p-0.5">
+              <button
+                onClick={timerRunning ? pauseTimer : startTimer}
+                className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                title={timerRunning ? "Pause" : "Start"}
+              >
+                {timerRunning ? <Pause size={11} /> : <Play size={11} />}
+              </button>
+              <button
+                onClick={resetTimer}
+                className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                title="Reset timer"
+              >
+                <RotateCcw size={11} />
+              </button>
             </div>
-            {!timerRunning ? (
-              <Button variant="ghost" size="sm" onClick={startTimer} className="h-8 w-8 rounded-md p-0">
-                <Play size={14} />
-              </Button>
-            ) : (
-              <Button variant="ghost" size="sm" onClick={pauseTimer} className="h-8 w-8 rounded-md p-0">
-                <Pause size={14} />
-              </Button>
-            )}
-            <Button variant="ghost" size="sm" onClick={resetTimer} className="h-7 w-7 rounded-lg p-0 text-muted-foreground">
-              <RotateCcw size={14} />
-            </Button>
-            <div className="w-px h-5 bg-border" />
-            <Button variant="ghost" size="sm" onClick={() => recordTimerValue('open')} className="h-8 rounded-md text-[11px] text-primary hover:bg-muted px-2 font-semibold">
-              Eyes Open
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => recordTimerValue('closed')} className="h-8 rounded-md text-[11px] text-destructive hover:bg-muted px-2 font-semibold">
-              Eyes Closed
-            </Button>
+            <button
+              onClick={() => recordTimerValue('open')}
+              className="h-7 rounded-full border border-border bg-muted/40 px-2.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+              title="Record the timer into Eyes Open Hold"
+            >
+              Eyes open
+            </button>
+            <button
+              onClick={() => recordTimerValue('closed')}
+              className="h-7 rounded-full border border-border bg-muted/40 px-2.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+              title="Record the timer into Eyes Closed Hold"
+            >
+              Eyes closed
+            </button>
           </div>
         </div>
-        {timerRunning && (
-          <div className="w-full h-1 bg-muted rounded-full overflow-hidden">
-            <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${Math.min(100, (timerSeconds / 30) * 100)}%` }} />
-          </div>
-        )}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground">Eyes Open Hold</Label>
+        <div className="h-1 w-full overflow-hidden rounded-full bg-muted/70">
+          <div
+            className="h-full bg-primary/60 transition-all duration-1000"
+            style={{ width: `${Math.min(100, (timerSeconds / 30) * 100)}%` }}
+          />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Eyes open hold</Label>
             <div className="relative">
-              <Input type="number" placeholder="e.g. 30" value={eyesOpenTime} onChange={(e) => handleOpenTimeChange(e.target.value)} className="h-10 rounded-md pr-8 text-xs font-semibold" />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">s</span>
+              <Input type="number" placeholder="e.g. 30" value={eyesOpenTime} onChange={(e) => handleOpenTimeChange(e.target.value)} className="h-8 rounded-lg pr-7 text-[13px] font-semibold" />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-muted-foreground">s</span>
             </div>
           </div>
-          <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground">Eyes Closed Hold</Label>
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Eyes closed hold</Label>
             <div className="relative">
-              <Input type="number" placeholder="e.g. 15" value={eyesClosedTime} onChange={(e) => handleClosedTimeChange(e.target.value)} className="h-10 rounded-md pr-8 text-xs font-semibold" />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">s</span>
+              <Input type="number" placeholder="e.g. 15" value={eyesClosedTime} onChange={(e) => handleClosedTimeChange(e.target.value)} className="h-8 rounded-lg pr-7 text-[13px] font-semibold" />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-muted-foreground">s</span>
             </div>
           </div>
-          <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground">Sway Direction</Label>
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Sway direction</Label>
             <ToggleGroup type="single" value={swayDirection} onValueChange={handleSwayChange} className="justify-start gap-1">
-              <ToggleGroupItem value="Left" className="rounded-md border border-border text-xs font-semibold px-2 py-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">L</ToggleGroupItem>
-              <ToggleGroupItem value="Right" className="rounded-md border border-border text-xs font-semibold px-2 py-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">R</ToggleGroupItem>
-              <ToggleGroupItem value="Anterior" className="rounded-md border border-border text-xs font-semibold px-2 py-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Ant</ToggleGroupItem>
-              <ToggleGroupItem value="Posterior" className="rounded-md border border-border text-xs font-semibold px-2 py-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Post</ToggleGroupItem>
+              {[
+                { value: "Left", label: "L" },
+                { value: "Right", label: "R" },
+                { value: "Anterior", label: "Ant" },
+                { value: "Posterior", label: "Post" },
+              ].map(opt => (
+                <ToggleGroupItem
+                  key={opt.value}
+                  value={opt.value}
+                  className="h-8 rounded-lg border border-border px-2.5 text-[11px] font-semibold text-muted-foreground data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  {opt.label}
+                </ToggleGroupItem>
+              ))}
             </ToggleGroup>
           </div>
         </div>
       </div>
 
+      {/* Observations */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="rhombergsNotes" className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <FileText size={15} className="text-primary" />
+          <Label htmlFor="rhombergsNotes" className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
             Observations
           </Label>
           <div className="flex items-center gap-3">
             {lastSaved && (
-              <span className="text-[10px] text-muted-foreground font-medium">Saved {lastSaved}</span>
+              <span className="text-[10px] text-muted-foreground/70">Saved {lastSaved}</span>
             )}
             {(initialNotes || currentStatus) && (
-              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-8 px-3 rounded-md border-destructive/20 text-destructive-strong hover:bg-destructive/5 text-[11px] font-semibold">
-                <RotateCcw size={12} className="mr-1" /> Reset
+              <Button
+                variant="ghost"
+                onClick={() => setShowResetConfirm(true)}
+                disabled={loading}
+                className="h-7 rounded-lg px-2.5 text-[11px] font-medium text-muted-foreground hover:bg-destructive/5 hover:text-destructive-strong"
+              >
+                <RotateCcw size={11} className="mr-1.5" /> Reset
               </Button>
             )}
           </div>
@@ -341,29 +356,39 @@ const SharpenedRhombergsTest = ({
           placeholder="Document your observations here..."
           value={notes}
           onChange={(e) => handleNotesChange(e.target.value)}
-          className="min-h-[200px] resize-y text-sm leading-relaxed"
+          className="min-h-[140px] resize-y rounded-xl text-[13px] leading-relaxed"
         />
-        <p className="text-[10px] text-muted-foreground font-medium">Your notes auto-save as you type.</p>
+        <p className="text-[10px] text-muted-foreground/70">Notes auto-save as you type.</p>
       </div>
 
-      <div className="space-y-3">
+      {/* Protocol reference */}
+      <section className="rounded-2xl bg-muted/40 p-4">
         <div className="flex items-center gap-2">
-          <Scale size={14} className="text-muted-foreground" />
-          <p className="text-xs font-semibold text-foreground/80">Protocol Reference</p>
-          <p className="text-[10px] text-muted-foreground">Sharpened Rhomberg's Test protocol & diagram</p>
+          <Scale size={13} className="text-muted-foreground" />
+          <p className="text-[11px] font-semibold text-foreground">Protocol reference</p>
+          <p className="text-[10px] text-muted-foreground/70">Sharpened Rhomberg's test</p>
         </div>
-        <div className="rounded-lg overflow-hidden">
-          <img loading="lazy" decoding="async" src="/images/sharpened-rhombergs-test.png" alt="Sharpened Rhombergs Test" className="w-full h-auto rounded-md object-cover" />
+        <div className="mt-3 overflow-hidden rounded-xl border border-border/70 bg-background">
+          <img loading="lazy" decoding="async" src="/images/sharpened-rhombergs-test.png" alt="Sharpened Rhombergs test" className="w-full object-cover" />
         </div>
-        <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
-          <li>Client places feet together with toes pointing forward (heel-to-toe stance).</li>
-          <li>Instruct client to lengthen through the spine.</li>
-          <li>Fixate on a target with the eyes.</li>
-          <li>Raise arms to shoulder height.</li>
-          <li>Close the eyes.</li>
-          <li>Maintain posture for a minimum of 20 seconds.</li>
+        <ol className="mt-3 space-y-1.5">
+          {[
+            "Client places feet together with toes pointing forward (heel-to-toe stance).",
+            "Instruct client to lengthen through the spine.",
+            "Fixate on a target with the eyes.",
+            "Raise arms to shoulder height.",
+            "Close the eyes.",
+            "Maintain posture for a minimum of 20 seconds.",
+          ].map((step, i) => (
+            <li key={i} className="flex gap-2.5 text-[12px] leading-relaxed text-muted-foreground">
+              <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-muted text-[9px] font-bold text-muted-foreground">
+                {i + 1}
+              </span>
+              {step}
+            </li>
+          ))}
         </ol>
-      </div>
+      </section>
 
       <ConfirmDialog
         open={showResetConfirm}

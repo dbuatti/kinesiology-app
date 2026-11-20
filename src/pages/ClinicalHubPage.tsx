@@ -124,9 +124,9 @@ const ClinicalHubPage = () => {
       label: 'Practise session notes',
       description: 'The printable notes view — findings, corrections, homework — on the practice client',
       icon: FileText,
-      color: 'border-l-emerald-500 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/30',
-      accent: 'text-emerald-600 dark:text-emerald-400',
-      iconBg: 'bg-emerald-100 dark:bg-emerald-950/50',
+      color: 'border-l-primary/60 hover:bg-primary/10 dark:hover:bg-primary/15',
+      accent: 'text-primary-strong dark:text-primary',
+      iconBg: 'bg-primary/15 dark:bg-primary/25',
       badge: 'Sandbox',
     },
     {

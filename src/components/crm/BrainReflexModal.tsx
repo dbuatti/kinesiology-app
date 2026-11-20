@@ -27,7 +27,7 @@ const BrainReflexModal = ({
     ? 'text-violet-600 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/50 border-violet-200 dark:border-violet-800' 
     : point.category === 'Subcortical'
     ? 'text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 border-indigo-200 dark:border-indigo-800'
-    : 'text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800';
+    : 'text-primary-strong dark:text-primary bg-primary/10 dark:bg-primary/25 border-primary/30 dark:border-primary/60';
 
   const showImages = primaryUrl || secondaryUrl || tertiaryUrl;
 
@@ -76,11 +76,11 @@ const BrainReflexModal = ({
             <div className="grid grid-cols-2 divide-x divide-border">
               {point.functions && (
                 <div className="px-5 py-3.5 space-y-1.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Functions</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-primary-strong dark:text-primary">Functions</p>
                   <ul className="space-y-1">
                     {point.functions.map((f, i) => (
                       <li key={i} className="flex items-start gap-1.5 text-xs text-muted-foreground">
-                        <span className="w-1 h-1 rounded-full bg-emerald-400 dark:bg-emerald-500 mt-1.5 shrink-0" />
+                        <span className="w-1 h-1 rounded-full bg-primary dark:bg-primary mt-1.5 shrink-0" />
                         {f}
                       </li>
                     ))}

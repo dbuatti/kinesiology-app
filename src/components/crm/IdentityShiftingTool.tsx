@@ -689,7 +689,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         </div>
 
         <div className="space-y-3 pt-3 border-t border-border">
-          <h4 className="text-xs font-medium text-muted-foreground px-2 border-l-2 border-emerald-500">Action & Next Steps</h4>
+          <h4 className="text-xs font-medium text-muted-foreground px-2 border-l-2 border-primary/50">Action & Next Steps</h4>
           <div className="space-y-3">
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground ml-1">1. How are you going to put that intention or awareness into action?</Label>

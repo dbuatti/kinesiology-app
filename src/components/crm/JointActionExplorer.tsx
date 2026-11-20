@@ -222,7 +222,7 @@ const JointActionExplorer = () => {
                   <div key={plane} className="space-y-4">
                     <div className="flex items-center gap-2 border-b border-border/50 pb-2">
                       {plane === 'Sagittal' ? <Zap size={16} className="text-primary" /> :
-                       plane === 'Frontal' ? <Move size={16} className="text-emerald-500" /> :
+                       plane === 'Frontal' ? <Move size={16} className="text-primary-strong" /> :
                        <RefreshCw size={16} className="text-orange-500" />}
                       <h4 className="text-xs font-medium text-muted-foreground">{plane} Plane Actions</h4>
                     </div>
@@ -270,7 +270,7 @@ const JointActionExplorer = () => {
                   </p>
                 </div>
                 <div className="p-5 bg-foreground text-primary-foreground rounded-2xl space-y-3">
-                  <div className="flex items-center gap-2 text-emerald-400">
+                  <div className="flex items-center gap-2 text-primary">
                     <Activity size={16} />
                     <span className="text-[10px] font-semibold uppercase tracking-wider">Unconscious Logic</span>
                   </div>
@@ -328,7 +328,7 @@ const JointActionExplorer = () => {
                             "p-4 rounded-xl border-2 text-left transition-all font-bold text-sm flex items-center justify-between",
                             quizSubmitted
                               ? isCorrectAnswer
-                                ? "bg-emerald-50 border-emerald-500 text-emerald-700"
+                                ? "bg-primary/10 border-primary/50 text-primary-strong"
                                 : isSelected
                                   ? "bg-rose-50 border-rose-500 text-rose-700"
                                   : "bg-muted/50 border-border/50 text-muted-foreground"
@@ -338,7 +338,7 @@ const JointActionExplorer = () => {
                           )}
                         >
                           <span>{option}</span>
-                          {quizSubmitted && isCorrectAnswer && <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />}
+                          {quizSubmitted && isCorrectAnswer && <CheckCircle2 size={16} className="text-primary-strong shrink-0" />}
                           {quizSubmitted && isSelected && !isCorrectAnswer && <XCircle size={16} className="text-rose-500 shrink-0" />}
                         </button>
                       );

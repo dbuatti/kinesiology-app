@@ -88,6 +88,16 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
   const isAnyInhibited = statusL === 'Inhibited' || statusR === 'Inhibited' || statusMidline === 'Inhibited' || test.is_inhibited;
   const isBilateral = statusL === 'Inhibited' && statusR === 'Inhibited';
 
+  // Stim grids, images and reference text stay collapsed until needed — twelve
+  // nerves read as twelve rows. Expanded on click, or when the nerve is marked
+  // inhibited.
+  const [expanded, setExpanded] = useState(() => isAnyInhibited);
+  const [userToggled, setUserToggled] = useState(false);
+  useEffect(() => {
+    if (userToggled) return;
+    if (isAnyInhibited) setExpanded(true);
+  }, [isAnyInhibited, userToggled]);
+
   return (
     <section className={cn(
       "rounded-xl border transition-all",
@@ -99,6 +109,16 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
     )}>
       <div className={cn("flex flex-col md:flex-row md:items-center justify-between gap-2", compact ? "pb-0" : "pb-2 border-b border-border/50")}>
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => { setUserToggled(true); setExpanded((v) => !v); }}
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground"
+            title={expanded ? "Collapse nerve details" : "Expand nerve details"}
+            aria-expanded={expanded}
+            aria-label={expanded ? "Collapse nerve details" : "Expand nerve details"}
+          >
+            <ChevronRight size={12} className={cn("transition-transform", expanded && "rotate-90")} />
+          </button>
           <div
             className="flex items-center gap-2 cursor-pointer group/title"
             {...clickableProps(() => onShowInfo?.(nerve.id))}
@@ -206,6 +226,8 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
         </div>
       </div>
 
+      {expanded && (
+        <>
       <StimResultsSummary
         kind="nerve"
         nerve={nerve}
@@ -318,6 +340,8 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
             )}
           </div>
         </div>
+      )}
+        </>
       )}
     </section>
   );

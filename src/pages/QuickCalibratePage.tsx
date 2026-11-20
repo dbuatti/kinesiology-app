@@ -36,7 +36,7 @@ export function QuickCalibrateTool() {
             <ShieldCheck size={100} />
           </div>
           <h4 className="text-lg font-semibold flex items-center gap-2 mb-2">
-            <ShieldCheck size={20} className="text-emerald-400" /> Clinical Safety
+            <ShieldCheck size={20} className="text-primary" /> Clinical Safety
           </h4>
           <p className="text-sm text-muted-foreground leading-relaxed relative z-10">
             Always ensure the system is in a receptive state before applying deep neurological corrections. If the IM remains inhibited after 3 layers, check for SNS dominance.

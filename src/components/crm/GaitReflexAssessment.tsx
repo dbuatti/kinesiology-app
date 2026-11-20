@@ -86,18 +86,18 @@ const GaitReflexAssessment = ({
         onClick={() => toggleResult(id)}
         className={cn(
           "flex flex-col items-start p-3 rounded-xl border-2 transition-all text-left group",
-          status === 'normal' ? "bg-emerald-50 border-emerald-200" : "bg-rose-50 border-rose-200"
+          status === 'normal' ? "bg-primary/10 border-primary/30" : "bg-rose-50 border-rose-200"
         )}
       >
         <div className="flex items-center justify-between w-full mb-1">
           <span className={cn(
             "text-[11px] font-semibold",
-            status === 'normal' ? "text-emerald-600" : "text-rose-600"
+            status === 'normal' ? "text-primary-strong" : "text-rose-600"
           )}>
             Should {expected}
           </span>
           {status === 'normal' ? (
-            <CheckCircle2 size={14} className="text-emerald-500" />
+            <CheckCircle2 size={14} className="text-primary-strong" />
           ) : (
             <XCircle size={14} className="text-rose-500" />
           )}
@@ -112,10 +112,10 @@ const GaitReflexAssessment = ({
   return (
     <div className="space-y-6">
       <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-100">
+        <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/25">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-200">
+              <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
                 <Footprints size={24} className="text-primary-foreground" />
               </div>
               <div>
@@ -126,7 +126,7 @@ const GaitReflexAssessment = ({
             <Button 
               variant="outline" 
               size="sm" 
-              className="bg-card border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+              className="bg-card border-primary/30 text-primary-strong hover:bg-primary/10"
               onClick={generateSummary}
             >
               <FileText size={16} className="mr-2" />
@@ -139,7 +139,7 @@ const GaitReflexAssessment = ({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-                <Eye size={20} className="text-emerald-600" />
+                <Eye size={20} className="text-primary-strong" />
                 1. Diagnosis (Reciprocal Inhibition)
               </h3>
               <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
@@ -202,7 +202,7 @@ const GaitReflexAssessment = ({
                         <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">The Fix</p>
                         <p className="text-xl font-semibold text-amber-900">{CORRECTIONS[eyePriority].fix}</p>
                         <p className="text-sm text-amber-800 leading-relaxed">{CORRECTIONS[eyePriority].detail}</p>
-                        <div className="pt-3 flex items-center gap-2 text-[10px] font-bold text-emerald-600 uppercase">
+                        <div className="pt-3 flex items-center gap-2 text-[10px] font-bold text-primary-strong uppercase">
                           <CheckCircle2 size={12} /> Finish with 30s Cross Crawls
                         </div>
                       </div>

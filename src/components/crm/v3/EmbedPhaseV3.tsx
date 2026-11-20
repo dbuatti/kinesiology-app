@@ -73,7 +73,7 @@ interface InhibitedItem {
 }
 
 const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorityPattern, onJumpToPhase }: PhaseProps) => {
-  const [muscleTests, setMuscleTests] = useState<any[]>([]);
+  const [muscleTests, setMuscleTests] = useState<{ id: string; status: string; muscle_name?: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [clearingId, setClearingId] = useState<string | null>(null);
@@ -92,8 +92,8 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
   const nextSession = useMemo(() => {
     const now = new Date();
     return history
-      .filter((a: any) => a.id !== appointment.id && a.status !== 'Cancelled' && new Date(a.date) > now)
-      .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] || null;
+      .filter((a) => a.id !== appointment.id && a.status !== "Cancelled" && new Date(a.date) > now)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] || null;
   }, [history, appointment.id]);
 
   const clearedFindings: Set<string> = useMemo(() => {
@@ -343,7 +343,7 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
     }
   };
 
-  const handleUndoClear = async (item: any) => {
+  const handleUndoClear = async (item: { id: string; status?: string; type?: string; name?: string; category?: string }) => {
     if (clearingId) return;
     setClearingId(item.id);
     try {
@@ -379,7 +379,7 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
   // Ease records completion in metadata.sns_resets — that is the source V3
   // writes. Sessions recorded before that only carry the per-technique note
   // fields, so fall back to them rather than showing an empty summary.
-  const snsResets: Record<string, boolean> = (metadata as any)?.sns_resets || {};
+  const snsResets: Record<string, boolean> = (metadata as Record<string, unknown>)?.sns_resets as Record<string, boolean> || {};
   const SNS_SUMMARY: Array<{ key: string; label: string; note?: string | null }> = [
     { key: 'lymphatic', label: 'Lymphatic', note: appointment.lymphatic_notes },
     { key: 'harmonic', label: 'Harmonic rocking', note: appointment.harmonic_rocking_notes },
@@ -570,7 +570,6 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
               <PathwayFindingsList
                 priorityPattern={appointment.priority_pattern}
                 showOnlyInhibited={false}
-                className="max-h-[300px] overflow-y-auto pr-1"
               />
             </div>
 

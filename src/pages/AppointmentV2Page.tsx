@@ -18,8 +18,6 @@ import {
     FileText,
     Maximize2,
     Minimize2,
-    Calendar,
-    Clock,
     User,
     Plus,
     LayoutGrid,
@@ -53,7 +51,16 @@ import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
 import type { ProtocolLog, ProtocolLogPatch } from "@/data/protocol-log";
 import ClientIntakeSummary from "@/components/crm/ClientIntakeSummary";
 import ClientIntakeEditModal from "@/components/crm/ClientIntakeEditModal";
-import { PaymentStatusBadge } from "@/components/crm/PaymentStatusBadge";
+import ClientSideSheet, { SessionClientRail } from "@/components/crm/ClientSideSheet";
+
+const initialsOf = (name?: string | null): string =>
+  (name || "?")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]!.toUpperCase())
+    .join("") || "?";
 
 const AppointmentV2Page = () => {
   const { id } = useParams<{ id: string }>();
@@ -92,7 +99,11 @@ const AppointmentV2Page = () => {
   const [sessionSummaryOpen, setSessionSummaryOpen] = useState(false);
   const [ctmOpen, setCtmOpen] = useState(false);
   const [intakeEditOpen, setIntakeEditOpen] = useState(false);
+  const [clientSheetOpen, setClientSheetOpen] = useState(false);
+  const [clientRailOpen, setClientRailOpen] = useState(true);
   const [activePhase, setActivePhase] = useState(0);
+  const [phrenicChecked, setPhrenicChecked] = useState(false);
+  const [lymphChecked, setLymphChecked] = useState(false);
 
   // Correction logs written at the table (metadata.protocol_logs).
   const metadata = useMemo<Record<string, unknown>>(() => {
@@ -108,12 +119,12 @@ const AppointmentV2Page = () => {
   );
 
   const inhibitionPathwayState = useMemo(
-    () => (metadata.inhibition_pathway_state ?? {}) as Record<string, any>,
+    () => (metadata.inhibition_pathway_state ?? {}) as Record<string, unknown>,
     [metadata]
   );
 
   const savedInhibitionPathway = useMemo(
-    () => (metadata.inhibition_pathway ?? null) as any,
+    () => (metadata.inhibition_pathway ?? null) as unknown,
     [metadata]
   );
 
@@ -194,7 +205,7 @@ const AppointmentV2Page = () => {
   );
 
   const handleInhibitionPathwayChange = useCallback(
-    (pathway: any, state: Record<string, any>) => {
+    (pathway: unknown, state: Record<string, unknown>) => {
       updateMetadata((current) => ({
         ...current,
         inhibition_pathway: pathway,
@@ -233,6 +244,17 @@ const AppointmentV2Page = () => {
     };
   }, [appointment]);
 
+  /** How many high-priority corrections have been logged this session. */
+  const correctionCount = useMemo(() => {
+    let n = 0;
+    for (const log of Object.values(protocolLogs)) {
+      if (Array.isArray(log.entries)) n += log.entries.length;
+      else if (log.values && Object.keys(log.values).length > 0) n += 1;
+    }
+    if (Array.isArray(metadata.corrections)) n += metadata.corrections.length;
+    return n;
+  }, [protocolLogs, metadata]);
+
   /** PEACE phase navigation — moved up from PeaceWizard/PeaceWizardV3 into the unified header. */
   const goNext = useCallback(() => {
     setActivePhase(prev => Math.min(prev + 1, PEACE_PHASES.length - 1));
@@ -244,7 +266,7 @@ const AppointmentV2Page = () => {
 
   /** What the current PEACE phase still needs. */
   const phaseHint = useMemo(() => {
-    const activeIsComplete = (phaseStatus as any)[PEACE_PHASES[activePhase].id];
+    const activeIsComplete = (phaseStatus as Record<string, boolean>)[PEACE_PHASES[activePhase].id];
     return activeIsComplete ? "" : PEACE_PHASES[activePhase].hint;
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: effect/callback is keyed on its real inputs; adding this would re-run every render
   }, [activePhase, appointment, phaseStatus]);
@@ -361,12 +383,12 @@ const AppointmentV2Page = () => {
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
         {/* Thin progress line */}
         <div className="h-[2px] w-full bg-border/20">
-          <div className="h-full bg-gradient-to-r from-chart-emerald to-primary transition-all duration-500 ease-out" style={{ width: `${phaseProgress}%` }} />
+          <div className="h-full bg-primary transition-all duration-500 ease-out" style={{ width: `${phaseProgress}%` }} />
         </div>
 
         {/* ── Top utility bar (~42px) ── */}
         <div className="flex h-[42px] shrink-0 items-center justify-between px-4 sm:px-6 md:px-8">
-          {/* Left: Back + Identity + Date/Time */}
+          {/* Left: Back + view modes */}
           <div className="flex min-w-0 items-center gap-3">
             {viewMode !== 'doc' && (
               <button
@@ -377,49 +399,6 @@ const AppointmentV2Page = () => {
                 <ArrowLeft size={15} />
               </button>
             )}
-            <div className="min-w-0 flex items-center gap-2">
-              <Link
-                to={`/clients/${appointment.clients?.id}`}
-                className="truncate text-[13px] font-medium tracking-tight text-foreground transition-colors hover:text-primary"
-                title="Open client page"
-              >
-                {appointment.clients?.name || "Unknown"}
-              </Link>
-              <button
-                onClick={() => { setIntakeOpen(true); }}
-                className="ml-1 shrink-0 rounded-md border border-border bg-muted/60 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                title="Quick view of client intake"
-              >
-                Intake
-              </button>
-              {isDemo && (
-                <span className="shrink-0 rounded-md bg-muted/60 px-1.5 py-0.5 text-[9px] font-medium tracking-tight text-muted-foreground" title="Public demo — nothing is saved.">
-                  Demo
-                </span>
-              )}
-              <span className="hidden sm:inline-flex shrink-0">
-                <PaymentStatusBadge
-                  paid={appointment.payment_received}
-                  isPaidService={appointment.is_paid}
-                  priceAmount={appointment.price_amount ?? appointment.clients?.standard_rate ?? null}
-                  paymentMethod={appointment.payment_method}
-                  status={appointment.status}
-                  size="sm"
-                />
-              </span>
-            </div>
-            <div className="hidden items-center gap-1.5 text-[11px] text-muted-foreground/70 sm:flex">
-              <Calendar size={11} className="shrink-0" />
-              <span className="whitespace-nowrap">{format(new Date(appointment.date), "EEE, MMM d")}</span>
-              <span className="text-border">·</span>
-              <Clock size={11} className="shrink-0" />
-              <span className="whitespace-nowrap">{format(new Date(appointment.date), "h:mm a")}</span>
-            </div>
-          </div>
-
-          {/* View modes + Action icons */}
-          <div className="flex items-center gap-2">
-            {/* View modes — PEACE · Grid · Doc */}
             <div className="hidden items-center gap-0.5 rounded-lg bg-muted/30 p-0.5 sm:flex">
               {MODE_TABS.map(tab => {
                 const Icon = tab.icon;
@@ -443,18 +422,56 @@ const AppointmentV2Page = () => {
                 );
               })}
             </div>
+          </div>
 
+          {/* Right: identity (opens the client rail) + action icons */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
+              <button
+                onClick={() => {
+                  if (window.matchMedia("(min-width: 1100px)").matches) setClientRailOpen((v) => !v);
+                  else setClientSheetOpen(true);
+                }}
+                title={`${appointment.clients?.name || "Client"} — client overview`}
+                aria-label="Client overview"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary-strong ring-1 ring-primary/20 transition-colors hover:bg-primary/15"
+              >
+                {initialsOf(appointment.clients?.name)}
+              </button>
+            </div>
+            {/* Session timer — 3 / 6 / 9 min; the active pill becomes a live countdown */}
+            <div className="flex items-center gap-1 shrink-0">
+              {timerDone && (
+                <button
+                  onClick={() => setTimerDone(false)}
+                  className="h-[18px] px-1.5 rounded-md border border-primary bg-primary text-[9px] font-bold text-primary-foreground"
+                  title="Timer finished — tap to dismiss"
+                >
+                  Done
+                </button>
+              )}
+              {[3, 6, 9].map(min => {
+                const active = timerDuration === min;
+                return (
+                  <button
+                    key={min}
+                    onClick={() => (active ? stopTimer() : startTimer(min))}
+                    title={active ? `${formatTimer(timerRemaining)} left — tap to stop` : `Start ${min} minute timer (key ${[3, 6, 9].indexOf(min) + 1})`}
+                    className={cn(
+                      "h-[18px] rounded-md transition-colors border tabular-nums",
+                      active
+                        ? "min-w-[44px] px-1.5 bg-amber-500 text-white border-amber-500 shadow-sm text-[10px] font-bold"
+                        : "px-1.5 bg-muted text-muted-foreground hover:text-foreground border-border text-[9px] font-medium"
+                    )}
+                  >
+                    {active ? formatTimer(timerRemaining) : `${min}m`}
+                  </button>
+                );
+              })}
+            </div>
+            <span className="h-4 w-px bg-border" aria-hidden />
             {/* Action icons (muted) */}
             <div className="flex items-center gap-0.5">
-            {!isDemo && (
-              <button
-                onClick={() => setQuickSessionOpen(true)}
-                title="New session"
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
-              >
-                <Plus size={15} />
-              </button>
-            )}
             <button
               onClick={() => setNotesOpen(true)}
               title="Session notes (N)"
@@ -476,6 +493,11 @@ const AppointmentV2Page = () => {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="rounded-xl">
+                {!isDemo && (
+                  <DropdownMenuItem onClick={() => setQuickSessionOpen(true)} className="flex items-center gap-2">
+                    <Plus size={14} /> New session
+                  </DropdownMenuItem>
+                )}
                 {isDemo && !session && (
                   <DropdownMenuItem asChild>
                     <Link to="/login" className="flex items-center gap-2">
@@ -515,15 +537,15 @@ const AppointmentV2Page = () => {
                 {/* Connecting line */}
                 <div className="absolute left-[16px] right-[16px] top-[16px] h-[2px] rounded-full bg-border/40" />
                 <div
-                  className="absolute left-[16px] top-[16px] h-[2px] rounded-full bg-gradient-to-r from-chart-emerald to-primary transition-all duration-700 ease-out"
+                  className="absolute left-[16px] top-[16px] h-[2px] rounded-full bg-primary transition-all duration-700 ease-out"
                   style={{ width: `${(activePhase / (PEACE_PHASES.length - 1)) * (100 - 6)}%` }}
                 />
 
                 {PEACE_PHASES.map((phase, index) => {
-                  const isCompleted = (phaseStatus as any)[phase.id];
+                  const isCompleted = (phaseStatus as Record<string, boolean>)[phase.id];
                   const isActive = activePhase === index;
                   const isPast = index < activePhase;
-                  const canJump = isCompleted || isPast || index === 0 || (phaseStatus as any)[PEACE_PHASES[index - 1]?.id];
+                  const canJump = isCompleted || isPast || index === 0 || (phaseStatus as Record<string, boolean>)[PEACE_PHASES[index - 1]?.id];
 
                   return (
                     <button
@@ -539,15 +561,15 @@ const AppointmentV2Page = () => {
                         className={cn(
                           "relative flex items-center justify-center rounded-full border-2 transition-all duration-300",
                           isActive
-                            ? "h-9 w-9 border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                            ? "h-9 w-9 border-primary bg-primary text-primary-foreground shadow-md shadow-primary/25"
                             : isCompleted
-                              ? "h-8 w-8 border-chart-emerald bg-chart-emerald text-white"
+                              ? "h-8 w-8 border-primary/30 bg-primary/10 text-primary"
                               : "h-8 w-8 border-border bg-card text-muted-foreground",
                           canJump && !isActive && "group-hover:border-foreground/30 group-hover:scale-105"
                         )}
                       >
                         {isCompleted && !isActive ? (
-                          <CheckCircle2 size={14} strokeWidth={2.5} />
+                          <CheckCircle2 size={13} strokeWidth={2.5} />
                         ) : (
                           <span className={cn("font-serif font-medium leading-none", isActive ? "text-[13px]" : "text-[11px]")}>
                             {phase.label}
@@ -558,7 +580,7 @@ const AppointmentV2Page = () => {
                       <span
                         className={cn(
                           "text-[10px] leading-tight transition-colors",
-                          isActive ? "font-semibold text-foreground" : isCompleted ? "font-medium text-chart-emerald" : "font-medium text-muted-foreground"
+                          isActive ? "font-semibold text-foreground" : isCompleted ? "font-medium text-foreground/70" : "font-medium text-muted-foreground"
                         )}
                       >
                         {phase.fullLabel}
@@ -575,74 +597,78 @@ const AppointmentV2Page = () => {
               )}
             </div>
 
-            {/* Right: Primary Next button */}
-            {activePhase < PEACE_PHASES.length - 1 ? (
-              <Button
-                onClick={goNext}
-                title="Next phase (→)"
-                className="h-10 shrink-0 rounded-xl bg-primary px-5 text-[12px] font-medium shadow-sm hover:bg-primary/90"
+            {/* Right: session reminders + primary next action */}
+            <div className="flex shrink-0 items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => setPhrenicChecked((v) => !v)}
+                title="Phrenic nerve — check every session"
+                className={cn(
+                  "inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[10.5px] font-medium transition-colors",
+                  phrenicChecked
+                    ? "border-primary/30 bg-primary/10 text-primary"
+                    : "border-border bg-muted/40 text-muted-foreground hover:text-foreground"
+                )}
               >
-                Next <ChevronRight size={14} className="ml-1.5" />
-              </Button>
-            ) : (
-              <Button
-                onClick={handleFinalise}
-                className="h-10 shrink-0 rounded-xl bg-chart-emerald px-5 text-[12px] font-medium text-white shadow-sm hover:bg-chart-emerald/90"
+                <span className={cn("flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[9px] font-bold",
+                  phrenicChecked ? "border-primary bg-primary text-primary-foreground" : "border-border"
+                )}>
+                  {phrenicChecked ? "✓" : ""}
+                </span>
+                Phrenic
+              </button>
+              <button
+                type="button"
+                onClick={() => setLymphChecked((v) => !v)}
+                title="Lymph — check every session"
+                className={cn(
+                  "inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[10.5px] font-medium transition-colors",
+                  lymphChecked
+                    ? "border-primary/30 bg-primary/10 text-primary"
+                    : "border-border bg-muted/40 text-muted-foreground hover:text-foreground"
+                )}
               >
-                <CheckCircle2 size={14} className="mr-1.5" /> Finalise
-              </Button>
-            )}
+                <span className={cn("flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[9px] font-bold",
+                  lymphChecked ? "border-primary bg-primary text-primary-foreground" : "border-border"
+                )}>
+                  {lymphChecked ? "✓" : ""}
+                </span>
+                Lymph
+              </button>
+              <span
+                className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground/70"
+                title="High-priority corrections — the 'Less is More' target is 3–6"
+              >
+                <span className="font-semibold uppercase tracking-[0.12em]">Corr</span>
+                <span className={cn(
+                  "font-bold tabular-nums",
+                  correctionCount === 0 ? "text-muted-foreground/50" :
+                  correctionCount <= 6 ? "text-foreground" : "text-chart-destructive"
+                )}>
+                  {correctionCount}
+                </span>
+                <span className="text-muted-foreground/50">/ 3–6</span>
+              </span>
+              {activePhase < PEACE_PHASES.length - 1 ? (
+                <Button
+                  onClick={goNext}
+                  title="Next phase (→)"
+                  className="h-10 shrink-0 rounded-xl bg-primary px-5 text-[12px] font-medium shadow-sm hover:bg-primary/90"
+                >
+                  Next <ChevronRight size={14} className="ml-1.5" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleFinalise}
+                  className="h-10 shrink-0 rounded-xl bg-primary px-5 text-[12px] font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+                >
+                  <CheckCircle2 size={14} className="mr-1.5" /> Finalise
+                </Button>
+              )}
+            </div>
           </div>
         )}
 
-        {/* ── Status strip (lighter) ── */}
-        {sessionVitals.length > 0 && (
-          <div className="flex h-[28px] shrink-0 items-center gap-3 border-t border-border/30 px-4 sm:px-6 md:px-8">
-            <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground/50">Vitals</span>
-            <div className="flex items-center gap-2">
-              {sessionVitals.map((chip, i) => (
-                <span key={i} className="flex items-center gap-1.5 text-[10px] tabular-nums">
-                  <span className={cn("h-1.5 w-1.5 rounded-full", chip.accent.replace("text-", "bg-"))} />
-                  <span className="font-medium text-muted-foreground/70">{chip.label}</span>
-                  <span className="font-medium text-foreground">{chip.value}</span>
-                </span>
-              ))}
-            </div>
-            {/* Quick timer pills — 3 / 6 / 9 min. The active pill becomes a live countdown. */}
-            <div className="flex items-center gap-1 shrink-0">
-              <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground/40">Timer</span>
-              {timerDone && (
-                <button
-                  onClick={() => setTimerDone(false)}
-                  className="h-[18px] px-1.5 rounded-md border border-emerald-500 bg-emerald-500 text-[9px] font-bold text-white animate-pulse"
-                  title="Timer finished — tap to dismiss"
-                >
-                  Done
-                </button>
-              )}
-              {[3,6,9].map(min => {
-                const active = timerDuration === min;
-                return (
-                  <button
-                    key={min}
-                    onClick={() => (active ? stopTimer() : startTimer(min))}
-                    title={active ? `${formatTimer(timerRemaining)} left — tap to stop` : `Start ${min} minute timer (key ${[3,6,9].indexOf(min) + 1})`}
-                    className={cn(
-                      "h-[18px] rounded-md transition-colors border tabular-nums",
-                      active
-                        ? "min-w-[44px] px-1.5 bg-amber-500 text-white border-amber-500 shadow-sm text-[10px] font-bold"
-                        : "px-1.5 bg-muted hover:bg-amber-50 text-muted-foreground hover:text-foreground border-border text-[9px] font-medium"
-                    )}
-                  >
-                    {active ? formatTimer(timerRemaining) : `${min}m`}
-                  </button>
-                );
-              })}
-            </div>
-            {/* Spacer for alignment */}
-            <div className="ml-auto" />
-          </div>
-        )}
       </header>
 
       {/* Content + dock — the manual sits beside the finding, never on top of it. */}
@@ -691,9 +717,38 @@ const AppointmentV2Page = () => {
 
         </div>
         <CorrectionDock />
+        {clientRailOpen && (
+          <SessionClientRail
+          clientId={appointment.clients?.id || ""}
+          clientName={appointment.clients?.name || "Client"}
+          sessionDate={appointment.date}
+          isDemo={isDemo}
+          paymentReceived={appointment.payment_received}
+          isPaidService={appointment.is_paid}
+          priceAmount={appointment.price_amount ?? appointment.clients?.standard_rate ?? null}
+          paymentMethod={appointment.payment_method}
+          appointmentStatus={appointment.status}
+          vitals={sessionVitals}
+          onCollapse={() => setClientRailOpen(false)}
+        />
+        )}
       </div>
 
       <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} />
+
+      <ClientSideSheet
+        open={clientSheetOpen}
+        onOpenChange={setClientSheetOpen}
+        clientId={appointment.clients?.id || ""}
+        clientName={appointment.clients?.name || "Client"}
+        sessionDate={appointment.date}
+        isDemo={isDemo}
+        paymentReceived={appointment.payment_received}
+        isPaidService={appointment.is_paid}
+        priceAmount={appointment.price_amount ?? appointment.clients?.standard_rate ?? null}
+        paymentMethod={appointment.payment_method}
+        appointmentStatus={appointment.status}
+      />
 
       {intakeOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm p-3 sm:p-6 animate-in fade-in duration-200">

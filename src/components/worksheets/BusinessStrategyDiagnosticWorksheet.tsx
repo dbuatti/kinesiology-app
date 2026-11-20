@@ -138,7 +138,7 @@ const Card = ({ title, children, tone }: { title?: string; children: React.React
   const tones: Record<string, string> = {
     default: 'bg-primary/5 border-primary/20',
     red: 'bg-red-500/5 border-red-500/20',
-    green: 'bg-emerald-500/5 border-emerald-500/20',
+    green: 'bg-primary/5 border-primary/50',
     amber: 'bg-amber-500/5 border-amber-500/20',
     primary: 'bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20',
   };

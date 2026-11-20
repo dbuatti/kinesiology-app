@@ -138,15 +138,15 @@ const IdentityShiftingReport = ({ session, onBack }: IdentityShiftingReportProps
           {/* Final Integration */}
           <section className="space-y-4">
             <h3 className="text-xl font-semibold text-foreground px-2 flex items-center gap-3">
-              <Sparkles size={20} className="text-emerald-600" /> Integration & Shift
+              <Sparkles size={20} className="text-primary-strong" /> Integration & Shift
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="border-none shadow-md rounded-2xl bg-emerald-50 border-2 border-emerald-100">
+              <Card className="border-none shadow-md rounded-2xl bg-primary/10 border-2 border-primary/25">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider">New Awareness</CardTitle>
+                  <CardTitle className="text-[10px] font-semibold text-primary-strong uppercase tracking-wider">New Awareness</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm font-bold text-emerald-900 leading-relaxed">
+                  <p className="text-sm font-bold text-primary-strong leading-relaxed">
                     {session.integration_awareness || 'No awareness recorded.'}
                   </p>
                 </CardContent>

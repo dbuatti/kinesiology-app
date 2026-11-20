@@ -307,27 +307,27 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
         </div>
         
         <div className="space-y-6">
-          <Card className="border-none shadow-lg rounded-3xl bg-foreground text-primary-foreground overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-8 opacity-10">
+          <Card className="relative border-none rounded-3xl bg-primary text-primary-foreground overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-[0.08]">
               <Zap size={120} />
             </div>
             <CardHeader>
-              <CardTitle className="text-xl font-semibold flex items-center gap-2">
-                <Zap size={20} className="text-amber-500 fill-amber-500/40" /> Case Strategy
+              <CardTitle className="text-lg font-medium flex items-center gap-2">
+                <Zap size={20} className="text-amber-300 fill-amber-300/40" /> Case strategy
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 relative z-10">
-              <div className="p-4 bg-card/10 rounded-2xl border border-primary-foreground/10 shadow-inner">
-                <p className="text-xs font-medium text-muted-foreground mb-2">Primary Focus</p>
-                <p className="text-sm font-bold leading-relaxed">
-                  {latestBolt !== null && latestBolt < 25 
-                    ? "Prioritize CO2 tolerance and respiratory mechanics. Shift from SNS to Receptive state."
-                    : "Refine autonomic synchronization and multi-planar mobility patterns."}
+              <div className="rounded-2xl bg-white/10 border border-white/15 p-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-foreground/70 mb-2">Primary focus</p>
+                <p className="text-sm font-medium leading-relaxed">
+                  {latestBolt !== null && latestBolt < 25
+                    ? "Prioritise CO2 tolerance and respiratory mechanics. Shift from SNS to receptive state."
+                    : "Refine autonomic synchronisation and multi-planar mobility patterns."}
                 </p>
               </div>
-              <div className="p-4 bg-card/10 rounded-2xl border border-primary-foreground/10 shadow-inner">
-                <p className="text-xs font-medium text-muted-foreground mb-2">Shared Responsibility</p>
-                <p className="text-xs text-foreground/80 leading-relaxed italic">
+              <div className="rounded-2xl bg-white/10 border border-white/15 p-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-foreground/70 mb-2">Shared responsibility</p>
+                <p className="text-[13px] leading-relaxed italic text-primary-foreground/90">
                   "There needs to be a balance of shared responsibility, but ultimately the client must drive their own healing process."
                 </p>
               </div>
@@ -337,7 +337,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
           <Card className="border border-border shadow-sm rounded-3xl bg-card">
             <CardHeader>
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Brain size={18} className="text-chart-emerald" /> Neuro Integration
+                <Brain size={18} className="text-primary" /> Neuro Integration
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">

@@ -195,7 +195,7 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
         searchResults.push({ type: "page", id: "peace-framework", title: "The PEACE Framework", subtitle: "Clinical Methodology Guide", path: "/library?tab=peace", icon: ShieldCheck, color: "text-chart-primary" });
       }
       if ("marketing engine".includes(query.toLowerCase())) {
-        searchResults.push({ type: "page", id: "marketing-engine", title: "AI Marketing Engine", subtitle: "Voice to Notion Workflow", path: "/business/marketing-engine", icon: Mic, color: "text-emerald-500" });
+        searchResults.push({ type: "page", id: "marketing-engine", title: "AI Marketing Engine", subtitle: "Voice to Notion Workflow", path: "/business/marketing-engine", icon: Mic, color: "text-primary-strong" });
       }
       if ("voice clients".includes(query.toLowerCase())) {
         searchResults.push({ type: "page", id: "voice-clients", title: "Voice Clients", subtitle: "Student directory", path: "/voice/clients", icon: Users, color: "text-rose-500" });
@@ -227,7 +227,7 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
 
       if (proceduresData.data) {
         proceduresData.data.forEach((proc) => {
-          searchResults.push({ type: "procedure", id: proc.id, title: proc.name, subtitle: "Protocol / Procedure", path: `/practice/procedures`, icon: Target, color: "text-emerald-500" });
+          searchResults.push({ type: "procedure", id: proc.id, title: proc.name, subtitle: "Protocol / Procedure", path: `/practice/procedures`, icon: Target, color: "text-primary-strong" });
         });
       }
 

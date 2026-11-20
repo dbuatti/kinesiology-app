@@ -162,7 +162,7 @@ const SiteAuditPage = () => {
             <div className="text-xs text-muted-foreground font-medium">Documented Pages</div>
           </div>
           <div className="bg-card rounded-xl border border-border p-4 text-center">
-            <div className="text-lg font-semibold text-emerald-600">{covered}</div>
+            <div className="text-lg font-semibold text-primary-strong">{covered}</div>
             <div className="text-xs text-muted-foreground font-medium">Verified Routes</div>
           </div>
           <div className="bg-card rounded-xl border border-border p-4 text-center">
@@ -196,11 +196,11 @@ const SiteAuditPage = () => {
                 <div key={t.name} className={cn(
                   "flex items-center gap-2 p-3 rounded-xl border text-xs",
                   t.status === "loading" ? "border-border bg-muted/30" :
-                  t.status === "ok" ? "border-emerald-200 dark:border-emerald-900 bg-emerald-50/50 dark:bg-emerald-950/20" :
+                  t.status === "ok" ? "border-primary/30 dark:border-primary/40 bg-primary/10 dark:bg-primary/10" :
                   "border-rose-200 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/20"
                 )}>
                   {t.status === "loading" ? <Loader2 size={12} className="animate-spin text-muted-foreground" /> :
-                   t.status === "ok" ? <CheckCircle2 size={12} className="text-emerald-500 shrink-0" /> :
+                   t.status === "ok" ? <CheckCircle2 size={12} className="text-primary-strong shrink-0" /> :
                    <XCircle size={12} className="text-rose-500 shrink-0" />}
                   <div className="min-w-0">
                     <div className="font-semibold text-foreground truncate">{t.name}</div>
@@ -242,7 +242,7 @@ const SiteAuditPage = () => {
                         "border-none font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full",
                         page.category === 'Clinical' ? "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300" :
                         page.category === 'Practice' ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300" :
-                        page.category === 'Business' ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" :
+                        page.category === 'Business' ? "bg-primary/15 text-primary-strong dark:bg-primary/20 dark:text-primary" :
                         "bg-muted text-muted-foreground dark:bg-card dark:text-foreground"
                       )}>
                         {page.category}
@@ -251,7 +251,7 @@ const SiteAuditPage = () => {
                         {page.path}
                       </code>
                       {page.routeExists
-                        ? <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-none text-[10px] font-semibold"><CheckCircle2 size={10} className="mr-1" />Route verified</Badge>
+                        ? <Badge className="bg-primary/15 text-primary-strong dark:bg-primary/20 dark:text-primary border-none text-[10px] font-semibold"><CheckCircle2 size={10} className="mr-1" />Route verified</Badge>
                         : <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border-none text-[10px] font-semibold"><AlertTriangle size={10} className="mr-1" />Route missing</Badge>}
                     </div>
 
@@ -265,7 +265,7 @@ const SiteAuditPage = () => {
                       <div className="flex flex-wrap gap-2">
                         {page.keyFeatures.map(feature => (
                           <span key={feature} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-muted/50 border border-border text-xs font-semibold text-muted-foreground">
-                            <CheckCircle2 size={10} className="text-emerald-500 shrink-0" />
+                            <CheckCircle2 size={10} className="text-primary-strong shrink-0" />
                             {feature}
                           </span>
                         ))}

@@ -50,13 +50,13 @@ export default function LimitingBeliefsSelfWork({ onComplete }: LimitingBeliefsS
   const colors = {
     bg: "bg-[linear-gradient(180deg,#0A1411_0%,#0E1B16_50%,#0A1411_100%)]",
     card: "bg-white/[0.05] backdrop-blur-sm",
-    accent: "bg-emerald-200/12 border-emerald-200/25 text-emerald-100",
-    accentSolid: "bg-emerald-200 text-[#07120D]",
-    accentHover: "hover:bg-emerald-200",
+    accent: "bg-primary/20 border-primary/30 text-primary-strong",
+    accentSolid: "bg-primary/20 text-[#07120D]",
+    accentHover: "hover:bg-primary/20",
     muted: "bg-white/[0.07] border-white/[0.10] text-white/65",
     mutedHover: "hover:bg-white/[0.10]",
-    mint: "text-emerald-100",
-    mintBright: "text-emerald-200",
+    mint: "text-primary-strong",
+    mintBright: "text-primary",
   };
 
   const handleStart = () => {
@@ -114,7 +114,7 @@ export default function LimitingBeliefsSelfWork({ onComplete }: LimitingBeliefsS
             value={belief}
             onChange={(e) => setBelief(e.target.value)}
             placeholder="I am not lovable... I am not enough... I am not safe..."
-            className="w-full h-24 rounded-xl bg-white/[0.05] border border-white/[0.10] text-white p-3 text-base resize-none focus:outline-none focus:border-emerald-200/40"
+            className="w-full h-24 rounded-xl bg-white/[0.05] border border-white/[0.10] text-white p-3 text-base resize-none focus:outline-none focus:border-primary/30"
           />
           <p className="text-[11px] mt-2" style={{color: "rgba(255,255,255,0.4)"}}>State the belief you want to dissolve.</p>
         </div>
@@ -144,7 +144,7 @@ export default function LimitingBeliefsSelfWork({ onComplete }: LimitingBeliefsS
             value={responses[cycleStep]}
             onChange={(e) => handleResponse(e.target.value)}
             placeholder="What do you notice..."
-            className="w-full h-24 rounded-xl bg-white/[0.05] border border-white/[0.10] text-white p-3 text-base resize-none focus:outline-none focus:border-emerald-200/40"
+            className="w-full h-24 rounded-xl bg-white/[0.05] border border-white/[0.10] text-white p-3 text-base resize-none focus:outline-none focus:border-primary/30"
           />
         </div>
         <button
@@ -173,7 +173,7 @@ export default function LimitingBeliefsSelfWork({ onComplete }: LimitingBeliefsS
             <button onClick={() => handleCheckpoint('Yes')} className="rounded-xl py-4 px-4 text-sm font-medium uppercase tracking-wider transition-all min-h-[52px] bg-rose-500/20 border border-rose-400/30 text-rose-300 hover:bg-rose-500/30 active:bg-rose-500/40 active:scale-[0.98] touch-manipulation select-none [-webkit-tap-highlight-color:transparent]">
               <ThumbsDown size={16} className="mx-auto mb-1" /> Still True
             </button>
-            <button onClick={() => handleCheckpoint('No')} className="rounded-xl py-4 px-4 text-sm font-medium uppercase tracking-wider transition-all min-h-[52px] bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 hover:bg-emerald-500/30 active:bg-emerald-500/40 active:scale-[0.98] touch-manipulation select-none [-webkit-tap-highlight-color:transparent]">
+            <button onClick={() => handleCheckpoint('No')} className="rounded-xl py-4 px-4 text-sm font-medium uppercase tracking-wider transition-all min-h-[52px] bg-primary/20 border border-primary/40 text-primary hover:bg-primary/100 active:bg-primary/40 active:scale-[0.98] touch-manipulation select-none [-webkit-tap-highlight-color:transparent]">
               <ThumbsUp size={16} className="mx-auto mb-1" /> Dissolved
             </button>
           </div>
@@ -188,7 +188,7 @@ export default function LimitingBeliefsSelfWork({ onComplete }: LimitingBeliefsS
       <div className="space-y-4">
         <div className="rounded-2xl p-5 bg-white/[0.06] border border-white/[0.08] backdrop-blur-sm text-center">
           <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{background: "linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.05))", boxShadow: "0 0 40px rgba(16,185,129,0.15)"}}>
-            <Check size={32} className="text-emerald-400" />
+            <Check size={32} className="text-primary" />
           </div>
           <h2 className="text-xl font-sans font-bold mb-2">Belief Dissolved ✅</h2>
           <p className="text-[13px] mb-4" style={{color: "rgba(255,255,255,0.6)"}}>The limiting belief has been processed through {rounds} round(s).</p>
@@ -198,7 +198,7 @@ export default function LimitingBeliefsSelfWork({ onComplete }: LimitingBeliefsS
               <p className="text-sm">{belief}</p>
             </div>
           </div>
-          <button onClick={handleComplete} className="w-full rounded-xl py-3.5 text-sm font-semibold uppercase tracking-wider transition-all min-h-[48px] bg-emerald-200 text-[#07120D] hover:bg-emerald-100 active:bg-emerald-100 active:scale-[0.99] touch-manipulation select-none [-webkit-tap-highlight-color:transparent]">Save to Session Log</button>
+          <button onClick={handleComplete} className="w-full rounded-xl py-3.5 text-sm font-semibold uppercase tracking-wider transition-all min-h-[48px] bg-primary/20 text-[#07120D] hover:bg-primary/15 active:bg-primary/15 active:scale-[0.99] touch-manipulation select-none [-webkit-tap-highlight-color:transparent]">Save to Session Log</button>
           <button onClick={() => { setPhase('input'); setBelief(''); setRounds(1); }} className="mt-3 w-full rounded-xl py-3 px-4 text-sm font-medium uppercase tracking-wider transition-all min-h-[48px] bg-white/10 border border-white/20 hover:bg-white/15 active:bg-white/20 active:scale-[0.99] touch-manipulation select-none [-webkit-tap-highlight-color:transparent]">New Belief</button>
         </div>
       </div>

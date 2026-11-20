@@ -28,7 +28,7 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
       )}
 
       <Card className="border border-border shadow-sm rounded-3xl overflow-hidden bg-card">
-        <div className="bg-gradient-to-r from-teal-600 to-emerald-600 p-6 text-primary-foreground">
+        <div className="bg-gradient-to-r from-primary to-primary/70 p-6 text-primary-foreground">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-card/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
@@ -36,13 +36,13 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
               </div>
               <div>
                 <CardTitle className="text-2xl font-semibold">Breathing Recovery Exercise</CardTitle>
-                <p className="text-teal-50 text-sm font-medium">Protocol for increasing CO2 tolerance and BOLT scores</p>
+                <p className="text-primary-foreground/80 text-sm font-medium">Protocol for increasing CO2 tolerance and BOLT scores</p>
               </div>
             </div>
             {!showInteractive && (
               <Button 
                 onClick={() => setShowInteractive(true)}
-                className="bg-card text-teal-700 hover:bg-teal-50 rounded-xl font-bold shadow-lg"
+                className="bg-card text-primary-strong hover:bg-primary/10 rounded-xl font-bold shadow-lg"
               >
                 <PlayCircle size={18} className="mr-2" /> Start Interactive Session
               </Button>
@@ -69,14 +69,14 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
                     title: "The Hold", 
                     text: "Take a normal breath in and out through the nose. Plug the nose/nostrils for 5 seconds.",
                     icon: Timer,
-                    color: "bg-teal-50 text-teal-700 border-teal-100"
+                    color: "bg-primary/10 text-primary-strong border-primary/30"
                   },
                   { 
                     step: 2, 
                     title: "The Recovery", 
                     text: "Release the hold and resume normal, calm, nasal breathing for 10-15 seconds.",
                     icon: Wind,
-                    color: "bg-emerald-50 text-emerald-700 border-emerald-100"
+                    color: "bg-primary/10 text-primary-strong border-primary/25"
                   },
                   { 
                     step: 3, 
@@ -109,7 +109,7 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
                   <Clock size={16} /> Recommended Schedule
                 </h4>
                 <p className="text-xl font-bold leading-snug relative z-10">
-                  Do this <span className="text-teal-400">2-3 times a day</span>, everyday in sets of <span className="text-teal-400">10-20 minutes</span> to increase your BOLT score.
+                  Do this <span className="text-primary">2-3 times a day</span>, everyday in sets of <span className="text-primary">10-20 minutes</span> to increase your BOLT score.
                 </p>
               </div>
 
@@ -119,10 +119,10 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
                   <p className="text-2xl font-semibold text-indigo-900">25 Seconds</p>
                   <p className="text-xs text-indigo-700 mt-1 font-medium">Essential for optimizing health</p>
                 </div>
-                <div className="p-5 bg-emerald-50 rounded-2xl border border-emerald-100">
-                  <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-2">Optimal Goal</p>
-                  <p className="text-2xl font-semibold text-emerald-900">40+ Seconds</p>
-                  <p className="text-xs text-emerald-700 mt-1 font-medium">Peak respiratory function</p>
+                <div className="p-5 bg-primary/10 rounded-2xl border border-primary/25">
+                  <p className="text-[10px] font-semibold text-primary-strong uppercase tracking-wider mb-2">Optimal Goal</p>
+                  <p className="text-2xl font-semibold text-primary-strong">40+ Seconds</p>
+                  <p className="text-xs text-primary-strong mt-1 font-medium">Peak respiratory function</p>
                 </div>
               </div>
             </>

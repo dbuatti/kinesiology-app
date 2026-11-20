@@ -1990,7 +1990,7 @@ const TimetablePage = () => {
                       <Button
                         size="sm"
                         disabled={workflowBusy}
-                        className="gap-1.5 bg-chart-emerald hover:bg-emerald-700 text-white"
+                        className="gap-1.5 bg-chart-emerald hover:bg-primary text-white"
                         onClick={async () => {
                           setWorkflowBusy(true);
                           try { await confirmProposal(p); showSuccess("Locked in to Cal.com."); setWorkflowFor({ ...p, status: "confirmed" }); fetchData(); }
@@ -2332,7 +2332,7 @@ function PlannerBar({
 function StatusBadge({ status }: { status: BookingProposal["status"] }) {
   if (status === "confirmed")
     return (
-      <Badge className="bg-emerald-600/10 text-emerald-600 border-none" variant="outline">
+      <Badge className="bg-primary/10 text-primary-strong border-none" variant="outline">
         Confirmed
       </Badge>
     );
@@ -2621,7 +2621,7 @@ function DayCell({
                   onClick={(e) => { e.stopPropagation(); onOpenProposal(p); }}
                   className={cn(
                     "w-full text-left text-[10px] font-semibold rounded-md px-1.5 py-0.5 truncate border",
-                    p.status === "confirmed" && "bg-emerald-600 text-primary-foreground border-emerald-700",
+                    p.status === "confirmed" && "bg-primary text-primary-foreground border-primary/40",
                     p.status === "suggested" && "bg-sky-600 text-primary-foreground border-sky-700",
                     p.status === "proposed" && "bg-amber-500 text-primary-foreground border-amber-600",
                   )}
@@ -2792,7 +2792,7 @@ function LegendRow() {
         <div className="w-2.5 h-2.5 rounded-sm bg-amber-500" /> Proposed
       </span>
       <span className="flex items-center gap-1.5">
-        <div className="w-2.5 h-2.5 rounded-sm bg-emerald-600" /> Confirmed
+        <div className="w-2.5 h-2.5 rounded-sm bg-primary" /> Confirmed
       </span>
     </div>
   );
@@ -2824,7 +2824,7 @@ function SuggestionsPanel({
     if (source === "pattern")
       return <Badge className="bg-chart-primary/10 text-chart-primary border-none text-[10px]" variant="outline">FNH pattern</Badge>;
     if (source === "voice-pattern")
-      return <Badge className="bg-emerald-500/10 text-emerald-600 border-none text-[10px]" variant="outline">Voice pattern</Badge>;
+      return <Badge className="bg-primary/10 text-primary-strong border-none text-[10px]" variant="outline">Voice pattern</Badge>;
     if (source === "overdue")
       return <Badge className="bg-rose-500/10 text-rose-600 border-none text-[10px]" variant="outline">FNH overdue</Badge>;
     if (source === "voice-overdue")

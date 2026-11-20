@@ -114,7 +114,7 @@ export default function SessionReportModal({ open, onClose, appointment, updateM
   const getStatusColor = (s: string) => {
     if (s === 'Inhibited' || s === 'Inhibition') return 'bg-rose-100 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400';
     if (s === 'Hypertonic') return 'bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400';
-    if (s === 'Clear' || s === 'Normotonic') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400';
+    if (s === 'Clear' || s === 'Normotonic') return 'bg-primary/15 text-primary-strong dark:bg-primary/15 dark:text-primary';
     return 'bg-muted text-muted-foreground';
   };
 
@@ -326,7 +326,7 @@ export default function SessionReportModal({ open, onClose, appointment, updateM
                               onClick={(e) => { e.stopPropagation(); markPathwayCleared(item.key); }}
                               className={cn(
                                 "px-2 py-0.5 rounded text-xs font-medium transition-colors",
-                                item.cleared ? "bg-emerald-500 text-white border border-emerald-500" : "bg-muted hover:bg-emerald-50 border border-border text-muted-foreground hover:text-emerald-700"
+                                item.cleared ? "bg-primary text-primary-foreground border border-primary/50" : "bg-muted hover:bg-primary/10 border border-border text-muted-foreground hover:text-primary-strong"
                               )}
                               title={item.cleared ? "Unmark as cleared" : "Mark as cleared"}
                             >
@@ -360,13 +360,13 @@ export default function SessionReportModal({ open, onClose, appointment, updateM
                       <div className="flex items-center justify-between p-3 bg-muted/30 cursor-pointer" {...clickableProps(() => handleOpenPathwayInManual(pathway.id))}>
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium">{pathway.name}</span>
-                          {pathway.cleared && <CheckCircle2 className="w-3 h-3 text-emerald-500" />}
+                          {pathway.cleared && <CheckCircle2 className="w-3 h-3 text-primary-strong" />}
                           <span title="Open in manual">
                             <BookOpen className="w-3.5 h-3.5 text-muted-foreground/40" />
                           </span>
                         </div>
                         {pathway.entries.length} correction{pathway.entries.length !== 1 ? 's' : ''}
-                        {pathway.cleared ? <span className="text-xs text-emerald-600">Cleared</span> : (
+                        {pathway.cleared ? <span className="text-xs text-primary-strong">Cleared</span> : (
                           <Button size="sm" variant="outline" className="text-xs h-6" onClick={(e) => { e.stopPropagation(); markPathwayCleared(pathway.id); }}>Mark Cleared</Button>
                         )}
                         {pathway.entries.length > 0 && <ChevronDown className="w-3 h-3" />}

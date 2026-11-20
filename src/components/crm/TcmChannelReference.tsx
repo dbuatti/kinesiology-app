@@ -142,11 +142,11 @@ const TcmChannelReference = () => {
 
                 <div className="space-y-4">
                   <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-                    <Target size={14} className="text-emerald-500" /> Primary Acupoints
+                    <Target size={14} className="text-primary-strong" /> Primary Acupoints
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {associatedPoints.map(point => (
-                      <Badge key={point.code} className="bg-emerald-50 text-emerald-700 border-emerald-100 text-[10px] font-semibold px-3 py-1 rounded-lg">
+                      <Badge key={point.code} className="bg-primary/10 text-primary-strong border-primary/25 text-[10px] font-semibold px-3 py-1 rounded-lg">
                         {point.code}
                       </Badge>
                     ))}

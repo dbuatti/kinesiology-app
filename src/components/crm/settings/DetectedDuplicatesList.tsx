@@ -42,7 +42,7 @@ const DetectedDuplicatesList = ({
  <UserCheck size={20} />
  </div>
  <div className="space-y-0.5">
- <p className="text-sm font-semibold text-emerald-900">No Duplicates Detected</p>
+ <p className="text-sm font-semibold text-primary-strong">No Duplicates Detected</p>
  <p className="text-xs text-chart-emerald font-medium">Your client database is clean and fully consolidated.</p>
  </div>
  </div>

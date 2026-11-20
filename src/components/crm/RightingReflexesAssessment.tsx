@@ -1,8 +1,7 @@
 
 	import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Eye, EyeOff, Loader2, RotateCcw, Zap, Activity, RefreshCw, CheckCircle2, ArrowRightLeft } from "lucide-react";
+import { Eye, EyeOff, Loader2, RotateCcw, Zap, RefreshCw, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
@@ -175,140 +174,146 @@ const RightingReflexesAssessment = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-muted/50 rounded-2xl border border-border/50">
-        <div className="space-y-1">
-          <p className="text-xs font-medium text-muted-foreground">Assessment Result</p>
-          <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              onClick={() => handleSetStatus('Clear')}
+    <div className="space-y-5">
+      {/* Result — segmented control */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="inline-flex items-center rounded-xl bg-muted/60 p-1">
+          {([
+            { key: 'Clear' as const, label: 'Clear', icon: CheckCircle2, active: "bg-card text-primary-strong dark:text-primary shadow-xs" },
+            { key: 'Inhibited' as const, label: 'Inhibited', icon: Zap, active: "bg-card text-rose-700 dark:text-rose-300 shadow-xs" },
+            { key: 'Recheck' as const, label: 'Recheck', icon: RefreshCw, active: "bg-card text-amber-700 dark:text-amber-300 shadow-xs" },
+          ]).map(opt => (
+            <button
+              key={opt.key}
+              onClick={() => handleSetStatus(opt.key)}
+              disabled={loading}
               className={cn(
-                "h-10 px-4 rounded-md font-medium text-[13px] transition-all",
-                currentStatus === 'Clear' ? "bg-success text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-success/5"
+                "flex h-8 items-center gap-1.5 rounded-lg px-3 text-[12px] font-semibold transition-all disabled:opacity-60",
+                currentStatus === opt.key ? opt.active : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <CheckCircle2 size={14} className="mr-2" /> Clear
-            </Button>
-            <Button 
-              size="sm" 
-              onClick={() => handleSetStatus('Inhibited')}
-              className={cn(
-                "h-10 px-4 rounded-md font-medium text-[13px] transition-all",
-                currentStatus === 'Inhibited' ? "bg-destructive text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-destructive/5"
-              )}
-            >
-              <Zap size={14} className="mr-2" /> Inhibited
-            </Button>
-            <Button 
-              size="sm" 
-              onClick={() => handleSetStatus('Recheck')}
-              className={cn(
-                "h-10 px-4 rounded-md font-medium text-[13px] transition-all",
-                currentStatus === 'Recheck' ? "bg-warning text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-warning/5"
-              )}
-            >
-              <RefreshCw size={14} className="mr-2" /> Recheck
-            </Button>
-          </div>
+              <opt.icon size={13} /> {opt.label}
+            </button>
+          ))}
         </div>
         {currentStatus && (
-          <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
-            Auto-synced to Align phase
-          </Badge>
+          <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+            Synced to Align phase
+          </span>
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="space-y-6">
-          <div className="flex gap-2 p-1 bg-muted rounded-2xl">
-            <Button 
-              variant={activeTest === 'ocular' ? 'default' : 'ghost'}
-              onClick={() => setActiveTest('ocular')}
-              className={cn("flex-1 rounded-xl h-10 font-semibold text-xs", activeTest === 'ocular' ? "bg-card text-primary shadow-sm" : "text-primary-foreground")}
+      {/* Test toggle + expected response */}
+      <div className="space-y-3">
+        <div className="inline-flex items-center rounded-xl bg-muted/60 p-1">
+          {([
+            { key: 'ocular' as const, label: 'Ocular', icon: Eye },
+            { key: 'labyrinthine' as const, label: 'Labyrinthine', icon: EyeOff },
+          ]).map(opt => (
+            <button
+              key={opt.key}
+              onClick={() => setActiveTest(opt.key)}
+              className={cn(
+                "flex h-8 items-center gap-1.5 rounded-lg px-3.5 text-[12px] font-semibold transition-all",
+                activeTest === opt.key ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground",
+              )}
             >
-              <Eye size={16} className="mr-2" /> Ocular
-            </Button>
-            <Button 
-              variant={activeTest === 'labyrinthine' ? 'default' : 'ghost'}
-              onClick={() => setActiveTest('labyrinthine')}
-              className={cn("flex-1 rounded-xl h-10 font-semibold text-xs", activeTest === 'labyrinthine' ? "bg-card text-primary shadow-sm" : "text-primary-foreground")}
-            >
-              <EyeOff size={16} className="mr-2" /> Labyrinthine
-            </Button>
-          </div>
+              <opt.icon size={13} /> {opt.label}
+            </button>
+          ))}
+        </div>
+        <div className="rounded-xl bg-muted/40 px-4 py-3">
+          <p className="text-[12px] leading-relaxed text-muted-foreground">
+            {activeTest === 'ocular'
+              ? "Client looks at a distant target. Tilt their body to the side."
+              : "Client closes eyes and imagines the target. Tilt their body to the side."}
+          </p>
+          <p className="mt-2 text-[12px] leading-relaxed text-foreground">
+            <span className="font-semibold">Expected — </span>
+            head should reflexively tilt back towards the midline/horizon.
+          </p>
+        </div>
 
-          <div className="p-6 bg-card rounded-2xl border-2 border-border/50 space-y-4">
-            <h4 className="font-semibold text-foreground flex items-center gap-2">
-              {activeTest === 'ocular' ? <Eye className="text-primary" /> : <Activity className="text-success" />}
-              {activeTest === 'ocular' ? 'Ocular Righting Reflex' : 'Labyrinthine Righting Reflex'}
-            </h4>
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground font-medium leading-relaxed">
-                {activeTest === 'ocular' 
-                  ? "Client looks at a distant target. Tilt their body to the side." 
-                  : "Client closes eyes and imagines the target. Tilt their body to the side."}
-              </p>
-              <div className="p-4 bg-muted/50 rounded-xl border border-border/50">
-                <p className="text-xs font-medium text-muted-foreground mb-2">Expected Response</p>
-                <p className="text-sm font-semibold text-foreground">Head should reflexivey tilt back towards the midline/horizon.</p>
-              </div>
-            </div>
+        {/* Clinical metrics */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Ocular righting</Label>
+            <ToggleGroup type="single" value={ocularStatus} onValueChange={handleOcularChange} className="justify-start gap-1">
+              {[
+                { value: "Pass", label: "Pass" },
+                { value: "Fail", label: "Fail" },
+              ].map(opt => (
+                <ToggleGroupItem
+                  key={opt.value}
+                  value={opt.value}
+                  className="h-8 rounded-lg border border-border px-3 text-[11px] font-semibold text-muted-foreground data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  {opt.label}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
           </div>
-
-          {/* Structured Clinical Fields */}
-          <div className="p-6 bg-muted/50 rounded-2xl border border-border/50 space-y-4">
-            <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-              <ArrowRightLeft size={14} className="text-primary" /> Clinical Metrics
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-muted-foreground">Ocular Righting</Label>
-                <ToggleGroup type="single" value={ocularStatus} onValueChange={handleOcularChange} className="justify-start gap-1">
-                  <ToggleGroupItem value="Pass" className="rounded-md border border-border text-xs font-semibold px-2 py-2">Pass</ToggleGroupItem>
-                  <ToggleGroupItem value="Fail" className="rounded-md border border-border text-xs font-semibold px-2 py-2">Fail</ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-muted-foreground">Labyrinthine</Label>
-                <ToggleGroup type="single" value={labyrinthineStatus} onValueChange={handleLabyrinthineChange} className="justify-start gap-1">
-                  <ToggleGroupItem value="Pass" className="rounded-md border border-border text-xs font-semibold px-2 py-2">Pass</ToggleGroupItem>
-                  <ToggleGroupItem value="Fail" className="rounded-md border border-border text-xs font-semibold px-2 py-2">Fail</ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-muted-foreground">Head Tilt Angle</Label>
-                <div className="relative">
-                  <Input type="number" placeholder="e.g. 15" value={headTiltAngle} onChange={(e) => handleTiltChange(e.target.value)} className="h-10 rounded-md pr-8 text-xs font-semibold" />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">°</span>
-                </div>
-              </div>
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Labyrinthine</Label>
+            <ToggleGroup type="single" value={labyrinthineStatus} onValueChange={handleLabyrinthineChange} className="justify-start gap-1">
+              {[
+                { value: "Pass", label: "Pass" },
+                { value: "Fail", label: "Fail" },
+              ].map(opt => (
+                <ToggleGroupItem
+                  key={opt.value}
+                  value={opt.value}
+                  className="h-8 rounded-lg border border-border px-3 text-[11px] font-semibold text-muted-foreground data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  {opt.label}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Head tilt angle</Label>
+            <div className="relative">
+              <Input type="number" placeholder="e.g. 15" value={headTiltAngle} onChange={(e) => handleTiltChange(e.target.value)} className="h-8 rounded-lg pr-7 text-[13px] font-semibold" />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-muted-foreground">°</span>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="space-y-4">
-          <Label htmlFor="rightingNotes" className="text-[15px] font-semibold text-foreground mb-2 block">
-            Assessment Findings:
+      {/* Observations */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="rightingNotes" className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+            Observations
           </Label>
-          <Textarea
-            id="rightingNotes"
-            placeholder="Document observations..."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="min-h-[300px] resize-none"
-          />
-          <div className="flex gap-3">
-            <Button onClick={handleSaveNotes} disabled={loading} className="flex-1 bg-foreground hover:bg-foreground text-primary-foreground h-12 font-semibold rounded-xl shadow-lg">
-              {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Save Notes"}
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={handleSaveNotes}
+              disabled={loading}
+              className="h-7 rounded-lg bg-primary px-3 text-[11px] font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              {loading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null} Save notes
             </Button>
             {(initialNotes || currentStatus) && (
-              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-10 px-4 rounded-md border-destructive/20 text-destructive-strong hover:bg-destructive/5">
-                <RotateCcw size={16} />
+              <Button
+                variant="ghost"
+                onClick={() => setShowResetConfirm(true)}
+                disabled={loading}
+                className="h-7 rounded-lg px-2.5 text-[11px] font-medium text-muted-foreground hover:bg-destructive/5 hover:text-destructive-strong"
+              >
+                <RotateCcw size={11} className="mr-1.5" /> Reset
               </Button>
             )}
           </div>
         </div>
+        <Textarea
+          id="rightingNotes"
+          placeholder="Document observations..."
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          className="min-h-[160px] resize-y rounded-xl text-[13px] leading-relaxed"
+        />
+        <p className="text-[10px] text-muted-foreground/70">Notes save when you tap Save.</p>
       </div>
 
       <ConfirmDialog

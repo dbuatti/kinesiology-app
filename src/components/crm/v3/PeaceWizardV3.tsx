@@ -9,9 +9,9 @@ import EmbedPhaseV3 from "./EmbedPhaseV3";
 
 export interface PeaceWizardProps {
   appointment: AppointmentWithClient;
-  history: any[];
+  history: AppointmentWithClient[];
   onUpdate: () => void;
-  saveField: (field: string, value: any) => Promise<void>;
+  saveField: (field: string, value: unknown) => Promise<void>;
   updatePriorityPattern: (category: string, itemName: string, status: string | null, side?: 'L' | 'R') => Promise<void>;
   onJumpToPhase?: (index: number) => void;
   onFinalise?: () => void;

@@ -56,7 +56,7 @@ const ClinicalReasoningModal = ({ muscleName, status, open, onOpenChange }: Clin
         title: "Neurolymphatic Clearance",
         desc: `Check the specific NL points for ${muscleName}. Stagnation here often causes immediate inhibition.`,
         icon: Activity,
-        color: "text-emerald-600 bg-emerald-50"
+        color: "text-primary-strong bg-primary/10"
       });
     } else if (status === 'Hypertonic') {
       steps.push({

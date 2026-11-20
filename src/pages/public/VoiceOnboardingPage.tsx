@@ -80,8 +80,8 @@ const VoiceOnboardingPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 to-background p-4">
         <div className="max-w-md w-full text-center space-y-6 bg-background rounded-2xl shadow-2xl p-12 border border-rose-100">
-          <div className="w-20 h-20 rounded-3xl bg-emerald-50 flex items-center justify-center mx-auto">
-            <CheckCircle2 size={40} className="text-emerald-500" />
+          <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto">
+            <CheckCircle2 size={40} className="text-primary-strong" />
           </div>
           <h1 className="text-3xl font-semibold text-foreground">You're all set!</h1>
           <p className="text-muted-foreground font-medium">

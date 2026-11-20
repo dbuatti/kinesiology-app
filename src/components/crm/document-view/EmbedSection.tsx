@@ -326,14 +326,14 @@ const EmbedSection = ({
                   className={cn(
                     "flex items-center justify-between gap-3 p-3 border transition-all",
                     item.isCleared
-                      ? "border-emerald-200 bg-emerald-50/20 opacity-70"
+                      ? "border-primary/30 bg-primary/10 opacity-70"
                       : "border-rose-200 bg-rose-50/10"
                   )}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={cn(
                       "w-7 h-7 rounded-md flex items-center justify-center shrink-0",
-                      item.isCleared ? "bg-emerald-50 text-chart-emerald" : "bg-rose-50 text-chart-destructive"
+                      item.isCleared ? "bg-primary/10 text-chart-emerald" : "bg-rose-50 text-chart-destructive"
                     )}>
                       <Icon size={14} />
                     </div>
@@ -372,7 +372,7 @@ const EmbedSection = ({
                       "h-8 px-3 rounded-none border text-[11px] font-semibold transition-all shrink-0",
                       item.isCleared
                         ? "border-border hover:bg-muted text-muted-foreground"
-                        : "border-emerald-500 hover:bg-emerald-600 hover:text-primary-foreground text-emerald-700"
+                        : "border-primary/50 hover:bg-primary hover:text-primary-foreground text-primary-strong"
                     )}
                   >
                     {isClearing
@@ -385,8 +385,8 @@ const EmbedSection = ({
           </div>
         ) : (
           <div className="p-6 border border-dashed border-border text-center bg-muted/50">
-            <CheckCircle2 className="mx-auto text-emerald-500 mb-2" size={24} />
-            <p className="text-xs font-medium text-emerald-800">All Findings Integrated</p>
+            <CheckCircle2 className="mx-auto text-primary-strong mb-2" size={24} />
+            <p className="text-xs font-medium text-primary-strong">All Findings Integrated</p>
             <p className="text-[10px] text-muted-foreground mt-0.5">No active inhibitions detected. The system is balanced.</p>
           </div>
         )}
@@ -409,13 +409,13 @@ const EmbedSection = ({
                   key={`${finding.category}-${finding.name}`}
                   className={cn(
                     "p-2.5 border text-[10px] font-medium flex items-center justify-between gap-1",
-                    isClear ? "bg-emerald-50/30 border-emerald-100 text-emerald-800" : "bg-rose-50/30 border-rose-100 text-rose-800"
+                    isClear ? "bg-primary/10 border-primary/25 text-primary-strong" : "bg-rose-50/30 border-rose-100 text-rose-800"
                   )}
                 >
                   <span className="truncate">{finding.name}</span>
                   <span className={cn(
                     "text-[7px] font-semibold uppercase tracking-wider px-1.5 py-0.5 shrink-0",
-                    isClear ? "bg-emerald-500 text-primary-foreground" : "bg-rose-500 text-primary-foreground"
+                    isClear ? "bg-primary text-primary-foreground" : "bg-rose-500 text-primary-foreground"
                   )}>
                     {finding.status.replace('_Cleared', '✓')}
                   </span>

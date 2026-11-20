@@ -905,7 +905,7 @@ const WorkflowDebuggerPage = () => {
     const colorMap: Record<string, string> = {
       indigo: "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300",
       amber: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
-      emerald: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
+      emerald: "bg-primary/15 text-primary-strong dark:bg-primary/20 dark:text-primary",
       rose: "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300",
       slate: "bg-muted text-muted-foreground dark:bg-card dark:text-foreground",
       purple: "bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300",
@@ -1215,7 +1215,7 @@ const WorkflowDebuggerPage = () => {
         <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           <button onClick={() => { if (!expandedSections.has("live-debug")) setExpandedSections(prev => new Set(prev).add("live-debug")); }} className="w-full flex items-center justify-between p-5 hover:bg-muted/30 transition-colors">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center justify-center"><Activity size={16} /></div>
+              <div className="w-8 h-8 rounded-xl bg-primary/15 text-primary-strong dark:bg-primary/20 dark:text-primary flex items-center justify-center"><Activity size={16} /></div>
               <div>
                 <h3 className="font-semibold text-foreground text-sm">Live Debug</h3>
                 <p className="text-xs text-muted-foreground font-medium">Health checks, edge function test runner, and invocation log</p>
@@ -1225,7 +1225,7 @@ const WorkflowDebuggerPage = () => {
               <button
                 onClick={async (e) => { e.stopPropagation(); await runHealthCheck(); }}
                 disabled={healthChecking}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 text-xs font-semibold hover:bg-emerald-200 dark:hover:bg-emerald-950/60 transition-all"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/15 text-primary-strong dark:bg-primary/20 dark:text-primary text-xs font-semibold hover:bg-primary/20 dark:hover:bg-primary/25 transition-all"
               >
                 {healthChecking ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
                 {healthChecking ? "Checking..." : "Run health check"}
@@ -1237,11 +1237,11 @@ const WorkflowDebuggerPage = () => {
             <div className="px-5 pb-5 space-y-4">
               {/* Health status */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className={cn("border rounded-xl p-4", health.supabase === "ok" ? "border-emerald-200 dark:border-emerald-900 bg-emerald-50/50 dark:bg-emerald-950/20" : health.supabase === "error" ? "border-rose-200 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/20" : "border-border bg-card")}>
+                <div className={cn("border rounded-xl p-4", health.supabase === "ok" ? "border-primary/30 dark:border-primary/40 bg-primary/10 dark:bg-primary/10" : health.supabase === "error" ? "border-rose-200 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/20" : "border-border bg-card")}>
                   <div className="flex items-center gap-2 mb-1">
-                    {health.supabase === "ok" ? <CheckCircle2 size={14} className="text-emerald-500" /> : health.supabase === "error" ? <XCircle size={14} className="text-rose-500" /> : <Database size={14} className="text-muted-foreground" />}
+                    {health.supabase === "ok" ? <CheckCircle2 size={14} className="text-primary-strong" /> : health.supabase === "error" ? <XCircle size={14} className="text-rose-500" /> : <Database size={14} className="text-muted-foreground" />}
                     <span className="font-semibold text-xs">Supabase</span>
-                    {health.supabase === "ok" && <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-none text-[10px] ml-auto">Connected</Badge>}
+                    {health.supabase === "ok" && <Badge className="bg-primary/15 text-primary-strong dark:bg-primary/20 dark:text-primary border-none text-[10px] ml-auto">Connected</Badge>}
                     {health.supabase === "error" && <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-none text-[10px] ml-auto">Error</Badge>}
                   </div>
                   <p className="text-[10px] text-muted-foreground">{health.supabaseDetail ?? "Click 'Run health check' to test connectivity"}</p>
@@ -1284,12 +1284,12 @@ const WorkflowDebuggerPage = () => {
                   {showTestLog && (
                     <div className="space-y-1 max-h-60 overflow-y-auto">
                       {allResults.filter(r => logFilter === "all" || r.status === logFilter).map((r, i) => (
-                        <div key={`${r.timestamp}-${i}`} className={cn("border rounded-lg p-3", r.status === "success" ? "border-emerald-200 dark:border-emerald-900 bg-emerald-50/30 dark:bg-emerald-950/10" : "border-rose-200 dark:border-rose-900 bg-rose-50/30 dark:bg-rose-950/10")}>
+                        <div key={`${r.timestamp}-${i}`} className={cn("border rounded-lg p-3", r.status === "success" ? "border-primary/30 dark:border-primary/40 bg-primary/10 dark:bg-primary/10" : "border-rose-200 dark:border-rose-900 bg-rose-50/30 dark:bg-rose-950/10")}>
                           <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center gap-1.5">
-                              {r.status === "success" ? <CheckCircle2 size={10} className="text-emerald-500" /> : <XCircle size={10} className="text-rose-500" />}
+                              {r.status === "success" ? <CheckCircle2 size={10} className="text-primary-strong" /> : <XCircle size={10} className="text-rose-500" />}
                               <span className="font-semibold text-[10px]">{r.functionName}</span>
-                              <span className={cn("px-1 py-0.5 rounded text-[10px] font-semibold", r.status === "success" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300")}>{r.duration}ms</span>
+                              <span className={cn("px-1 py-0.5 rounded text-[10px] font-semibold", r.status === "success" ? "bg-primary/15 text-primary-strong dark:bg-primary/20 dark:text-primary" : "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300")}>{r.duration}ms</span>
                             </div>
                             <span className="text-[10px] text-muted-foreground">{new Date(r.timestamp).toLocaleTimeString()}</span>
                           </div>
@@ -1334,7 +1334,7 @@ const WorkflowDebuggerPage = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {wf.emailSubject && <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-none text-[10px] font-semibold">Email</Badge>}
+                      {wf.emailSubject && <Badge className="bg-primary/15 text-primary-strong dark:bg-primary/20 dark:text-primary border-none text-[10px] font-semibold">Email</Badge>}
                       {wf.errorStates && <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-none text-[10px] font-semibold">{wf.errorStates.length} errors</Badge>}
                       {expandedWorkflows.has(wf.id) ? <ChevronDown size={14} className="text-muted-foreground" /> : <ChevronRight size={14} className="text-muted-foreground" />}
                     </div>
@@ -1431,7 +1431,7 @@ const WorkflowDebuggerPage = () => {
                     <div className="flex items-center gap-2">
                       <Zap size={14} className={ef.name.startsWith("voice") ? "text-rose-500" : "text-amber-500"} />
                       <span className="font-semibold text-xs text-foreground">{ef.name}</span>
-                      {ef.emailSubject && <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-none text-[10px] font-semibold">Email</Badge>}
+                      {ef.emailSubject && <Badge className="bg-primary/15 text-primary-strong dark:bg-primary/20 dark:text-primary border-none text-[10px] font-semibold">Email</Badge>}
                       {ef.authGuard.includes("webhook") && <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-none text-[10px] font-semibold">Webhook</Badge>}
                       {ef.authGuard.includes("requireUser") && <Badge className="bg-muted text-muted-foreground dark:bg-card dark:text-foreground border-none text-[10px] font-semibold">Auth</Badge>}
                     </div>
@@ -1447,7 +1447,7 @@ const WorkflowDebuggerPage = () => {
                           <div className="font-semibold text-foreground flex items-center gap-1.5"><Play size={12} /> Test Invocation</div>
                           <div className="flex items-center gap-2">
                             {testResults[ef.name] && (
-                              <span className={cn("text-[10px] font-semibold", testResults[ef.name].status === "success" ? "text-emerald-500" : "text-rose-500")}>
+                              <span className={cn("text-[10px] font-semibold", testResults[ef.name].status === "success" ? "text-primary-strong" : "text-rose-500")}>
                                 {testResults[ef.name].status === "success" ? "✓" : "✗"} {testResults[ef.name].duration}ms
                               </span>
                             )}
@@ -1458,7 +1458,7 @@ const WorkflowDebuggerPage = () => {
                                 "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all",
                                 runningTests.has(ef.name)
                                   ? "bg-muted text-muted-foreground cursor-not-allowed"
-                                  : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-950/60"
+                                  : "bg-primary/15 text-primary-strong dark:bg-primary/20 dark:text-primary hover:bg-primary/20 dark:hover:bg-primary/25"
                               )}
                             >
                               {runningTests.has(ef.name) ? <Loader2 size={10} className="animate-spin" /> : <Zap size={10} />}
@@ -1473,10 +1473,10 @@ const WorkflowDebuggerPage = () => {
                           rows={3}
                         />
                         {testResults[ef.name] && (
-                          <div className={cn("mt-2 rounded-lg p-2", testResults[ef.name].status === "success" ? "bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/50" : "bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/50 dark:border-rose-900/50")}>
+                          <div className={cn("mt-2 rounded-lg p-2", testResults[ef.name].status === "success" ? "bg-primary/10 dark:bg-primary/10 border border-primary/30 dark:border-primary/40" : "bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/50 dark:border-rose-900/50")}>
                             <div className="flex items-center gap-1 text-[10px] font-semibold mb-1">
-                              {testResults[ef.name].status === "success" ? <CheckCircle2 size={8} className="text-emerald-500" /> : <XCircle size={8} className="text-rose-500" />}
-                              <span className={testResults[ef.name].status === "success" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
+                              {testResults[ef.name].status === "success" ? <CheckCircle2 size={8} className="text-primary-strong" /> : <XCircle size={8} className="text-rose-500" />}
+                              <span className={testResults[ef.name].status === "success" ? "text-primary-strong dark:text-primary" : "text-rose-600 dark:text-rose-400"}>
                                 {testResults[ef.name].status === "success" ? "Response" : "Error"} ({testResults[ef.name].duration}ms)
                               </span>
                             </div>
@@ -1535,9 +1535,9 @@ const WorkflowDebuggerPage = () => {
                       )}
 
                       {ef.emailSubject && (
-                        <div className="p-3 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-xl border border-emerald-200/50 dark:border-emerald-900/50">
-                          <div className="font-semibold text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1.5"><Mail size={12} /> Email Subject</div>
-                          <span className="text-emerald-600/80 dark:text-emerald-400/80 font-mono text-[10px]">{ef.emailSubject}</span>
+                        <div className="p-3 bg-primary/10 dark:bg-primary/10 rounded-xl border border-primary/30 dark:border-primary/40">
+                          <div className="font-semibold text-primary-strong dark:text-primary mb-1 flex items-center gap-1.5"><Mail size={12} /> Email Subject</div>
+                          <span className="text-primary-strong/80 dark:text-primary/80 font-mono text-[10px]">{ef.emailSubject}</span>
                         </div>
                       )}
 
@@ -1561,7 +1561,7 @@ const WorkflowDebuggerPage = () => {
         <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           <button onClick={() => toggleSection("email-templates")} className="w-full flex items-center justify-between p-5 hover:bg-muted/30 transition-colors">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center justify-center"><Mail size={16} /></div>
+              <div className="w-8 h-8 rounded-xl bg-primary/15 text-primary-strong dark:bg-primary/20 dark:text-primary flex items-center justify-center"><Mail size={16} /></div>
               <div><h3 className="font-semibold text-foreground text-sm">Email Templates ({EMAIL_TEMPLATES.length})</h3><p className="text-xs text-muted-foreground font-medium">Full email templates with HTML structure and section breakdowns</p></div>
             </div>
             <div className="flex items-center gap-2">
@@ -1575,7 +1575,7 @@ const WorkflowDebuggerPage = () => {
                 <div key={tmpl.name} className="border border-border rounded-xl overflow-hidden">
                   <button onClick={() => toggleTemplate(tmpl.name)} className="w-full flex items-center justify-between p-4 hover:bg-muted/20 transition-colors">
                     <div className="flex items-center gap-2">
-                      <Mail size={14} className="text-emerald-500" />
+                      <Mail size={14} className="text-primary-strong" />
                       <span className="font-bold text-sm text-foreground">{tmpl.name}</span>
                       <Badge className="bg-muted text-muted-foreground border-none text-[10px] font-semibold">{tmpl.source}</Badge>
                     </div>
@@ -1599,7 +1599,7 @@ const WorkflowDebuggerPage = () => {
                         <ul className="space-y-1">
                           {tmpl.sections.map((s, i) => (
                             <li key={i} className="text-muted-foreground flex items-start gap-1.5 text-[10px]">
-                              <span className="text-emerald-500 mt-0.5 shrink-0">✦</span> {s}
+                              <span className="text-primary-strong mt-0.5 shrink-0">✦</span> {s}
                             </li>
                           ))}
                         </ul>

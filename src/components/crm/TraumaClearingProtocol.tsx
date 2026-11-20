@@ -113,16 +113,16 @@ const TraumaClearingProtocol = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="p-5 bg-card rounded-xl border border-border shadow-sm">
             <div className="flex items-center gap-2 mb-2">
-              <CheckCircle2 size={14} className="text-emerald-500" />
-              <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Use When</span>
+              <CheckCircle2 size={14} className="text-primary-strong" />
+              <span className="text-xs font-bold text-primary-strong uppercase tracking-wider">Use When</span>
             </div>
             <ul className="space-y-2 text-sm font-medium text-foreground">
               <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                 <span>A memory is <strong>replaying</strong>, or repeatedly triggering a response.</span>
               </li>
               <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
                 <span>You suspect it's <strong>running underneath</strong> and driving a <strong>PNI somatic response</strong>.</span>
               </li>
             </ul>
@@ -148,15 +148,15 @@ const TraumaClearingProtocol = () => {
           <CollapsibleSection
             title="Permission & Sovereignty Check"
             icon={Shield}
-            color="bg-emerald-600"
+            color="bg-primary"
             desc="Conscious permission + body confirmation."
             number="1"
             defaultOpen
           >
             <div className="space-y-4 text-sm">
-              <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200 space-y-3">
-                <p className="font-bold text-emerald-900">Ask for conscious permission:</p>
-                <p className="text-emerald-800 font-medium italic pl-4 border-l-2 border-emerald-400">
+              <div className="p-4 bg-primary/10 rounded-xl border border-primary/30 space-y-3">
+                <p className="font-bold text-primary-strong">Ask for conscious permission:</p>
+                <p className="text-primary-strong font-medium italic pl-4 border-l-2 border-primary/40">
                   "Do we have permission to work through this traumatic memory?"
                 </p>
               </div>
@@ -277,12 +277,12 @@ const TraumaClearingProtocol = () => {
               </div>
 
               {/* Phase B */}
-              <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200 space-y-3">
-                <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">B. Find the Opposite / Resource Identity</p>
-                <p className="text-emerald-800 font-medium italic pl-4 border-l-2 border-emerald-400">
+              <div className="p-4 bg-primary/10 rounded-xl border border-primary/30 space-y-3">
+                <p className="text-[10px] font-bold text-primary-strong uppercase tracking-wider">B. Find the Opposite / Resource Identity</p>
+                <p className="text-primary-strong font-medium italic pl-4 border-l-2 border-primary/40">
                   "What are you when you are <strong>not</strong> being fearful person?"
                 </p>
-                <p className="text-emerald-700 font-medium">(e.g., "Calm")</p>
+                <p className="text-primary-strong font-medium">(e.g., "Calm")</p>
               </div>
 
               {/* Phase C */}
@@ -319,7 +319,7 @@ const TraumaClearingProtocol = () => {
           <CollapsibleSection
             title="Re-test the Frozen Moment"
             icon={Target}
-            color="bg-emerald-600"
+            color="bg-primary"
             desc="Return to the memory and assess if the charge remains."
             number="5"
             defaultOpen
@@ -328,13 +328,13 @@ const TraumaClearingProtocol = () => {
               <div className="p-4 bg-muted rounded-lg space-y-3">
                 <div>
                   <p className="font-bold text-foreground">Bring them back:</p>
-                  <p className="text-muted-foreground italic pl-4 border-l-2 border-emerald-400 mt-1">
+                  <p className="text-muted-foreground italic pl-4 border-l-2 border-primary/40 mt-1">
                     "Now take your mind back to the frozen moment — the worst part of that experience."
                   </p>
                 </div>
                 <div>
                   <p className="font-bold text-foreground">Ask:</p>
-                  <p className="text-muted-foreground italic pl-4 border-l-2 border-emerald-400 mt-1">
+                  <p className="text-muted-foreground italic pl-4 border-l-2 border-primary/40 mt-1">
                     "Does it still feel like a problem?"
                   </p>
                 </div>
@@ -347,9 +347,9 @@ const TraumaClearingProtocol = () => {
                     You may clear multiple identities for the same moment — sometimes 3, sometimes 1.
                   </p>
                 </div>
-                <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
-                  <p className="font-bold text-xs text-emerald-700 uppercase tracking-wider mb-1">If No</p>
-                  <p className="text-xs text-emerald-800 font-medium leading-relaxed">
+                <div className="p-4 bg-primary/10 rounded-xl border border-primary/30">
+                  <p className="font-bold text-xs text-primary-strong uppercase tracking-wider mb-1">If No</p>
+                  <p className="text-xs text-primary-strong font-medium leading-relaxed">
                     Proceed to step 6 — confirmation.
                   </p>
                 </div>
@@ -361,7 +361,7 @@ const TraumaClearingProtocol = () => {
           <CollapsibleSection
             title="Confirm Neutrality (Clinic Check)"
             icon={CheckCircle2}
-            color="bg-emerald-600"
+            color="bg-primary"
             desc="Verify the memory is no longer charged."
             number="6"
             defaultOpen
@@ -384,14 +384,14 @@ const TraumaClearingProtocol = () => {
 
       {/* Outcome */}
       <section className="mb-8">
-        <SectionTitle icon={Sparkles} color="bg-emerald-600">Outcome</SectionTitle>
+        <SectionTitle icon={Sparkles} color="bg-primary">Outcome</SectionTitle>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-6 bg-emerald-50 rounded-xl border border-emerald-200 space-y-3">
+          <div className="p-6 bg-primary/10 rounded-xl border border-primary/30 space-y-3">
             <div className="flex items-center gap-2">
-              <CheckCircle2 size={18} className="text-emerald-600" />
-              <h4 className="text-sm font-bold text-emerald-800">Neutral Memory</h4>
+              <CheckCircle2 size={18} className="text-primary-strong" />
+              <h4 className="text-sm font-bold text-primary-strong">Neutral Memory</h4>
             </div>
-            <p className="text-sm font-medium text-emerald-700 leading-relaxed">
+            <p className="text-sm font-medium text-primary-strong leading-relaxed">
               The traumatic moment becomes <strong>neutral</strong> — no longer charged or triggering.
             </p>
           </div>

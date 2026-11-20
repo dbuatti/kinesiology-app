@@ -34,7 +34,7 @@ const MultipleChoice: FC<MultipleChoiceProps> = ({
           
           if (selectedAnswer) {
             if (isThisCorrect) {
-              className += " border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 shadow-emerald-100";
+              className += " border-primary/50 bg-primary/10 text-primary-strong dark:bg-primary/20 dark:text-primary shadow-primary/20";
             } else if (isSelected && !isCorrect) {
               className += " border-rose-500 bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400 shadow-rose-100";
             } else {
@@ -56,7 +56,7 @@ const MultipleChoice: FC<MultipleChoiceProps> = ({
               <div className="flex items-center justify-between w-full">
                 <span className="flex-1">{option}</span>
                 {selectedAnswer && isThisCorrect && (
-                  <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-primary-foreground shrink-0 ml-4 animate-in zoom-in duration-300">
+                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-primary-foreground shrink-0 ml-4 animate-in zoom-in duration-300">
                     <CheckCircle2 size={16} />
                   </div>
                 )}

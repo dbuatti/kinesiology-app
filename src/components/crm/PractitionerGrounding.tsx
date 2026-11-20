@@ -119,7 +119,7 @@ const PractitionerGrounding = ({ onComplete, onCancel }: PractitionerGroundingPr
               animate={{ opacity: 1, y: 0 }}
               className="flex flex-col items-center text-center space-y-6"
             >
-              <div className="w-24 h-24 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-2xl shadow-emerald-500/40">
+              <div className="w-24 h-24 rounded-2xl bg-primary flex items-center justify-center shadow-2xl shadow-primary/30">
                 <CheckCircle2 size={48} />
               </div>
               <div className="space-y-2">

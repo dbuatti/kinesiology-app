@@ -9,8 +9,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 const ELEMENTS = [
   { 
     name: "Wood", 
-    color: "bg-emerald-500", 
-    textColor: "text-emerald-700",
+    color: "bg-primary", 
+    textColor: "text-primary-strong",
     meridians: ["Liver", "Gall Bladder"],
     sheng: "Fire", 
     ko: "Earth",
@@ -62,7 +62,7 @@ const FiveElementCycle = () => {
           <div className="absolute top-0 right-0 p-8 opacity-10"><RefreshCw size={120} /></div>
           <CardHeader className="p-8">
             <CardTitle className="text-2xl font-semibold flex items-center gap-3">
-              <RefreshCw size={24} className="text-teal-400" /> Sheng Cycle (Generating)
+              <RefreshCw size={24} className="text-primary" /> Sheng Cycle (Generating)
             </CardTitle>
             <CardDescription className="text-indigo-200">The 'Mother-Child' relationship. One element feeds the next.</CardDescription>
           </CardHeader>
@@ -77,7 +77,7 @@ const FiveElementCycle = () => {
                 </Fragment>
               ))}
               <ArrowRight size={16} className="mt-2 text-indigo-400" />
-              <div className="px-4 py-2 rounded-xl font-semibold text-xs uppercase tracking-wider shadow-lg bg-emerald-500">Wood</div>
+              <div className="px-4 py-2 rounded-xl font-semibold text-xs uppercase tracking-wider shadow-lg bg-primary">Wood</div>
             </div>
             <p className="text-sm text-indigo-100 leading-relaxed italic pt-4">
               "Wood feeds Fire, Fire creates Earth (ash), Earth bears Metal, Metal carries Water (minerals), Water nourishes Wood."

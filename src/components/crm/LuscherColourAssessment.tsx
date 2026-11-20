@@ -270,11 +270,11 @@ const LuscherColourAssessment = ({
                       </p>
                     </div>
 
-                    <div className="p-5 bg-emerald-50 rounded-2xl border border-emerald-100">
-                      <h4 className="text-sm font-bold text-emerald-600 uppercase tracking-wider flex items-center gap-2 mb-2">
+                    <div className="p-5 bg-primary/10 rounded-2xl border border-primary/25">
+                      <h4 className="text-sm font-bold text-primary-strong uppercase tracking-wider flex items-center gap-2 mb-2">
                         <Sparkles size={16} /> Affirmation
                       </h4>
-                      <p className="text-lg font-bold text-emerald-900 italic leading-relaxed">
+                      <p className="text-lg font-bold text-primary-strong italic leading-relaxed">
                         "{result.affirmation}"
                       </p>
                     </div>

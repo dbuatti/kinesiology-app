@@ -140,13 +140,13 @@ const MuscleTestItem = ({
                   id={`prelim-norm-l-${name}`}
                   checked={checkNorm(statusL)}
                   onCheckedChange={(checked) => onUpdate(name, checked ? 'Normotonic' : 'Clear', 'L')}
-                  className="h-3.5 w-3.5 border-emerald-400 rounded-none data-[state=checked]:bg-emerald-500"
+                  className="h-3.5 w-3.5 border-primary/40 rounded-none data-[state=checked]:bg-primary"
                 />
                 <Checkbox
                   id={`prelim-norm-r-${name}`}
                   checked={checkNorm(statusR)}
                   onCheckedChange={(checked) => onUpdate(name, checked ? 'Normotonic' : 'Clear', 'R')}
-                  className="h-3.5 w-3.5 border-emerald-400 rounded-none data-[state=checked]:bg-emerald-500"
+                  className="h-3.5 w-3.5 border-primary/40 rounded-none data-[state=checked]:bg-primary"
                 />
               </div>
             ) : (
@@ -154,7 +154,7 @@ const MuscleTestItem = ({
                 id={`prelim-norm-mid-${name}`}
                 checked={checkNorm(statusMidline)}
                 onCheckedChange={(checked) => onUpdate(name, checked ? 'Normotonic' : 'Clear')}
-                className="h-3.5 w-3.5 border-emerald-400 rounded-none data-[state=checked]:bg-emerald-500"
+                className="h-3.5 w-3.5 border-primary/40 rounded-none data-[state=checked]:bg-primary"
               />
             )}
           </div>

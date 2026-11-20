@@ -76,7 +76,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
     return appointment.metadata;
   }, [appointment.metadata]);
 
-  const priorityPathway = (meta as any)?.priority_pathway || "";
+  const priorityPathway = (meta as Record<string, unknown>)?.priority_pathway as string || "";
   const isCustom = priorityPathway === 'CUSTOM';
 
   /**
@@ -169,7 +169,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
   }, [protocolLogs, stampedPathway]);
 
   const corrections = useMemo(
-    () => (((meta as any)?.corrections || []) as { pathway: string; summary: string; timestamp: string }[]),
+    () => ((((meta as Record<string, unknown>)?.corrections || []) as { pathway: string; summary: string; timestamp: string }[])),
     [meta]
   );
 
@@ -349,7 +349,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
                   </span>
                   <div className="min-w-0 flex-1 space-y-0.5">
                     {row.pathway && (
-                      <p className="truncate text-[10px] font-bold uppercase tracking-[0.07em] text-primary-strong">
+                      <p className="truncate text-[12px] font-semibold text-primary-strong">
                         {row.pathway}
                       </p>
                     )}
@@ -405,7 +405,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/70 bg-muted/20 px-4 py-2.5">
               <div className="min-w-0">
                 <p className="truncate text-[12px] font-semibold text-foreground">{pathwayLabel}</p>
-                <p className="text-[10.5px] text-muted-foreground">
+                <p className="text-[12px] text-muted-foreground">
                   {inhibitionPathway.status === 'clear'
                     ? 'Marked clear — the correction held on retest.'
                     : 'Confirm the correction cleared this pathway.'}

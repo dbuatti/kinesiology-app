@@ -30,7 +30,7 @@ export const OUTLINE_ITEMS = [
   { id: "c-afferent",  label: "  Afferent (Bottom-Up)",      icon: ArrowDownCircle, letter: null, color: "text-muted-foreground" },
   { id: "c-efferent",  label: "  Efferent (Top-Down)",       icon: ArrowUpCircle,   letter: null, color: "text-muted-foreground" },
   { id: "c-emotional", label: "  Emotional Protocol",        icon: Heart,           letter: null, color: "text-muted-foreground" },
-  { id: "e2-sec",      label: "E — Embed",                   icon: ClipboardCheck,  letter: "E", color: "text-emerald-600 dark:text-emerald-400" },
+  { id: "e2-sec",      label: "E — Embed",                   icon: ClipboardCheck,  letter: "E", color: "text-primary-strong dark:text-primary" },
 ];
 
 export const CORRECTIONS_GUIDE = [
@@ -84,8 +84,8 @@ export const CORRECTIONS_GUIDE = [
   {
     title: "Lymphatic Cranial Reflex Zone",
     icon: Droplets,
-    accentClass: "bg-teal-50 dark:bg-teal-950/30 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800/40",
-    dotClass: "bg-teal-500",
+    accentClass: "bg-primary/10 dark:bg-primary/30 text-primary-strong dark:text-primary border-primary/30 dark:border-primary/40",
+    dotClass: "bg-primary",
     steps: [
       "Palpate temporal-parietal suture halfway between top of ear and top of head. Glide test.",
       "Client places fingertips on tender/stuck point. Test indicator muscle (facilitated in clear).",

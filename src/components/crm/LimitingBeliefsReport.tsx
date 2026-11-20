@@ -84,9 +84,9 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
               </CardContent>
             </Card>
 
-            <Card className="border-none shadow-lg rounded-2xl bg-emerald-900 text-primary-foreground overflow-hidden">
+            <Card className="border-none shadow-lg rounded-2xl bg-primary text-primary-foreground overflow-hidden">
               <CardContent className="p-8 text-center space-y-4">
-                <p className="text-[10px] font-semibold text-emerald-300 uppercase tracking-wider">Positive Belief</p>
+                <p className="text-[10px] font-semibold text-primary uppercase tracking-wider">Positive Belief</p>
                 <h3 className="text-2xl font-serif font-bold italic">"I am {session.positive_belief}"</h3>
               </CardContent>
             </Card>
@@ -102,7 +102,7 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground">Belief Shifted?</span>
                 {session.check_belief_result === false ? (
-                  <Badge className="bg-emerald-100 text-emerald-700 border-none">Yes</Badge>
+                  <Badge className="bg-primary/15 text-primary-strong border-none">Yes</Badge>
                 ) : (
                   <Badge className="bg-rose-100 text-rose-700 border-none">No</Badge>
                 )}
@@ -110,7 +110,7 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground">Problem Resolved?</span>
                 {session.check_problem_result === false ? (
-                  <Badge className="bg-emerald-100 text-emerald-700 border-none">Yes</Badge>
+                  <Badge className="bg-primary/15 text-primary-strong border-none">Yes</Badge>
                 ) : (
                   <Badge className="bg-rose-100 text-rose-700 border-none">No</Badge>
                 )}
@@ -132,7 +132,7 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
                   <div className="flex items-center justify-between mb-4">
                     <Badge className={cn(
                       "font-semibold uppercase tracking-wider",
-                      log.type === 'A' ? "bg-rose-100 text-rose-700" : "bg-emerald-100 text-emerald-700"
+                      log.type === 'A' ? "bg-rose-100 text-rose-700" : "bg-primary/15 text-primary-strong"
                     )}>
                       Part {log.type}: {log.type === 'A' ? "Limiting" : "Positive"}
                     </Badge>
@@ -163,15 +163,15 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
           {/* Final Integration */}
           <section className="space-y-4">
             <h3 className="text-xl font-semibold text-foreground px-2 flex items-center gap-3">
-              <Sparkles size={20} className="text-emerald-600" /> Integration & Shift
+              <Sparkles size={20} className="text-primary-strong" /> Integration & Shift
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="border-none shadow-md rounded-2xl bg-emerald-50 border-2 border-emerald-100">
+              <Card className="border-none shadow-md rounded-2xl bg-primary/10 border-2 border-primary/25">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider">New Awareness</CardTitle>
+                  <CardTitle className="text-[10px] font-semibold text-primary-strong uppercase tracking-wider">New Awareness</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm font-bold text-emerald-900 leading-relaxed">
+                  <p className="text-sm font-bold text-primary-strong leading-relaxed">
                     {session.integration_awareness || 'No awareness recorded.'}
                   </p>
                 </CardContent>

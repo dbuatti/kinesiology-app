@@ -124,7 +124,7 @@ const IdentityHistoryList = () => {
                   <div className={cn(
                     "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-inner group-hover:scale-110 transition-transform",
                     session.type === 'shifting' ? "bg-indigo-50 text-indigo-600" :
-                    session.type === 'alignment' ? "bg-emerald-50 text-emerald-600" :
+                    session.type === 'alignment' ? "bg-primary/10 text-primary-strong" :
                     "bg-rose-50 text-rose-600"
                   )}>
                     {session.type === 'shifting' ? <Fingerprint size={24} /> :

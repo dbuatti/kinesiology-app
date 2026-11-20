@@ -39,7 +39,7 @@ const ClinicalCheatSheet = () => {
                     item.category === 'Structural' ? "bg-primary/10 text-primary-strong" :
                     item.category === 'Emotional' ? "bg-rose-100 text-rose-700" :
                     item.category === 'Neurological' ? "bg-purple-100 text-purple-700" :
-                    "bg-emerald-100 text-emerald-700"
+                    "bg-primary/10 text-primary-strong"
                   )}>
                     {item.category} Focus
                   </Badge>
@@ -68,11 +68,11 @@ const ClinicalCheatSheet = () => {
                 </div>
                 <div className="space-y-3">
                   <p className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-                    <Move size={14} className="text-emerald-500" /> Meridians
+                    <Move size={14} className="text-primary-strong" /> Meridians
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {item.priorityMeridians.map(m => (
-                      <Badge key={m} variant="secondary" className="bg-emerald-50 text-emerald-700 border-none text-[10px] font-bold">
+                      <Badge key={m} variant="secondary" className="bg-primary/10 text-primary-strong border-none text-[10px] font-bold">
                         {m}
                       </Badge>
                     ))}
@@ -95,7 +95,7 @@ const ClinicalCheatSheet = () => {
                 <div className="flex flex-wrap gap-2">
                   {item.reflexPoints.map(p => (
                     <span key={p} className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
-                      <CheckCircle2 size={12} className="text-emerald-500" /> {p}
+                      <CheckCircle2 size={12} className="text-primary-strong" /> {p}
                     </span>
                   ))}
                 </div>

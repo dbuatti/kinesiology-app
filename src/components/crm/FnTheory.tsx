@@ -110,9 +110,9 @@ const FnTheory = () => {
           </CardContent>
         </Card>
         <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
-          <CardHeader className="bg-emerald-50 p-8">
-            <SectionHeader icon={Activity} title="Mechanoreceptive Unconscious" color="text-emerald-600" />
-            <p className="text-emerald-800 font-medium">Targets spinocerebellar tracts (85% of afferent input) to the cerebellum.</p>
+          <CardHeader className="bg-primary/10 p-8">
+            <SectionHeader icon={Activity} title="Mechanoreceptive Unconscious" color="text-primary-strong" />
+            <p className="text-primary-strong font-medium">Targets spinocerebellar tracts (85% of afferent input) to the cerebellum.</p>
           </CardHeader>
           <CardContent className="p-8 space-y-6">
              <div className="p-4 bg-muted/50 rounded-2xl border border-border/50">

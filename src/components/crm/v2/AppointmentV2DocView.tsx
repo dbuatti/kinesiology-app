@@ -501,7 +501,7 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
                         <div className="flex items-center gap-2 mb-1.5">
                           <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Correction #{i + 1}</span>
                           <span className="text-[10px] text-amber-600/40">·</span>
-                          <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 truncate">{c.pathway}</span>
+                          <span className="text-[12px] font-semibold text-amber-700 dark:text-amber-300 truncate">{c.pathway}</span>
                           {c.timestamp && (
                             <>
                               <span className="text-[10px] text-amber-600/40">·</span>

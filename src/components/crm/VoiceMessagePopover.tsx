@@ -43,8 +43,8 @@ const SMS_TEMPLATES = [
     id: "check_in",
     label: "Session Check-in",
     icon: Smile,
-    color: "text-emerald-600",
-    bg: "hover:bg-emerald-50 dark:hover:bg-emerald-950/20",
+    color: "text-primary-strong",
+    bg: "hover:bg-primary/10 dark:hover:bg-primary/20",
     buildBody: (firstName: string) =>
       `Hi ${firstName}, just checking in to see how you're going since our last session. Hope you're feeling well! 😊`,
     preview: "Check in since last lesson",
@@ -76,8 +76,8 @@ const SMS_TEMPLATES = [
     id: "payment_request",
     label: "Payment Request",
     icon: CreditCard,
-    color: "text-emerald-600",
-    bg: "hover:bg-emerald-50 dark:hover:bg-emerald-950/20",
+    color: "text-primary-strong",
+    bg: "hover:bg-primary/10 dark:hover:bg-primary/20",
     buildBody: (firstName: string) =>
       `Hi ${firstName}, a payment link for your recent voice lesson is ready. You can pay securely here: ${window.location.origin}/voice/calendar`,
     preview: "Request payment via Stripe",
@@ -182,7 +182,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming: _hasUpcoming, onContactLogg
           className={cn(
             "p-2 rounded-lg transition-all",
             recentlyContacted
-              ? "text-emerald-500 bg-emerald-50 dark:bg-emerald-950/30"
+              ? "text-primary-strong bg-primary/10 dark:bg-primary/15"
               : "text-muted-foreground hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30"
           )}
           title="Contact student"
@@ -212,10 +212,10 @@ const VoiceMessagePopover = ({ student, hasUpcoming: _hasUpcoming, onContactLogg
             <div className={cn(
               "mt-2.5 flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold",
               recentlyContacted
-                ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400"
+                ? "bg-primary/10 dark:bg-primary/20 text-primary-strong dark:text-primary"
                 : "bg-muted text-muted-foreground"
             )}>
-              <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", recentlyContacted ? "bg-emerald-500" : "bg-muted-foreground/50")} />
+              <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", recentlyContacted ? "bg-primary" : "bg-muted-foreground/50")} />
               Last contacted:{" "}
               {daysSinceContact === 0 ? "today" : daysSinceContact === 1 ? "yesterday" : `${daysSinceContact} days ago`}
               {lastChannel && ` via ${lastChannel}`}

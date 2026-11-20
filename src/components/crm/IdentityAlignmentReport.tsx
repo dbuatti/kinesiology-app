@@ -30,7 +30,7 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
     <div className="flex items-center justify-between p-3 bg-muted/50 dark:bg-card rounded-xl border border-border">
       <span className="text-xs font-bold text-muted-foreground dark:text-muted-foreground">{label}</span>
       {value === true ? (
-        <Badge className="bg-emerald-500 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider">Passed</Badge>
+        <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider">Passed</Badge>
       ) : value === false ? (
         <Badge className="bg-rose-50 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider">Failed</Badge>
       ) : (
@@ -97,7 +97,7 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
         <Card className="rounded-2xl border border-border shadow-sm bg-card dark:bg-card">
           <CardHeader>
             <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <Clock className="text-emerald-600" size={20} />
+              <Clock className="text-primary-strong" size={20} />
               Time-Space Testing
             </CardTitle>
           </CardHeader>
@@ -107,7 +107,7 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
             <div className="flex items-center justify-between p-3 bg-muted/50 dark:bg-card rounded-xl border border-border">
               <span className="text-xs font-bold text-muted-foreground dark:text-muted-foreground">Scenario Stability</span>
               {session.scenario_stability === false ? (
-                <Badge className="bg-emerald-500 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider">Stable</Badge>
+                <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider">Stable</Badge>
               ) : session.scenario_stability === true ? (
                 <Badge className="bg-rose-500 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider">Unstable</Badge>
               ) : (
@@ -152,10 +152,10 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
                         <p className="text-sm font-bold italic">"{entry.alternative}"</p>
                       </div>
                       <div>
-                        <h4 className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 mb-1 flex items-center gap-1.5">
+                        <h4 className="text-[10px] font-semibold uppercase tracking-wider text-primary-strong mb-1 flex items-center gap-1.5">
                           <CheckCircle2 size={12} /> Waypoint 4: Replacement State
                         </h4>
-                        <p className="text-sm font-bold text-emerald-700">{entry.replacement}</p>
+                        <p className="text-sm font-bold text-primary-strong">{entry.replacement}</p>
                       </div>
                     </div>
                   </div>
@@ -181,14 +181,14 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
             <div className="p-4 bg-card/5 rounded-2xl border border-primary-foreground/10">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-indigo-300 mb-2">Maintenance Capacity</p>
               <div className="flex items-center gap-2">
-                {session.maintenance_capacity ? <CheckCircle2 className="text-emerald-400" size={18} /> : <XCircle className="text-rose-400" size={18} />}
+                {session.maintenance_capacity ? <CheckCircle2 className="text-primary" size={18} /> : <XCircle className="text-rose-400" size={18} />}
                 <span className="text-sm font-bold">{session.maintenance_capacity ? "Confirmed Capacity" : "Capacity Not Confirmed"}</span>
               </div>
             </div>
             <div className="p-4 bg-card/5 rounded-2xl border border-primary-foreground/10">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-indigo-300 mb-2">Goal Inevitability</p>
               <div className="flex items-center gap-2">
-                {session.goal_inevitable ? <CheckCircle2 className="text-emerald-400" size={18} /> : <XCircle className="text-rose-400" size={18} />}
+                {session.goal_inevitable ? <CheckCircle2 className="text-primary" size={18} /> : <XCircle className="text-rose-400" size={18} />}
                 <span className="text-sm font-bold">{session.goal_inevitable ? "Inevitable" : "Not Yet Inevitable"}</span>
               </div>
             </div>

@@ -110,7 +110,7 @@ const CranialNerveHomeworkTool = () => {
                 {[
                   { week: 1, val: week1Value, label: "70% Threshold", color: "bg-indigo-50 border-indigo-100 text-indigo-700" },
                   { week: 2, val: week2Value, label: "Double Week 1", color: "bg-primary/5 border-primary/20 text-primary-strong" },
-                  { week: 3, val: week3Value, label: "Double Week 2", color: "bg-emerald-50 border-emerald-100 text-emerald-700" }
+                  { week: 3, val: week3Value, label: "Double Week 2", color: "bg-primary/10 border-primary/25 text-primary-strong" }
                 ].map((w) => (
                   <div key={w.week} className={cn("p-4 rounded-2xl border-2 flex items-center justify-between", w.color)}>
                     <div>

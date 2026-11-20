@@ -38,7 +38,7 @@ const QuickAcupointSelector = ({ currentValue, onSelect }: QuickAcupointSelector
               className={cn(
                 "px-2 py-1 rounded-lg text-[10px] font-semibold transition-all flex items-center gap-1",
                 isUsed 
-                  ? "bg-emerald-500/20 text-emerald-400 cursor-default" 
+                  ? "bg-primary/20 text-primary cursor-default" 
                   : "bg-card/5 hover:bg-indigo-600 text-muted-foreground hover:text-primary-foreground border border-primary-foreground/5"
               )}
             >

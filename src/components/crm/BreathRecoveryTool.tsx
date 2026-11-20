@@ -22,8 +22,8 @@ const HOLD_ROUNDS = 3;
 const C = {
   card: "bg-white/[0.03] backdrop-blur-md border-white/[0.03]",
   border: "border-white/[0.04]",
-  accent: "bg-emerald-300/15 border-emerald-300/20 text-emerald-200",
-  accentSolid: "bg-emerald-300 text-[#07120D]",
+  accent: "bg-primary/15 border-primary/40 text-primary",
+  accentSolid: "bg-primary text-[#07120D]",
   muted: "bg-white/[0.04] border-white/[0.06] text-white/60",
 };
 
@@ -191,14 +191,14 @@ export default function BreathRecoveryTool({ onSave, onDone }: Props) {
       <div className="space-y-4">
         <div className="rounded-2xl p-4 border border-white/[0.04] backdrop-blur-sm">
           <div className="mb-4">
-            <h2 className="text-xl font-sans font-bold mb-1 text-emerald-200">Breath Recovery</h2>
-            <p className="text-[11px] text-emerald-200/80">FNH Phase E · ~5–10 min · nasal breathing only</p>
+            <h2 className="text-xl font-sans font-bold mb-1 text-primary">Breath Recovery</h2>
+            <p className="text-[11px] text-primary/80">FNH Phase E · ~5–10 min · nasal breathing only</p>
           </div>
           <div className="space-y-2 text-[13px] leading-relaxed" style={{ color: "rgba(255,255,255,0.75)" }}>
-            <p><strong className="text-emerald-200">1 · Settle (30s)</strong> — easy nose breathing.</p>
-            <p><strong className="text-emerald-200">2 · Air hunger (3–4 min)</strong> — slow and quieten until a slight, comfortable urge for air. Never strain or gasp.</p>
-            <p><strong className="text-emerald-200">3 · Small holds (optional)</strong> — exhale, pinch, hold to a <em>mild</em> urge only, recover calmly. ×3.</p>
-            <p><strong className="text-emerald-200">4 · Wind down (1 min)</strong> — easy quiet breathing.</p>
+            <p><strong className="text-primary">1 · Settle (30s)</strong> — easy nose breathing.</p>
+            <p><strong className="text-primary">2 · Air hunger (3–4 min)</strong> — slow and quieten until a slight, comfortable urge for air. Never strain or gasp.</p>
+            <p><strong className="text-primary">3 · Small holds (optional)</strong> — exhale, pinch, hold to a <em>mild</em> urge only, recover calmly. ×3.</p>
+            <p><strong className="text-primary">4 · Wind down (1 min)</strong> — easy quiet breathing.</p>
           </div>
         </div>
 
@@ -224,7 +224,7 @@ export default function BreathRecoveryTool({ onSave, onDone }: Props) {
 
         <button
           onClick={begin}
-          className="w-full rounded-2xl py-5 px-6 text-lg font-semibold uppercase tracking-wider transition-all min-h-[60px] flex items-center justify-center gap-3 bg-emerald-300 text-[#07120D] hover:bg-emerald-200 active:bg-emerald-200 active:scale-[0.99]"
+          className="w-full rounded-2xl py-5 px-6 text-lg font-semibold uppercase tracking-wider transition-all min-h-[60px] flex items-center justify-center gap-3 bg-primary text-[#07120D] hover:bg-primary/20 active:bg-primary/20 active:scale-[0.99]"
         >
           <Play size={22} className="shrink-0" /> Begin Practice
         </button>
@@ -238,19 +238,19 @@ export default function BreathRecoveryTool({ onSave, onDone }: Props) {
       return (
         <div className="rounded-2xl p-4 border border-white/[0.04] backdrop-blur-sm text-center">
           <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center" style={{ background: "linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.05))", boxShadow: "0 0 40px rgba(16,185,129,0.15)" }}>
-            <CheckCircle2 size={36} className="text-emerald-400" />
+            <CheckCircle2 size={36} className="text-primary" />
           </div>
-          <h2 className="text-xl font-sans font-bold mb-1 text-emerald-200">Practice Complete</h2>
-          <p className="text-[11px] text-emerald-200/80 mb-6">Logged — twice daily builds CO₂ tolerance.</p>
-          <button onClick={() => { haptic("light"); onDone(); }} className="w-full rounded-xl px-6 py-3.5 text-sm font-semibold uppercase tracking-wider transition-all min-h-[48px] bg-emerald-300 text-[#07120D] hover:bg-emerald-200 active:bg-emerald-200 active:scale-[0.99]">Finish practice</button>
+          <h2 className="text-xl font-sans font-bold mb-1 text-primary">Practice Complete</h2>
+          <p className="text-[11px] text-primary/80 mb-6">Logged — twice daily builds CO₂ tolerance.</p>
+          <button onClick={() => { haptic("light"); onDone(); }} className="w-full rounded-xl px-6 py-3.5 text-sm font-semibold uppercase tracking-wider transition-all min-h-[48px] bg-primary text-[#07120D] hover:bg-primary/20 active:bg-primary/20 active:scale-[0.99]">Finish practice</button>
         </div>
       );
     }
     return (
       <div className="rounded-2xl p-4 border border-white/[0.04] backdrop-blur-sm">
         <div className="mb-4 text-center">
-          <h2 className="text-xl font-sans font-bold mb-1 text-emerald-200">Wind Down Complete</h2>
-          <p className="text-[11px] text-emerald-200/80">Note any shift — calmer, warmer hands, clearer nose.</p>
+          <h2 className="text-xl font-sans font-bold mb-1 text-primary">Wind Down Complete</h2>
+          <p className="text-[11px] text-primary/80">Note any shift — calmer, warmer hands, clearer nose.</p>
         </div>
         <div className={cn("rounded-xl p-4 mb-4", C.card, C.border)}>
           <label className="text-xs font-medium uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.6)" }}>BOLT after (optional)</label>
@@ -271,7 +271,7 @@ export default function BreathRecoveryTool({ onSave, onDone }: Props) {
             onSave(b || a ? `BOLT ${b || "?"}→${a || "?"}` : "No BOLT recorded");
             setSaved(true);
           }}
-          className="w-full rounded-xl px-6 py-3.5 text-sm font-semibold uppercase tracking-wider transition-all min-h-[48px] bg-emerald-300 text-[#07120D] hover:bg-emerald-200 active:bg-emerald-200 active:scale-[0.99]"
+          className="w-full rounded-xl px-6 py-3.5 text-sm font-semibold uppercase tracking-wider transition-all min-h-[48px] bg-primary text-[#07120D] hover:bg-primary/20 active:bg-primary/20 active:scale-[0.99]"
         >
           Save to Session Log
         </button>
@@ -288,16 +288,16 @@ export default function BreathRecoveryTool({ onSave, onDone }: Props) {
           <div key={p.key} className="flex items-center gap-1.5">
             <div className={cn(
               "w-2.5 h-2.5 rounded-full transition-all duration-300",
-              i === phaseIdx ? "bg-emerald-200 scale-125 ring-2 ring-emerald-200/20" : i < phaseIdx ? "bg-emerald-200/50" : "bg-white/10"
+              i === phaseIdx ? "bg-primary/20 scale-125 ring-2 ring-primary/25" : i < phaseIdx ? "bg-primary/10" : "bg-white/10"
             )} />
-            {i < PHASES.length - 1 && <div className={cn("w-5 h-[1px]", i < phaseIdx ? "bg-emerald-200/35" : "bg-white/10")} />}
+            {i < PHASES.length - 1 && <div className={cn("w-5 h-[1px]", i < phaseIdx ? "bg-primary/20" : "bg-white/10")} />}
           </div>
         ))}
       </div>
 
       <div className="rounded-2xl p-5 border border-white/[0.04] backdrop-blur-sm text-center">
-        <p className="text-[11px] font-medium uppercase tracking-widest mb-1 text-emerald-200/70">Phase {phaseIdx + 1} of {PHASES.length}</p>
-        <h2 className="text-2xl font-sans font-bold mb-1 text-emerald-200">{phase.title}</h2>
+        <p className="text-[11px] font-medium uppercase tracking-widest mb-1 text-primary/70">Phase {phaseIdx + 1} of {PHASES.length}</p>
+        <h2 className="text-2xl font-sans font-bold mb-1 text-primary">{phase.title}</h2>
         <p className="text-[12px] mb-5" style={{ color: "rgba(255,255,255,0.6)" }}>{phase.subtitle}</p>
 
         {phase.key === "holds" ? (
@@ -311,32 +311,32 @@ export default function BreathRecoveryTool({ onSave, onDone }: Props) {
                 </p>
                 <button
                   onClick={() => { haptic(); setHolding(true); setHoldSecs(0); }}
-                  className="w-full rounded-xl px-6 py-4 text-sm font-semibold uppercase tracking-wider transition-all min-h-[56px] bg-emerald-300 text-[#07120D] hover:bg-emerald-200 active:bg-emerald-200 active:scale-[0.99]"
+                  className="w-full rounded-xl px-6 py-4 text-sm font-semibold uppercase tracking-wider transition-all min-h-[56px] bg-primary text-[#07120D] hover:bg-primary/20 active:bg-primary/20 active:scale-[0.99]"
                 >
                   Start Hold
                 </button>
               </>
             ) : holding ? (
               <>
-                <div className="text-6xl font-sans font-bold tabular-nums text-emerald-200">{fmt(holdSecs)}</div>
+                <div className="text-6xl font-sans font-bold tabular-nums text-primary">{fmt(holdSecs)}</div>
                 <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.6)" }}>Holding… release at the first mild urge</p>
                 <button
                   onClick={() => { haptic("medium"); setHolding(false); setRecoverLeft(HOLD_RECOVER_SECS); }}
-                  className="w-full rounded-xl px-6 py-4 text-sm font-semibold uppercase tracking-wider transition-all min-h-[56px] bg-emerald-300 text-[#07120D] active:scale-[0.99]"
+                  className="w-full rounded-xl px-6 py-4 text-sm font-semibold uppercase tracking-wider transition-all min-h-[56px] bg-primary text-[#07120D] active:scale-[0.99]"
                 >
                   I Feel the Urge — Release
                 </button>
               </>
             ) : (
               <>
-                <div className="text-6xl font-sans font-bold tabular-nums text-emerald-300">{fmt(recoverLeft)}</div>
+                <div className="text-6xl font-sans font-bold tabular-nums text-primary">{fmt(recoverLeft)}</div>
                 <p className="text-[12px]" style={{ color: "rgba(255,255,255,0.6)" }}>Recover — small, calm nasal breaths</p>
               </>
             )}
           </div>
         ) : (
           <>
-            <div className="text-7xl font-sans font-bold tabular-nums text-emerald-200 mb-4">{fmt(secsLeft)}</div>
+            <div className="text-7xl font-sans font-bold tabular-nums text-primary mb-4">{fmt(secsLeft)}</div>
             <div className="h-1.5 rounded-full overflow-hidden mb-5" style={{ background: "rgba(255,255,255,0.08)" }}>
               <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${Math.round(progress * 100)}%`, background: "rgba(110,231,183,0.8)" }} />
             </div>
@@ -348,7 +348,7 @@ export default function BreathRecoveryTool({ onSave, onDone }: Props) {
           <button
             onClick={() => { haptic("light"); setRunning((r) => !r); }}
             aria-label={running ? "Pause" : "Resume"}
-            className="w-14 h-14 rounded-full flex items-center justify-center bg-emerald-300 text-[#07120D] active:scale-95 transition-transform"
+            className="w-14 h-14 rounded-full flex items-center justify-center bg-primary text-[#07120D] active:scale-95 transition-transform"
           >
             {running ? <Pause size={24} /> : <Play size={24} className="ml-0.5" />}
           </button>

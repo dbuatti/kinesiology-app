@@ -122,7 +122,7 @@ const LimitingBeliefsBackground = () => {
           {[
             { title: "Identity Statements", pattern: "I am...", example: "I am not good enough", color: "bg-primary/5 text-primary-strong border-primary/20" },
             { title: "Generalizations", pattern: "People will...", example: "People will always let me down", color: "bg-purple-50 text-purple-700 border-purple-100" },
-            { title: "Causality", pattern: "If I... then...", example: "If I succeed, I'll be alone", color: "bg-emerald-50 text-emerald-700 border-emerald-100" },
+            { title: "Causality", pattern: "If I... then...", example: "If I succeed, I'll be alone", color: "bg-primary/10 text-primary-strong border-primary/25" },
             { title: "Necessity", pattern: "I must / I can't...", example: "I can't show any weakness", color: "bg-amber-50 text-amber-700 border-amber-100" },
             { title: "Possibility", pattern: "It's impossible to...", example: "It's impossible to be truly happy", color: "bg-rose-50 text-rose-700 border-rose-100" },
             { title: "External Control", pattern: "They make me...", example: "They make me feel worthless", color: "bg-indigo-50 text-indigo-700 border-indigo-100" }

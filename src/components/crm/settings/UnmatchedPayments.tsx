@@ -86,7 +86,7 @@ const UnmatchedPayments = () => {
           </div>
         ) : count === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 text-center gap-2">
-            <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-primary/10 dark:bg-primary/15 flex items-center justify-center">
               <Inbox size={22} className="text-chart-emerald" />
             </div>
             <p className="text-sm font-semibold text-foreground">All clear</p>
@@ -103,7 +103,7 @@ const UnmatchedPayments = () => {
                     <span className={cn(
                       "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full",
                       meta.kind === "payment"
-                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                        ? "bg-primary/15 text-primary-strong dark:bg-primary/20 dark:text-primary"
                         : "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400"
                     )}>
                       {meta.label}

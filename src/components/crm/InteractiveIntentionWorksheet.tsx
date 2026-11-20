@@ -85,7 +85,7 @@ const STEPS = [
       { id: "intention", label: "My intention for the Integrated Healer Program is:", sub: "This is your anchor for the next 12 weeks." }
     ],
     icon: Target,
-    color: "bg-emerald-600"
+    color: "bg-primary"
   }
 ];
 
@@ -228,7 +228,7 @@ const InteractiveIntentionWorksheet = () => {
                 currentStep === i ? "text-indigo-600" : "text-muted-foreground"
               )}>Part {i + 1}</span>
               {s.questions.every(q => formData[q.id]?.length > 10) && (
-                <CheckCircle2 size={12} className="text-emerald-500" />
+                <CheckCircle2 size={12} className="text-primary-strong" />
               )}
             </div>
             <p className={cn(
@@ -349,7 +349,7 @@ const InteractiveIntentionWorksheet = () => {
                     showSuccess("Worksheet complete! Remember this is your North Star.");
                     window.print();
                   }}
-                  className="bg-emerald-600 hover:bg-emerald-700 h-12 px-10 rounded-2xl font-semibold text-xs shadow-xl shadow-emerald-100"
+                  className="bg-primary hover:bg-primary h-12 px-10 rounded-2xl font-semibold text-xs shadow-xl shadow-primary/20"
                 >
                   <Printer size={18} className="mr-2" /> Finish & Print
                 </Button>

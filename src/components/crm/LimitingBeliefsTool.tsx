@@ -251,7 +251,7 @@ const LimitingBeliefsTool = () => {
               <div key={cp.id} className={cn(
                 "border rounded-xl p-4 transition-all",
                 isActive ? "border-violet-500/30 bg-violet-500/5" :
-                isPast ? "border-emerald-500/20 bg-emerald-500/5" :
+                isPast ? "border-primary/50 bg-primary/5" :
                 "border-border bg-muted/20"
               )}>
                 <div className="flex items-start justify-between gap-3">
@@ -259,7 +259,7 @@ const LimitingBeliefsTool = () => {
                     <div className={cn(
                       "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
                       isActive ? "bg-violet-500/20 text-violet-600" :
-                      isPast ? "bg-emerald-500/20 text-emerald-600" :
+                      isPast ? "bg-primary/20 text-primary-strong" :
                       "bg-muted-foreground/10 text-muted-foreground"
                     )}>
                       {isPast ? <Check size={14} /> : cp.label}
@@ -267,7 +267,7 @@ const LimitingBeliefsTool = () => {
                     <div>
                       <p className={cn(
                         "text-xs font-semibold",
-                        isPast ? "text-emerald-600" : isActive ? "text-violet-600" : "text-muted-foreground"
+                        isPast ? "text-primary-strong" : isActive ? "text-violet-600" : "text-muted-foreground"
                       )}>
                         {cp.question}
                       </p>
@@ -287,7 +287,7 @@ const LimitingBeliefsTool = () => {
                     <Button
                       onClick={() => handleCheckpoint('No')}
                       variant="outline"
-                      className="h-9 px-5 rounded-xl border-emerald-300 bg-emerald-50/50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 font-semibold text-[11px]"
+                      className="h-9 px-5 rounded-xl border-primary/40 bg-primary/10 text-primary-strong hover:bg-primary/15 hover:text-primary-strong font-semibold text-[11px]"
                     >
                       <ThumbsDown size={13} className="mr-1.5" /> No — Advance
                     </Button>
@@ -368,7 +368,7 @@ const LimitingBeliefsTool = () => {
                     i === activeRound
                       ? "bg-violet-500/10 text-violet-600 border border-violet-500/30"
                       : "bg-muted text-muted-foreground hover:bg-muted/70",
-                    r.checkpointResult === 'No' && i !== activeRound && "border-l-2 border-l-emerald-400",
+                    r.checkpointResult === 'No' && i !== activeRound && "border-l-2 border-l-primary/50",
                     r.checkpointResult === 'Yes' && i !== activeRound && "border-l-2 border-l-amber-400",
                   )}
                 >

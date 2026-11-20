@@ -63,7 +63,7 @@ const NeurologicalHistoryTracker = ({ appointments }: NeurologicalHistoryTracker
           </div>
         </Card>
         <Card className="border border-border shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/20 text-primary-strong dark:text-primary flex items-center justify-center">
             <CheckCircle2 size={20} />
           </div>
           <div>
@@ -135,7 +135,7 @@ const NeurologicalHistoryTracker = ({ appointments }: NeurologicalHistoryTracker
                           {session ? (
                             <div className={cn(
                               "w-8 h-8 rounded-full mx-auto flex items-center justify-center transition-all",
-                              session.status === 'Clear' ? "bg-emerald-500 text-primary-foreground shadow-lg shadow-emerald-500/20" : "bg-rose-500 text-primary-foreground shadow-lg shadow-rose-500/20"
+                              session.status === 'Clear' ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25" : "bg-rose-500 text-primary-foreground shadow-lg shadow-rose-500/20"
                             )}>
                               {session.status === 'Clear' ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
                             </div>
@@ -147,7 +147,7 @@ const NeurologicalHistoryTracker = ({ appointments }: NeurologicalHistoryTracker
                     })}
                     <td className="p-6 text-right">
                       {finding.isResolved ? (
-                        <Badge className="bg-emerald-500 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5">
+                        <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5">
                           Resolved
                         </Badge>
                       ) : (

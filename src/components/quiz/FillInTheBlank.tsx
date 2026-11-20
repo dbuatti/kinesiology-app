@@ -54,22 +54,22 @@ const FillInTheBlank: FC<FillInTheBlankProps> = ({
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
           <div className={`p-6 rounded-2xl border-2 flex items-center justify-between shadow-sm ${
             isCorrect 
-              ? "bg-emerald-50 border-emerald-500 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400" 
+              ? "bg-primary/10 border-primary/50 text-primary-strong dark:bg-primary/20 dark:text-primary" 
               : "bg-rose-50 border-rose-500 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400"
           }`}>
             <div className="flex flex-col">
               <span className="text-[10px] font-semibold uppercase tracking-wider opacity-60 mb-1">Your Answer</span>
               <span className="text-xl font-semibold">{selectedAnswer}</span>
             </div>
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-primary-foreground shadow-lg ${isCorrect ? 'bg-emerald-500' : 'bg-rose-500'}`}>
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-primary-foreground shadow-lg ${isCorrect ? 'bg-primary' : 'bg-rose-500'}`}>
               {isCorrect ? <CheckCircle2 size={28} /> : <XCircle size={28} />}
             </div>
           </div>
           
           {!isCorrect && (
-            <div className="p-6 rounded-2xl border-2 border-emerald-500/20 bg-emerald-50/30 dark:bg-emerald-900/10">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 opacity-70 mb-1 block">Correct Answer</span>
-              <p className="text-xl font-semibold text-emerald-700 dark:text-emerald-300">{correctAnswer}</p>
+            <div className="p-6 rounded-2xl border-2 border-primary/50 bg-primary/10 dark:bg-primary/10">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-primary-strong dark:text-primary opacity-70 mb-1 block">Correct Answer</span>
+              <p className="text-xl font-semibold text-primary-strong dark:text-primary">{correctAnswer}</p>
             </div>
           )}
         </div>

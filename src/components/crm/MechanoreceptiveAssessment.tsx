@@ -127,7 +127,7 @@ const MechanoreceptiveAssessment = ({ appointmentId: _appointmentId, onSave }: M
               </div>
 
               <div className="p-6 border border-foreground/20 space-y-4">
-                <div className="flex items-center gap-2 text-emerald-600">
+                <div className="flex items-center gap-2 text-primary-strong">
                   <Activity size={18} />
                   <h4 className="font-semibold text-[11px] uppercase tracking-wider">Unconscious (SC)</h4>
                 </div>
@@ -181,7 +181,7 @@ const MechanoreceptiveAssessment = ({ appointmentId: _appointmentId, onSave }: M
             <div className="grid grid-cols-3 gap-4">
               {[
                 { p: "Sagittal", m: "Flexion / Extension", c: "text-primary" },
-                { p: "Frontal", m: "Abduction / Adduction", c: "text-emerald-600" },
+                { p: "Frontal", m: "Abduction / Adduction", c: "text-primary-strong" },
                 { p: "Transverse", m: "Internal / External Rot", c: "text-orange-600" }
               ].map(plane => (
                 <div key={plane.p} className="p-4 border border-foreground/20 text-center space-y-1">
@@ -205,11 +205,11 @@ const MechanoreceptiveAssessment = ({ appointmentId: _appointmentId, onSave }: M
             </p>
             <div className="pt-4 border-t border-foreground/10 space-y-4">
               <div className="flex items-center gap-3">
-                <CheckCircle2 size={16} className="text-emerald-600" />
+                <CheckCircle2 size={16} className="text-primary-strong" />
                 <span className="text-[10px] font-semibold uppercase tracking-wider">Nasal Breathing Required</span>
               </div>
               <div className="flex items-center gap-3">
-                <CheckCircle2 size={16} className="text-emerald-600" />
+                <CheckCircle2 size={16} className="text-primary-strong" />
                 <span className="text-[10px] font-semibold uppercase tracking-wider">30-40% Effort Only</span>
               </div>
             </div>

@@ -2,13 +2,12 @@
 import type { SyntheticEvent } from 'react';
 import { Check, ArrowDown, ArrowUp, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 
 interface CheckItemProps {
   category: string;
   name: string;
   side?: 'L' | 'R';
-  pattern: any;
+  pattern: Record<string, Record<string, string | undefined>>;
   description?: string;
   testingInstructions?: string;
   showFullInstructions?: boolean;
@@ -55,15 +54,15 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
   return (
     <div 
       className={cn(
-        "flex items-center justify-between p-2 transition-all cursor-pointer group border rounded-md",
+        "flex items-center justify-between px-2 py-1.5 transition-all cursor-pointer group border rounded-lg",
         status === 'Inhibited' 
           ? isCleared 
-            ? "bg-success/8 border-success/25 text-foreground/80" 
-            : "bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-950/20 dark:border-rose-800 dark:text-rose-300"
+            ? "bg-primary/[0.06] border-primary/25 text-foreground/80" 
+            : "bg-rose-500/[0.06] border-rose-500/25 text-rose-700 dark:text-rose-300"
           : status === 'Hypertonic'
             ? isCleared
-              ? "bg-success/8 border-success/25 text-foreground/80"
-              : "bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-950/20 dark:border-amber-800 dark:text-amber-300"
+              ? "bg-primary/[0.06] border-primary/25 text-foreground/80"
+              : "bg-amber-500/[0.08] border-amber-500/25 text-amber-700 dark:text-amber-300"
             : "hover:bg-muted/50 border-transparent text-muted-foreground"
       )}
       role="button"
@@ -78,16 +77,16 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
     >
       <div className="flex items-center gap-2 min-w-0">
         <div className={cn(
-          "w-4 h-4 border flex items-center justify-center transition-all shrink-0 rounded-sm",
+          "w-4 h-4 border flex items-center justify-center transition-all shrink-0 rounded-md",
           status === 'Inhibited' 
             ? isCleared 
-              ? "bg-success border-success text-white" 
-              : "bg-rose-500 border-rose-500 text-white"
+              ? "bg-primary/90 border-primary/90 text-white" 
+              : "bg-rose-500/90 border-rose-500/90 text-white"
             : status === 'Hypertonic'
               ? isCleared
-                ? "bg-success border-success text-white"
-                : "bg-amber-500 border-amber-500 text-white"
-              : "border-border group-hover:border-foreground bg-background"
+                ? "bg-primary/90 border-primary/90 text-white"
+                : "bg-amber-500/90 border-amber-500/90 text-white"
+              : "border-border/80 group-hover:border-foreground/40 bg-background"
         )}>
           {status === 'Inhibited' && (isCleared ? <Check size={10} strokeWidth={4} /> : <ArrowDown size={10} strokeWidth={4} />)}
           {status === 'Hypertonic' && (isCleared ? <Check size={10} strokeWidth={4} /> : <ArrowUp size={10} strokeWidth={4} />)}
@@ -95,7 +94,7 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
 
         <div className="flex flex-col min-w-0">
           <span className={cn(
-            "text-[10px] font-semibold truncate",
+            "text-[13px] font-medium break-words leading-snug",
             status === 'Inhibited' && !isCleared && "text-rose-600 dark:text-rose-300",
             status === 'Hypertonic' && !isCleared && "text-amber-600 dark:text-amber-300",
             isCleared && "text-muted-foreground line-through"
@@ -103,23 +102,23 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
             {side ? `${side}: ${name}` : name}
           </span>
           {description && (
-            <span className="text-[10px] text-muted-foreground/50 truncate leading-tight italic">{description}</span>
+            <span className="text-[11px] text-muted-foreground/60 break-words leading-tight italic">{description}</span>
           )}
           {testingInstructions && (
             <span className={cn(
-              "text-[10px] text-primary/70 leading-tight flex items-start gap-1",
+              "text-[11px] text-primary/70 leading-tight flex items-start gap-1",
               showFullInstructions ? "mt-1" : "truncate"
             )}>
-              <Zap size={8} className="shrink-0 mt-1" />{testingInstructions}
+              <Zap size={10} className="shrink-0 mt-0.5" />{testingInstructions}
             </span>
           )}
         </div>
       </div>
 
       {isCleared && (
-        <Badge className="bg-success text-primary-foreground border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-1 rounded-sm shrink-0">
+        <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[8px] font-semibold uppercase tracking-wider text-primary-strong dark:text-primary">
           Cleared
-        </Badge>
+        </span>
       )}
     </div>
   );

@@ -604,7 +604,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 p-4 rounded-xl">
+                <div className="flex items-center gap-3 bg-primary/10 dark:bg-primary/15 text-primary-strong dark:text-primary p-4 rounded-xl">
                   <Check size={18} />
                   <div>
                     <p className="font-bold text-sm">Booked!</p>
@@ -619,7 +619,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                 </div>
               )}
               {sendOnboarding && emailSent && (
-                <div className="flex items-center gap-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 p-4 rounded-xl">
+                <div className="flex items-center gap-3 bg-primary/10 dark:bg-primary/15 text-primary-strong dark:text-primary p-4 rounded-xl">
                   <CheckCircle2 size={18} />
                   <div>
                     <p className="font-bold text-sm">Onboarding Email Sent</p>
@@ -654,11 +654,11 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
               {...clickableProps(() => setSendOnboarding(!sendOnboarding))}
               className={cn(
                 "flex items-center justify-between rounded-xl border-2 p-4 transition-all cursor-pointer",
-                sendOnboarding ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200" : "bg-card border-border hover:border-emerald-300"
+                sendOnboarding ? "bg-primary/10 dark:bg-primary/10 border-primary/30" : "bg-card border-border hover:border-primary/40"
               )}
             >
               <div className="flex items-center gap-3">
-                <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center transition-colors", sendOnboarding ? "bg-emerald-600 text-primary-foreground" : "bg-muted text-emerald-600")}>
+                <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center transition-colors", sendOnboarding ? "bg-primary text-primary-foreground" : "bg-muted text-primary-strong")}>
                   <Mail size={16} />
                 </div>
                 <div className="space-y-0.5">
@@ -666,7 +666,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                   <p className="text-xs text-muted-foreground font-medium">Booking confirmation + welcome email</p>
                 </div>
               </div>
-              <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all", sendOnboarding ? "bg-emerald-600 border-emerald-600" : "border-muted-foreground/30")}>
+              <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all", sendOnboarding ? "bg-primary border-primary/40" : "border-muted-foreground/30")}>
                 {sendOnboarding && <Check size={12} className="text-primary-foreground" />}
               </div>
             </div>

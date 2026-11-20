@@ -43,6 +43,7 @@ import {
   Table2,
   Stethoscope,
   Bot,
+  ScrollText,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -494,6 +495,16 @@ const ClientDetailPage = () => {
                 onClick={() => setAssessmentModal({ open: true, type: 'coherence' })}
               >
                 <Activity size={14} className="mr-2" /> Log COH
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="h-9 rounded-lg border-border px-4 text-[13px] font-medium"
+              >
+                <Link to={`/clients/${client.id}/log`}>
+                  <ScrollText size={14} className="mr-2" /> Full log
+                </Link>
               </Button>
               <Dialog open={editOpen} onOpenChange={setEditOpen}>
                 <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-xl p-0">

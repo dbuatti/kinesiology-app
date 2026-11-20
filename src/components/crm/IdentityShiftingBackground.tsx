@@ -81,8 +81,8 @@ const IdentityShiftingBackground = () => {
           </div>
 
           <div className="flex gap-4 p-6 bg-card dark:bg-card rounded-2xl border border-secondary/30 shadow-sm">
-            <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center shrink-0">
-              <Shield className="text-emerald-600 dark:text-emerald-400" />
+            <div className="w-12 h-12 bg-primary/15 dark:bg-primary/20 rounded-xl flex items-center justify-center shrink-0">
+              <Shield className="text-primary-strong dark:text-primary" />
             </div>
             <div>
               <h3 className="font-bold mb-2">Constructed vs. Authentic Self</h3>

@@ -89,11 +89,11 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
     });
   }, [allFindings, filter]);
 
-  const priorityPathway = (meta as any)?.priority_pathway || '';
+  const priorityPathway = (meta as Record<string, unknown>)?.priority_pathway as string || '';
   const priorityCount = allFindings.filter(f => f.priorityLevel === 'priority').length;
 
   const stimPriorities = useMemo(() => {
-    const pattern = safeParse<Record<string, any>>(appointment.priority_pattern, {});
+    const pattern = safeParse<Record<string, Record<string, string | undefined>>>(appointment.priority_pattern, {});
     return (pattern.priorities || {}) as Record<string, string>;
   }, [appointment.priority_pattern]);
 

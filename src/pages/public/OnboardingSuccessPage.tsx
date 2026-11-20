@@ -6,8 +6,8 @@ const OnboardingSuccessPage = () => {
       <div className="w-full max-w-md bg-background rounded-2xl shadow-xl overflow-hidden text-center">
         <div className="h-1.5 bg-gradient-to-r from-amber-400 to-rose-400" />
         <div className="p-10 sm:p-12">
-          <div className="mx-auto w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mb-6">
-            <CheckCircle2 className="text-emerald-600" size={36} />
+          <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+            <CheckCircle2 className="text-primary-strong" size={36} />
           </div>
           <div className="text-[11px] font-semibold tracking-wider uppercase text-chart-primary mb-3">
             Payment Received

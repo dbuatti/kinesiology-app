@@ -52,7 +52,7 @@ const SpinalSegmentReference = () => {
                         Spinal Segment
                       </Badge>
                       {meridian && (
-                        <Badge className="bg-emerald-50 text-emerald-700 border-none font-semibold text-[10px] uppercase tracking-wider">
+                        <Badge className="bg-primary/10 text-primary-strong border-none font-semibold text-[10px] uppercase tracking-wider">
                           {meridian}
                         </Badge>
                       )}
@@ -82,7 +82,7 @@ const SpinalSegmentReference = () => {
                       {assoc.muscle}
                     </p>
                     {meridian && (
-                      <p className="text-[11px] font-semibold text-emerald-600 mt-1 flex items-center gap-1">
+                      <p className="text-[11px] font-semibold text-primary-strong mt-1 flex items-center gap-1">
                         <Layers size={10} /> {meridian} Meridian
                       </p>
                     )}

@@ -48,8 +48,8 @@ export function PaymentStatusBadge({
   if (paid === true) {
     return (
       <Badge
-        variant="success"
-        className={cn("font-semibold", sizing, className)}
+        variant="secondary"
+        className={cn("font-semibold text-foreground", sizing, className)}
         title={`Payment received${amount ? ` — $${amount}` : ""}${paymentMethod ? ` (${paymentMethod})` : ""}`}
       >
         <CheckCircle2 size={size === "sm" ? 10 : 12} aria-hidden />

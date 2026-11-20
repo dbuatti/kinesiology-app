@@ -55,7 +55,7 @@ const normalizeItemId = (id: string) => (id.startsWith("hw-") ? "hw" : id);
 
 /** Element dot for the organ reference — one colour per TCM element. */
 const ELEMENT_DOT: Record<string, string> = {
-  Wood: "bg-emerald-500",
+  Wood: "bg-primary",
   Fire: "bg-rose-500",
   Earth: "bg-amber-500",
   Metal: "bg-slate-400",
@@ -421,12 +421,12 @@ const CorrectionsManualContent = ({
     };
 
     const stepColor = accent === "text-primary"
-      ? { done: "bg-emerald-500 text-white", pending: "bg-primary/10 dark:bg-primary/50 text-primary dark:text-blue-300" }
+      ? { done: "bg-primary text-primary-foreground", pending: "bg-primary/10 dark:bg-primary/50 text-primary dark:text-blue-300" }
       : accent === "text-purple-600"
-        ? { done: "bg-emerald-500 text-white", pending: "bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300" }
+        ? { done: "bg-primary text-primary-foreground", pending: "bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300" }
         : accent === "text-rose-600"
-          ? { done: "bg-emerald-500 text-white", pending: "bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300" }
-          : { done: "bg-emerald-500 text-white", pending: "bg-destructive/10 text-destructive" };
+          ? { done: "bg-primary text-primary-foreground", pending: "bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300" }
+          : { done: "bg-primary text-primary-foreground", pending: "bg-destructive/10 text-destructive" };
 
     return (
       <div className="space-y-1">
@@ -437,7 +437,7 @@ const CorrectionsManualContent = ({
               key={step}
               className={cn(
                 "flex gap-2.5 px-3 py-2.5 rounded-lg transition-colors",
-                isDone ? "bg-emerald-50/40 dark:bg-emerald-950/15" : "hover:bg-muted/30"
+                isDone ? "bg-primary/[0.04] dark:bg-primary/10" : "hover:bg-muted/30"
               )}
             >
               <button
@@ -486,7 +486,7 @@ const CorrectionsManualContent = ({
           </span>
         )}
         {done > 0 && (
-          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary-strong dark:bg-primary/50 dark:text-primary">
             {done}/{total}
           </span>
         )}
@@ -676,7 +676,7 @@ const CorrectionsManualContent = ({
 
                 {/* Organ Pulse Point Reference */}
                 <div className="panel p-4">
-                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3">Organ Pulse Points</h3>
+                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-primary-strong dark:text-primary mb-3">Organ Pulse Points</h3>
                   <div className="mb-3 overflow-hidden rounded-lg border border-border bg-white">
                     <ReferenceImage
                       src="/images/pulse-points.png"
@@ -719,12 +719,12 @@ const CorrectionsManualContent = ({
                                   className={cn(
                                     "rounded-md px-1.5 py-1 text-left transition-colors",
                                     active
-                                      ? "bg-emerald-50 ring-1 ring-emerald-300 dark:bg-emerald-950/40 dark:ring-emerald-800"
+                                      ? "bg-primary/10 ring-1 ring-primary/40 dark:bg-primary/20 dark:ring-primary/60"
                                       : canLogEmotional && "hover:bg-muted/50"
                                   )}
                                 >
                                   <p className="flex items-center gap-1 text-[10px] font-semibold text-foreground/90">
-                                    {active && <Check size={9} strokeWidth={3} className="text-emerald-600" />}
+                                    {active && <Check size={9} strokeWidth={3} className="text-primary-strong" />}
                                     {organ.name}
                                   </p>
                                   <p className="text-[9px] text-muted-foreground">{organ.depth}</p>
@@ -878,7 +878,7 @@ const CorrectionsManualContent = ({
                       className={cn(
                         "flex items-center justify-center w-5 h-5 rounded-md text-[10px] font-bold shrink-0 mt-0.5",
                         isFilled
-                          ? "bg-emerald/10 text-emerald-strong"
+                          ? "bg-primary/10 text-primary-strong"
                           : "bg-destructive/10 text-destructive-strong",
                       )}
                     >
@@ -943,7 +943,7 @@ const CorrectionsManualContent = ({
                     className={cn(
                       "p-3 border rounded-lg transition-colors",
                       answered
-                        ? (isYes ? "bg-rose-50/50 dark:bg-rose-950/15 border-rose-200/40" : "bg-emerald-50/50 dark:bg-emerald-950/15 border-emerald-200/40")
+                        ? (isYes ? "bg-rose-50/50 dark:bg-rose-950/15 border-rose-200/40" : "bg-primary/[0.05] dark:bg-primary/10 border-primary/30")
                         : "bg-destructive/5 border-destructive/15",
                     )}
                   >
@@ -952,7 +952,7 @@ const CorrectionsManualContent = ({
                         className={cn(
                           "flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold shrink-0 mt-0.5",
                           answered
-                            ? (isYes ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300" : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300")
+                            ? (isYes ? "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300" : "bg-primary/15 text-primary-strong dark:bg-primary/30 dark:text-primary")
                             : "bg-destructive/10 text-destructive-strong border border-destructive/20",
                         )}
                       >
@@ -993,15 +993,15 @@ const CorrectionsManualContent = ({
                             className={cn(
                               "p-2 rounded-lg border cursor-pointer transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1",
                               isNo
-                                ? "bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 shadow-sm"
-                                : "bg-card border-transparent hover:border-emerald-200/40 hover:bg-emerald-50/30",
+                                ? "bg-primary/[0.05] dark:bg-primary/10 border border-primary/30 shadow-sm"
+                                : "bg-card border-transparent hover:border-primary/30 hover:bg-primary/[0.07]",
                             )}
                           >
                             <div className="flex items-center gap-1 mb-0.5">
-                              <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">No</span>
-                              <ArrowRightCircle size={11} className="text-emerald-500" />
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-primary-strong dark:text-primary">No</span>
+                              <ArrowRightCircle size={11} className="text-primary/70" />
                             </div>
-                            <p className="text-[10px] text-emerald-800 dark:text-emerald-200 leading-relaxed">{cp.noAdvance}</p>
+                            <p className="text-[10px] text-foreground/80 dark:text-foreground/70 leading-relaxed">{cp.noAdvance}</p>
                           </div>
                         </div>
                         {answered && (

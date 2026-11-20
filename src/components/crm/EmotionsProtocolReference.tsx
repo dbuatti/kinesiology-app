@@ -60,8 +60,8 @@ const STEPS = [
     title: "Priority Organ", 
     desc: "Find the organ acting as a surrogate for the charge. This MUST be an organ related to the emotion's element from Step 5:",
     icon: Activity,
-    color: "text-emerald-600",
-    bg: "bg-emerald-50",
+    color: "text-primary-strong",
+    bg: "bg-primary/10",
     details: [
       { label: "Wood (Anger)", items: "Liver / Gallbladder" },
       { label: "Fire (Hurt)", items: "Heart / Small Intestine" },

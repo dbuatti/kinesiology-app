@@ -161,7 +161,7 @@ const MuscleReference = () => {
                 )}
                 <div className="absolute top-3 right-3 flex gap-1">
                   {hasImages && (
-                    <Badge className="bg-emerald-500 text-primary-foreground border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0.5">
+                    <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0.5">
                       Custom
                     </Badge>
                   )}

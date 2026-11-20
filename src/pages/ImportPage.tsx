@@ -125,8 +125,8 @@ const ImportPage = () => {
  <div className="flex items-center gap-3 p-4 bg-chart-emerald/10 rounded-xl border border-border">
  <CheckCircle size={24} className="text-chart-emerald flex-shrink-0" />
  <div>
- <p className="text-sm font-medium text-emerald-800">Successfully Imported</p>
- <p className="text-2xl font-medium text-emerald-900">{results.success}</p>
+ <p className="text-sm font-medium text-primary-strong">Successfully Imported</p>
+ <p className="text-2xl font-medium text-primary-strong">{results.success}</p>
  </div>
  </div>
  <div className="flex items-center gap-3 p-4 bg-muted rounded-xl border border-border">

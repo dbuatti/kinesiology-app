@@ -88,8 +88,8 @@ export const ZONES: Record<Zone, ZoneDef> = {
     id: "business",
     label: "Business",
     home: "/inbox",
-    dot: "bg-chart-emerald",
-    aura: ["hsl(160 60% 42% / 0.10)", "hsl(190 70% 45% / 0.06)"],
+    dot: "bg-chart-primary",
+    aura: ["hsl(255 70% 58% / 0.10)", "hsl(275 60% 58% / 0.06)"],
     // Five destinations: the work that keeps the practice running.
     groups: [
       { label: "Business", items: [INBOX, FOLLOW_UP, ASSISTANT, MONEY, AUDIT] },

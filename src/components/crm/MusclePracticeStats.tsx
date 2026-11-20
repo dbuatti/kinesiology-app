@@ -72,7 +72,7 @@ const MusclePracticeStats = () => {
               const isHigh = progress >= 50;
               const isMedium = progress >= 25;
 
-              const colorClass = isHigh ? "[&>div]:bg-destructive" : isMedium ? "[&>div]:bg-amber-500" : "[&>div]:bg-emerald-500";
+              const colorClass = isHigh ? "[&>div]:bg-destructive" : isMedium ? "[&>div]:bg-amber-500" : "[&>div]:bg-primary";
               const icon = isHigh ? AlertTriangle : isMedium ? TrendingUp : CheckCircle2;
               const IconComponent = icon;
 
@@ -80,7 +80,7 @@ const MusclePracticeStats = () => {
                 <div key={stat.muscle_name} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <IconComponent size={16} className={isHigh ? "text-destructive" : isMedium ? "text-amber-500" : "text-emerald-500"} />
+                        <IconComponent size={16} className={isHigh ? "text-destructive" : isMedium ? "text-amber-500" : "text-primary-strong"} />
                         <span className="font-medium text-foreground">{stat.muscle_name}</span>
                         <Badge variant="secondary" className="text-xs bg-muted text-muted-foreground">
                             {stat.total_tests} tests
@@ -88,7 +88,7 @@ const MusclePracticeStats = () => {
                     </div>
                     <span className={cn(
                         "font-bold text-lg tabular-nums",
-                        isHigh ? "text-destructive" : isMedium ? "text-amber-600" : "text-emerald-600"
+                        isHigh ? "text-destructive" : isMedium ? "text-amber-600" : "text-primary-strong"
                     )}>
                       {stat.dysfunction_rate}%
                     </span>

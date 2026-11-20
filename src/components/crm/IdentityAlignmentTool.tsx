@@ -377,13 +377,13 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
   const renderPhase1 = () => (
     <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {backlogItem && (
-        <div className="p-3 bg-muted dark:bg-emerald-900/20 rounded-xl border border-border dark:border-emerald-900/30 space-y-3 relative overflow-hidden">
+        <div className="p-3 bg-muted dark:bg-primary/20 rounded-xl border border-border dark:border-primary/40 space-y-3 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-3 opacity-5 pointer-events-none"><Quote size={80} /></div>
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
               <History size={12} />
             </div>
-            <h4 className="text-xs font-semibold text-foreground dark:text-emerald-100 uppercase tracking-wider">Source Context</h4>
+            <h4 className="text-xs font-semibold text-foreground dark:text-primary-strong uppercase tracking-wider">Source Context</h4>
           </div>
           <div className="space-y-3 relative z-10">
             {backlogItem.practitioner_reflections?.content && (
@@ -398,18 +398,18 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
             {backlogItem.priority_reasoning && (
               <div className="space-y-1">
                 <p className="text-[10px] font-semibold text-chart-emerald uppercase tracking-wider">AI Reasoning</p>
-                <p className="text-sm font-medium text-foreground dark:text-emerald-200 leading-relaxed">
+                <p className="text-sm font-medium text-foreground dark:text-primary leading-relaxed">
                   {backlogItem.priority_reasoning}
                 </p>
               </div>
             )}
             
             {backlogItem.polarity_insight && (
-              <div className="flex items-start gap-2 p-3 bg-card/50 dark:bg-muted/50 rounded-xl border border-border dark:border-emerald-900/30">
+              <div className="flex items-start gap-2 p-3 bg-card/50 dark:bg-muted/50 rounded-xl border border-border dark:border-primary/40">
                 <ArrowRightLeft size={14} className="text-chart-emerald shrink-0 mt-0.5" />
                 <div>
                   <p className="text-[10px] font-semibold text-chart-emerald uppercase tracking-wider mb-0.5">Polarity Insight</p>
-                  <p className="text-xs font-medium text-foreground dark:text-emerald-100">{backlogItem.polarity_insight}</p>
+                  <p className="text-xs font-medium text-foreground dark:text-primary-strong">{backlogItem.polarity_insight}</p>
                 </div>
               </div>
             )}
@@ -743,7 +743,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
           ) : (
             <div className="grid grid-cols-1 gap-3">
               {completedSessions.map((session) => (
-                <div key={session.id} className="p-3 bg-card rounded-xl border border-border hover:border-emerald-400 transition-all cursor-pointer group flex items-center justify-between" {...clickableProps(() => setViewingReportId(session.id))}>
+                <div key={session.id} className="p-3 bg-card rounded-xl border border-border hover:border-primary/40 transition-all cursor-pointer group flex items-center justify-between" {...clickableProps(() => setViewingReportId(session.id))}>
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-chart-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                       <FileText size={14} />

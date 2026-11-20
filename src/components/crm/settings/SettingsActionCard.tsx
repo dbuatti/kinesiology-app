@@ -26,7 +26,7 @@ const SettingsActionCard = ({
   const borderColors = {
     purple: 'border-purple-100 dark:border-purple-900/30',
     indigo: 'border-indigo-100 dark:border-indigo-900/30',
-    emerald: 'border-emerald-100 dark:border-emerald-900/30',
+    emerald: 'border-primary/25 dark:border-primary/40',
     amber: 'border-amber-100 dark:border-amber-900/30',
     rose: 'border-rose-100 dark:border-rose-900/30'
   };
@@ -34,7 +34,7 @@ const SettingsActionCard = ({
   const buttonColors = {
     purple: 'bg-purple-600 hover:bg-purple-700',
     indigo: 'bg-indigo-600 hover:bg-indigo-700',
-    emerald: 'bg-emerald-600 hover:bg-emerald-700',
+    emerald: 'bg-primary hover:bg-primary',
     amber: 'bg-amber-500 hover:bg-amber-600',
     rose: 'bg-rose-600 hover:bg-rose-700'
   };

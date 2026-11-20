@@ -53,8 +53,8 @@ export const IntakeStatusBadge = ({ client, showLabel: _showLabel }: IntakeStatu
   const getColor = () => {
     if (percent === 0) return "bg-muted text-muted-foreground dark:bg-card dark:text-muted-foreground";
     if (percent < 50) return "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
-    if (percent < 100) return "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300";
-    return "bg-emerald-500 text-primary-foreground";
+    if (percent < 100) return "bg-primary/15 text-primary-strong dark:bg-primary/20 dark:text-primary";
+    return "bg-primary text-primary-foreground";
   };
 
   return (

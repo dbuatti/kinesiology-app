@@ -34,7 +34,7 @@ const HelpModal = ({ open, onOpenChange }: HelpModalProps) => {
     { name: "Preliminary", time: "15m", icon: Target, color: "text-indigo-600" },
     { name: "Ease", time: "15m", icon: Zap, color: "text-rose-600" },
     { name: "Align", time: "15m", icon: CheckCircle2, color: "text-amber-600" },
-    { name: "Correct", time: "10m", icon: AlertTriangle, color: "text-emerald-600" },
+    { name: "Correct", time: "10m", icon: AlertTriangle, color: "text-primary-strong" },
     { name: "Embed", time: "5m", icon: Home, color: "text-primary" },
   ];
 

@@ -128,6 +128,9 @@ The visual system (Sept 2026 redesign): cool-neutral surfaces + one indigo accen
 
 
 CSS variables are defined in `src/globals.css` and wired in `tailwind.config.ts`.
+The visual spec itself — exact tokens, type scale, spacing, component rules and
+the pre-commit checklist — lives in **`DESIGN.md`** (repo root). Read it before
+any UI work; never invent values outside its tokens.
 
 **Dark mode for raw palette classes.** Older components use light Tailwind palette classes (`bg-rose-50`, `border-indigo-200`, `from-emerald-50`, `text-violet-800`) without `dark:` variants. `scripts/gen-dark-palette.mjs` (run automatically by `pnpm build`) generates `src/styles/dark-palette.css`, which remaps every such class used in `src/` to a translucent tint / light text in dark mode. An explicit `dark:` variant always wins over it. Add `keep-light` to a subtree that must stay light (e.g. white print-preview sheets). Prefer tokens (`bg-muted`, `bg-primary/10`) in new code.
 

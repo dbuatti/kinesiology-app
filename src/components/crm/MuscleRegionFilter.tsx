@@ -19,7 +19,7 @@ const REGIONS = [
   { id: 'Head & Neck', label: 'Head & Neck', icon: Brain, color: 'text-purple-500' },
   { id: 'Upper Body & Shoulder', label: 'Torso & Shoulders', icon: Activity, color: 'text-rose-500' },
   { id: 'Arm & Hand', label: 'Arms & Hands', icon: Dumbbell, color: 'text-indigo-500' },
-  { id: 'Lower Body', label: 'Hips & Legs', icon: User, color: 'text-emerald-500' },
+  { id: 'Lower Body', label: 'Hips & Legs', icon: User, color: 'text-primary-strong' },
   { id: 'Lower Leg & Foot', label: 'Feet & Ankles', icon: Footprints, color: 'text-primary' },
 ];
 

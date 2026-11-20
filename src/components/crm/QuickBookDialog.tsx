@@ -520,11 +520,11 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                   {...clickableProps(() => setSendOnboarding(!sendOnboarding))}
                   className={cn(
                     "flex flex-row items-center justify-between rounded-2xl border-2 p-5 transition-all cursor-pointer mt-3",
-                    sendOnboarding ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200" : "bg-card border-border hover:border-emerald-300"
+                    sendOnboarding ? "bg-primary/10 dark:bg-primary/10 border-primary/30" : "bg-card border-border hover:border-primary/40"
                   )}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-colors", sendOnboarding ? "bg-emerald-600 text-primary-foreground" : "bg-muted text-emerald-600")}>
+                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-colors", sendOnboarding ? "bg-primary text-primary-foreground" : "bg-muted text-primary-strong")}>
                       <Mail size={20} />
                     </div>
                     <div className="space-y-0.5">
@@ -532,7 +532,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                       <p className="text-xs text-muted-foreground font-medium">{selectedPrice > 0 ? "Emails intake form + Stripe payment link" : "Emails the intake form"}</p>
                     </div>
                   </div>
-                  <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all", sendOnboarding ? "bg-emerald-600 border-emerald-600" : "border-muted-foreground/30")}>
+                  <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all", sendOnboarding ? "bg-primary border-primary/40" : "border-muted-foreground/30")}>
                     {sendOnboarding && <CheckCircle2 size={16} className="text-primary-foreground" />}
                   </div>
                 </div>

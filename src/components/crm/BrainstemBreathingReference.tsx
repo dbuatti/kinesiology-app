@@ -94,9 +94,9 @@ const BrainstemBreathingReference = () => {
       <div className="p-8 bg-foreground text-primary-foreground rounded-2xl shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10"><Wind size={150} /></div>
         <div className="relative z-10 space-y-4">
-          <Badge className="bg-teal-500 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-4 py-1">Neurological Input</Badge>
+          <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-4 py-1">Neurological Input</Badge>
           <h3 className="text-3xl font-semibold flex items-center gap-3">
-            <Wind size={32} className="text-teal-400" /> Brainstem Breathing Rehab
+            <Wind size={32} className="text-primary" /> Brainstem Breathing Rehab
           </h3>
           <p className="text-muted-foreground font-medium text-lg leading-relaxed max-w-3xl">
             Breathing is the most direct way to influence brainstem nuclei. Use these patterns to re-strengthen pathways after a correction or to shift systemic motor tone.

@@ -140,14 +140,14 @@ const MechanoBible = () => {
         </Card>
 
         <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
-          <CardHeader className="bg-emerald-50 p-8">
-            <CardTitle className="text-xl font-semibold flex items-center gap-3 text-emerald-900">
+          <CardHeader className="bg-primary/10 p-8">
+            <CardTitle className="text-xl font-semibold flex items-center gap-3 text-primary-strong">
               <Move size={24} /> 2. Finding Joint Action
             </CardTitle>
-            <CardDescription className="text-emerald-700 font-medium">Utilize planes of motion to speed up the process.</CardDescription>
+            <CardDescription className="text-primary-strong font-medium">Utilize planes of motion to speed up the process.</CardDescription>
           </CardHeader>
           <CardContent className="p-8 space-y-6">
-            <div className="p-6 bg-emerald-900 text-primary-foreground rounded-2xl shadow-xl relative overflow-hidden">
+            <div className="p-6 bg-primary text-primary-foreground rounded-2xl shadow-xl relative overflow-hidden">
               <div className="absolute top-0 right-0 p-6 opacity-10"><Zap size={80} /></div>
               <p className="text-sm font-bold leading-relaxed relative z-10">
                 "Once the joint is found, utilize the Action Table. To speed it up, ask the body for the <strong>Plane of Motion</strong> first."
@@ -161,7 +161,7 @@ const MechanoBible = () => {
                 </div>
               ))}
             </div>
-            <Button variant="outline" onClick={() => setTableOpen(true)} className="w-full h-12 rounded-xl border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-bold">
+            <Button variant="outline" onClick={() => setTableOpen(true)} className="w-full h-12 rounded-xl border-primary/30 text-primary-strong hover:bg-primary/10 font-bold">
               View Action Table Reference
             </Button>
           </CardContent>
@@ -216,20 +216,20 @@ const MechanoBible = () => {
           {/* Unconscious Examples */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 px-4">
-              <Activity size={20} className="text-emerald-600" />
-              <h4 className="font-semibold text-emerald-900 uppercase tracking-wider text-sm">Unconscious (Spinocerebellar)</h4>
+              <Activity size={20} className="text-primary-strong" />
+              <h4 className="font-semibold text-primary-strong uppercase tracking-wider text-sm">Unconscious (Spinocerebellar)</h4>
             </div>
             {unconsciousExamples.map((ex, i) => (
-              <Card key={i} className="border-none shadow-md rounded-2xl bg-card overflow-hidden border-l-4 border-emerald-500">
+              <Card key={i} className="border-none shadow-md rounded-2xl bg-card overflow-hidden border-l-4 border-primary/50">
                 <CardContent className="p-6 space-y-4">
                   <div className="flex justify-between items-start">
                     <h5 className="font-semibold text-foreground text-lg">{ex.title}</h5>
-                    <Badge className="bg-emerald-50 text-emerald-700 border-none text-[10px] font-semibold uppercase">{ex.logic}</Badge>
+                    <Badge className="bg-primary/10 text-primary-strong border-none text-[10px] font-semibold uppercase">{ex.logic}</Badge>
                   </div>
 
                   <div className="p-3 bg-muted/50 rounded-xl border border-border/50">
                     <p className="text-xs font-medium text-muted-foreground mb-1">Localization Path</p>
-                    <p className="text-xs font-bold text-emerald-600">{ex.localization}</p>
+                    <p className="text-xs font-bold text-primary-strong">{ex.localization}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 text-xs">
@@ -243,7 +243,7 @@ const MechanoBible = () => {
                     </div>
                   </div>
                   <div className="pt-3 border-t border-border/30">
-                    <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-1">Protocol</p>
+                    <p className="text-[10px] font-semibold text-primary-strong uppercase tracking-wider mb-1">Protocol</p>
                     <p className="text-xs text-muted-foreground leading-relaxed font-medium">{ex.protocol}</p>
                   </div>
                 </CardContent>
@@ -260,31 +260,31 @@ const MechanoBible = () => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden group hover:shadow-xl transition-all">
-            <div className="h-3 bg-emerald-500" />
+            <div className="h-3 bg-primary" />
             <CardHeader className="p-8">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-2xl font-semibold text-foreground">Ligaments</CardTitle>
-                <Shield size={32} className="text-emerald-500" />
+                <Shield size={32} className="text-primary-strong" />
               </div>
-              <p className="text-emerald-600 font-semibold text-[10px] uppercase tracking-wider">Bone to Bone</p>
+              <p className="text-primary-strong font-semibold text-[10px] uppercase tracking-wider">Bone to Bone</p>
             </CardHeader>
             <CardContent className="p-8 pt-0 space-y-6">
-              <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                <p className="text-sm font-bold text-emerald-900">
+              <div className="p-4 bg-primary/10 rounded-2xl border border-primary/25">
+                <p className="text-sm font-bold text-primary-strong">
                   Primary role: Unconscious Mechanoreception (85% of total input).
                 </p>
               </div>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
-                  <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
+                  <CheckCircle2 size={18} className="text-primary-strong shrink-0 mt-0.5" />
                   <p className="text-sm text-muted-foreground font-medium">Act as "Sensors" that tell the cerebellum where the joint is in space.</p>
                 </li>
                 <li className="flex items-start gap-3">
-                  <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
+                  <CheckCircle2 size={18} className="text-primary-strong shrink-0 mt-0.5" />
                   <p className="text-sm text-muted-foreground font-medium">When stretched or injured, they send a "Threat" signal to the brain.</p>
                 </li>
                 <li className="flex items-start gap-3">
-                  <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
+                  <CheckCircle2 size={18} className="text-primary-strong shrink-0 mt-0.5" />
                   <p className="text-sm text-muted-foreground font-medium"><strong>Correction:</strong> Stretch the ligament while holding GV16 (Cerebellum).</p>
                 </li>
               </ul>
@@ -344,10 +344,10 @@ const MechanoBible = () => {
             },
             { 
               title: "Frontal", 
-              color: "bg-emerald-600", 
-              light: "bg-emerald-50", 
-              border: "border-emerald-100",
-              text: "text-emerald-700",
+              color: "bg-primary", 
+              light: "bg-primary/10", 
+              border: "border-primary/25",
+              text: "text-primary-strong",
               desc: "Divides body into Front & Back.", 
               movements: ["Abduction", "Adduction", "Lateral Flexion", "Inversion/Eversion"],
               logic: "Side-to-side movement."

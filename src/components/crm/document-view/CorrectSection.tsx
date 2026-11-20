@@ -680,7 +680,7 @@ Correction Method: ${method}`;
             <CorrectSectionProtocolBlock 
               title="Physiological"
               icon={Droplets}
-              color="bg-emerald-500"
+              color="bg-primary"
               desc="Biochemical, nutritional, and organ-based signals. Addresses systemic imbalances."
               steps={[
                 "Address biochemical or organ-specific reflexes",

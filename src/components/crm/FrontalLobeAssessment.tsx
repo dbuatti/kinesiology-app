@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Hand, Loader2, RotateCcw, ImageOff, CheckCircle2, Zap, RefreshCw, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -183,147 +182,164 @@ const FrontalLobeAssessment = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-muted/50 rounded-2xl border border-border/50">
-        <div className="space-y-1">
-          <p className="text-xs font-medium text-muted-foreground">Assessment Result</p>
-          <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              onClick={() => handleSetStatus('Clear')}
+    <div className="space-y-5">
+      {/* Result — segmented control */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="inline-flex items-center rounded-xl bg-muted/60 p-1">
+          {([
+            { key: 'Clear' as const, label: 'Clear', icon: CheckCircle2, active: "bg-card text-primary-strong dark:text-primary shadow-xs" },
+            { key: 'Inhibited' as const, label: 'Inhibited', icon: Zap, active: "bg-card text-rose-700 dark:text-rose-300 shadow-xs" },
+            { key: 'Recheck' as const, label: 'Recheck', icon: RefreshCw, active: "bg-card text-amber-700 dark:text-amber-300 shadow-xs" },
+          ]).map(opt => (
+            <button
+              key={opt.key}
+              onClick={() => handleSetStatus(opt.key)}
+              disabled={loading}
               className={cn(
-                "h-10 px-4 rounded-md font-medium text-[13px] transition-all",
-                currentStatus === 'Clear' ? "bg-success text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-success/5"
+                "flex h-8 items-center gap-1.5 rounded-lg px-3 text-[12px] font-semibold transition-all disabled:opacity-60",
+                currentStatus === opt.key ? opt.active : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <CheckCircle2 size={14} className="mr-2" /> Clear
-            </Button>
-            <Button 
-              size="sm" 
-              onClick={() => handleSetStatus('Inhibited')}
-              className={cn(
-                "h-10 px-4 rounded-md font-medium text-[13px] transition-all",
-                currentStatus === 'Inhibited' ? "bg-destructive text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-destructive/5"
-              )}
-            >
-              <Zap size={14} className="mr-2" /> Inhibited
-            </Button>
-            <Button 
-              size="sm" 
-              onClick={() => handleSetStatus('Recheck')}
-              className={cn(
-                "h-10 px-4 rounded-md font-medium text-[13px] transition-all",
-                currentStatus === 'Recheck' ? "bg-warning text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-warning/5"
-              )}
-            >
-              <RefreshCw size={14} className="mr-2" /> Recheck
-            </Button>
-          </div>
+              <opt.icon size={13} /> {opt.label}
+            </button>
+          ))}
         </div>
         {currentStatus && (
-          <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
-            Auto-synced to Align phase
-          </Badge>
+          <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/60">
+            Synced to Align phase
+          </span>
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
-            <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-              <Hand size={20} className="text-primary" />
-              Test Protocol
-            </h3>
-            <div className="bg-card rounded-lg p-4 mb-4">
-              {!imageError ? (
-                <img loading="lazy" decoding="async" 
-                  src={imagePath} 
-                  alt="Frontal Lobe Assessment Reference"
-                  className="w-full h-auto rounded-lg object-cover"
-                  onError={() => setImageError(true)}
-                />
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                  <ImageOff size={40} className="mb-2" />
-                  <p className="text-xs">Diagram not available</p>
-                </div>
-              )}
-            </div>
-            <ol className="space-y-2 text-sm text-foreground list-decimal list-inside">
-              <li>Practitioner demonstrates the rapid open/closed hand test (10 repetitions).</li>
-              <li>Client closes their eyes.</li>
-              <li>Client performs the test as fast and wide as possible with the left hand.</li>
-              <li>Client repeats with the right hand.</li>
-              <li>Compare performance between the two hands.</li>
-            </ol>
+      {/* Clinical metrics */}
+      <div className="space-y-3">
+        <span className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+          <ArrowRightLeft size={12} /> Clinical metrics
+        </span>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Left hand speed</Label>
+            <Select value={leftHandSpeed} onValueChange={handleLeftSpeedChange}>
+              <SelectTrigger className="h-8 rounded-lg text-[13px] font-semibold bg-card">
+                <SelectValue placeholder="Rate 1–10" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <SelectItem key={i + 1} value={(i + 1).toString()}>{i + 1}/10</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-
-          {/* Structured Clinical Fields */}
-          <div className="p-6 bg-muted/50 rounded-2xl border border-border/50 space-y-4">
-            <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-              <ArrowRightLeft size={14} className="text-primary" /> Clinical Metrics
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-muted-foreground">Left Hand Speed</Label>
-                <Select value={leftHandSpeed} onValueChange={handleLeftSpeedChange}>
-                  <SelectTrigger className="h-10 rounded-md font-semibold text-xs bg-card">
-                    <SelectValue placeholder="Rate 1-10" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 10 }).map((_, i) => (
-                      <SelectItem key={i + 1} value={(i + 1).toString()}>{i + 1}/10</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-muted-foreground">Right Hand Speed</Label>
-                <Select value={rightHandSpeed} onValueChange={handleRightSpeedChange}>
-                  <SelectTrigger className="h-10 rounded-md font-semibold text-xs bg-card">
-                    <SelectValue placeholder="Rate 1-10" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 10 }).map((_, i) => (
-                      <SelectItem key={i + 1} value={(i + 1).toString()}>{i + 1}/10</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-muted-foreground">Asymmetry</Label>
-                <ToggleGroup type="single" value={asymmetryDetected} onValueChange={handleAsymChange} className="justify-start gap-1">
-                  <ToggleGroupItem value="Yes" className="rounded-md border border-border text-xs font-semibold px-3 py-2">Yes</ToggleGroupItem>
-                  <ToggleGroupItem value="No" className="rounded-md border border-border text-xs font-semibold px-3 py-2">No</ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-            </div>
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Right hand speed</Label>
+            <Select value={rightHandSpeed} onValueChange={handleRightSpeedChange}>
+              <SelectTrigger className="h-8 rounded-lg text-[13px] font-semibold bg-card">
+                <SelectValue placeholder="Rate 1–10" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <SelectItem key={i + 1} value={(i + 1).toString()}>{i + 1}/10</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Asymmetry</Label>
+            <ToggleGroup type="single" value={asymmetryDetected} onValueChange={handleAsymChange} className="justify-start gap-1">
+              {[
+                { value: "Yes", label: "Yes" },
+                { value: "No", label: "No" },
+              ].map(opt => (
+                <ToggleGroupItem
+                  key={opt.value}
+                  value={opt.value}
+                  className="h-8 rounded-lg border border-border px-3 text-[11px] font-semibold text-muted-foreground data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                >
+                  {opt.label}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
           </div>
         </div>
+      </div>
 
-        <div className="space-y-4">
-          <Label htmlFor="frontalLobeNotes" className="text-[15px] font-semibold text-foreground mb-2 block">
-            Frontal Lobe Assessment Notes:
+      {/* Observations */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="frontalLobeNotes" className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+            Observations
           </Label>
-          <Textarea
-            id="frontalLobeNotes"
-            placeholder="Document observations..."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="min-h-[350px] resize-none"
-          />
-          <div className="flex gap-3">
-            <Button onClick={handleSaveNotes} disabled={loading} className="flex-1 bg-foreground hover:bg-foreground text-primary-foreground h-12 font-semibold rounded-xl shadow-lg">
-              {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Save Notes"}
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={handleSaveNotes}
+              disabled={loading}
+              className="h-7 rounded-lg bg-primary px-3 text-[11px] font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              {loading ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null} Save notes
             </Button>
             {(initialNotes || currentStatus) && (
-              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-10 px-4 rounded-md border-destructive/20 text-destructive-strong hover:bg-destructive/5">
-                <RotateCcw size={16} />
+              <Button
+                variant="ghost"
+                onClick={() => setShowResetConfirm(true)}
+                disabled={loading}
+                className="h-7 rounded-lg px-2.5 text-[11px] font-medium text-muted-foreground hover:bg-destructive/5 hover:text-destructive-strong"
+              >
+                <RotateCcw size={11} className="mr-1.5" /> Reset
               </Button>
             )}
           </div>
         </div>
+        <Textarea
+          id="frontalLobeNotes"
+          placeholder="Document observations..."
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          className="min-h-[160px] resize-y rounded-xl text-[13px] leading-relaxed"
+        />
+        <p className="text-[10px] text-muted-foreground/70">Notes save when you tap Save.</p>
       </div>
+
+      {/* Protocol reference */}
+      <section className="rounded-2xl bg-muted/40 p-4">
+        <div className="flex items-center gap-2">
+          <Hand size={13} className="text-muted-foreground" />
+          <p className="text-[11px] font-semibold text-foreground">Protocol reference</p>
+          <p className="text-[10px] text-muted-foreground/70">Rapid open/closed hand drill</p>
+        </div>
+        <div className="mt-3 overflow-hidden rounded-xl border border-border/70 bg-background">
+          {!imageError ? (
+            <img
+              loading="lazy"
+              decoding="async"
+              src={imagePath}
+              alt="Frontal lobe assessment reference"
+              className="w-full object-cover"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+              <ImageOff size={28} className="mb-2" />
+              <p className="text-[11px]">Diagram not available</p>
+            </div>
+          )}
+        </div>
+        <ol className="mt-3 space-y-1.5">
+          {[
+            "Practitioner demonstrates the rapid open/closed hand test (10 repetitions).",
+            "Client closes their eyes.",
+            "Client performs the test as fast and wide as possible with the left hand.",
+            "Client repeats with the right hand.",
+            "Compare performance between the two hands.",
+          ].map((step, i) => (
+            <li key={i} className="flex gap-2.5 text-[12px] leading-relaxed text-muted-foreground">
+              <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-muted text-[9px] font-bold text-muted-foreground">
+                {i + 1}
+              </span>
+              {step}
+            </li>
+          ))}
+        </ol>
+      </section>
 
       <ConfirmDialog
         open={showResetConfirm}

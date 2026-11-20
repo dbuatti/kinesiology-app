@@ -75,7 +75,7 @@ const JointActionPrintable = () => {
             <tr className="bg-muted border-b border-foreground/20">
               <th className="p-1.5 text-left font-semibold uppercase border-r border-foreground/20 w-[12%]">Joint</th>
               <th className="p-1.5 text-left font-semibold uppercase border-r border-foreground/20 w-[29%] bg-primary/50">Sagittal Plane</th>
-              <th className="p-1.5 text-left font-semibold uppercase border-r border-foreground/20 w-[29%] bg-emerald-50/50">Frontal Plane</th>
+              <th className="p-1.5 text-left font-semibold uppercase border-r border-foreground/20 w-[29%] bg-primary/10">Frontal Plane</th>
               <th className="p-1.5 text-left font-semibold uppercase w-[30%] bg-orange-50/50">Transverse Plane</th>
             </tr>
           </thead>
@@ -101,7 +101,7 @@ const JointActionPrintable = () => {
                 <td className="p-1.5 border-r border-foreground/20 align-top space-y-1">
                   {joint.actions.Frontal.map((a, i) => (
                     <div key={i} className={cn(a.label === '-' && "hidden")}>
-                      <span className="font-semibold uppercase text-emerald-600">{a.label}</span>
+                      <span className="font-semibold uppercase text-primary-strong">{a.label}</span>
                       <p className="text-muted-foreground font-medium inline ml-1">{a.howTo}</p>
                     </div>
                   ))}

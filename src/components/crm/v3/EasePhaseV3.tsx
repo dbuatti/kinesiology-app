@@ -34,7 +34,7 @@ interface Technique {
   key: SnsKey;
   title: string;
   purpose: string;
-  icon: any;
+  icon: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
   notesField: string;
   hasTimer?: boolean;
   protocol?: string[];
@@ -296,11 +296,11 @@ const EasePhaseV3 = ({ appointment, saveField, onJumpToPhase }: PhaseProps) => {
   const total = SNS_KEYS.length;
   const allDone = done === total;
 
-  const notesFor = (field: string): string | null => (appointment as any)?.[field] ?? null;
+  const notesFor = (field: string): string | null => ((appointment as unknown as Record<string, unknown>)?.[field] as string | null) ?? null;
 
   const toggleComplete = async (key: SnsKey, current: boolean) => {
     const next = { ...metadata, sns_resets: { ...resets, [key]: !current } };
-    await saveField('metadata', next as any);
+    await saveField("metadata", next);
   };
 
   const markAllDone = async () => {
@@ -308,7 +308,7 @@ const EasePhaseV3 = ({ appointment, saveField, onJumpToPhase }: PhaseProps) => {
       ...metadata,
       sns_resets: { ...resets, ...Object.fromEntries(SNS_KEYS.map((k) => [k, true])) },
     };
-    await saveField('metadata', next as any);
+    await saveField("metadata", next);
   };
 
   const clearAll = async () => {
@@ -316,7 +316,7 @@ const EasePhaseV3 = ({ appointment, saveField, onJumpToPhase }: PhaseProps) => {
       ...metadata,
       sns_resets: { ...resets, ...Object.fromEntries(SNS_KEYS.map((k) => [k, false])) },
     };
-    await saveField('metadata', next as any);
+    await saveField("metadata", next);
   };
 
   return (

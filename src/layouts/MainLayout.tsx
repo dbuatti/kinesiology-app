@@ -102,7 +102,12 @@ const MainLayout = () => {
 
   const isInSession = location.pathname.startsWith('/appointments/');
   const isDocView = location.search.includes('view=document');
-  const shouldHideHeader = (isFullScreen && isInSession) || isDocView;
+  // The session page carries its own complete dashboard (identity, date, view
+  // modes, actions, reminders) — the global top bar only duplicated it
+  // (breadcrumb, its own search, quick actions) and its search button collided
+  // with the session's how-to search. Hidden at every size on session pages;
+  // fullscreen and document view already hid it.
+  const shouldHideHeader = isDocView || isInSession;
   const shouldHideSidebar = shouldHideHeader || isDocView;
   // The link footer doesn't belong under a working tool page — the panes
   // above size to the viewport, so a footer below them reads as broken sizing.
@@ -136,7 +141,7 @@ const MainLayout = () => {
       {/* Main column */}
       <div className="relative isolate flex h-full min-w-0 flex-1 flex-col">
         {/* Workspace aura — a soft light at the top of the canvas, tinted by
-            zone (Practice indigo · Business emerald · Growth amber). It
+            zone (Practice indigo · Business violet · Growth amber). It
             crossfades when you switch workspace, so each one has its own
             atmosphere without any extra chrome. */}
         <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[460px] overflow-hidden print:hidden">

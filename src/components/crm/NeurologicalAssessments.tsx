@@ -5,7 +5,6 @@ import SharpenedRhombergsTest from "./SharpenedRhombergsTest";
 import FrontalLobeAssessment from "./FrontalLobeAssessment";
 import RightingReflexesAssessment from "./RightingReflexesAssessment";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 
 interface NeurologicalAssessmentsProps {
   appointmentId: string;
@@ -45,32 +44,37 @@ const NeurologicalAssessments = ({
 
       <div className="space-y-4">
             <Tabs defaultValue="fakuda" className="w-full">
-              <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-4 h-9 bg-muted/50 p-1 rounded-md">
-                <TabsTrigger value="fakuda" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-success data-[state=active]:shadow-sm rounded-md h-8 font-medium text-[13px] relative">
-                  <Footprints size={16} /> <span className="hidden sm:inline">Fakuda</span>
-                  {hasFakudaNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-success/50 rounded-full" />}
+              <TabsList className="inline-flex h-10 items-center gap-1 rounded-xl bg-muted/60 p-1">
+                <TabsTrigger value="fakuda" className="relative flex h-8 items-center gap-2 rounded-lg px-3.5 font-medium text-[12.5px] text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs">
+                  <Footprints size={14} /> <span className="hidden sm:inline">Fakuda</span>
+                  {hasFakudaNotes && <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-primary" />}
                 </TabsTrigger>
-                <TabsTrigger value="rhombergs" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-md h-8 font-medium text-[13px] relative">
-                  <Scale size={16} /> <span className="hidden sm:inline">Rhombergs</span>
-                  {hasRhombergsNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-success rounded-full" />}
+                <TabsTrigger value="rhombergs" className="relative flex h-8 items-center gap-2 rounded-lg px-3.5 font-medium text-[12.5px] text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs">
+                  <Scale size={14} /> <span className="hidden sm:inline">Rhombergs</span>
+                  {hasRhombergsNotes && <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-primary" />}
                 </TabsTrigger>
-                <TabsTrigger value="frontal-lobe" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-md h-8 font-medium text-[13px] relative">
-                  <Hand size={16} /> <span className="hidden sm:inline">Frontal</span>
-                  {hasFrontalLobeNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full" />}
+                <TabsTrigger value="frontal-lobe" className="relative flex h-8 items-center gap-2 rounded-lg px-3.5 font-medium text-[12.5px] text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs">
+                  <Hand size={14} /> <span className="hidden sm:inline">Frontal</span>
+                  {hasFrontalLobeNotes && <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-primary" />}
                 </TabsTrigger>
-                <TabsTrigger value="righting" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-md h-8 font-medium text-[13px] relative">
-                  <RefreshCw size={16} /> <span className="hidden sm:inline">Righting</span>
-                  {hasRightingNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full" />}
+                <TabsTrigger value="righting" className="relative flex h-8 items-center gap-2 rounded-lg px-3.5 font-medium text-[12.5px] text-muted-foreground data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs">
+                  <RefreshCw size={14} /> <span className="hidden sm:inline">Righting</span>
+                  {hasRightingNotes && <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-primary" />}
                 </TabsTrigger>
               </TabsList>
-              
-              <TabsContent value="fakuda" className="mt-4 space-y-4">
-                <div className="flex items-center justify-between px-2">
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-semibold text-foreground">Fakuda Step Test</h4>
-                    <p className="text-[11px] text-muted-foreground">Assess midline/vestibule cerebellum imbalances</p>
+
+              <TabsContent value="fakuda" className="mt-5 space-y-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground">
+                      <Footprints size={15} />
+                    </span>
+                    <div>
+                      <h4 className="text-[13px] font-semibold tracking-tight text-foreground">Fakuda Step Test</h4>
+                      <p className="text-[11px] text-muted-foreground">Midline / vestibular cerebellar imbalance</p>
+                    </div>
                   </div>
-                  {hasFakudaNotes && <Badge className="bg-success/10 text-success-strong border-success/20 font-semibold">Completed</Badge>}
+                  {hasFakudaNotes && <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary-strong">Completed</span>}
                 </div>
                 <FakudaStepTest
                   appointmentId={appointmentId}
@@ -78,14 +82,19 @@ const NeurologicalAssessments = ({
                   onUpdate={onUpdate}
                 />
               </TabsContent>
-              
-              <TabsContent value="rhombergs" className="mt-4 space-y-4">
-                <div className="flex items-center justify-between px-2">
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-semibold text-foreground">Sharpened Rhombergs Test</h4>
-                    <p className="text-[11px] text-muted-foreground">Assess midline cerebellum and proprioception</p>
+
+              <TabsContent value="rhombergs" className="mt-5 space-y-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground">
+                      <Scale size={15} />
+                    </span>
+                    <div>
+                      <h4 className="text-[13px] font-semibold tracking-tight text-foreground">Sharpened Rhombergs Test</h4>
+                      <p className="text-[11px] text-muted-foreground">Midline cerebellum and proprioception</p>
+                    </div>
                   </div>
-                  {hasRhombergsNotes && <Badge className="bg-success/10 text-success-strong border-success/20 font-semibold">Completed</Badge>}
+                  {hasRhombergsNotes && <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary-strong">Completed</span>}
                 </div>
                 <SharpenedRhombergsTest
                   appointmentId={appointmentId}
@@ -94,13 +103,18 @@ const NeurologicalAssessments = ({
                 />
               </TabsContent>
 
-              <TabsContent value="frontal-lobe" className="mt-4 space-y-4">
-                <div className="flex items-center justify-between px-2">
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-semibold text-foreground">Frontal Lobe Assessment</h4>
-                    <p className="text-[11px] text-muted-foreground">Rapid hand drill for frontal cortex asymmetry</p>
+              <TabsContent value="frontal-lobe" className="mt-5 space-y-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground">
+                      <Hand size={15} />
+                    </span>
+                    <div>
+                      <h4 className="text-[13px] font-semibold tracking-tight text-foreground">Frontal Lobe Assessment</h4>
+                      <p className="text-[11px] text-muted-foreground">Rapid hand drill for frontal cortex asymmetry</p>
+                    </div>
                   </div>
-                  {hasFrontalLobeNotes && <Badge className="bg-success/10 text-success-strong border-success/20 font-semibold">Completed</Badge>}
+                  {hasFrontalLobeNotes && <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary-strong">Completed</span>}
                 </div>
                 <FrontalLobeAssessment
                   appointmentId={appointmentId}
@@ -109,13 +123,18 @@ const NeurologicalAssessments = ({
                 />
               </TabsContent>
 
-              <TabsContent value="righting" className="mt-4 space-y-4">
-                <div className="flex items-center justify-between px-2">
-                  <div className="space-y-1">
-                    <h4 className="text-lg font-semibold text-foreground">Righting Reflexes</h4>
-                    <p className="text-xs text-muted-foreground font-medium">Ocular & Labyrinthine postural organization</p>
+              <TabsContent value="righting" className="mt-5 space-y-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground">
+                      <RefreshCw size={15} />
+                    </span>
+                    <div>
+                      <h4 className="text-[13px] font-semibold tracking-tight text-foreground">Righting Reflexes</h4>
+                      <p className="text-[11px] text-muted-foreground">Ocular & labyrinthine postural organisation</p>
+                    </div>
                   </div>
-                  {hasRightingNotes && <Badge className="bg-primary/10 text-primary-strong dark:text-primary-strong border-primary/20 font-semibold">Completed</Badge>}
+                  {hasRightingNotes && <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary-strong">Completed</span>}
                 </div>
                 <RightingReflexesAssessment
                   appointmentId={appointmentId}
@@ -125,9 +144,12 @@ const NeurologicalAssessments = ({
               </TabsContent>
             </Tabs>
 
-            <p className="text-xs text-muted-foreground leading-relaxed border-t border-border pt-4">
-              <span className="font-semibold text-foreground">Clinical note:</span> Global assessments provide a baseline for the client's nervous system stability. If significant imbalances are found, prioritize SNS down-regulation before proceeding with deep emotional or structural work.
-            </p>
+            <div className="rounded-2xl bg-muted/40 px-4 py-3">
+              <p className="text-[12px] leading-relaxed text-muted-foreground">
+                <span className="font-semibold text-foreground">Clinical note — </span>
+                Global assessments provide a baseline for the client's nervous system stability. If significant imbalances are found, prioritise SNS down-regulation before proceeding with deep emotional or structural work.
+              </p>
+            </div>
           </div>
       </div>
   );

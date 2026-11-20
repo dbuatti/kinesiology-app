@@ -538,7 +538,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
 
         {/* Previous Therapies */}
         <div className="space-y-6">
-          <SectionHeader icon={Activity} title="Previous Therapies" color="bg-teal-600" />
+          <SectionHeader icon={Activity} title="Previous Therapies" color="bg-primary" />
           <FormField control={form.control} name="therapies_used" render={({ field }) => (
             <FormItem>
               <FormLabel className="text-xs font-medium text-muted-foreground">What other forms of therapy have you used to resolve your health problems?</FormLabel>
@@ -821,7 +821,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
 
         {/* Additional Notes */}
         <div className="space-y-6">
-          <SectionHeader icon={Heart} title="Anything Else?" color="bg-emerald-600" />
+          <SectionHeader icon={Heart} title="Anything Else?" color="bg-primary" />
           <FormField control={form.control} name="additional_notes" render={({ field }) => (
             <FormItem>
               <FormLabel className="text-xs font-medium text-muted-foreground">Is there anything else that you want to mention to help us understand your case?</FormLabel>

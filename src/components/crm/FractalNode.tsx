@@ -74,7 +74,7 @@ const FractalNode = ({
 
   const getIcon = () => {
     if (item.is_primary_primary) return <Crown size={18} className="text-amber-500" />;
-    if (item.type === 'alignment') return <Target size={18} className="text-emerald-600" />;
+    if (item.type === 'alignment') return <Target size={18} className="text-primary-strong" />;
     if (item.type === 'belief') return <ShieldAlert size={18} className="text-rose-600" />;
     return <Fingerprint size={18} className="text-indigo-600" />;
   };
@@ -103,7 +103,7 @@ const FractalNode = ({
           <div className={cn(
             "w-10 h-10 rounded-xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-110",
             item.is_primary_primary ? "bg-amber-100" : 
-            item.type === 'alignment' ? "bg-emerald-50" : 
+            item.type === 'alignment' ? "bg-primary/10" : 
             item.type === 'belief' ? "bg-rose-50" : "bg-indigo-50"
           )}>
             {getIcon()}

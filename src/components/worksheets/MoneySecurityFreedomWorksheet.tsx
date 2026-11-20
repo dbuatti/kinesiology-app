@@ -329,8 +329,8 @@ const MoneySecurityFreedomWorksheet = ({ onBack }: { onBack?: () => void }) => {
                   <li>· Won't risk, won't invest</li>
                 </ul>
               </div>
-              <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/20 p-4">
-                <h4 className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mb-2">Freedom · Expansion</h4>
+              <div className="rounded-xl bg-primary/5 border border-primary/50 p-4">
+                <h4 className="text-sm font-bold text-primary-strong dark:text-primary mb-2">Freedom · Expansion</h4>
                 <ul className="text-xs text-muted-foreground space-y-1">
                   <li>· Flow and ease</li>
                   <li>· Operating from surplus</li>
@@ -422,8 +422,8 @@ const MoneySecurityFreedomWorksheet = ({ onBack }: { onBack?: () => void }) => {
               />
             </div>
 
-            <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/20 p-4 space-y-3">
-              <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">A Truer, Kinder Version</p>
+            <div className="rounded-xl bg-primary/5 border border-primary/50 p-4 space-y-3">
+              <p className="text-sm font-bold text-primary-strong dark:text-primary">A Truer, Kinder Version</p>
               <p className="text-xs text-muted-foreground">
                 If someone who loves you heard that belief, how would they reframe it? Write the truer version.
               </p>
@@ -569,8 +569,8 @@ const MoneySecurityFreedomWorksheet = ({ onBack }: { onBack?: () => void }) => {
               onChange={v => updateField('money_goes', v)}
             />
 
-            <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/20 p-4 space-y-3">
-              <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">This Week</p>
+            <div className="rounded-xl bg-primary/5 border border-primary/50 p-4 space-y-3">
+              <p className="text-sm font-bold text-primary-strong dark:text-primary">This Week</p>
               <p className="text-xs text-muted-foreground">
                 One concrete way you'll pay yourself first in the next seven days.
               </p>

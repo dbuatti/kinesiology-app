@@ -51,7 +51,7 @@ const PrimitiveReflexModal = ({
           <div className={cn(
             "p-8 text-primary-foreground transition-colors relative",
             reflex.category === 'Foundational' ? "bg-indigo-600" :
-            reflex.category === 'Postural' ? "bg-emerald-600" :
+            reflex.category === 'Postural' ? "bg-primary" :
             "bg-amber-600"
           )}>
             <div className="flex items-center gap-6">
@@ -175,7 +175,7 @@ const PrimitiveReflexModal = ({
           )}
 
           <div className="pt-4 border-t border-border/50 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-[10px] font-semibold text-emerald-600 uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-[10px] font-semibold text-primary-strong uppercase tracking-wider">
               <CheckCircle2 size={14} /> Integration Goal: Clear IM response
             </div>
             <Button variant="ghost" size="sm" className="text-[11px] font-semibold text-indigo-600" onClick={() => onOpenChange(false)}>

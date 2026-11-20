@@ -550,8 +550,8 @@ const CalcomSlotsView = () => {
           <div className="flex flex-col">
             <p className="text-xs font-medium text-muted-foreground mb-1">Available Slots</p>
             <div className="flex items-center gap-2">
-              <span className="text-3xl font-semibold text-emerald-600">{stats.totalSlots}</span>
-              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-100 font-bold">Open</Badge>
+              <span className="text-3xl font-semibold text-primary-strong">{stats.totalSlots}</span>
+              <Badge variant="outline" className="bg-primary/10 text-primary-strong border-primary/25 font-bold">Open</Badge>
             </div>
           </div>
           <div className="w-px h-10 bg-border hidden md:block" />
@@ -729,7 +729,7 @@ const CalcomSlotsView = () => {
             onClick={() => handleCopyDay(day)}
             className={cn(
               "h-7 px-2.5 rounded-lg text-[11px] font-semibold transition-all",
-              copied === day ? "bg-emerald-500 text-primary-foreground hover:bg-emerald-600" : "text-muted-foreground hover:bg-amber-100/70 dark:hover:bg-amber-950/30 hover:text-amber-700"
+              copied === day ? "bg-primary text-primary-foreground hover:bg-primary" : "text-muted-foreground hover:bg-amber-100/70 dark:hover:bg-amber-950/30 hover:text-amber-700"
             )}
           >
             {copied === day ? <Check size={11} className="mr-1" /> : <Copy size={11} className="mr-1" />}
@@ -801,7 +801,7 @@ const CalcomSlotsView = () => {
                   className={cn(
                     "h-8 px-3 rounded-lg text-[11px] font-semibold shrink-0 transition-all",
                     copied === `week-${week[0]}`
-                      ? "bg-emerald-500 text-primary-foreground hover:bg-emerald-600"
+                      ? "bg-primary text-primary-foreground hover:bg-primary"
                       : "text-muted-foreground hover:bg-indigo-50 hover:text-indigo-600"
                   )}
                 >
@@ -859,7 +859,7 @@ const CalcomSlotsView = () => {
                           </div>
                           <Badge className={cn(
                             "border-none font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full shadow-sm",
-                            isBlocked ? "bg-rose-100 text-rose-600" : "bg-emerald-50 text-emerald-600"
+                            isBlocked ? "bg-rose-100 text-rose-600" : "bg-primary/10 text-primary-strong"
                           )}>
                             {isBlocked ? "Blocked" : `${daySlots.length} Slots`}
                           </Badge>
@@ -881,7 +881,7 @@ const CalcomSlotsView = () => {
                             <Button 
                               variant="outline" 
                               size="sm" 
-                              className="h-9 px-3.5 rounded-lg border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-medium text-[13px] shadow-sm"
+                              className="h-9 px-3.5 rounded-lg border-primary/30 text-primary-strong hover:bg-primary/10 font-medium text-[13px] shadow-sm"
                               onClick={() => setConfirmAction({
                                 callback: () => handleToggleBlock(date, true),
                                 title: "Unblock day?",
@@ -913,7 +913,7 @@ const CalcomSlotsView = () => {
                                           <div className="flex items-center gap-1.5 mt-1">
                                             <span className={cn(
                                               "text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0",
-                                              isVoiceTitle(booking.title) ? "bg-rose-500/30 text-rose-200" : "bg-emerald-500/30 text-emerald-200"
+                                              isVoiceTitle(booking.title) ? "bg-rose-500/30 text-rose-200" : "bg-primary/30 text-primary"
                                             )}>
                                               {isVoiceTitle(booking.title) ? "Voice" : "FNH"}
                                             </span>
@@ -936,7 +936,7 @@ const CalcomSlotsView = () => {
                                         <Button
                                           variant="ghost"
                                           size="icon"
-                                          className="h-8 w-8 rounded-lg text-indigo-300 hover:text-emerald-400 hover:bg-emerald-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
+                                          className="h-8 w-8 rounded-lg text-indigo-300 hover:text-primary hover:bg-primary/100 opacity-0 group-hover/booking:opacity-100 transition-all"
                                           onClick={() => handleSendOnboarding(booking)}
                                           disabled={sendingEmail === booking.uid}
                                         >

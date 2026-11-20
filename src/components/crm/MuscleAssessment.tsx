@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 const STATUS_CONFIG = {
   Inhibited: { label: "Inh", fullLabel: "Inhibited", color: "bg-rose-500 text-white border-rose-500", muted: "border-rose-300 text-rose-600 hover:bg-rose-50 dark:border-rose-700 dark:text-rose-400" },
   Hypertonic: { label: "Hyp", fullLabel: "Hypertonic", color: "bg-amber-500 text-white border-amber-500", muted: "border-amber-300 text-amber-600 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400" },
-  Clear: { label: "Clr", fullLabel: "Clear", color: "bg-emerald-500 text-white border-emerald-500", muted: "border-emerald-300 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400" },
+  Clear: { label: "Clr", fullLabel: "Clear", color: "bg-primary text-primary-foreground border-primary/50", muted: "border-primary/40 text-primary-strong hover:bg-primary/10 dark:border-primary/60 dark:text-primary" },
 };
 
 const StatusButton = ({ status, current, onClick, side }: { status: 'Inhibited' | 'Hypertonic' | 'Clear'; current: string | null | undefined; onClick: () => void; side?: string }) => {
@@ -47,7 +47,7 @@ const MuscleRow = ({ name, statusL, statusR, statusMidline, isLateralized, info,
 
   const rowBg = isInhibited ? "bg-rose-50/40 dark:bg-rose-950/10" :
     isHypertonic ? "bg-amber-50/40 dark:bg-amber-950/10" :
-    isClear ? "bg-emerald-50/30 dark:bg-emerald-950/10" : "";
+    isClear ? "bg-primary/10 dark:bg-primary/10" : "";
 
   return (
     <div className={cn("border-b border-border/40 last:border-b-0", rowBg)}>
@@ -160,7 +160,7 @@ export function MuscleAssessment({
           <span className="text-muted-foreground/40">·</span>
           <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-rose-500" />{progress.inhibited}</span>
           <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-amber-500" />{progress.hypertonic}</span>
-          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500" />{progress.clear}</span>
+          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-primary" />{progress.clear}</span>
           {progress.remaining > 0 && (
             <>
               <span className="text-muted-foreground/40">·</span>

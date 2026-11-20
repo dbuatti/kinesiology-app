@@ -119,7 +119,7 @@ export const EmptyState = ({
   action,
   className,
 }: {
-  icon: any;
+  icon: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
   title: string;
   description?: string;
   action?: React.ReactNode;
@@ -282,7 +282,7 @@ export const AlertBanner = ({
   className 
 }: { 
   variant?: "warning" | "info" | "success";
-  icon?: any;
+  icon?: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
   title: string;
   children: React.ReactNode;
   className?: string;
@@ -339,7 +339,7 @@ export const SectionHeader = ({
   children,
   className 
 }: { 
-  icon?: any;
+  icon?: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
   title: string;
   subtitle?: string;
   badge?: string;
@@ -375,7 +375,7 @@ export const SegmentedTabs = ({
   onChange,
   className
 }: {
-  tabs: { id: string; label: string; icon?: any }[];
+  tabs: { id: string; label: string; icon?: React.ComponentType<{ size?: number; className?: string }> }[];
   activeTab: string;
   onChange: (id: string) => void;
   className?: string;

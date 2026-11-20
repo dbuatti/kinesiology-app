@@ -25,10 +25,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 198 76% 5%;
 
-    --primary: 173 68% 31%;         /* #0D9488 */
+    --primary: 243 58% 42%;         /* deep indigo accent */
     --primary-foreground: 0 0% 100%;
 
-    --primary-hover: 173 63% 27%;   /* #0F766E */
+    --primary-hover: 243 58% 36%;
 
     --secondary: 210 20% 96%;
     --secondary-foreground: 210 12% 18%;
@@ -39,7 +39,7 @@
     --muted: 210 20% 96%;
     --muted-foreground: 199 15% 42%; /* #64748B */
 
-    --success: 158 64% 31%;         /* #059669 */
+    --success: 243 58% 42%;
     --success-foreground: 0 0% 100%;
     /* Text-safe companions to the hues above. The fills stay exactly on spec;
        these darker steps exist so 11–13px text clears WCAG AA when it sits on
@@ -53,11 +53,11 @@
     --destructive: 356 72% 52%;
     --destructive-foreground: 0 0% 100%;
     --destructive-strong: 356 72% 46%;
-    --primary-strong: 173 68% 25%;
+    --primary-strong: 243 58% 34%;
 
     --border: 214 32% 89%;          /* #E2E8F0 */
     --input: 214 32% 89%;
-    --ring: 173 68% 31%;
+    --ring: 243 58% 42%;
 
     --radius: 0.5rem;               /* 8px */
 
@@ -68,9 +68,9 @@
 
     --shadow-color: 198 76% 5%;
 
-    --chart-primary: 173 68% 31%;
+    --chart-primary: 243 58% 42%;
     --chart-destructive: 346 62% 48%;
-    --chart-emerald: 158 64% 31%;
+    --chart-emerald: 243 58% 42%;
     --chart-purple: 266 48% 54%;
     --chart-amber: 32 88% 44%;
     --chart-piano: 32 88% 44%;
@@ -88,10 +88,10 @@
     --popover: 203 39% 8%;
     --popover-foreground: 210 20% 98%;
 
-    --primary: 173 68% 45%;
+    --primary: 243 80% 68%;
     --primary-foreground: 0 0% 100%;
 
-    --primary-hover: 173 63% 40%;
+    --primary-hover: 243 80% 60%;
 
     --secondary: 210 15% 15%;
     --secondary-foreground: 210 20% 98%;
@@ -102,9 +102,9 @@
     --muted: 210 15% 15%;
     --muted-foreground: 210 10% 65%;
 
-    --success: 158 64% 40%;
+    --success: 243 80% 68%;
     --success-foreground: 0 0% 100%;
-    --success-strong: 158 64% 40%;
+    --success-strong: 243 80% 68%;
 
     --warning: 32 88% 50%;
     --warning-foreground: 0 0% 100%;
@@ -113,11 +113,11 @@
     --destructive: 356 72% 60%;
     --destructive-foreground: 0 0% 100%;
     --destructive-strong: 356 76% 66%;
-    --primary-strong: 173 68% 45%;
+    --primary-strong: 243 80% 68%;
 
     --border: 214 32% 18%;
     --input: 214 32% 18%;
-    --ring: 173 68% 45%;
+    --ring: 243 80% 68%;
 
     --sidebar: 203 39% 6%;
     --sidebar-border: 214 32% 18%;
@@ -126,7 +126,7 @@
 
     --shadow-color: 210 30% 2%;
 
-    --chart-primary: 173 68% 45%;
+    --chart-primary: 243 80% 68%;
     --brand: 224 70% 78%;
     --chart-piano: 34 88% 44%;
     --docs-surface: 203 39% 7%;

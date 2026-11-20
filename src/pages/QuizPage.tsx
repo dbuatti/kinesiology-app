@@ -224,11 +224,11 @@ export function QuizTool({ embedded = false, onExit }: QuizToolProps = {}) {
 
           {showExplanation && (
             <div className="mt-8 animate-in fade-in slide-in-from-top-4 duration-500">
-              <Alert className={isCorrect ? "bg-emerald-50 border-emerald-200 dark:bg-emerald-900/10 dark:border-emerald-900/30" : "bg-rose-50 border-rose-200 dark:bg-rose-900/10 dark:border-rose-900/30"}>
+              <Alert className={isCorrect ? "bg-primary/10 border-primary/30 dark:bg-primary/10 dark:border-primary/40" : "bg-rose-50 border-rose-200 dark:bg-rose-900/10 dark:border-rose-900/30"}>
                 <div className="flex items-start gap-3">
-                  {isCorrect ? <CheckCircle2 className="text-emerald-600 mt-1" size={20} /> : <XCircle className="text-rose-600 mt-1" size={20} />}
+                  {isCorrect ? <CheckCircle2 className="text-primary-strong mt-1" size={20} /> : <XCircle className="text-rose-600 mt-1" size={20} />}
                   <div>
-                    <AlertTitle className={`font-semibold text-sm uppercase tracking-wider ${isCorrect ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
+                    <AlertTitle className={`font-semibold text-sm uppercase tracking-wider ${isCorrect ? "text-primary-strong dark:text-primary" : "text-rose-700 dark:text-rose-400"}`}>
                       {isCorrect ? "Correct!" : "Not quite..."}
                     </AlertTitle>
                     <AlertDescription className="text-muted-foreground mt-2 leading-relaxed">

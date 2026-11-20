@@ -237,11 +237,11 @@ const HeartWallBible = () => {
         </Card>
 
         <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
-          <CardHeader className="bg-emerald-50 p-8">
-            <CardTitle className="text-xl font-semibold flex items-center gap-3 text-emerald-900">
+          <CardHeader className="bg-primary/10 p-8">
+            <CardTitle className="text-xl font-semibold flex items-center gap-3 text-primary-strong">
               <CheckCircle2 size={24} /> After the Wall Clears
             </CardTitle>
-            <CardDescription className="text-emerald-700 font-medium">What shifts when the barrier drops.</CardDescription>
+            <CardDescription className="text-primary-strong font-medium">What shifts when the barrier drops.</CardDescription>
           </CardHeader>
           <CardContent className="p-8 space-y-6">
             <p className="text-sm text-muted-foreground leading-relaxed font-medium">
@@ -259,13 +259,13 @@ const HeartWallBible = () => {
                 "A sense of ease in life"
               ].map(item => (
                 <div key={item} className="flex items-center gap-2 p-2">
-                  <ArrowRight size={12} className="text-emerald-500 shrink-0" />
+                  <ArrowRight size={12} className="text-primary-strong shrink-0" />
                   <span className="text-xs font-medium text-muted-foreground">{item}</span>
                 </div>
               ))}
             </div>
-            <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-              <p className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider mb-1">It's not perfect</p>
+            <div className="p-3 bg-primary/10 rounded-xl border border-primary/25">
+              <p className="text-[10px] font-semibold text-primary-strong uppercase tracking-wider mb-1">It's not perfect</p>
               <p className="text-xs text-muted-foreground font-medium leading-relaxed">
                 Clearing the Heart Wall doesn't make life perfect, but it's a great load off the system.
                 You can definitely feel it as it happens.

@@ -63,7 +63,7 @@ const PracticeSimulator = ({
           </div>
           <Badge className={cn(
             "font-semibold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full",
-            simImStatus === 'Normotonic' ? "bg-emerald-500 text-primary-foreground" : "bg-rose-500 text-primary-foreground"
+            simImStatus === 'Normotonic' ? "bg-primary text-primary-foreground" : "bg-rose-500 text-primary-foreground"
           )}>
             IM: {simImStatus}
           </Badge>
@@ -157,7 +157,7 @@ const PracticeSimulator = ({
           <div className="space-y-4 animate-in fade-in duration-300">
             <p className="text-sm font-bold text-foreground/80">Step 4: Re-test the Indicator Muscle (IM) to verify the correction.</p>
             <div className="flex justify-center py-4">
-              <Button onClick={onRetest} className="bg-emerald-600 hover:bg-emerald-700 text-primary-foreground rounded-xl h-12 px-8 font-bold text-xs">
+              <Button onClick={onRetest} className="bg-primary hover:bg-primary text-primary-foreground rounded-xl h-12 px-8 font-bold text-xs">
                 Re-Test Indicator Muscle (IM)
               </Button>
             </div>
@@ -166,7 +166,7 @@ const PracticeSimulator = ({
 
         {simStep === 'complete' && (
           <div className="text-center py-8 space-y-4 animate-in zoom-in-95 duration-500">
-            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto text-emerald-600">
+            <div className="w-16 h-16 bg-primary/15 rounded-full flex items-center justify-center mx-auto text-primary-strong">
               <CheckCircle2 size={32} />
             </div>
             <div className="space-y-1">

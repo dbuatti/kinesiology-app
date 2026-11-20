@@ -196,7 +196,7 @@ const HeartWallProtocol = () => {
               </div>
             </CollapsibleSection>
 
-            <CollapsibleSection title="4. Assess Related Muscles" icon={Dumbbell} color="bg-emerald-600" desc="Verify the finding by testing associated muscles." defaultOpen>
+            <CollapsibleSection title="4. Assess Related Muscles" icon={Dumbbell} color="bg-primary" desc="Verify the finding by testing associated muscles." defaultOpen>
               <div className="space-y-2 text-sm">
                 <p className="font-medium leading-relaxed">
                   Every emotion row has correlated muscles. Test them — they <span className="italic">will</span> come up inhibited.
@@ -390,7 +390,7 @@ const HeartWallProtocol = () => {
         <SectionTitle icon={Zap} color="bg-primary">Correction</SectionTitle>
 
         <div className="space-y-4">
-          <CollapsibleSection title="1. Permission to Correct" icon={Shield} color="bg-emerald-600" desc="Confirm readiness before proceeding." defaultOpen>
+          <CollapsibleSection title="1. Permission to Correct" icon={Shield} color="bg-primary" desc="Confirm readiness before proceeding." defaultOpen>
             <p className="text-sm text-muted-foreground leading-relaxed font-medium">
               Ask: "Do we have permission to correct the priority primary Heart Wall layer?"
               If yes, proceed.
@@ -465,7 +465,7 @@ const HeartWallProtocol = () => {
             </div>
           </CollapsibleSection>
 
-          <CollapsibleSection title="5. Recheck Muscles & Count Remaining Layers" icon={RefreshCw} color="bg-emerald-600" desc="Confirm the shift and measure progress." defaultOpen>
+          <CollapsibleSection title="5. Recheck Muscles & Count Remaining Layers" icon={RefreshCw} color="bg-primary" desc="Confirm the shift and measure progress." defaultOpen>
             <div className="space-y-3 text-sm">
               <p className="font-medium leading-relaxed">
                 Re-test the associated muscles — they should now lock (strong).
@@ -545,8 +545,8 @@ const HeartWallProtocol = () => {
                 "And just like that, do its thing, it's like they're friends again."
               </p>
             </div>
-            <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
-              <p className="text-xs font-bold text-emerald-800 leading-relaxed">
+            <div className="p-4 bg-primary/10 rounded-xl border border-primary/30">
+              <p className="text-xs font-bold text-primary-strong leading-relaxed">
                 <strong>Client Instruction:</strong> Place one hand on heart, other on the organ.
                 Let them rest. The hands create a self-soothing circuit.
               </p>
@@ -617,10 +617,10 @@ const HeartWallProtocol = () => {
 
       {/* 8. When to Check */}
       <section className="mt-12">
-        <SectionTitle icon={RefreshCw} color="bg-emerald-600">When to Check the Heart Wall</SectionTitle>
-        <div className="p-6 bg-emerald-50 rounded-xl border border-emerald-200">
-          <p className="text-sm font-bold text-emerald-900 leading-relaxed">
-            The question isn't when — it's <span className="underline decoration-emerald-500/30 underline-offset-4">when do you not check the Heart Wall?</span>
+        <SectionTitle icon={RefreshCw} color="bg-primary">When to Check the Heart Wall</SectionTitle>
+        <div className="p-6 bg-primary/10 rounded-xl border border-primary/30">
+          <p className="text-sm font-bold text-primary-strong leading-relaxed">
+            The question isn't when — it's <span className="underline decoration-primary/40 underline-offset-4">when do you not check the Heart Wall?</span>
           </p>
           <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
@@ -628,8 +628,8 @@ const HeartWallProtocol = () => {
               { t: "Returning Clients", d: "Always screen — more layers may have surfaced since the last session." },
               { t: "Self-Practice", d: "Work through your own Heart Wall online. You will notice a huge difference." },
             ].map(item => (
-              <div key={item.t} className="p-4 bg-card rounded-lg border border-emerald-100">
-                <p className="font-bold text-xs text-emerald-700">{item.t}</p>
+              <div key={item.t} className="p-4 bg-card rounded-lg border border-primary/25">
+                <p className="font-bold text-xs text-primary-strong">{item.t}</p>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{item.d}</p>
               </div>
             ))}

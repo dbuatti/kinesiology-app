@@ -466,7 +466,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                               "p-4 rounded-xl border-2 text-left transition-all font-bold text-xs flex items-center justify-between",
                               quizSubmitted
                                 ? isCorrectAnswer
-                                  ? "bg-emerald-50 border-emerald-500 text-emerald-700"
+                                  ? "bg-primary/10 border-primary/50 text-primary-strong"
                                   : isSelected
                                     ? "bg-rose-50 border-rose-500 text-rose-700"
                                     : "bg-muted/50 border-border/50 text-muted-foreground"
@@ -476,7 +476,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                             )}
                           >
                             <span>{option}</span>
-                            {quizSubmitted && isCorrectAnswer && <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />}
+                            {quizSubmitted && isCorrectAnswer && <CheckCircle2 size={14} className="text-primary-strong shrink-0" />}
                             {quizSubmitted && isSelected && !isCorrectAnswer && <XCircle size={14} className="text-rose-500 shrink-0" />}
                           </button>
                         );
@@ -487,7 +487,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                       <div className="p-4 bg-card rounded-xl border border-border space-y-2 animate-in fade-in duration-300">
                         <p className={cn(
                           "text-xs font-semibold uppercase tracking-wider",
-                          quizIsCorrect ? "text-emerald-600" : "text-rose-600"
+                          quizIsCorrect ? "text-primary-strong" : "text-rose-600"
                         )}>
                           {quizIsCorrect ? "Correct!" : "Incorrect"}
                         </p>

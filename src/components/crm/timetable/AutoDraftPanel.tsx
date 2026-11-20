@@ -127,7 +127,7 @@ const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const WEEKDAY_CHIP = [
   "bg-slate-500/15 text-slate-600 dark:text-slate-300",
   "bg-blue-500/15 text-blue-600 dark:text-blue-400",
-  "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  "bg-primary/15 text-primary-strong dark:text-primary",
   "bg-amber-500/15 text-amber-600 dark:text-amber-400",
   "bg-violet-500/15 text-violet-600 dark:text-violet-400",
   "bg-rose-500/15 text-rose-600 dark:text-rose-400",
@@ -308,7 +308,7 @@ function AvailabilityEditor({
       {windows.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {windows.map((w, i) => (
-            <span key={i} className="flex items-center gap-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-semibold pl-2 pr-1 py-0.5">
+            <span key={i} className="flex items-center gap-1 rounded-full bg-primary/10 text-primary-strong text-[10px] font-semibold pl-2 pr-1 py-0.5">
               {windowLabel(w)}
               <button onClick={() => onSave({ windows: windows.filter((_, j) => j !== i) })} className="hover:text-rose-500">
                 <X size={10} />
@@ -360,7 +360,7 @@ function AvailabilityEditor({
         <button
           onClick={add}
           disabled={!from && !to && days.length === 0}
-          className="text-[11px] font-semibold text-white bg-emerald-600/90 hover:bg-emerald-600 rounded-full px-2.5 py-0.5 disabled:opacity-40"
+          className="text-[11px] font-semibold text-white bg-primary/90 hover:bg-primary rounded-full px-2.5 py-0.5 disabled:opacity-40"
         >
           Add window
         </button>
@@ -1027,8 +1027,8 @@ export default function AutoDraftPanel({
                       onClick={(e) => { e.stopPropagation(); setAvailEditKey(availEditKey === c.key ? null : c.key); }}
                       title="Set availability (when they can come)"
                       className={cn(
-                        "shrink-0 p-1 rounded-lg hover:bg-emerald-500/10 hover:text-emerald-600",
-                        (availabilityByKey[c.key]?.windows?.length || availEditKey === c.key) ? "text-emerald-600 bg-emerald-500/10" : "text-muted-foreground",
+                        "shrink-0 p-1 rounded-lg hover:bg-primary/100 hover:text-primary-strong",
+                        (availabilityByKey[c.key]?.windows?.length || availEditKey === c.key) ? "text-primary-strong bg-primary/10" : "text-muted-foreground",
                       )}
                     >
                       <Clock size={14} />
@@ -1063,7 +1063,7 @@ export default function AutoDraftPanel({
                         </span>
                       )}
                       {(availabilityByKey[c.key]?.windows ?? []).map((w, i) => (
-                        <span key={i} className="rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-semibold px-2 py-0.5">
+                        <span key={i} className="rounded-full bg-primary/10 text-primary-strong text-[10px] font-semibold px-2 py-0.5">
                           {windowLabel(w)}
                         </span>
                       ))}
@@ -1100,7 +1100,7 @@ export default function AutoDraftPanel({
                         setAwayEditKey(null);
                         setAwayDraft("");
                       }}
-                      className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 rounded-full border border-emerald-500/30 px-2 py-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="text-[11px] font-semibold text-primary-strong hover:text-primary-strong rounded-full border border-primary/50 px-2 py-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       Set
                     </button>
@@ -1217,7 +1217,7 @@ export default function AutoDraftPanel({
               "text-[11px] font-bold rounded-md px-1.5 py-0.5 border",
               n === 0
                 ? "border-rose-300 text-rose-500 bg-rose-500/10"
-                : "border-emerald-300 text-emerald-600 bg-emerald-500/10",
+                : "border-primary/40 text-primary-strong bg-primary/10",
             )}
           >
             W{i + 1}:{n}
@@ -1318,7 +1318,7 @@ export default function AutoDraftPanel({
                       <button
                         onClick={() => applyTimeOverride(a)}
                         disabled={!timeDraft}
-                        className="text-[10px] font-semibold text-emerald-600 hover:text-emerald-700 rounded-full border border-emerald-500/30 px-2 py-0.5 disabled:opacity-40"
+                        className="text-[10px] font-semibold text-primary-strong hover:text-primary-strong rounded-full border border-primary/50 px-2 py-0.5 disabled:opacity-40"
                       >
                         Save time
                       </button>
@@ -1358,7 +1358,7 @@ export default function AutoDraftPanel({
                       onClick={() => pencilOne(a)}
                       disabled={pencilingKey === a.clientId}
                       title="Pencil this session in"
-                      className="flex items-center gap-1 text-[10px] font-semibold text-chart-emerald hover:text-emerald-700 rounded-full border border-chart-emerald/30 px-2 py-0.5 disabled:opacity-50"
+                      className="flex items-center gap-1 text-[10px] font-semibold text-chart-emerald hover:text-primary-strong rounded-full border border-chart-emerald/30 px-2 py-0.5 disabled:opacity-50"
                     >
                       {pencilingKey === a.clientId ? <Loader2 size={11} className="animate-spin" /> : <PenLine size={11} />}
                       Pencil in
@@ -1470,7 +1470,7 @@ export default function AutoDraftPanel({
                 const weekKey = (t: number) => practiceWeekKey(new Date(t));
 
                 const statusStyle: Record<Ev["status"], string> = {
-                  confirmed: "border-l-4 border-emerald-500 bg-emerald-500/5",
+                  confirmed: "border-l-4 border-primary/50 bg-primary/5",
                   pencilled: "border-l-4 border-amber-400 bg-amber-400/5",
                   draft: "border-l-4 border-sky-400 bg-sky-400/5",
                 };

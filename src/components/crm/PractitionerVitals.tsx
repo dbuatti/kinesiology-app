@@ -81,24 +81,24 @@ const PractitionerVitals = ({ onComplete }: PractitionerVitalsProps) => {
           className={cn(
             "p-6 rounded-2xl border-2 transition-all text-left group",
             results.bolt 
-              ? "bg-emerald-50 border-emerald-200" 
+              ? "bg-primary/10 border-primary/30" 
               : "bg-card border-border/50 hover:border-indigo-200"
           )}
         >
           <div className="flex items-center justify-between mb-4">
             <div className={cn(
               "w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-110",
-              results.bolt ? "bg-emerald-500 text-primary-foreground" : "bg-indigo-50 text-indigo-600"
+              results.bolt ? "bg-primary text-primary-foreground" : "bg-indigo-50 text-indigo-600"
             )}>
               <FlaskConical size={24} />
             </div>
-            {results.bolt && <CheckCircle2 className="text-emerald-500" size={20} />}
+            {results.bolt && <CheckCircle2 className="text-primary-strong" size={20} />}
           </div>
           <p className="text-[11px] font-semibold text-muted-foreground">Step 1</p>
           <h4 className="text-xl font-semibold text-foreground">Log BOLT Score</h4>
           <p className="text-xs text-muted-foreground mt-1">Target: 40s for clinical peak.</p>
           {results.bolt && (
-            <p className="mt-4 text-2xl font-semibold text-emerald-600">{results.bolt}s</p>
+            <p className="mt-4 text-2xl font-semibold text-primary-strong">{results.bolt}s</p>
           )}
         </button>
 
@@ -107,24 +107,24 @@ const PractitionerVitals = ({ onComplete }: PractitionerVitalsProps) => {
           className={cn(
             "p-6 rounded-2xl border-2 transition-all text-left group",
             results.coherence 
-              ? "bg-emerald-50 border-emerald-200" 
+              ? "bg-primary/10 border-primary/30" 
               : "bg-card border-border/50 hover:border-indigo-200"
           )}
         >
           <div className="flex items-center justify-between mb-4">
             <div className={cn(
               "w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-110",
-              results.coherence ? "bg-emerald-500 text-primary-foreground" : "bg-rose-50 text-rose-600"
+              results.coherence ? "bg-primary text-primary-foreground" : "bg-rose-50 text-rose-600"
             )}>
               <Activity size={24} />
             </div>
-            {results.coherence && <CheckCircle2 className="text-emerald-500" size={20} />}
+            {results.coherence && <CheckCircle2 className="text-primary-strong" size={20} />}
           </div>
           <p className="text-[11px] font-semibold text-muted-foreground">Step 2</p>
           <h4 className="text-xl font-semibold text-foreground">Log Coherence</h4>
           <p className="text-xs text-muted-foreground mt-1">Sync your heart and brain.</p>
           {results.coherence && (
-            <p className="mt-4 text-2xl font-semibold text-emerald-600">{results.coherence.toFixed(2)}</p>
+            <p className="mt-4 text-2xl font-semibold text-primary-strong">{results.coherence.toFixed(2)}</p>
           )}
         </button>
       </div>

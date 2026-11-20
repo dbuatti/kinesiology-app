@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { ArrowRight, AlertTriangle, CheckCircle2, ShieldAlert, Dumbbell, Baby, Zap, Brain, Activity, Compass, RotateCcw, ClipboardList, Eye, FileText, Search } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { ArrowRight, AlertTriangle, CheckCircle2, ChevronRight, Dumbbell, Baby, Zap, Brain, Activity, Compass, RotateCcw, ClipboardList, Eye, FileText, Search, ExternalLink } from "lucide-react";
 import { differenceInDays } from "date-fns";
 import EditableField from "@/components/shared/EditableField";
 import BoltTestSection from "@/components/crm/BoltTestSection";
@@ -31,12 +31,11 @@ import {
   ConfirmationFooter,
 } from "./DesignSystem";
 
-type SubTab = 'recheck' | 'intake' | 'quick' | 'intrinsic' | 'muscles' | 'reflexes' | 'nerves' | 'zones' | 'eyes' | 'report';
+type SubTab = 'recheck' | 'intake' | 'quick' | 'muscles' | 'reflexes' | 'nerves' | 'zones' | 'eyes' | 'report';
 
-const SUB_TABS: { id: SubTab; label: string; icon: any }[] = [
+const SUB_TABS: { id: SubTab; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
   { id: 'intake', label: 'Intake & Vitals', icon: Activity },
   { id: 'quick', label: 'Quick Assess', icon: CheckCircle2 },
-  { id: 'intrinsic', label: 'Intrinsic', icon: ShieldAlert },
   { id: 'muscles', label: 'Muscles', icon: Dumbbell },
   { id: 'reflexes', label: 'Primitive Reflexes', icon: Baby },
   { id: 'nerves', label: 'Cranial Nerves', icon: Zap },
@@ -44,9 +43,165 @@ const SUB_TABS: { id: SubTab; label: string; icon: any }[] = [
   { id: 'eyes', label: 'Eye Systems', icon: Eye },
 ];
 
+/** External reference pages on fnhrefapp.com (the Foundations guide). */
+const FNH_LINKS = {
+  primitiveReflexes: "https://fnhrefapp.com/primitive-reflexes",
+  cranialNerves: "https://fnhrefapp.com/cranial-nerves",
+  brainZones: "https://fnhrefapp.com/brain-zones",
+  ligaments: "https://fnhrefapp.com/ligament-reference",
+  lymph: "https://fnhrefapp.com/lymph-reference",
+};
+
+/** Small square tile that opens an external reference page in a new tab. */
+const ResourceLink = ({ href, title }: { href: string; title: string }) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    title={`${title} — open external reference`}
+    aria-label={`${title} — open external reference`}
+    className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-border/70 bg-muted/40 text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground"
+  >
+    <ExternalLink size={13} />
+  </a>
+);
+
+type QuickPattern = Record<string, Record<string, string | undefined>>;
+
+/**
+ * One cranial nerve in Quick Assess. Stim lines are collapsed by default —
+ * they expand on click, and open automatically when the nerve is marked
+ * inhibited — so twelve nerves read as twelve rows, not five screens.
+ */
+const CranialNerveRow = ({
+  nerve,
+  pattern,
+  onToggle,
+}: {
+  nerve: (typeof CRANIAL_NERVES)[number];
+  pattern: QuickPattern;
+  onToggle: (name: string, nextStatus: string, side?: 'L' | 'R', parentName?: string) => void;
+}) => {
+  const nerveName = `${nerve.name}: ${nerve.latinName}`;
+  const stimLines = nerveStimLines(nerve);
+  const isLatStim = (i: number) => isLateralStim(nerve.id, i);
+  const hasStims = stimLines.length > 0;
+
+  const parentStatus = pattern.cranialNerves?.[nerveName];
+  const [expanded, setExpanded] = useState(false);
+  const [userToggled, setUserToggled] = useState(false);
+
+  // Marking the nerve inhibited opens its stim lines (unless the user has
+  // explicitly collapsed them this session).
+  useEffect(() => {
+    if (userToggled) return;
+    if (parentStatus === 'Inhibited' || parentStatus === 'Inhibition') setExpanded(true);
+  }, [parentStatus, userToggled]);
+
+  const getStatus = (compositeName: string, side?: 'L' | 'R') => {
+    const key = side ? `${compositeName} (${side})` : compositeName;
+    return pattern.cranialNerves?.[key] || null;
+  };
+  const toggleStatus = (compositeName: string, side?: 'L' | 'R') => {
+    const current = getStatus(compositeName, side);
+    const next = current === 'Inhibited' ? 'Clear' : current === 'Clear' ? null : 'Inhibited';
+    onToggle(compositeName, next || 'Clear', side, nerveName);
+  };
+
+  return (
+    <div className="py-2.5 border-b border-border/40 last:border-b-0">
+      <div className="grid grid-cols-[1fr_auto] items-center gap-3">
+        <button
+          type="button"
+          onClick={() => { if (hasStims) { setUserToggled(true); setExpanded((v) => !v); } }}
+          className={cn("flex min-w-0 items-start gap-2 text-left", hasStims ? "cursor-pointer" : "cursor-default")}
+          title={hasStims ? (expanded ? "Hide stim lines" : "Show stim lines") : undefined}
+        >
+          {hasStims ? (
+            <ChevronRight
+              size={14}
+              className={cn("mt-1 shrink-0 text-muted-foreground/50 transition-transform", expanded && "rotate-90")}
+            />
+          ) : (
+            <span className="w-3.5 shrink-0" />
+          )}
+          <span className="min-w-0">
+            <span className="block text-[13px] font-medium text-foreground">{nerveName}</span>
+            <span className="block text-[11px] text-muted-foreground/70">{nerve.nuclei} • {nerve.reflexPoint}</span>
+          </span>
+        </button>
+        {!nerve.isLateralized && (
+          <div className="flex items-center gap-2 shrink-0 justify-end">
+            <CheckItem category="cranialNerves" name={nerveName} pattern={pattern} onToggle={(cat, name, status, side) => onToggle(name, status, side)} />
+          </div>
+        )}
+        {nerve.isLateralized && (
+          <div className="flex items-center gap-1.5 shrink-0 justify-end">
+            <CheckItem category="cranialNerves" name={nerveName} side="L" pattern={pattern} onToggle={(cat, name, status, side) => onToggle(name, status, side)} />
+            <CheckItem category="cranialNerves" name={nerveName} side="R" pattern={pattern} onToggle={(cat, name, status, side) => onToggle(name, status, side)} />
+          </div>
+        )}
+      </div>
+      {hasStims && expanded && (
+        <div className="ml-6 mt-1.5 space-y-0.5 border-l border-border/40 pl-3">
+          {stimLines.map((line, i) => {
+            const lateral = isLatStim(i);
+            const compositeName = `${nerveName} — ${line}`;
+            return (
+              <div key={i} className="grid grid-cols-[1fr_auto] items-center gap-3 py-0.5">
+                <p className="text-[12px] text-foreground/80 break-words">{line}</p>
+                <div className="flex items-center gap-1.5 justify-end">
+                  {lateral ? (
+                    <>
+                      <button
+                        onClick={() => toggleStatus(compositeName, 'L')}
+                        className={cn(
+                          "w-8 h-7 rounded-md text-[10px] font-bold border transition-colors",
+                          getStatus(compositeName, 'L') === 'Inhibited' ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30" :
+                          getStatus(compositeName, 'L') === 'Clear' ? "bg-primary/10 text-primary-strong dark:text-primary border-primary/30" :
+                          "border-border text-muted-foreground/60 hover:border-rose-300 hover:text-rose-600"
+                        )}
+                      >
+                        L
+                      </button>
+                      <button
+                        onClick={() => toggleStatus(compositeName, 'R')}
+                        className={cn(
+                          "w-8 h-7 rounded-md text-[10px] font-bold border transition-colors",
+                          getStatus(compositeName, 'R') === 'Inhibited' ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30" :
+                          getStatus(compositeName, 'R') === 'Clear' ? "bg-primary/10 text-primary-strong dark:text-primary border-primary/30" :
+                          "border-border text-muted-foreground/60 hover:border-rose-300 hover:text-rose-600"
+                        )}
+                      >
+                        R
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => toggleStatus(compositeName)}
+                      className={cn(
+                        "w-14 h-7 rounded-md text-[10px] font-bold border transition-colors",
+                        getStatus(compositeName) === 'Inhibited' ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30" :
+                        getStatus(compositeName) === 'Clear' ? "bg-primary/10 text-primary-strong dark:text-primary border-primary/30" :
+                        "border-border text-muted-foreground/60 hover:border-rose-300 hover:text-rose-600"
+                      )}
+                    >
+                      {getStatus(compositeName) === 'Inhibited' ? 'Inh' : getStatus(compositeName) === 'Clear' ? 'Clr' : '—'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const MuscleGroupGrid = ({ muscles, pattern, onToggle, onSelectMuscle }: {
   muscles: string[];
-  pattern: any;
+  pattern: QuickPattern;
   onToggle: (cat: string, name: string, nextStatus: string, side?: 'L' | 'R') => void;
   onSelectMuscle?: (name: string) => void;
 }) => {
@@ -87,10 +242,10 @@ const MuscleGroupGrid = ({ muscles, pattern, onToggle, onSelectMuscle }: {
           else next = 'Inhibited';
           onToggle('muscles', m, next === null ? null : next);
         };
-        const getColor = (s: any) => {
-          if (s === 'Inhibited' || s === 'Inhibition') return 'bg-rose-500 text-white border-rose-500';
-          if (s === 'Hypertonic') return 'bg-amber-500 text-white border-amber-500';
-          if (s === 'Clear' || s === 'Normotonic') return 'bg-emerald-500 text-white border-emerald-500';
+        const getColor = (s: unknown) => {
+          if (s === 'Inhibited' || s === 'Inhibition') return 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30';
+          if (s === 'Hypertonic') return 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30';
+          if (s === 'Clear' || s === 'Normotonic') return 'bg-primary/10 text-primary-strong dark:text-primary border-primary/30';
           return 'bg-card text-muted-foreground border-border hover:bg-muted/50';
         };
         return (
@@ -102,9 +257,9 @@ const MuscleGroupGrid = ({ muscles, pattern, onToggle, onSelectMuscle }: {
             </div>
             <button
               onClick={cycleStatus}
-              className={cn("px-3 py-1 rounded-md text-[9px] font-bold border transition-all shrink-0 shadow-sm hover:shadow", getColor(status))}
+              className={cn("px-3 py-1 rounded-md text-[10px] font-semibold border transition-all shrink-0 shadow-sm hover:shadow", getColor(status))}
             >
-              {(status === 'Inhibited' || status === 'Inhibition') ? 'INHIBITED' : status === 'Hypertonic' ? 'HYPERTONIC' : (status === 'Clear' || status === 'Normotonic') ? 'NORMOTONIC' : 'UNTESTED'}
+              {(status === 'Inhibited' || status === 'Inhibition') ? 'Inhibited' : status === 'Hypertonic' ? 'Hypertonic' : (status === 'Clear' || status === 'Normotonic') ? 'Clear' : 'Untested'}
             </button>
           </div>
         );
@@ -124,17 +279,17 @@ const MuscleGroupGrid = ({ muscles, pattern, onToggle, onSelectMuscle }: {
         onToggle('muscles', m, next === null ? null : next, side);
       };
 
-      const getColor = (s: any) => {
-        if (s === 'Inhibited' || s === 'Inhibition') return 'bg-rose-500 text-white border-rose-500';
-        if (s === 'Hypertonic') return 'bg-amber-500 text-white border-amber-500';
-        if (s === 'Clear' || s === 'Normotonic') return 'bg-emerald-500 text-white border-emerald-500';
+      const getColor = (s: unknown) => {
+        if (s === 'Inhibited' || s === 'Inhibition') return 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30';
+        if (s === 'Hypertonic') return 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30';
+        if (s === 'Clear' || s === 'Normotonic') return 'bg-primary/10 text-primary-strong dark:text-primary border-primary/30';
         return 'bg-card text-muted-foreground border-border hover:bg-muted/50';
       };
 
-      const getLabel = (s: any) => {
-        if (s === 'Inhibited' || s === 'Inhibition') return 'INHIBITED';
-        if (s === 'Hypertonic') return 'HYPERTONIC';
-        if (s === 'Clear' || s === 'Normotonic') return 'NORMOTONIC';
+      const getLabel = (s: unknown) => {
+        if (s === 'Inhibited' || s === 'Inhibition') return 'Inhibited';
+        if (s === 'Hypertonic') return 'Hypertonic';
+        if (s === 'Clear' || s === 'Normotonic') return 'Clear';
         return '—';
       };
 
@@ -327,7 +482,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
           )}
 
           {subTab === 'quick' && (() => {
-            const pattern = safeParse<Record<string, any>>(appointment.priority_pattern, {});
+            const pattern = safeParse<QuickPattern>(appointment.priority_pattern, {});
             const quickToggle = (cat: string, name: string, nextStatus: string, side?: 'L' | 'R') => {
               updatePriorityPattern(cat, name, nextStatus === 'Clear' ? null : nextStatus, side);
             };
@@ -357,11 +512,13 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
               }
             };
             return (
-              <div className="space-y-4">
-                {/* Primitive Reflexes */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                {/* Primitive Reflexes — column 1 */}
                 <Card className="space-y-3" padding="comfortable">
-                  <SectionHeader icon={Baby} title="Primitive reflexes" />
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <SectionHeader icon={Baby} title="Primitive reflexes">
+                    <ResourceLink href={FNH_LINKS.primitiveReflexes} title="Primitive reflexes" />
+                  </SectionHeader>
+                  <div className="grid grid-cols-1 gap-4">
                     {[
                       { num: 1, label: 'Track 1 — Sagittal / Brainstem', desc: 'Moro → Startle → TLR → STNR → FPR', reflexes: ['moro', 'startle', 'tlr-flexion', 'tlr-extension', 'stnr-flexion', 'stnr-extension', 'fear-paralysis'] },
                       { num: 2, label: 'Track 2 — Unilateral / Gait', desc: 'ATNR → Spinal Galant → Rooting → Palmar → Babinski → Sucking', reflexes: ['atnr', 'spinal-galant', 'rooting', 'palmar', 'babinski', 'sucking'] },
@@ -370,7 +527,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                       const groupReflexes = PRIMITIVE_REFLEXES.flatMap(r => {
                         if (r.id === 'tlr') {
                           return [
-                            { ...r, id: 'tlr-flexion', name: 'TLR (Flexion)', track: 1 },
+                            { ...r, id: "tlr-flexion", name: "TLR (Flexion)", track: 1 },
                             { ...r, id: 'tlr-extension', name: 'TLR (Extension)', track: 1 },
                           ];
                         }
@@ -391,8 +548,8 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                               {group.num}
                             </div>
                             <div>
-                              <h3 className="text-[10px] font-medium text-foreground uppercase tracking-wider">{group.label}</h3>
-                              <p className="text-[10px] text-muted-foreground">{group.desc}</p>
+                              <h3 className="text-[12px] font-semibold tracking-tight text-foreground">{group.label}</h3>
+                              <p className="text-[11px] text-muted-foreground">{group.desc}</p>
                             </div>
                             <div className="flex-1 h-px bg-border" />
                           </div>
@@ -403,7 +560,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                               // (Moro → Startle → TLR → STNR → FPR). Building the pairs
                               // first and appending `others` afterwards used to drag
                               // TLR/STNR to the top, contradicting the header.
-                              const paired: any[] = [];
+                              const paired: { type: string; items: typeof PRIMITIVE_REFLEXES[number][] }[] = [];
                               const seen = new Set<string>();
                               const PARTNER: Record<string, string> = {
                                 'tlr-flexion': 'tlr-extension',
@@ -455,103 +612,16 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                   </div>
                 </Card>
 
-                {/* Cranial Nerves */}
-                <Card className="space-y-3" padding="comfortable">
-                  <SectionHeader icon={Zap} title="Cranial nerves" />
-                  <div className="space-y-4">
-                    {CRANIAL_NERVES.map(n => {
-                      const nerveName = `${n.name}: ${n.latinName}`;
-                      const stimLines = nerveStimLines(n);
-                      const isLatStim = (i: number) => isLateralStim(n.id, i);
-                      return (
-                        <div key={n.name} className="rounded-xl border border-border/60 bg-card p-3 space-y-2">
-                          <div className="grid grid-cols-[1fr_auto] items-center gap-3">
-                            <div className="min-w-0">
-                              <p className="text-[12px] font-medium text-foreground">{nerveName}</p>
-                              <p className="text-[9.5px] text-muted-foreground/60 mt-0.5">{n.nuclei} • {n.reflexPoint}</p>
-                            </div>
-                            {/* Overall nerve toggle (non-lateralized or bilateral) */}
-                            {!n.isLateralized && (
-                              <div className="flex items-center gap-2 shrink-0 justify-end">
-                                <CheckItem category="cranialNerves" name={nerveName} pattern={pattern} onToggle={(cat, name, status, side) => cnToggle(name, status, side)} />
-                              </div>
-                            )}
-                            {n.isLateralized && (
-                              <div className="flex items-center gap-1.5 shrink-0 justify-end">
-                                <CheckItem category="cranialNerves" name={nerveName} side="L" pattern={pattern} onToggle={(cat, name, status, side) => cnToggle(name, status, side)} />
-                                <CheckItem category="cranialNerves" name={nerveName} side="R" pattern={pattern} onToggle={(cat, name, status, side) => cnToggle(name, status, side)} />
-                              </div>
-                            )}
-                          </div>
-                          {/* Stim lines / directions */}
-                          {stimLines.length > 0 && (
-                            <div className="ml-2 pl-3 border-l-2 border-border/40 space-y-1 mt-2">
-                              <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40 mb-1">Stim lines</p>
-                              {stimLines.map((line, i) => {
-                                const lateral = isLatStim(i);
-                                const compositeName = `${nerveName} — ${line}`;
-                                // Helper to get status for a given side
-                                const getStatus = (side?: 'L' | 'R') => {
-                                  const key = side ? `${compositeName} (${side})` : compositeName;
-                                  return pattern.cranialNerves?.[key] || null;
-                                };
-                                const toggleStatus = (side?: 'L' | 'R') => {
-                                  const key = side ? `${compositeName} (${side})` : compositeName;
-                                  const current = pattern.cranialNerves?.[key];
-                                  const next = current === 'Inhibited' ? 'Clear' : current === 'Clear' ? null : 'Inhibited';
-                                  cnToggle(compositeName, next || 'Clear', side, nerveName);
-                                };
-                                return (
-                                  <div key={i} className="grid grid-cols-[1fr_auto] items-center gap-3 py-1">
-                                    <p className="text-[10.5px] text-foreground/80 truncate">{line}</p>
-                                    <div className="flex items-center gap-1.5 justify-end">
-                                      {lateral ? (
-                                        <>
-                                          <button
-                                            onClick={() => toggleStatus('L')}
-                                            className={cn(
-                                              "w-7 h-6 rounded text-[9px] font-bold border transition-colors",
-                                              getStatus('L') === 'Inhibited' ? "bg-rose-500 text-white border-rose-500" :
-                                              getStatus('L') === 'Clear' ? "bg-emerald-500 text-white border-emerald-500" :
-                                              "border-border text-muted-foreground/60 hover:border-rose-300 hover:text-rose-600"
-                                            )}
-                                          >
-                                            L
-                                          </button>
-                                          <button
-                                            onClick={() => toggleStatus('R')}
-                                            className={cn(
-                                              "w-7 h-6 rounded text-[9px] font-bold border transition-colors",
-                                              getStatus('R') === 'Inhibited' ? "bg-rose-500 text-white border-rose-500" :
-                                              getStatus('R') === 'Clear' ? "bg-emerald-500 text-white border-emerald-500" :
-                                              "border-border text-muted-foreground/60 hover:border-rose-300 hover:text-rose-600"
-                                            )}
-                                          >
-                                            R
-                                          </button>
-                                        </>
-                                      ) : (
-                                        <button
-                                          onClick={() => toggleStatus()}
-                                          className={cn(
-                                            "w-14 h-6 rounded text-[9px] font-bold border transition-colors",
-                                            getStatus() === 'Inhibited' ? "bg-rose-500 text-white border-rose-500" :
-                                            getStatus() === 'Clear' ? "bg-emerald-500 text-white border-emerald-500" :
-                                            "border-border text-muted-foreground/60 hover:border-rose-300 hover:text-rose-600"
-                                          )}
-                                        >
-                                          {getStatus() === 'Inhibited' ? 'Inh' : getStatus() === 'Clear' ? 'Clr' : '—'}
-                                        </button>
-                                      )}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                {/* Cranial Nerves + Intrinsic — column 2 */}
+                <div className="space-y-4">
+                <Card className="space-y-2" padding="comfortable">
+                  <SectionHeader icon={Zap} title="Cranial nerves">
+                    <ResourceLink href={FNH_LINKS.cranialNerves} title="Cranial nerves" />
+                  </SectionHeader>
+                  <div>
+                    {CRANIAL_NERVES.map(n => (
+                      <CranialNerveRow key={n.name} nerve={n} pattern={pattern} onToggle={cnToggle} />
+                    ))}
                   </div>
                 </Card>
 
@@ -559,39 +629,21 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                 <Card className="space-y-3" padding="comfortable">
                   <SectionHeader icon={Dumbbell} title="Intrinsic stabilisation">
                     <div className="flex items-center gap-3 text-[9px] text-muted-foreground/60">
-                      <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-rose-500 text-white text-[9px] font-bold">↓</span> Inhibited</span>
-                      <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-amber-500 text-white text-[9px] font-bold">↑</span> Hypertonic</span>
-                      <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-emerald-500 text-white text-[9px] font-bold">✓</span> Clear</span>
+                      <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-rose-500/15 text-rose-600 dark:text-rose-400 text-[9px] font-bold">↓</span> Inhibited</span>
+                      <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 text-[9px] font-bold">↑</span> Hypertonic</span>
+                      <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-primary/10 text-primary-strong dark:text-primary text-[9px] font-bold">✓</span> Clear</span>
                     </div>
+                    <ResourceLink href={FNH_LINKS.ligaments} title="Ligament reference" />
                   </SectionHeader>
                   <MuscleGroupGrid muscles={MUSCLE_GROUPS['Intrinsic Stabilisation'] || []} pattern={pattern} onToggle={quickToggle} onSelectMuscle={setSelectedMuscle} />
                 </Card>
+                </div>
               </div>
             );
           })()}
 
-          {subTab === 'intrinsic' && (() => {
-            const pattern = safeParse<Record<string, any>>(appointment.priority_pattern, {});
-            const toggle = (cat: string, name: string, nextStatus: string, side?: 'L' | 'R') => {
-              updatePriorityPattern(cat, name, nextStatus === 'Clear' ? null : nextStatus, side);
-            };
-            const intrinsicMuscles = MUSCLE_GROUPS['Intrinsic Stabilisation'] || [];
-            return (
-              <Card className="space-y-3" padding="comfortable">
-                <SectionHeader icon={Dumbbell} title="Intrinsic stabilisation">
-                  <div className="flex items-center gap-3 text-[9px] text-muted-foreground/60">
-                    <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-rose-500 text-white text-[9px] font-bold">↓</span> Inhibited</span>
-                    <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-amber-500 text-white text-[9px] font-bold">↑</span> Hypertonic</span>
-                    <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-emerald-500 text-white text-[9px] font-bold">✓</span> Clear</span>
-                  </div>
-                </SectionHeader>
-                <MuscleGroupGrid muscles={intrinsicMuscles} pattern={pattern} onToggle={toggle} onSelectMuscle={setSelectedMuscle} />
-              </Card>
-            );
-          })()}
-
           {subTab === 'muscles' && (() => {
-            const pattern = safeParse<Record<string, any>>(appointment.priority_pattern, {});
+            const pattern = safeParse<QuickPattern>(appointment.priority_pattern, {});
             const toggle = (cat: string, name: string, nextStatus: string, side?: 'L' | 'R') => {
               updatePriorityPattern(cat, name, nextStatus === 'Clear' ? null : nextStatus, side);
             };
@@ -629,10 +681,10 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                             else next = 'Inhibited';
                             toggle('muscles', m, next === null ? null : next);
                           };
-                          const getColor = (s: any) => {
-                            if (s === 'Inhibited' || s === 'Inhibition') return 'bg-rose-500 text-white border-rose-500';
-                            if (s === 'Hypertonic') return 'bg-amber-500 text-white border-amber-500';
-                            if (s === 'Clear' || s === 'Normotonic') return 'bg-emerald-500 text-white border-emerald-500';
+                          const getColor = (s: unknown) => {
+                            if (s === 'Inhibited' || s === 'Inhibition') return 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30';
+                            if (s === 'Hypertonic') return 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30';
+                            if (s === 'Clear' || s === 'Normotonic') return 'bg-primary/10 text-primary-strong dark:text-primary border-primary/30';
                             return 'bg-card text-muted-foreground border-border hover:bg-muted/50';
                           };
                           return (
@@ -640,7 +692,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
                                   <button onClick={() => setSelectedMuscle(m)} className="text-sm font-semibold text-foreground hover:text-primary transition-colors text-left">{m}</button>
-                                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{group}</span>
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{group}</span>
                                 </div>
                                 {description && <div className="text-xs text-muted-foreground mt-0.5">{description}</div>}
                                 {testingInstructions && <div className="text-[10px] text-muted-foreground/70 mt-1 leading-relaxed line-clamp-2">{testingInstructions}</div>}
@@ -649,7 +701,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                                 onClick={cycleStatus}
                                 className={cn("px-3 py-1 rounded-md text-[9px] font-bold border transition-all shrink-0 shadow-sm hover:shadow", getColor(status))}
                               >
-                                {(status === 'Inhibited' || status === 'Inhibition') ? 'INHIBITED' : status === 'Hypertonic' ? 'HYPERTONIC' : (status === 'Clear' || status === 'Normotonic') ? 'NORMOTONIC' : 'UNTESTED'}
+                                {(status === 'Inhibited' || status === 'Inhibition') ? 'Inhibited' : status === 'Hypertonic' ? 'Hypertonic' : (status === 'Clear' || status === 'Normotonic') ? 'Clear' : 'Untested'}
                               </button>
                             </div>
                           );
@@ -665,16 +717,16 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                           else next = 'Inhibited';
                           toggle('muscles', m, next === null ? null : next, side);
                         };
-                        const getColor = (s: any) => {
-                          if (s === 'Inhibited' || s === 'Inhibition') return 'bg-rose-500 text-white border-rose-500';
-                          if (s === 'Hypertonic') return 'bg-amber-500 text-white border-amber-500';
-                          if (s === 'Clear' || s === 'Normotonic') return 'bg-emerald-500 text-white border-emerald-500';
+                        const getColor = (s: unknown) => {
+                          if (s === 'Inhibited' || s === 'Inhibition') return 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30';
+                          if (s === 'Hypertonic') return 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30';
+                          if (s === 'Clear' || s === 'Normotonic') return 'bg-primary/10 text-primary-strong dark:text-primary border-primary/30';
                           return 'bg-card text-muted-foreground border-border hover:bg-muted/50';
                         };
-                        const getLabel = (s: any) => {
-                          if (s === 'Inhibited' || s === 'Inhibition') return 'INHIBITED';
-                          if (s === 'Hypertonic') return 'HYPERTONIC';
-                          if (s === 'Clear' || s === 'Normotonic') return 'NORMOTONIC';
+                        const getLabel = (s: unknown) => {
+                          if (s === 'Inhibited' || s === 'Inhibition') return 'Inhibited';
+                          if (s === 'Hypertonic') return 'Hypertonic';
+                          if (s === 'Clear' || s === 'Normotonic') return 'Clear';
                           return '—';
                         };
                         return (
@@ -682,7 +734,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
                                 <button onClick={() => setSelectedMuscle(m)} className="text-sm font-semibold text-foreground hover:text-primary transition-colors text-left">{m}</button>
-                                <span className="text-[9px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{group}</span>
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{group}</span>
                               </div>
                               {description && <div className="text-xs text-muted-foreground mt-0.5">{description}</div>}
                               {testingInstructions && <div className="text-[10px] text-muted-foreground/70 mt-1 leading-relaxed line-clamp-2">{testingInstructions}</div>}
@@ -717,9 +769,9 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                     <Card key={groupName} className="space-y-3" padding="comfortable">
                       <SectionHeader icon={Dumbbell} title={groupName}>
                         <div className="flex items-center gap-3 text-[9px] text-muted-foreground/60">
-                          <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-rose-500 text-white text-[9px] font-bold">↓</span> Inhibited</span>
-                          <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-amber-500 text-white text-[9px] font-bold">↑</span> Hypertonic</span>
-                          <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-emerald-500 text-white text-[9px] font-bold">✓</span> Clear</span>
+                          <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-rose-500/15 text-rose-600 dark:text-rose-400 text-[9px] font-bold">↓</span> Inhibited</span>
+                          <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 text-[9px] font-bold">↑</span> Hypertonic</span>
+                          <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-primary/10 text-primary-strong dark:text-primary text-[9px] font-bold">✓</span> Clear</span>
                         </div>
                       </SectionHeader>
                       <MuscleGroupGrid muscles={muscles} pattern={pattern} onToggle={toggle} onSelectMuscle={setSelectedMuscle} />
@@ -732,7 +784,9 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
 
           {subTab === 'reflexes' && (
             <Section className="space-y-3">
-              <SectionHeader icon={Baby} title="Primitive reflexes" subtitle="Tap a test to record its status" />
+              <SectionHeader icon={Baby} title="Primitive reflexes" subtitle="Tap a test to record its status">
+                <ResourceLink href={FNH_LINKS.primitiveReflexes} title="Primitive reflexes" />
+              </SectionHeader>
               <PrimitiveReflexAssessment
                 appointmentId={appointment.id}
                 priorityPattern={appointment.priority_pattern}
@@ -743,7 +797,9 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
 
           {subTab === 'nerves' && (
             <Section className="space-y-3">
-              <SectionHeader icon={Zap} title="Cranial nerves" subtitle="Laterality, stimulation and priority" />
+              <SectionHeader icon={Zap} title="Cranial nerves" subtitle="Laterality, stimulation and priority">
+                <ResourceLink href={FNH_LINKS.cranialNerves} title="Cranial nerves" />
+              </SectionHeader>
               <CranialNerveAssessment
                 appointmentId={appointment.id}
                 priorityPattern={appointment.priority_pattern}
@@ -755,7 +811,9 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
 
           {subTab === 'zones' && (
             <Section className="space-y-3">
-              <SectionHeader icon={Brain} title="Brain zones" subtitle="Cortical and subcortical points" />
+              <SectionHeader icon={Brain} title="Brain zones" subtitle="Cortical and subcortical points">
+                <ResourceLink href={FNH_LINKS.brainZones} title="Brain zones" />
+              </SectionHeader>
               <BrainZoneAssessment
                 priorityPattern={appointment.priority_pattern}
                 updatePriorityPattern={updatePriorityPattern}
@@ -765,7 +823,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
           )}
 
           {subTab === 'eyes' && (() => {
-            const pattern = safeParse<Record<string, any>>(appointment.priority_pattern, {});
+            const pattern = safeParse<QuickPattern>(appointment.priority_pattern, {});
             const eyePattern = pattern.eyeSystems || {};
             const toggle = (name: string, status: 'Inhibited' | 'Clear' | null) => {
               updatePriorityPattern('eyeSystems', name, status);
@@ -841,7 +899,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                                     className={cn(
                                       "px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors border",
                                       isInhibited
-                                        ? "bg-rose-500 text-white border-rose-500"
+                                        ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
                                         : "border-rose-300 text-rose-600 hover:bg-rose-50 dark:border-rose-700 dark:text-rose-400"
                                     )}
                                   >
@@ -852,8 +910,8 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                                     className={cn(
                                       "px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors border",
                                       isClear
-                                        ? "bg-emerald-500 text-white border-emerald-500"
-                                        : "border-emerald-300 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-400"
+                                        ? "bg-primary/10 text-primary-strong dark:text-primary border-primary/30"
+                                        : "border-primary/30 text-primary/70 hover:bg-primary/5 dark:border-primary/50 dark:text-primary/70"
                                     )}
                                   >
                                     Clear
@@ -878,7 +936,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                                             className={cn(
                                               "px-2 py-0.5 rounded text-[9px] font-medium transition-colors border",
                                               subInhibited
-                                                ? "bg-rose-500 text-white border-rose-500"
+                                                ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
                                                 : "border-rose-300/50 text-rose-600/70 hover:bg-rose-50 dark:border-rose-700/50 dark:text-rose-400/70"
                                             )}
                                           >
@@ -889,8 +947,8 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                                             className={cn(
                                               "px-2 py-0.5 rounded text-[9px] font-medium transition-colors border",
                                               subClear
-                                                ? "bg-emerald-500 text-white border-emerald-500"
-                                                : "border-emerald-300/50 text-emerald-600/70 hover:bg-emerald-50 dark:border-emerald-700/50 dark:text-emerald-400/70"
+                                                ? "bg-primary/10 text-primary-strong dark:text-primary border-primary/30"
+                                                : "border-primary/30 text-primary/70 hover:bg-primary/5 dark:border-primary/50 dark:text-primary/70"
                                             )}
                                           >
                                             Clr
@@ -914,7 +972,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
         </div>
 
         {subTab === 'report' && (() => {
-          const pattern = safeParse<Record<string, any>>(appointment.priority_pattern, {});
+          const pattern = safeParse<QuickPattern>(appointment.priority_pattern, {});
           const findings: Array<{category: string, name: string, status: string, side?: string}> = [];
           
           Object.entries(pattern.muscles || {}).forEach(([key, val]) => {
@@ -978,7 +1036,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
           const getStatusColor = (s: string) => {
             if (s === 'Inhibited' || s === 'Inhibition') return 'bg-rose-100 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400';
             if (s === 'Hypertonic') return 'bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400';
-            if (s === 'Clear' || s === 'Normotonic') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400';
+            if (s === 'Clear' || s === 'Normotonic') return 'bg-primary/10 text-primary-strong dark:bg-primary/20 dark:text-primary';
             return 'bg-muted text-muted-foreground';
           };
           

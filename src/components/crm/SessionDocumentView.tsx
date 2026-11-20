@@ -244,7 +244,7 @@ const SessionDocumentView = ({
                 !appointment.is_paid
                   ? "text-muted-foreground border-border hover:bg-muted/50"
                   : appointment.payment_received
-                    ? "text-emerald-600 border-emerald-200 bg-emerald-50 hover:bg-emerald-100"
+                    ? "text-primary-strong border-primary/30 bg-primary/10 hover:bg-primary/15"
                     : "text-rose-600 border-rose-200 bg-rose-50 hover:bg-rose-100"
               )}
               title="Click to cycle: Free → Due → Paid"

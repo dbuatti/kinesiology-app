@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { Loader2, ArrowUpRight, ScrollText, PanelRightClose, Calendar, Clock, Timer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import PaymentStatusBadge from "@/components/crm/PaymentStatusBadge";
 import { calculateAge } from "@/utils/crm-utils";
+import { correctionsForAppointment, inhibitionsForAppointment } from "@/lib/client-log";
+import type { Appointment } from "@/types/crm";
 import { cn } from "@/lib/utils";
 
 interface ClientSideBaseProps {
@@ -72,12 +74,21 @@ export function ClientSideContent({
   timer,
   active = true,
   onOpenChange,
+  history,
+  currentId,
+  planNote,
 }: ClientSideBaseProps & {
   vitals?: VitalsChip[];
   timer?: RailTimer;
   /** Fetch only while the panel is actually shown. */
   active?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** Full past-session rows from useAppointment — powers "Where we left off". */
+  history?: Appointment[];
+  /** The session on screen (excluded from "last session"). */
+  currentId?: string;
+  /** The note left last time for today. */
+  planNote?: string | null;
 }) {
   const [loading, setLoading] = useState(false);
   const [client, setClient] = useState<ClientRow | null>(null);
@@ -105,16 +116,29 @@ export function ClientSideContent({
 
   const past = sessions.filter((s) => new Date(s.date).getTime() <= Date.now());
   const completed = past.filter((s) => String(s.status || "").toLowerCase() !== "cancelled");
-  const lastSession = completed[0]?.date ?? null;
+  const lastSessionDate = completed[0]?.date ?? null;
   const latestBolt = [...sessions].reverse().find((s) => s.bolt_score != null)?.bolt_score ?? null;
   const initials = (clientName || "?").trim().split(/\s+/).filter(Boolean).slice(0, 2)
     .map((word) => word[0]?.toUpperCase()).join("") || "?";
   const age = client?.born ? calculateAge(new Date(client.born)) : null;
   const rate = client?.standard_rate === 0 ? "Free" : client?.standard_rate != null ? `$${client.standard_rate}` : null;
 
+  /** The last real session before the one on screen — "where we left off". */
+  const lastSession = (history ?? [])
+    .filter(h =>
+      h.id !== currentId &&
+      new Date(h.date).getTime() <= Date.now() &&
+      String(h.status || "").toLowerCase() !== "cancelled",
+    )
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+  const lastLog = lastSession ? correctionsForAppointment(lastSession) : [];
+  const lastInhibitions = lastSession ? inhibitionsForAppointment(lastSession) : [];
+  const stillToCheck = lastInhibitions.filter(i => !i.cleared);
+  const homework = lastSession?.homework_given ?? null;
+
   const stats: [string, string][] = [
     ["Sessions", completed.length ? String(completed.length) : "—"],
-    ["Last session", lastSession ? format(new Date(lastSession), "d MMM yyyy") : "—"],
+    ["Last session", lastSessionDate ? format(new Date(lastSessionDate), "d MMM yyyy") : "—"],
     ["Latest BOLT", latestBolt != null ? `${latestBolt}s` : "—"],
     ["Rate", rate ?? "—"],
   ];
@@ -182,7 +206,78 @@ export function ClientSideContent({
           <Loader2 className="h-4 w-4 animate-spin" /> Loading client…
         </div>
       ) : (
-        <div className="space-y-6 px-5 py-5">
+        <div className="space-y-5 px-5 py-5">
+          {/* Where we left off — the orienting card for the session */}
+          {lastSession && (
+            <section>
+              <h3 className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+                Where we left off
+              </h3>
+              <div className="rounded-2xl bg-muted/40 p-4">
+                <div className="flex items-baseline justify-between gap-2">
+                  <p className="font-serif text-[15px] font-medium text-foreground">
+                    {format(new Date(lastSession.date), "EEE d MMM yyyy")}
+                  </p>
+                  <Link
+                    to={`/appointments/${lastSession.id}`}
+                    onClick={() => onOpenChange?.(false)}
+                    className="shrink-0 text-[11px] font-medium text-primary hover:underline"
+                  >
+                    Open session
+                  </Link>
+                </div>
+                {planNote && (
+                  <p className="mt-2 text-[13px] leading-relaxed text-foreground">
+                    <span className="font-semibold">The plan — </span>
+                    <span className="text-muted-foreground">{planNote}</span>
+                  </p>
+                )}
+                {lastLog.length > 0 && (
+                  <div className="mt-2.5 space-y-1.5">
+                    {lastLog.slice(0, 3).map(c => (
+                      <div key={c.key} className="text-[13px] leading-snug">
+                        <p className="font-semibold text-foreground">{c.pathway ?? c.process}</p>
+                        {c.detail && (
+                          <p className="text-[12px] leading-relaxed text-muted-foreground">{c.detail}</p>
+                        )}
+                      </div>
+                    ))}
+                    {lastLog.length > 3 && (
+                      <Link
+                        to={`/clients/${clientId}/log`}
+                        onClick={() => onOpenChange?.(false)}
+                        className="inline-flex text-[11px] font-medium text-primary hover:underline"
+                      >
+                        +{lastLog.length - 3} more in the full log
+                      </Link>
+                    )}
+                  </div>
+                )}
+                {stillToCheck.length > 0 ? (
+                  <p className="mt-2.5 text-[12px] leading-relaxed">
+                    <span className="font-semibold text-foreground">Still to check — </span>
+                    <span className="text-muted-foreground">
+                      {stillToCheck
+                        .slice(0, 6)
+                        .map(i => `${i.name}${i.side ? ` (${i.side})` : ""}`)
+                        .join(" · ")}
+                    </span>
+                  </p>
+                ) : lastInhibitions.length > 0 ? (
+                  <p className="mt-2.5 text-[12px] font-medium text-primary-strong dark:text-primary">
+                    ✓ All clear at the end of last session
+                  </p>
+                ) : null}
+                {homework && (
+                  <p className="mt-2.5 text-[12px] leading-relaxed text-muted-foreground">
+                    <span className="font-semibold text-foreground">Homework — </span>
+                    {homework}
+                  </p>
+                )}
+              </div>
+            </section>
+          )}
+
           {/* This session — vitals & timer, moved out of the header */}
           {((vitals && vitals.length > 0) || timer) && (
             <section>
@@ -356,6 +451,9 @@ export function SessionClientRail({
   onCollapse: () => void;
   vitals?: VitalsChip[];
   timer?: RailTimer;
+  history?: Appointment[];
+  currentId?: string;
+  planNote?: string | null;
 }) {
   return (
     <aside
@@ -384,11 +482,18 @@ export function SessionClientRail({
 
 /** Overlay slide-over for narrow screens. */
 export default function ClientSideSheet(
-  props: ClientSideBaseProps & { open?: boolean; onOpenChange?: (open: boolean) => void },
+  props: ClientSideBaseProps & {
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+    history?: Appointment[];
+    currentId?: string;
+    planNote?: string | null;
+  },
 ) {
   return (
     <Sheet open={props.open ?? true} onOpenChange={props.onOpenChange}>
       <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
+        <DialogTitle className="sr-only">{props.clientName} — client overview</DialogTitle>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <ClientSideContent active={props.open ?? true} {...props} />
         </div>

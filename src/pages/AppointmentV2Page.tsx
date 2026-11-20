@@ -720,18 +720,21 @@ const AppointmentV2Page = () => {
         <CorrectionDock />
         {clientRailOpen && (
           <SessionClientRail
-          clientId={appointment.clients?.id || ""}
-          clientName={appointment.clients?.name || "Client"}
-          sessionDate={appointment.date}
-          isDemo={isDemo}
-          paymentReceived={appointment.payment_received}
-          isPaidService={appointment.is_paid}
-          priceAmount={appointment.price_amount ?? appointment.clients?.standard_rate ?? null}
-          paymentMethod={appointment.payment_method}
-          appointmentStatus={appointment.status}
-          vitals={sessionVitals}
-          onCollapse={() => setClientRailOpen(false)}
-        />
+            clientId={appointment.clients?.id || ""}
+            clientName={appointment.clients?.name || "Client"}
+            sessionDate={appointment.date}
+            isDemo={isDemo}
+            paymentReceived={appointment.payment_received}
+            isPaidService={appointment.is_paid}
+            priceAmount={appointment.price_amount ?? appointment.clients?.standard_rate ?? null}
+            paymentMethod={appointment.payment_method}
+            appointmentStatus={appointment.status}
+            vitals={sessionVitals}
+            history={history}
+            currentId={appointment.id}
+            planNote={appointment.next_session_note}
+            onCollapse={() => setClientRailOpen(false)}
+          />
         )}
       </div>
 
@@ -749,6 +752,9 @@ const AppointmentV2Page = () => {
         priceAmount={appointment.price_amount ?? appointment.clients?.standard_rate ?? null}
         paymentMethod={appointment.payment_method}
         appointmentStatus={appointment.status}
+        history={history}
+        currentId={appointment.id}
+        planNote={appointment.next_session_note}
       />
 
       {intakeOpen && (

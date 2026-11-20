@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
-import { Loader2, ArrowUpRight, ScrollText, PanelRightClose, Calendar, Clock, Timer } from "lucide-react";
+import { Loader2, ArrowUpRight, ScrollText, PanelRightClose, Calendar, Clock, Timer, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import PaymentStatusBadge from "@/components/crm/PaymentStatusBadge";
@@ -57,6 +57,58 @@ interface SessionRow {
   status: string | null;
   goal: string | null;
   bolt_score: number | null;
+}
+
+/** Inline peek of a past session — the plan, corrections, findings state, homework. */
+function HistoryPeek({ session, planNote }: { session: Appointment; planNote?: string | null }) {
+  const log = correctionsForAppointment(session);
+  const inhibitions = inhibitionsForAppointment(session);
+  const still = inhibitions.filter(i => !i.cleared);
+
+  return (
+    <div className="mt-2 space-y-2 border-l border-border/40 pl-3">
+      {planNote && (
+        <p className="text-[13px] leading-relaxed text-foreground">
+          <span className="font-semibold">The plan — </span>
+          <span className="text-muted-foreground">{planNote}</span>
+        </p>
+      )}
+      {log.length > 0 ? (
+        <div className="space-y-1.5">
+          {log.slice(0, 3).map(c => (
+            <div key={c.key} className="text-[13px] leading-snug">
+              <p className="font-semibold text-foreground">{c.pathway ?? c.process}</p>
+              {c.detail && <p className="text-[12px] leading-relaxed text-muted-foreground">{c.detail}</p>}
+            </div>
+          ))}
+          {log.length > 3 && (
+            <p className="text-[11px] text-muted-foreground">+{log.length - 3} more in the full log</p>
+          )}
+        </div>
+      ) : null}
+      {still.length > 0 ? (
+        <p className="text-[12px] leading-relaxed">
+          <span className="font-semibold text-foreground">Still to check — </span>
+          <span className="text-muted-foreground">
+            {still
+              .slice(0, 6)
+              .map(i => `${i.name}${i.side ? ` (${i.side})` : ""}`)
+              .join(" · ")}
+          </span>
+        </p>
+      ) : inhibitions.length > 0 ? (
+        <p className="text-[12px] font-medium text-primary-strong dark:text-primary">
+          ✓ All clear at the end of this session
+        </p>
+      ) : null}
+      {session.homework_given && (
+        <p className="text-[12px] leading-relaxed text-muted-foreground">
+          <span className="font-semibold text-foreground">Homework — </span>
+          {session.homework_given}
+        </p>
+      )}
+    </div>
+  );
 }
 
 /** Shared body: identity, this-session vitals, statistics, fundamentals, history. */
@@ -123,18 +175,17 @@ export function ClientSideContent({
   const age = client?.born ? calculateAge(new Date(client.born)) : null;
   const rate = client?.standard_rate === 0 ? "Free" : client?.standard_rate != null ? `$${client.standard_rate}` : null;
 
-  /** The last real session before the one on screen — "where we left off". */
-  const lastSession = (history ?? [])
+  /** Past sessions before the one on screen — newest first. */
+  const pastSessions = (history ?? [])
     .filter(h =>
       h.id !== currentId &&
       new Date(h.date).getTime() <= Date.now() &&
       String(h.status || "").toLowerCase() !== "cancelled",
     )
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-  const lastLog = lastSession ? correctionsForAppointment(lastSession) : [];
-  const lastInhibitions = lastSession ? inhibitionsForAppointment(lastSession) : [];
-  const stillToCheck = lastInhibitions.filter(i => !i.cleared);
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const lastSession = pastSessions[0];
   const homework = lastSession?.homework_given ?? null;
+  const [expandedHistoryId, setExpandedHistoryId] = useState<string | null>(null);
 
   const stats: [string, string][] = [
     ["Sessions", completed.length ? String(completed.length) : "—"],
@@ -226,54 +277,7 @@ export function ClientSideContent({
                     Open session
                   </Link>
                 </div>
-                {planNote && (
-                  <p className="mt-2 text-[13px] leading-relaxed text-foreground">
-                    <span className="font-semibold">The plan — </span>
-                    <span className="text-muted-foreground">{planNote}</span>
-                  </p>
-                )}
-                {lastLog.length > 0 && (
-                  <div className="mt-2.5 space-y-1.5">
-                    {lastLog.slice(0, 3).map(c => (
-                      <div key={c.key} className="text-[13px] leading-snug">
-                        <p className="font-semibold text-foreground">{c.pathway ?? c.process}</p>
-                        {c.detail && (
-                          <p className="text-[12px] leading-relaxed text-muted-foreground">{c.detail}</p>
-                        )}
-                      </div>
-                    ))}
-                    {lastLog.length > 3 && (
-                      <Link
-                        to={`/clients/${clientId}/log`}
-                        onClick={() => onOpenChange?.(false)}
-                        className="inline-flex text-[11px] font-medium text-primary hover:underline"
-                      >
-                        +{lastLog.length - 3} more in the full log
-                      </Link>
-                    )}
-                  </div>
-                )}
-                {stillToCheck.length > 0 ? (
-                  <p className="mt-2.5 text-[12px] leading-relaxed">
-                    <span className="font-semibold text-foreground">Still to check — </span>
-                    <span className="text-muted-foreground">
-                      {stillToCheck
-                        .slice(0, 6)
-                        .map(i => `${i.name}${i.side ? ` (${i.side})` : ""}`)
-                        .join(" · ")}
-                    </span>
-                  </p>
-                ) : lastInhibitions.length > 0 ? (
-                  <p className="mt-2.5 text-[12px] font-medium text-primary-strong dark:text-primary">
-                    ✓ All clear at the end of last session
-                  </p>
-                ) : null}
-                {homework && (
-                  <p className="mt-2.5 text-[12px] leading-relaxed text-muted-foreground">
-                    <span className="font-semibold text-foreground">Homework — </span>
-                    {homework}
-                  </p>
-                )}
+                <HistoryPeek session={lastSession} planNote={planNote} />
               </div>
             </section>
           )}
@@ -376,43 +380,97 @@ export function ClientSideContent({
             </section>
           )}
 
-          {/* Past appointments */}
-          {past.length > 0 && (
+          {/* History — expandable rows; peek a session without leaving the page */}
+          {pastSessions.length > 0 ? (
             <section>
               <h3 className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
-                Past appointments
+                History
               </h3>
               <ul className="space-y-0.5">
-                {past.slice(0, 6).map((s) => (
-                  <li key={s.id}>
-                    <Link
-                      to={`/appointments/${s.id}`}
-                      className="group flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/50"
-                    >
-                      <span className="shrink-0 rounded-md bg-muted/70 px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-foreground">
-                        {format(new Date(s.date), "d MMM")}
-                      </span>
-                      <span className="min-w-0 flex-1 truncate text-[12px] text-muted-foreground">
-                        {s.goal || String(s.status || "Session")}
-                      </span>
-                      <ArrowUpRight
-                        size={13}
-                        className="shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary"
-                      />
-                    </Link>
-                  </li>
-                ))}
+                {pastSessions.slice(0, 8).map((s, i) => {
+                  const expandedRow = expandedHistoryId === s.id;
+                  return (
+                    <li key={s.id} className="rounded-lg bg-muted/20">
+                      <button
+                        type="button"
+                        onClick={() => setExpandedHistoryId(expandedRow ? null : s.id)}
+                        aria-expanded={expandedRow}
+                        className="group flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-muted/50"
+                      >
+                        <ChevronDown
+                          size={12}
+                          className={cn(
+                            "shrink-0 text-muted-foreground/50 transition-transform",
+                            expandedRow && "rotate-180",
+                          )}
+                        />
+                        <span className="shrink-0 rounded-md bg-muted/70 px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-foreground">
+                          {format(new Date(s.date), "d MMM")}
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-[12px] text-muted-foreground">
+                          {s.goal || String(s.status || "Session")}
+                        </span>
+                        <Link
+                          to={`/appointments/${s.id}`}
+                          onClick={e => {
+                            e.stopPropagation();
+                            onOpenChange?.(false);
+                          }}
+                          className="shrink-0 rounded p-1 text-muted-foreground/50 transition-colors hover:bg-muted hover:text-primary"
+                          title="Open this session"
+                          aria-label={`Open ${format(new Date(s.date), "d MMM")} session`}
+                        >
+                          <ArrowUpRight size={13} />
+                        </Link>
+                      </button>
+                      {expandedRow && (
+                        <div className="px-2 pb-2">
+                          <HistoryPeek session={s} planNote={i === 0 ? planNote : null} />
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
-              {past.length > 6 && (
+              {pastSessions.length > 8 && (
                 <Link
                   to={`/clients/${clientId}/log`}
                   onClick={() => onOpenChange?.(false)}
                   className="mt-1 inline-flex text-[11px] font-medium text-primary hover:underline"
                 >
-                  All {past.length} in the full log
+                  All {pastSessions.length} in the full log
                 </Link>
               )}
             </section>
+          ) : (
+            past.length > 0 && (
+              <section>
+                <h3 className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+                  Past appointments
+                </h3>
+                <ul className="space-y-0.5">
+                  {past.slice(0, 6).map((s) => (
+                    <li key={s.id}>
+                      <Link
+                        to={`/appointments/${s.id}`}
+                        className="group flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/50"
+                      >
+                        <span className="shrink-0 rounded-md bg-muted/70 px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-foreground">
+                          {format(new Date(s.date), "d MMM")}
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-[12px] text-muted-foreground">
+                          {s.goal || String(s.status || "Session")}
+                        </span>
+                        <ArrowUpRight
+                          size={13}
+                          className="shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary"
+                        />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )
           )}
 
           {/* Deep links */}

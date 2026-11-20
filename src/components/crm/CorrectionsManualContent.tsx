@@ -215,7 +215,7 @@ const ReferenceImage = ({
 }) => (
   <button type="button" onClick={() => onOpen(src)} className="group relative block w-full">
     <img src={src} alt={alt} loading="lazy" className="block w-full" />
-    <span className="absolute right-1.5 top-1.5 flex items-center gap-1 rounded-md bg-background/90 px-1.5 py-1 text-[9px] font-semibold text-foreground opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
+    <span className="absolute right-1.5 top-1.5 flex items-center gap-1 rounded-md bg-background/90 px-1.5 py-1 text-[10px] font-semibold text-foreground opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
       <Maximize2 size={10} /> Enlarge
     </span>
   </button>
@@ -479,14 +479,14 @@ const CorrectionsManualContent = ({
       <span className="flex shrink-0 items-center gap-1">
         {saved > 0 && (
           <span
-            className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary-strong dark:bg-primary/25 dark:text-primary"
+            className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary-strong dark:bg-primary/25 dark:text-primary"
             title={`${saved} correction${saved === 1 ? "" : "s"} saved for this process`}
           >
             {saved} saved
           </span>
         )}
         {done > 0 && (
-          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold text-primary-strong dark:bg-primary/50 dark:text-primary">
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary-strong dark:bg-primary/50 dark:text-primary">
             {done}/{total}
           </span>
         )}
@@ -668,7 +668,7 @@ const CorrectionsManualContent = ({
                     })}
                   </div>
                   {canLogEmotional && (
-                    <p className="mt-2 text-[9px] italic text-muted-foreground">
+                    <p className="mt-2 text-[11px] italic text-muted-foreground">
                       Tap a cue to log the eye position.
                     </p>
                   )}
@@ -698,7 +698,7 @@ const CorrectionsManualContent = ({
                               {emotion}
                               <span className="font-medium text-muted-foreground">{first.element}</span>
                             </span>
-                            <span className="text-[9px] font-semibold text-muted-foreground">
+                            <span className="text-[11px] font-semibold text-muted-foreground">
                               {first.pulse}
                             </span>
                           </div>
@@ -727,7 +727,7 @@ const CorrectionsManualContent = ({
                                     {active && <Check size={9} strokeWidth={3} className="text-primary-strong" />}
                                     {organ.name}
                                   </p>
-                                  <p className="text-[9px] text-muted-foreground">{organ.depth}</p>
+                                  <p className="text-[11px] text-muted-foreground">{organ.depth}</p>
                                 </button>
                               );
                             })}
@@ -737,7 +737,7 @@ const CorrectionsManualContent = ({
                     })}
                   </div>
                   {canLogEmotional && (
-                    <p className="mt-2 text-[9px] italic text-muted-foreground">
+                    <p className="mt-2 text-[11px] italic text-muted-foreground">
                       Tap an organ to set it — and its emotion — on the record.
                     </p>
                   )}
@@ -834,8 +834,8 @@ const CorrectionsManualContent = ({
         {/* Progress bar */}
         <div className="w-full">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider">Progress</span>
-            <span className="text-[9px] font-medium text-foreground">
+            <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Progress</span>
+            <span className="text-[11px] font-medium text-foreground">
               {Math.round(((aeFilled + checkpointsAnswered + (belief ? 1 : 0)) / total) * 100)}%
             </span>
           </div>
@@ -918,7 +918,7 @@ const CorrectionsManualContent = ({
             <div className="w-full border-t border-dashed border-border/40" />
           </div>
           <div className="relative flex justify-center">
-            <span className="bg-background px-3 text-[9px] font-medium text-muted-foreground/70 uppercase tracking-wider">Then Check</span>
+            <span className="bg-background px-3 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wider">Then Check</span>
           </div>
         </div>
 
@@ -976,10 +976,10 @@ const CorrectionsManualContent = ({
                             )}
                           >
                             <div className="flex items-center gap-1 mb-0.5">
-                              <span className="text-[9px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Yes</span>
+                              <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Yes</span>
                               <ArrowRightCircle size={11} className="text-rose-500" />
                             </div>
-                            <p className="text-[9px] text-rose-700 dark:text-rose-300 leading-relaxed">
+                            <p className="text-[11px] text-rose-700 dark:text-rose-300 leading-relaxed">
                               Restart A-E cycle {i === 2 ? "(stay on H)" : "(skip to next)"}
                             </p>
                           </div>
@@ -998,14 +998,14 @@ const CorrectionsManualContent = ({
                             )}
                           >
                             <div className="flex items-center gap-1 mb-0.5">
-                              <span className="text-[9px] font-bold uppercase tracking-wider text-primary-strong dark:text-primary">No</span>
+                              <span className="text-[11px] font-bold uppercase tracking-wider text-primary-strong dark:text-primary">No</span>
                               <ArrowRightCircle size={11} className="text-primary/70" />
                             </div>
                             <p className="text-[10px] text-foreground/80 dark:text-foreground/70 leading-relaxed">{cp.noAdvance}</p>
                           </div>
                         </div>
                         {answered && (
-                          <p className="mt-1.5 text-[9px] font-medium text-muted-foreground/70 italic">
+                          <p className="mt-1.5 text-[11px] font-medium text-muted-foreground/70 italic">
                             Marked: {currentValue}
                           </p>
                         )}
@@ -1093,7 +1093,7 @@ const CorrectionsManualContent = ({
               </button>
             )}
             {compact && !instructionsOpen && (
-              <span className="text-[9px] font-medium text-muted-foreground/50 uppercase tracking-wider">
+              <span className="text-[11px] font-medium text-muted-foreground/50 uppercase tracking-wider">
                 Keys 1–9
               </span>
             )}
@@ -1124,7 +1124,7 @@ const CorrectionsManualContent = ({
               return groups.map((g, gi) => (
                 <div key={g.group ?? gi} className="space-y-1">
                   {g.group && (
-                    <p className="px-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40">{g.group}</p>
+                    <p className="px-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40">{g.group}</p>
                   )}
                   <div className={cn("gap-0.5", instructionsOpen ? "flex flex-col" : "flex flex-wrap")}>
                     {g.items.map((item) => {

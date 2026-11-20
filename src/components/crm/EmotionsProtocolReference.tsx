@@ -215,7 +215,7 @@ const EmotionsProtocolReference = () => {
             </Card>
 
             {/* Eye Accessing Cues */}
-            <Card className="border-none shadow-lg rounded-2xl bg-foreground text-primary-foreground overflow-hidden">
+            <Card className="border-none rounded-2xl bg-primary text-primary-foreground overflow-hidden">
               <CardHeader className="p-6 pb-2">
                 <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Eye size={14} /> Eye Accessing Cues (NLP)

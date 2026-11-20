@@ -369,7 +369,7 @@ function HeartWallSubModal({ onClose, saveSelection }: { onClose: () => void; sa
                         <div key={organ} className="bg-muted/30 rounded-lg p-2">
                           <div className="flex items-center gap-2 mb-1.5">
                             <span className="text-[10px] font-bold text-foreground">{organ}</span>
-                            <span className="text-[9px] text-muted-foreground/60">{group.element}</span>
+                            <span className="text-[11px] text-muted-foreground/60">{group.element}</span>
                           </div>
                           <div className="flex flex-wrap gap-1">
                             {group.muscles[organ]?.map((muscle) => (
@@ -377,7 +377,7 @@ function HeartWallSubModal({ onClose, saveSelection }: { onClose: () => void; sa
                                 key={muscle}
                                 onClick={() => { selectOrgan(organ, { organ }); selectMuscle(muscle, { muscle }); saveSelection({ heartWallOrgan: organ, heartWallMuscle: muscle }); }}
                                 className={cn(
-                                  "px-2 py-0.5 rounded text-[9px] font-medium border transition-colors",
+                                  "px-2.5 py-1 rounded-md text-[11px] font-medium border transition-colors",
                                   organSel?.organ === organ && muscleSel?.muscle === muscle
                                     ? "bg-chart-emerald text-white border-chart-emerald"
                                     : organSel?.organ === organ
@@ -546,7 +546,7 @@ function OrgansSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <p className="text-[10px] font-semibold uppercase text-muted-foreground">Organ Referral Chart</p>
-              <span className="text-[9px] text-muted-foreground/50">Tap to enlarge</span>
+              <span className="text-[10px] text-muted-foreground/50">Tap to enlarge</span>
             </div>
             <button
               type="button"
@@ -572,7 +572,7 @@ function OrgansSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <p className="text-[10px] font-semibold uppercase text-muted-foreground">Pulse Point Chart</p>
-              <span className="text-[9px] text-muted-foreground/50">Tap to enlarge</span>
+              <span className="text-[10px] text-muted-foreground/50">Tap to enlarge</span>
             </div>
             <button
               type="button"
@@ -736,7 +736,7 @@ function JointsSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
                   key={t}
                   onClick={() => setTypeFilter(t)}
                   className={cn(
-                    "rounded-md px-2 py-0.5 text-[9px] font-semibold transition-colors",
+                    "rounded-md px-2.5 py-1 text-[11px] font-semibold transition-colors",
                     typeFilter === t
                       ? "bg-chart-primary/10 text-chart-primary"
                       : "text-muted-foreground/70 hover:bg-muted"
@@ -745,7 +745,7 @@ function JointsSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
                   {t === "all" ? "All" : t}
                 </button>
               ))}
-              <span className="ml-auto text-[9px] text-muted-foreground/50">
+              <span className="ml-auto text-[10px] text-muted-foreground/50">
                 {filteredJoints.length} of {JOINT_ACTION_LIBRARY.length}
               </span>
             </div>
@@ -772,11 +772,11 @@ function JointsSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
                 >
                   <div className="flex items-center justify-between">
                     <div className="font-bold text-foreground">{joint.name}</div>
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${joint.type === 'Axial' ? 'text-chart-primary bg-chart-primary/10' : 'text-chart-emerald bg-chart-emerald/10'}`}>{joint.type}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${joint.type === 'Axial' ? 'text-chart-primary bg-chart-primary/10' : 'text-chart-emerald bg-chart-emerald/10'}`}>{joint.type}</span>
                   </div>
                   <div className="text-[8px] text-muted-foreground">{joint.region} · {joint.pearl}</div>
                   {firstAction && (
-                    <div className="text-[9px] text-muted-foreground/70 mt-1">{firstAction.label}</div>
+                    <div className="text-[11px] text-muted-foreground/70 mt-1">{firstAction.label}</div>
                   )}
                 </button>
               );
@@ -822,7 +822,7 @@ function CranialSuturesSubModal({ onClose, saveSelection }: { onClose: () => voi
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <p className="text-[10px] font-semibold uppercase text-muted-foreground">Suture Chart</p>
-              <span className="text-[9px] text-muted-foreground/50">Tap to enlarge</span>
+              <span className="text-[10px] text-muted-foreground/50">Tap to enlarge</span>
             </div>
             <button
               type="button"
@@ -938,7 +938,7 @@ function FasciaSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
                   )}
                 >
                   <div className="font-bold">{option.label}</div>
-                  <div className="text-[9px] text-muted-foreground/70 mt-1">{option.desc}</div>
+                  <div className="text-[11px] text-muted-foreground/70 mt-1">{option.desc}</div>
                 </button>
               );
             })}

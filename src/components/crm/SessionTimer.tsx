@@ -259,7 +259,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
                 <span className="hidden sm:inline">Actions</span> <ChevronDown size={10} className="sm:ml-2 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52 md:w-56 rounded-xl p-2 shadow-3xl border-none bg-foreground text-background">
+            <DropdownMenuContent align="end" className="w-52 md:w-56 rounded-xl p-2 shadow-xl border-border bg-card text-foreground">
               {!isFinished && (
                 <DropdownMenuItem 
                   onClick={() => setShowCompleteConfirm(true)}

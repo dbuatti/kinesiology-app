@@ -116,7 +116,7 @@ const MechanoMasteryModule = () => {
       {/* Minimalist Module Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-border/50">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-foreground text-primary-foreground flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0">
             <GraduationCap size={24} />
           </div>
           <div>
@@ -157,7 +157,7 @@ const MechanoMasteryModule = () => {
                       className={cn(
                         "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all",
                         isActive 
-                          ? "bg-foreground text-primary-foreground shadow-sm" 
+                          ? "bg-primary text-primary-foreground shadow-sm" 
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       )}
                     >
@@ -182,7 +182,7 @@ const MechanoMasteryModule = () => {
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
               <div className="xl:col-span-8 space-y-8">
                 {/* Core Curriculum Card */}
-                <Card className="border border-border shadow-sm rounded-2xl bg-foreground text-primary-foreground overflow-hidden relative">
+                <Card className="border border-border shadow-sm rounded-2xl bg-primary text-primary-foreground overflow-hidden relative">
                   <CardHeader className="p-8 relative z-10">
                     <Badge className="bg-card/10 text-primary-foreground border-none font-bold text-[10px] uppercase tracking-wider px-3 py-0.5 mb-3 w-fit">
                       Core Curriculum
@@ -340,14 +340,14 @@ const MechanoMasteryModule = () => {
                 </Card>
 
                 {/* Daily Tip */}
-                <Card className="border border-border shadow-sm rounded-2xl bg-foreground text-primary-foreground overflow-hidden">
+                <Card className="rounded-2xl bg-primary text-primary-foreground overflow-hidden">
                   <CardHeader className="p-6">
                     <CardTitle className="text-sm font-bold flex items-center gap-2">
-                      <Lightbulb size={18} className="text-amber-400" /> Daily Tip
+                      <Lightbulb size={18} className="text-amber-300" /> Daily Tip
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 pt-0">
-                    <p className="text-muted-foreground/60 text-xs font-medium leading-relaxed italic">
+                    <p className="text-primary-foreground/80 text-[13px] font-medium leading-relaxed italic">
                       "If the IM remains inhibited after a correction, you haven't cleared the threat—you've just found another layer. Expect 5-15 layers in complex cases."
                     </p>
                   </CardContent>

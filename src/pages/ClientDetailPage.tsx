@@ -284,7 +284,7 @@ const ClientDetailPage = () => {
         showSuccess("Payment link generated!");
         fetchClientData();
       }
-    } catch (err: any) {
+    } catch (err) {
       showError(err.message || "Failed to generate link. Ensure client is synced to Stripe.");
     } finally {
       setGeneratingLink(null);
@@ -314,7 +314,7 @@ const ClientDetailPage = () => {
         showSuccess(`Synced ${client.name} to Stripe!`);
         fetchClientData();
       }
-    } catch (err: any) {
+    } catch (err) {
       showError(err.message || "Failed to sync to Stripe.");
     } finally {
       setSyncingStripe(false);
@@ -336,7 +336,7 @@ const ClientDetailPage = () => {
 
       showSuccess(`Synced ${client.name} to Notion Client Database!`);
       fetchClientData();
-    } catch (err: any) {
+    } catch (err) {
       showError(err.message || "Failed to sync to Notion.");
     } finally {
       setSyncingNotion(false);
@@ -368,7 +368,7 @@ const ClientDetailPage = () => {
       setContactLogOpen(false);
       showSuccess("Contact logged");
       fetchClientData();
-    } catch (err: any) {
+    } catch (err) {
       showError(err.message || "Failed to log contact");
     } finally {
       setSavingContact(false);
@@ -392,7 +392,7 @@ const ClientDetailPage = () => {
       });
       if (error) throw error;
       showSuccess(`Onboarding email sent to ${client.email}!`);
-    } catch (err: any) {
+    } catch (err) {
       showError(err.message || "Failed to send onboarding email.");
     } finally {
       setSendingEmail(false);
@@ -408,7 +408,7 @@ const ClientDetailPage = () => {
       });
       if (error) throw error;
       showSuccess(`Successfully synced ${client.name} to Kit!`);
-    } catch (err: any) {
+    } catch (err) {
       showError(err.message || "Failed to sync to Kit.");
     } finally {
       setSyncingKit(false);
@@ -431,7 +431,7 @@ const ClientDetailPage = () => {
       if (error) throw error;
       showSuccess("Client deleted successfully");
       navigate('/clients');
-    } catch (err: any) {
+    } catch (err) {
       showError(err.message || "Failed to delete client");
     }
   };
@@ -510,7 +510,7 @@ const ClientDetailPage = () => {
                 <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-xl p-0">
                   <div className="p-8">
                     <DialogHeader className="mb-6">
-                      <DialogTitle className="text-2xl font-semibold">Edit Client Profile</DialogTitle>
+                      <DialogTitle className="text-2xl font-semibold tracking-tight">Edit Client Profile</DialogTitle>
                       <DialogDescription className="font-medium">Update the personal and clinical details for this client.</DialogDescription>
                     </DialogHeader>
                     <ClientForm
@@ -964,7 +964,7 @@ const ClientDetailPage = () => {
                     <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
                       <ShieldAlert size={20} />
                     </div>
-                    <h2 className="text-2xl font-semibold text-foreground tracking-tight">Clinical Profile</h2>
+                    <h2 className="font-serif text-[26px] font-medium tracking-[-0.02em] text-foreground">Clinical profile</h2>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1121,7 +1121,7 @@ const ClientDetailPage = () => {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {client.contact_log.slice().reverse().map((entry: any, i: number) => (
+                      {client.contact_log.slice().reverse().map((entry: { timestamp: string; note: string }, i: number) => (
                         <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-muted/30 border border-border">
                           <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
                             <Phone size={14} className="text-muted-foreground" />
@@ -1162,7 +1162,7 @@ const ClientDetailPage = () => {
 
           <TabsContent value="appointments" className="space-y-6">
             <div className="flex justify-between items-center">
-              <h3 className="text-2xl font-semibold text-foreground">Session History</h3>
+              <h3 className="font-serif text-[26px] font-medium tracking-[-0.02em] text-foreground">Session history</h3>
               <Dialog open={appOpen} onOpenChange={setAppOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm" className="bg-primary hover:bg-primary/90 shadow-sm rounded-xl h-10 px-4">

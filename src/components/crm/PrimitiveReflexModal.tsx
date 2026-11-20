@@ -164,7 +164,7 @@ const PrimitiveReflexModal = ({
 
           {reflex.pearl && (
             <section>
-              <div className="p-6 bg-foreground text-primary-foreground rounded-2xl shadow-xl relative overflow-hidden">
+              <div className="p-6 bg-primary text-primary-foreground rounded-2xl shadow-xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-10"><Sparkles size={60} /></div>
                 <SectionHeader icon={Sparkles} title="Clinical Pearl" color="text-amber-400" />
                 <p className="text-sm font-medium leading-relaxed relative z-10">

@@ -165,7 +165,7 @@ const QuickNotesDialog = ({
             <div className="grid grid-cols-2 gap-2">
               {editingField === "goal" ? (
                 <div className="rounded-xl border border-chart-primary/40 bg-card p-3 shadow-sm space-y-2">
-                  <p className="text-[9px] font-semibold uppercase text-muted-foreground tracking-wide">Session goal</p>
+                  <p className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wide">Session goal</p>
                   <textarea
                     ref={editRef}
                     value={editValue}
@@ -186,14 +186,14 @@ const QuickNotesDialog = ({
                   onClick={() => handleEditField("goal", goal)}
                   className="text-left rounded-xl border border-border bg-card p-3 shadow-sm hover:bg-muted transition-colors"
                 >
-                  <p className="text-[9px] font-semibold uppercase text-muted-foreground tracking-wide mb-1">Session goal</p>
+                  <p className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wide mb-1">Session goal</p>
                   <p className="text-xs font-medium text-foreground leading-snug truncate">{localGoal || "—"}</p>
-                  <p className="text-[9px] text-muted-foreground/60 mt-1">Tap to edit</p>
+                  <p className="text-[11px] text-muted-foreground/60 mt-1">Tap to edit</p>
                 </button>
               )}
               {editingField === "issue" ? (
                 <div className="rounded-xl border border-chart-primary/40 bg-card p-3 shadow-sm space-y-2">
-                  <p className="text-[9px] font-semibold uppercase text-muted-foreground tracking-wide">Primary concern</p>
+                  <p className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wide">Primary concern</p>
                   <textarea
                     ref={editRef}
                     value={editValue}
@@ -214,9 +214,9 @@ const QuickNotesDialog = ({
                   onClick={() => handleEditField("issue", issue)}
                   className="text-left rounded-xl border border-border bg-card p-3 shadow-sm hover:bg-muted transition-colors"
                 >
-                  <p className="text-[9px] font-semibold uppercase text-muted-foreground tracking-wide mb-1">Primary concern</p>
+                  <p className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wide mb-1">Primary concern</p>
                   <p className="text-xs font-medium text-foreground leading-snug truncate">{localIssue || "—"}</p>
-                  <p className="text-[9px] text-muted-foreground/60 mt-1">Tap to edit</p>
+                  <p className="text-[11px] text-muted-foreground/60 mt-1">Tap to edit</p>
                 </button>
               )}
             </div>

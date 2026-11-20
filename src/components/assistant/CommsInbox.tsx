@@ -376,7 +376,7 @@ export default function CommsInbox({ clients, voiceStudents, people: peopleOptio
                 onClick={() => setFilter(f)}
                 className={cn(
                   "h-7 shrink-0 whitespace-nowrap rounded-full px-3 text-xs font-medium transition-colors",
-                  active ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
                 {FILTER_LABELS[f]}

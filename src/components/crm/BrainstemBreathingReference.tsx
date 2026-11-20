@@ -91,7 +91,7 @@ const BRAINSTEM_BREATHING = [
 const BrainstemBreathingReference = () => {
   return (
     <div className="space-y-10 animate-in fade-in duration-700">
-      <div className="p-8 bg-foreground text-primary-foreground rounded-2xl shadow-2xl relative overflow-hidden">
+      <div className="p-8 bg-primary text-primary-foreground rounded-2xl shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10"><Wind size={150} /></div>
         <div className="relative z-10 space-y-4">
           <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-4 py-1">Neurological Input</Badge>

@@ -493,7 +493,7 @@ export default function ClientSideSheet(
   return (
     <Sheet open={props.open ?? true} onOpenChange={props.onOpenChange}>
       <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
-        <DialogTitle className="sr-only">{props.clientName} — client overview</DialogTitle>
+        <SheetTitle className="sr-only">{props.clientName} — client overview</SheetTitle>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <ClientSideContent active={props.open ?? true} {...props} />
         </div>

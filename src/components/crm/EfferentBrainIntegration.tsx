@@ -182,7 +182,9 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
   const handleComplete = () => {
     const label1 = formatCoordLabel(coord1);
     const label2 = formatCoordLabel(coord2);
-    const summary = `Efferent Integration: ${entryPoint} -> ${label1} + ${label2} via ${method}`;
+    // Lead with the entry point (e.g. the cranial nerve) then the paired
+    // cortical/subcortical zones, so the log reads "CN 1 -> zone + zone via method".
+    const summary = `${entryPoint} -> ${label1} + ${label2} via ${method}`;
     onSave(summary);
     setIsComplete(true);
   };
@@ -190,7 +192,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
   const handleInhibited = () => {
     const label1 = formatCoordLabel(coord1);
     const label2 = formatCoordLabel(coord2);
-    const summary = `Efferent Integration (STILL INHIBITED): ${entryPoint} -> ${label1} + ${label2} via ${method}`;
+    const summary = `${entryPoint} -> ${label1} + ${label2} via ${method} (still inhibited)`;
     onInhibited?.(summary);
   };
 

@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 import {
     ArrowLeft,
+    BookOpen,
     ChevronRight,
     CheckCircle2,
     ClipboardCopy,
@@ -55,6 +56,7 @@ import ClientIntakeSummary from "@/components/crm/ClientIntakeSummary";
 import ClientIntakeEditModal from "@/components/crm/ClientIntakeEditModal";
 import ClientSideSheet, { SessionClientRail } from "@/components/crm/ClientSideSheet";
 import SessionDraftDialog from "@/components/crm/SessionDraftDialog";
+import SessionDraftGuide, { SESSION_DRAFT_GUIDE_SEEN_KEY } from "@/components/crm/SessionDraftGuide";
 import { buildSessionContext } from "@/lib/session-draft";
 import type { InhibitionPathwayState } from "@/components/crm/corrections/CorrectionDockContext";
 
@@ -107,6 +109,7 @@ const AppointmentV2Page = () => {
   const [clientSheetOpen, setClientSheetOpen] = useState(false);
   const [clientRailOpen, setClientRailOpen] = useState(true);
   const [draftOpen, setDraftOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [activePhase, setActivePhase] = useState(0);
   const [phrenicChecked, setPhrenicChecked] = useState(false);
   const [lymphChecked, setLymphChecked] = useState(false);
@@ -294,6 +297,14 @@ const AppointmentV2Page = () => {
     const handler = () => setIsFullScreen(localStorage.getItem('rk_fullscreen') === 'true');
     window.addEventListener('rk_fullscreen_change', handler);
     return () => window.removeEventListener('rk_fullscreen_change', handler);
+  }, []);
+
+  // Walk through the session-draft workflow once, on the first session page
+  // visit in this browser; afterwards it stays in the More menu.
+  useEffect(() => {
+    if (localStorage.getItem(SESSION_DRAFT_GUIDE_SEEN_KEY)) return;
+    const t = setTimeout(() => setGuideOpen(true), 600);
+    return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {
@@ -528,6 +539,9 @@ const AppointmentV2Page = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setDraftOpen(true)} className="flex items-center gap-2">
                   <ClipboardPaste size={14} /> Import session draft
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setGuideOpen(true)} className="flex items-center gap-2">
+                  <BookOpen size={14} /> Session draft guide
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to={`/appointments/${id}/archive`} className="flex items-center gap-2">
@@ -775,6 +789,8 @@ const AppointmentV2Page = () => {
         history={history}
         saveField={saveField}
       />
+
+      <SessionDraftGuide open={guideOpen} onOpenChange={setGuideOpen} />
 
       <ClientSideSheet
         open={clientSheetOpen}

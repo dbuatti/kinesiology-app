@@ -15,6 +15,9 @@ const GMAIL_CLIENT_ID = Deno.env.get("GMAIL_CLIENT_ID") || "";
 const GMAIL_CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET") || "";
 const GMAIL_REFRESH_TOKEN = Deno.env.get("GMAIL_REFRESH_TOKEN") || "";
 const GMAIL_USER_EMAIL = Deno.env.get("GMAIL_USER_EMAIL") || "";
+// pg_cron / database triggers authenticate with this Vault-backed token
+// (mirrored into the function secret). See migrations 0215/0216.
+const RK_INTERNAL_TOKEN = Deno.env.get("RK_INTERNAL_TOKEN") || "";
 // GMAIL_USER_EMAIL authenticates the API call; clients see the practice's real,
 // verified alias as the sender instead.
 const FROM_ADDRESS = "Daniele Buatti <info@danielebuatti.com>";
@@ -224,25 +227,33 @@ serve(async (req) => {
   console.log("[send-session-reminders] Function invoked");
 
   try {
-    // Verify authentication
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    // Verify authentication. Internal callers (pg_cron / triggers) send only
+    // x-rk-internal-token — see migrations 0215 and 0216. Accept it exactly as
+    // _shared/auth.ts does, otherwise the Sunday reminder job 401s here before
+    // it ever queries the bookings.
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    const sentInternalToken = req.headers.get("x-rk-internal-token") || (authHeader ? token : "");
+    const isInternalCall = !!RK_INTERNAL_TOKEN && sentInternalToken === RK_INTERNAL_TOKEN;
+
+    if (!isInternalCall && !authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const token = authHeader.replace("Bearer ", "");
-
     // Initialize Supabase client with service role
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Two kinds of caller are allowed:
-    //   (1) the scheduled pg_cron job, which authenticates with the service-role key, and
-    //   (2) a logged-in practitioner clicking "Send reminders" in the app.
+    // Three kinds of caller are allowed:
+    //   (1) the scheduled pg_cron job, authenticating with the Vault-backed internal token,
+    //   (2) internal callers using the service-role key directly, and
+    //   (3) a logged-in practitioner clicking "Send reminders" in the app.
     // Anonymous / anon-key-only callers are rejected.
-    const isServiceCall = !!SUPABASE_SERVICE_ROLE_KEY && token === SUPABASE_SERVICE_ROLE_KEY;
+    const isServiceCall =
+      isInternalCall ||
+      (!!SUPABASE_SERVICE_ROLE_KEY && token === SUPABASE_SERVICE_ROLE_KEY);
 
     let user: { id: string; email?: string } | null = null;
     if (!isServiceCall) {
@@ -256,7 +267,7 @@ serve(async (req) => {
       user = authedUser;
     }
 
-    console.log(`[send-session-reminders] Caller: ${isServiceCall ? "cron/service" : `user ${user?.id}`}`);
+    console.log(`[send-session-reminders] Caller: ${isInternalCall ? "cron/internal token" : isServiceCall ? "cron/service" : `user ${user?.id}`}`);
 
     // Parse request body for debug/test/scheduling parameters
     let body: Record<string, any> = {};

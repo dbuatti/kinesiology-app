@@ -7,11 +7,16 @@
 -- Australia/Melbourne, so exactly one digest goes out at 4pm local, year-round
 -- (05:00 UTC = 4pm during AEDT/summer, 06:00 UTC = 4pm during AEST/winter).
 --
--- IMPORTANT: send-session-reminders authenticates the scheduler with the
--- SERVICE ROLE key (not the anon key). Replace <SERVICE_ROLE_KEY> below with
--- your project's service_role key (Settings -> API Keys). Because the
--- service_role key is secret and cron.job stores the command in plaintext,
--- restrict who can read the cron schema, or move the key into Supabase Vault.
+-- IMPORTANT: send-session-reminders authenticates internal callers with the
+-- Vault-backed `internal_fn_token` (mirrored into the RK_INTERNAL_TOKEN function
+-- secret), NOT with a literal service-role key. Set both once per environment:
+--
+--   supabase secrets set RK_INTERNAL_TOKEN=<random>
+--   select vault.create_secret('<same random>', 'internal_fn_token',
+--     'Token database triggers and pg_cron send to internal edge functions.');
+--
+-- Keeping the token in Vault avoids writing a service-role key in plaintext in
+-- cron.job. The edge function accepts this header (migrations 0215/0216).
 
 create extension if not exists pg_cron;
 create extension if not exists pg_net;
@@ -30,10 +35,11 @@ select cron.schedule(
   select net.http_post(
     url     := 'https://xebtjnvfkroiplyzftas.supabase.co/functions/v1/send-session-reminders',
     headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer <SERVICE_ROLE_KEY>'
+      'Content-Type',        'application/json',
+      'x-rk-internal-token', coalesce((select decrypted_secret from vault.decrypted_secrets where name = 'internal_fn_token'), '')
     ),
-    body    := '{"scheduled": true}'::jsonb
+    body                 := '{"scheduled": true}'::jsonb,
+    timeout_milliseconds := 30000
   );
   $$
 );

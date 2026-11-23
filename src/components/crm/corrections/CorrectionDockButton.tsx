@@ -1,4 +1,5 @@
 import { BookMarked } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useCorrectionDock } from "./CorrectionDockContext";
 
 const CorrectionDockButton = () => {
@@ -8,10 +9,13 @@ const CorrectionDockButton = () => {
     <button
       onClick={toggleDock}
       aria-pressed={isOpen}
-      className="flex items-center gap-1.5 px-2.5 h-7 text-[10.5px] font-medium tracking-tight border border-border bg-card hover:bg-muted/60 rounded-lg shrink-0 whitespace-nowrap"
+      className={cn(
+        "flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground md:w-auto md:justify-start md:gap-1.5 md:px-2.5 md:text-[12px] md:font-medium",
+        isOpen && "bg-primary/10 text-primary-strong hover:bg-primary/15 hover:text-primary-strong"
+      )}
       title="Corrections manual — afferent / efferent (M)"
     >
-      <BookMarked size={13} />
+      <BookMarked size={15} />
       <span className="hidden md:inline">Manual</span>
     </button>
   );

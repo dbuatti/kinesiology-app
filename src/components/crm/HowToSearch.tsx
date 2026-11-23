@@ -273,10 +273,10 @@ const HowToSearch = () => {
         variant="ghost"
         size="sm"
         onClick={() => setOpen(true)}
-        className="rounded-lg text-muted-foreground shrink-0 h-7 px-2.5 gap-1.5 text-[10.5px]"
+        className="h-8 w-8 shrink-0 rounded-lg p-0 text-muted-foreground hover:bg-muted/60 hover:text-foreground"
         title="How-to search (⌘⇧K or ?)"
       >
-        <Search size={14} />
+        <Search size={15} />
       </Button>
 
       <CommandDialog

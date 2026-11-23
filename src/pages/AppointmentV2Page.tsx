@@ -400,7 +400,7 @@ const AppointmentV2Page = () => {
                 <ArrowLeft size={15} />
               </button>
             )}
-            <div className="hidden items-center gap-0.5 rounded-lg bg-muted/30 p-0.5 sm:flex">
+            <div className="hidden items-center rounded-xl bg-muted/60 p-1 sm:flex">
               {MODE_TABS.map(tab => {
                 const Icon = tab.icon;
                 const isActive = viewMode === tab.id;
@@ -411,13 +411,13 @@ const AppointmentV2Page = () => {
                     title={tab.id === 'grid' ? 'Free-form pathway stimulation' : tab.id === 'doc' ? 'Document view' : 'Guided PEACE flow'}
                     aria-pressed={isActive}
                     className={cn(
-                      "flex h-7 items-center gap-1 rounded-md px-2.5 text-[10.5px] font-medium transition-colors",
+                      "flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-semibold transition-colors",
                       isActive
                         ? "bg-card text-foreground shadow-xs"
                         : "text-muted-foreground/70 hover:text-foreground"
                     )}
                   >
-                    <Icon size={11} />
+                    <Icon size={12} />
                     <span className="hidden md:inline">{tab.label}</span>
                   </button>
                 );
@@ -427,27 +427,26 @@ const AppointmentV2Page = () => {
 
           {/* Right: identity (opens the client rail) + action icons */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2.5">
-              <button
-                onClick={() => {
-                  if (window.matchMedia("(min-width: 1100px)").matches) setClientRailOpen((v) => !v);
-                  else setClientSheetOpen(true);
-                }}
-                title={`${appointment.clients?.name || "Client"} — client overview`}
-                aria-label="Client overview"
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary-strong ring-1 ring-primary/20 transition-colors hover:bg-primary/15"
-              >
-                {initialsOf(appointment.clients?.name)}
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                if (window.matchMedia("(min-width: 1100px)").matches) setClientRailOpen((v) => !v);
+                else setClientSheetOpen(true);
+              }}
+              title={`${appointment.clients?.name || "Client"} — client overview`}
+              aria-label="Client overview"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary-strong ring-1 ring-primary/20 transition-colors hover:bg-primary/15"
+            >
+              {initialsOf(appointment.clients?.name)}
+            </button>
             {/* Session timer — 3 / 6 / 9 min; the active pill becomes a live countdown */}
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0">
               {timerDone && (
                 <button
                   onClick={() => setTimerDone(false)}
-                  className="h-[18px] px-1.5 rounded-md border border-primary bg-primary text-[9px] font-bold text-primary-foreground"
+                  className="inline-flex h-7 items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 text-[11px] font-semibold text-primary-strong"
                   title="Timer finished — tap to dismiss"
                 >
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
                   Done
                 </button>
               )}
@@ -459,10 +458,10 @@ const AppointmentV2Page = () => {
                     onClick={() => (active ? stopTimer() : startTimer(min))}
                     title={active ? `${formatTimer(timerRemaining)} left — tap to stop` : `Start ${min} minute timer (key ${[3, 6, 9].indexOf(min) + 1})`}
                     className={cn(
-                      "h-[18px] rounded-md transition-colors border tabular-nums",
+                      "inline-flex h-7 items-center justify-center rounded-full border px-2.5 text-[11px] font-medium tabular-nums transition-colors",
                       active
-                        ? "min-w-[44px] px-1.5 bg-amber-500 text-white border-amber-500 shadow-sm text-[10px] font-bold"
-                        : "px-1.5 bg-muted text-muted-foreground hover:text-foreground border-border text-[9px] font-medium"
+                        ? "min-w-[52px] border-amber-500 bg-amber-500 font-bold text-white shadow-xs"
+                        : "border-border bg-muted/40 text-muted-foreground hover:text-foreground"
                     )}
                   >
                     {active ? formatTimer(timerRemaining) : `${min}m`}
@@ -470,7 +469,7 @@ const AppointmentV2Page = () => {
                 );
               })}
             </div>
-            <span className="h-4 w-px bg-border" aria-hidden />
+            <span className="h-5 w-px bg-border/70" aria-hidden />
             {/* Action icons (muted) */}
             <div className="flex items-center gap-0.5">
             <button
@@ -531,14 +530,25 @@ const AppointmentV2Page = () => {
 
         {/* ── Main progress header (~68px) — PEACE view only ── */}
         {viewMode === 'peace' && (
-          <div className="flex h-[68px] shrink-0 items-center justify-between gap-6 border-t border-border/30 px-4 sm:px-6 md:px-8">
-            {/* Center: Horizontal progress stepper */}
-            <div className="flex-1 min-w-0 flex justify-center">
-              <div className="relative flex items-center justify-between max-w-[480px] w-full">
-                {/* Connecting line */}
-                <div className="absolute left-[16px] right-[16px] top-[16px] h-[2px] rounded-full bg-border/40" />
+          <div className="relative flex min-h-[68px] shrink-0 flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-border/30 px-4 sm:px-6 md:px-8">
+            {/* Left: phase guidance — fills the empty side so the row reads guidance · stepper · actions */}
+            <div className="hidden min-w-0 lg:block">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
+                Phase {activePhase + 1} · {PEACE_PHASES[activePhase].fullLabel}
+              </p>
+              {phaseHint && (
+                <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground/80">{phaseHint}</p>
+              )}
+            </div>
+
+            {/* Center: Horizontal progress stepper — truly page-centred from xl up;
+                below sm it takes a full-width line of its own so the pills wrap under it */}
+            <div className="flex min-w-0 w-full justify-center sm:w-auto sm:flex-1 xl:absolute xl:left-1/2 xl:top-1/2 xl:w-[480px] xl:flex-none xl:-translate-x-1/2 xl:-translate-y-1/2">
+              <div className="relative flex w-full max-w-[480px] items-center justify-between">
+                {/* Connecting line — circle centres sit at 18px, so the 2px line starts at 17 */}
+                <div className="absolute left-[16px] right-[16px] top-[17px] h-[2px] rounded-full bg-border/40" />
                 <div
-                  className="absolute left-[16px] top-[16px] h-[2px] rounded-full bg-primary transition-all duration-700 ease-out"
+                  className="absolute left-[16px] top-[17px] h-[2px] rounded-full bg-primary transition-all duration-700 ease-out"
                   style={{ width: `${(activePhase / (PEACE_PHASES.length - 1)) * (100 - 6)}%` }}
                 />
 
@@ -577,10 +587,10 @@ const AppointmentV2Page = () => {
                           </span>
                         )}
                       </span>
-                      {/* Label */}
+                      {/* Label — circles carry the letters below xl, so the row never crushes */}
                       <span
                         className={cn(
-                          "text-[10px] leading-tight transition-colors",
+                          "hidden text-[10px] leading-tight transition-colors xl:block",
                           isActive ? "font-semibold text-foreground" : isCompleted ? "font-medium text-foreground/70" : "font-medium text-muted-foreground"
                         )}
                       >
@@ -590,16 +600,10 @@ const AppointmentV2Page = () => {
                   );
                 })}
               </div>
-              {/* Hint text */}
-              {phaseHint && (
-                <p className="mt-1 text-[10px] text-muted-foreground/60">
-                  {phaseHint}
-                </p>
-              )}
             </div>
 
             {/* Right: session reminders + primary next action */}
-            <div className="flex shrink-0 items-center gap-2.5">
+            <div className="flex shrink-0 flex-wrap items-center gap-x-2.5 gap-y-1.5">
               <button
                 type="button"
                 onClick={() => setPhrenicChecked((v) => !v)}
@@ -607,7 +611,7 @@ const AppointmentV2Page = () => {
                 className={cn(
                   "inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[10.5px] font-medium transition-colors",
                   phrenicChecked
-                    ? "border-primary/30 bg-primary/10 text-primary"
+                    ? "border-primary/30 bg-primary/10 text-primary-strong dark:text-primary"
                     : "border-border bg-muted/40 text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -625,7 +629,7 @@ const AppointmentV2Page = () => {
                 className={cn(
                   "inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[10.5px] font-medium transition-colors",
                   lymphChecked
-                    ? "border-primary/30 bg-primary/10 text-primary"
+                    ? "border-primary/30 bg-primary/10 text-primary-strong dark:text-primary"
                     : "border-border bg-muted/40 text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -637,7 +641,7 @@ const AppointmentV2Page = () => {
                 Lymph
               </button>
               <span
-                className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground/70"
+                className="hidden items-center gap-1.5 text-[11px] text-muted-foreground/70 sm:inline-flex"
                 title="High-priority corrections — the 'Less is More' target is 3–6"
               >
                 <span className="font-semibold uppercase tracking-[0.12em]">Corr</span>

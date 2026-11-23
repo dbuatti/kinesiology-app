@@ -13,6 +13,8 @@ import {
     ArrowLeft,
     ChevronRight,
     CheckCircle2,
+    ClipboardCopy,
+    ClipboardPaste,
     Loader2,
     Activity,
     FileText,
@@ -52,6 +54,8 @@ import type { ProtocolLog, ProtocolLogPatch } from "@/data/protocol-log";
 import ClientIntakeSummary from "@/components/crm/ClientIntakeSummary";
 import ClientIntakeEditModal from "@/components/crm/ClientIntakeEditModal";
 import ClientSideSheet, { SessionClientRail } from "@/components/crm/ClientSideSheet";
+import SessionDraftDialog from "@/components/crm/SessionDraftDialog";
+import { buildSessionContext } from "@/lib/session-draft";
 import type { InhibitionPathwayState } from "@/components/crm/corrections/CorrectionDockContext";
 
 const initialsOf = (name?: string | null): string =>
@@ -102,6 +106,7 @@ const AppointmentV2Page = () => {
   const [intakeEditOpen, setIntakeEditOpen] = useState(false);
   const [clientSheetOpen, setClientSheetOpen] = useState(false);
   const [clientRailOpen, setClientRailOpen] = useState(true);
+  const [draftOpen, setDraftOpen] = useState(false);
   const [activePhase, setActivePhase] = useState(0);
   const [phrenicChecked, setPhrenicChecked] = useState(false);
   const [lymphChecked, setLymphChecked] = useState(false);
@@ -260,6 +265,19 @@ const AppointmentV2Page = () => {
   const goNext = useCallback(() => {
     setActivePhase(prev => Math.min(prev + 1, PEACE_PHASES.length - 1));
   }, []);
+
+  /** Copy the structured session record for the Claude Project (paste with the
+   *  transcript there; the SESSION DRAFT it returns imports back via the
+   *  "Import session draft" dialog). */
+  const handleCopySessionContext = async () => {
+    if (!appointment) return;
+    try {
+      await navigator.clipboard.writeText(buildSessionContext(appointment, history));
+      showSuccess("Session context copied — paste it into Claude with the transcript.");
+    } catch {
+      showError("Couldn't copy — your browser blocked clipboard access.");
+    }
+  };
 
   const jumpTo = useCallback((index: number) => {
     setActivePhase(index);
@@ -505,6 +523,12 @@ const AppointmentV2Page = () => {
                     </Link>
                   </DropdownMenuItem>
                 )}
+                <DropdownMenuItem onClick={handleCopySessionContext} className="flex items-center gap-2">
+                  <ClipboardCopy size={14} /> Copy session context
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setDraftOpen(true)} className="flex items-center gap-2">
+                  <ClipboardPaste size={14} /> Import session draft
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to={`/appointments/${id}/archive`} className="flex items-center gap-2">
                     <Archive size={14} /> Archived (legacy) view
@@ -743,6 +767,14 @@ const AppointmentV2Page = () => {
       </div>
 
       <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} />
+
+      <SessionDraftDialog
+        open={draftOpen}
+        onOpenChange={setDraftOpen}
+        appointment={appointment}
+        history={history}
+        saveField={saveField}
+      />
 
       <ClientSideSheet
         open={clientSheetOpen}

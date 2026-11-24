@@ -719,59 +719,22 @@ const AppointmentV2Page = () => {
               </div>
             </div>
 
-            {/* Right: session reminders + primary next action */}
+            {/* Right: primary next action */}
             <div className="flex shrink-0 flex-wrap items-center gap-x-2.5 gap-y-1.5">
-              <button
-                type="button"
-                onClick={() => setPhrenicChecked((v) => !v)}
-                aria-pressed={phrenicChecked}
-                title="Phrenic nerve — check every session"
-                className={cn(
-                  "inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-                  phrenicChecked
-                    ? "border-primary/30 bg-primary/10 text-primary-strong dark:text-primary"
-                    : "border-border bg-muted/40 text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <span className={cn("flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[10px] font-bold",
-                  phrenicChecked ? "border-primary bg-primary text-primary-foreground" : "border-border"
-                )} aria-hidden>
-                  {phrenicChecked ? "✓" : ""}
-                </span>
-                Phrenic
-              </button>
-              <button
-                type="button"
-                onClick={() => setLymphChecked((v) => !v)}
-                aria-pressed={lymphChecked}
-                title="Lymph — check every session"
-                className={cn(
-                  "inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
-                  lymphChecked
-                    ? "border-primary/30 bg-primary/10 text-primary-strong dark:text-primary"
-                    : "border-border bg-muted/40 text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <span className={cn("flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[10px] font-bold",
-                  lymphChecked ? "border-primary bg-primary text-primary-foreground" : "border-border"
-                )} aria-hidden>
-                  {lymphChecked ? "✓" : ""}
-                </span>
-                Lymph
-              </button>
               <span
-                className="hidden items-center gap-1.5 text-[11px] text-muted-foreground/70 sm:inline-flex"
+                className={cn(
+                  "hidden sm:inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px]",
+                  correctionCount > 6
+                    ? "border-destructive/20 bg-destructive/5 text-destructive"
+                    : "border-border/70 bg-muted/20 text-muted-foreground"
+                )}
                 title="High-priority corrections — the 'Less is More' target is 3–6"
               >
-                <span className="font-semibold uppercase tracking-[0.12em]">Corr</span>
-                <span className={cn(
-                  "font-bold tabular-nums",
-                  correctionCount === 0 ? "text-muted-foreground/50" :
-                  correctionCount <= 6 ? "text-foreground" : "text-chart-destructive"
-                )}>
+                <span className="font-semibold uppercase tracking-[0.12em] text-[10px]">Corr</span>
+                <span className={cn("font-semibold tabular-nums", correctionCount > 6 ? "text-destructive" : "text-foreground")}>
                   {correctionCount}
                 </span>
-                <span className="text-muted-foreground/50">/ 3–6</span>
+                <span className="text-muted-foreground/60">/ 3–6</span>
               </span>
               {activePhase < PEACE_PHASES.length - 1 ? (
                 <Button

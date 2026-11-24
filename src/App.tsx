@@ -12,7 +12,7 @@ import ThemeColorSync from "./components/ThemeColorSync";
 import { Loader2 } from "lucide-react";
 import { BrandMark } from "./components/layout/BrandMark";
 import ScrollToTop from "./components/shared/ScrollToTop";
-import ErrorBoundary from "./components/shared/ErrorBoundary";
+import AnalyticsTracker from "./components/shared/AnalyticsTracker";import ErrorBoundary from "./components/shared/ErrorBoundary";
 
 // Layouts (kept eager — needed on every authenticated route)
 import MainLayout from "./layouts/MainLayout";
@@ -24,6 +24,8 @@ const OnboardingPage = lazy(() => import("./pages/public/OnboardingPage"));
 const OnboardingLookupPage = lazy(() => import("./pages/public/OnboardingLookupPage"));
 const LandingPage = lazy(() => import("./pages/public/LandingPage"));
 const KinesiologyGuidePage = lazy(() => import("./pages/public/KinesiologyGuidePage"));
+const PrivacyPage = lazy(() => import("./pages/public/PrivacyPage"));
+const BookingConfirmedPage = lazy(() => import("./pages/public/BookingConfirmedPage"));
 const PortalLoginPage = lazy(() => import("./pages/public/PortalLoginPage"));
 const ClientPortalPage = lazy(() => import("./pages/public/ClientPortalPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -172,8 +174,8 @@ const AppRoutes = () => {
         {/* Digital brochure — unlisted, noindex. Renders entirely from
             src/content/kinesiology-guide.ts. No auth, no app chrome. */}
         <Route path="/guide" element={<KinesiologyGuidePage />} />
-
-        {/* Public Voice Onboarding (no auth required) */}
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/booking-confirmed" element={<BookingConfirmedPage />} />        {/* Public Voice Onboarding (no auth required) */}
         <Route path="/voice-onboarding/:email" element={<VoiceOnboardingPage />} />
 
         {/* Public Stripe payment success pages (no auth required) */}
@@ -334,6 +336,7 @@ const App = () => (
 
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <ScrollToTop />
+              <AnalyticsTracker />
               <ErrorBoundary>
                 <AppRoutes />
               </ErrorBoundary>

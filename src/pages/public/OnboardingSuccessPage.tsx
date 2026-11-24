@@ -1,6 +1,12 @@
+import { useEffect } from "react";
 import { CheckCircle2 } from "lucide-react";
+import { trackConversion, trackEvent } from "@/lib/analytics";
 
 const OnboardingSuccessPage = () => {
+  useEffect(() => {
+    trackEvent("purchase", { currency: "AUD", value: 1 });
+    trackConversion(undefined, 1, "AUD");
+  }, []);
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted px-6 py-16">
       <div className="w-full max-w-md bg-background rounded-2xl shadow-xl overflow-hidden text-center">

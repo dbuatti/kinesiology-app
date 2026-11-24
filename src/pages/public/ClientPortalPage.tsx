@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { showError, showSuccess } from "@/utils/toast";
 import NoIndex from "@/components/shared/NoIndex";
-import { Loader2, CalendarPlus, LogOut, Send, X, Mail, ExternalLink, Activity } from "lucide-react";
+import { trackEvent, trackConversion } from "@/lib/analytics";import { Loader2, CalendarPlus, LogOut, Send, X, Mail, ExternalLink, Activity } from "lucide-react";
 
 type Service = "fnh" | "voice";
 const SERVICE_EVENT_TYPE_ID: Record<Service, number> = { fnh: 4279898, voice: 1945081 };
@@ -191,6 +191,8 @@ export default function ClientPortalPage() {
       });
       if (error || data?.error) throw new Error(data?.error || error?.message);
       showSuccess(`Your ${SERVICE_LABEL[bookingService]} is booked!`);
+      trackEvent("book_session", { source: "client_portal", service: bookingService });
+      trackConversion(undefined, 1, "AUD");
       setBookingService(null);
       setSlots(null);
       await load();

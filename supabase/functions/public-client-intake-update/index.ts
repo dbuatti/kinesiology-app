@@ -32,6 +32,8 @@ const ALLOWED_FIELDS = [
   "stress_response", "most_craved_human_need", "startled_by_loud_noises", "emotional_regulation_time",
   "goal_working", "goal_12_sessions", "goal_safe_feeling", "additional_notes",
   "intake_submitted_at", "status",
+  "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
+  "gclid", "fbclid", "utm_referrer", "utm_landing_path", "utm_captured_at",
 ];
 
 serve(async (req) => {

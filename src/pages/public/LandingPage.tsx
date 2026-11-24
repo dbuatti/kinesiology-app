@@ -359,7 +359,7 @@ export default function LandingPage() {
                 way in was to know the address — "Client log in" above goes to
                 the client portal, which is a separate sign-in. */}
             <Link to="/login" className="hover:text-foreground">Practitioner sign in</Link>
-          </span>
+            <Link to="/privacy" className="hover:text-foreground">Privacy</Link>          </span>
         </div>
       </footer>
 

@@ -1,10 +1,16 @@
+import { useEffect } from "react";
 import { CheckCircle2 } from "lucide-react";
+import { trackConversion, trackEvent } from "@/lib/analytics";
 
 /**
  * Public (no-auth) page clients land on after completing Stripe Checkout.
  * Used as the `success_url` for voice lesson payments.
  */
 const VoicePaidPage = () => {
+  useEffect(() => {
+    trackEvent("purchase", { currency: "AUD", value: 1, item_category: "voice" });
+    trackConversion(undefined, 1, "AUD");
+  }, []);
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted px-6 py-16">
       <div className="w-full max-w-md bg-background rounded-2xl shadow-xl overflow-hidden text-center">

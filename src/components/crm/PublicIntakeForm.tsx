@@ -20,8 +20,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, CheckCircle2, Heart, ShieldAlert, Activity, Zap, User, Brain, Bed, AlertTriangle } from "lucide-react";
 import { Client } from "@/types/crm";
 import { cn } from "@/lib/utils";
-
-const formSchema = z.object({
+import { getUtmParams, utmToReferralSource } from "@/lib/utm";
+import { trackEvent, trackConversion } from "@/lib/analytics";const formSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
   second_name: z.string().min(1, "Second name is required"),
   email: z.string().email("Invalid email"),
@@ -180,7 +180,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
         born: values.born ? new Date(values.born).toISOString() : null,
         home_address: values.home_address || null,
         suburbs: suburbsArray,
-        referral_source: values.referral_source,
+        referral_source: values.referral_source || utmToReferralSource(getUtmParams()) || null,
         emergency_contact_name: values.emergency_contact_name,
         emergency_contact_phone: values.emergency_contact_phone,
         emergency_contact_relationship: values.emergency_contact_relationship,
@@ -222,6 +222,23 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
         additional_notes: values.additional_notes || null,
         intake_submitted_at: new Date().toISOString(),
         status: 'Active',
+        // Attribution (auto-captured from the landing URL). Never overwrites a
+        // manually entered referral_source above.
+        ...(() => {
+          const u = getUtmParams();
+          return {
+            utm_source: u.utm_source || null,
+            utm_medium: u.utm_medium || null,
+            utm_campaign: u.utm_campaign || null,
+            utm_term: u.utm_term || null,
+            utm_content: u.utm_content || null,
+            gclid: u.gclid || null,
+            fbclid: u.fbclid || null,
+            utm_referrer: u.referrer || null,
+            utm_landing_path: u.landing_path || null,
+            utm_captured_at: u.captured_at || new Date().toISOString(),
+          };
+        })(),
       };
 
       const { data: updateData, error: clientError } = await supabase.functions.invoke('public-client-intake-update', {
@@ -255,6 +272,8 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
       }
 
       setSyncStatus('done');
+      trackEvent("submit_intake", { ...getUtmParams() });
+      trackConversion(undefined, 1, "AUD");
       onSuccess();
     } catch (error: any) {
       console.error(error);

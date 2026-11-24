@@ -147,12 +147,12 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientTa
                 )}
               </TableCell>
               <TableCell>
-                <div className="flex items-center gap-2 whitespace-nowrap text-[13px] text-foreground/80 tabular-nums">
+                <div className={cn("flex items-center gap-2 whitespace-nowrap text-[13px] tabular-nums", client.last_session_at ? "text-foreground/80" : "text-muted-foreground/50")}>
                   {client.last_session_at ? format(new Date(client.last_session_at), "d MMM yyyy") : "Never"}
                 </div>
               </TableCell>
               <TableCell>
-                <span className="whitespace-nowrap text-[13px] text-muted-foreground tabular-nums">
+                <span className={cn("whitespace-nowrap text-[13px] tabular-nums", client.last_contacted_at ? "text-muted-foreground" : "text-muted-foreground/50")}>
                   {client.last_contacted_at ? format(new Date(client.last_contacted_at), "d MMM yyyy") : "Never"}
                 </span>
               </TableCell>

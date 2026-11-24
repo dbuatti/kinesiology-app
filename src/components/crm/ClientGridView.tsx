@@ -124,6 +124,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGri
               </div>
               <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                 {client.born && <span>{calculateAge(client.born)} yrs · {getStarSign(client.born)}</span>}
+                {client.last_session_at && <span>· Last session {format(new Date(client.last_session_at), "d MMM")}</span>}
               </div>
               {/* Voice pricing is flat per-service, not a per-student rate
                   (see CLAUDE.md) — nothing meaningful to show per row. */}

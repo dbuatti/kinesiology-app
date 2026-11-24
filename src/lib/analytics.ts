@@ -14,7 +14,7 @@ declare global {
   }
 }
 
-const GA_ID = (import.meta as any).env?.VITE_GA_MEASUREMENT_ID as string | undefined;
+const GA_ID = ((import.meta as any).env?.VITE_GA_MEASUREMENT_ID || (import.meta as any).env?.VITE_GA4_MEASUREMENT_ID) as string | undefined;
 const ADS_CONVERSION_ID = (import.meta as any).env?.VITE_GOOGLE_ADS_CONVERSION_ID as string | undefined;
 
 let initialised = false;

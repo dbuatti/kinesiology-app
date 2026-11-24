@@ -47,7 +47,7 @@ import CorrectionDockShortcuts from "@/components/crm/corrections/CorrectionDock
 import { QuickSessionDialog } from "@/components/crm/QuickSessionDialog";
 import PathwayReflexStimGrid from "@/components/crm/PathwayReflexStimGrid";
 import QuickNotesDialog from "@/components/crm/QuickNotesDialog";
-import HowToSearch from "@/components/crm/HowToSearch";
+
 import { CTMModal } from "@/components/ctm/CTMModal";
 import { safeParse } from "@/utils/safe-json";
 import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
@@ -111,29 +111,6 @@ const AppointmentV2Page = () => {
   const [draftOpen, setDraftOpen] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
   const [activePhase, setActivePhase] = useState(0);
-  const [phrenicChecked, setPhrenicChecked] = useState(false);
-  const [lymphChecked, setLymphChecked] = useState(false);
-
-  useEffect(() => {
-    if (!appointment?.id) return;
-    try {
-      const raw = localStorage.getItem(`rk_session_checks:${appointment.id}`);
-      if (!raw) { setPhrenicChecked(false); setLymphChecked(false); return; }
-      const parsed = JSON.parse(raw) as { phrenic?: boolean; lymph?: boolean };
-      setPhrenicChecked(!!parsed.phrenic);
-      setLymphChecked(!!parsed.lymph);
-    } catch {
-      setPhrenicChecked(false);
-      setLymphChecked(false);
-    }
-  }, [appointment?.id]);
-
-  useEffect(() => {
-    if (!appointment?.id) return;
-    try {
-      localStorage.setItem(`rk_session_checks:${appointment.id}`, JSON.stringify({ phrenic: phrenicChecked, lymph: lymphChecked }));
-    } catch { /* ignore storage errors */ }
-  }, [appointment?.id, phrenicChecked, lymphChecked]);
 
   // Correction logs written at the table (metadata.protocol_logs).
   const metadata = useMemo<Record<string, unknown>>(() => {
@@ -472,11 +449,12 @@ const AppointmentV2Page = () => {
                 <ArrowLeft size={15} />
               </button>
             )}
-            {isDemo && (
-              <span className="hidden sm:inline-flex items-center rounded-full border border-amber-500/25 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-amber-700">
-                Demo
-              </span>
-            )}
+            <div className="min-w-0 hidden sm:block">
+              <p className="truncate text-[13px] font-medium text-foreground/90">
+                {appointment.clients?.name || "Client"}
+                {isDemo ? <span className="ml-2 text-[11px] font-normal text-muted-foreground">Demo</span> : null}
+              </p>
+            </div>
             <div className="hidden items-center rounded-xl bg-muted/60 p-1 sm:flex">
               {MODE_TABS.map(tab => {
                 const Icon = tab.icon;
@@ -587,9 +565,6 @@ const AppointmentV2Page = () => {
               <StickyNote size={15} />
             </button>
             <CorrectionDockButton />
-            <span className="hidden sm:inline-flex">
-              <HowToSearch />
-            </span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
@@ -600,7 +575,7 @@ const AppointmentV2Page = () => {
                   <MoreHorizontal size={15} />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="rounded-xl">
+              <DropdownMenuContent align="end" className="rounded-xl w-52">
                 {!isDemo && (
                   <DropdownMenuItem onClick={() => setQuickSessionOpen(true)} className="flex items-center gap-2">
                     <Plus size={14} /> New session
@@ -631,8 +606,8 @@ const AppointmentV2Page = () => {
                   {isFullScreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
                   {isFullScreen ? "Exit fullscreen" : "Fullscreen"}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => { setIntakeOpen(true); }} className="flex items-center gap-2">
-                  <User size={14} /> Client Intake
+                <DropdownMenuItem onClick={() => setIntakeOpen(true)} className="flex items-center gap-2">
+                  <User size={14} /> Client intake
                 </DropdownMenuItem>
                 {appointment.status === "Completed" && (
                   <DropdownMenuItem onClick={() => setSessionSummaryOpen(true)} className="flex items-center gap-2">
@@ -648,14 +623,17 @@ const AppointmentV2Page = () => {
         {/* ── Main progress header (~68px) — PEACE view only ── */}
         {viewMode === 'peace' && (
           <div className="relative flex min-h-[68px] shrink-0 flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t border-border/30 px-4 sm:px-6 md:px-8">
-            {/* Left: phase guidance — fills the empty side so the row reads guidance · stepper · actions */}
-            <div className="hidden min-w-0 lg:block">
+            {/* Left: phase guidance */}
+            <div className="hidden min-w-0 lg:block max-w-[240px]">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
-                Phase {activePhase + 1} · {PEACE_PHASES[activePhase].fullLabel}
+                Phase {activePhase + 1} of {PEACE_PHASES.length}
               </p>
-              {phaseHint && (
-                <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground/80">{phaseHint}</p>
-              )}
+              <p className="mt-0.5 truncate text-[13px] font-medium text-foreground/85" title={PEACE_PHASES[activePhase].fullLabel}>
+                {PEACE_PHASES[activePhase].fullLabel}
+              </p>
+              <p className={cn("mt-0.5 text-[11px] leading-snug truncate", phaseHint ? "text-muted-foreground/75" : "text-primary-strong/80")} title={phaseHint || "Ready for next phase"}>
+                {phaseHint || "Ready for next phase"}
+              </p>
             </div>
 
             {/* Center: Horizontal progress stepper — truly page-centred from xl up;

@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, LayoutGrid, List, Users, AlertCircle, RefreshCw, TrendingUp, ArrowUpDown } from "lucide-react";
+import { Plus, Search, LayoutGrid, List, Users, AlertCircle, RefreshCw, TrendingUp, ArrowUpDown, X } from "lucide-react";
 import { EmptyState } from "@/components/shared/PageState";
 import { Input } from "@/components/ui/input";
 import {
@@ -124,15 +124,25 @@ export function ClientsTool() {
   // email) combined into one history and one status. Students who booked but
   // have no row yet (a sign-up since the backfill) still appear, by email.
   const fetchPeople = async (): Promise<ClientWithStats[]> => {
-    const [{ data, error }, bookings] = await Promise.all([
+    const [{ data, error }, bookings, allClientRows] = await Promise.all([
       supabase
         .from('clients')
         .select('*, appointments(date, bolt_score, status)')
         .or('is_practitioner.eq.false,is_practitioner.is.null')
         .order('name', { ascending: true }),
       fetchNormalizedVoiceBookings(),
+      // Practitioners are intentionally excluded from the People list, but a
+      // voice booking may still belong to a practitioner's own self-client
+      // record (e.g. Daniele's test/self-practice client). Keep an email→id
+      // map over ALL client rows so those entries route to the clinical
+      // profile instead of the chat hub.
+      supabase.from('clients').select('id, email'),
     ]);
     if (error) throw error;
+    const clientIdByEmail = new Map<string, string>();
+    for (const r of (allClientRows.data || []) as { id: string; email: string | null }[]) {
+      if (r.email) clientIdByEmail.set(r.email.toLowerCase(), r.id);
+    }
 
     type Lesson = { date: string; status: string };
     const lessonsByEmail = new Map<string, { name: string; practices: Set<Practice>; lessons: Lesson[] }>();
@@ -178,11 +188,15 @@ export function ClientsTool() {
     for (const [email, v] of lessonsByEmail) {
       if (seen.has(email)) continue;
       const practices = [...v.practices];
+      // If this voice booking belongs to an existing client row (including a
+      // practitioner's self-client), route to that clinical profile instead
+      // of the chat hub.
+      const existingId = clientIdByEmail.get(email);
       people.push({
-        id: voiceStudentIdFor(email),
-        kind: "voice",
-        practice: practices.includes("voice") ? "voice" : "piano",
-        practices,
+        id: existingId || voiceStudentIdFor(email),
+        kind: existingId ? "kinesiology" : "voice",
+        practice: existingId ? "kinesiology" : (practices.includes("voice") ? "voice" : "piano"),
+        practices: existingId ? [...new Set<Practice>(["kinesiology", ...practices])] : practices,
         name: v.name, email, phone: null, born: null, suburbs: [],
         standard_rate: null, target_rate: null,
         onboarding_submitted_at: null, stripe_customer_id: null,
@@ -218,14 +232,27 @@ export function ClientsTool() {
 
   const loadAllClients = async () => {
     setLoading(true);
+    setError(null);
     try {
+      // Fetch the people list first so it can render immediately; the
+      // last-contacted enrichment (a slower edge-function call) runs in
+      // parallel and patches the rows once it resolves.
       const all = await fetchPeople();
-      const contactedMap = await fetchLastContactedMap();
-      setClients(all.map((c) => ({ ...c, last_contacted_at: c.email ? contactedMap.get(c.email.toLowerCase()) || null : null })));
+      setClients(all.map((c) => ({ ...c, last_contacted_at: null })));
+      setLoading(false);
+      fetchLastContactedMap()
+        .then((contactedMap) => {
+          setClients((prev) =>
+            prev.map((c) => ({
+              ...c,
+              last_contacted_at: c.email ? contactedMap.get(c.email.toLowerCase()) || null : null,
+            })),
+          );
+        })
+        .catch((err) => console.warn("last-contacted enrichment failed:", err));
     } catch (err) {
       console.error("Error fetching clients:", err);
       setError("Failed to load clients. Please try again.");
-    } finally {
       setLoading(false);
     }
   };
@@ -267,46 +294,72 @@ export function ClientsTool() {
       <div className="flex flex-col gap-8">
         <PageHeader 
           title="People"
-          subtitle="Clients and students across kinesiology, voice and piano."
+          subtitle="Clients and students across kinesiology, voice, and piano."
           icon={Users}
           actions={
             <div className="flex items-center gap-2">
-            <Button variant="outline" className="h-9 gap-1.5 rounded-lg px-3.5 text-[13px] font-medium" onClick={() => navigate('/voice/clients/new')}>
-              <Plus size={15} /> New student
-            </Button>
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button className="h-9 gap-1.5 rounded-lg px-3.5 text-[13px] font-medium shadow-sm">
-                  <Plus size={15} /> New client
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="w-[95vw] max-w-[550px] max-h-[90vh] overflow-y-auto rounded-2xl p-0">
-                <div className="p-6 sm:p-8">
-                  <DialogHeader className="mb-6">
-                    <DialogTitle className="text-xl font-serif font-medium tracking-tight">New client</DialogTitle>
-                    <DialogDescription className="font-medium">Create a new client profile in your clinical database.</DialogDescription>
-                  </DialogHeader>
-                  <ClientForm onSuccess={() => { setOpen(false); loadAllClients(); }} />
-                </div>
-              </DialogContent>
-            </Dialog>
+              <Button variant="outline" className="h-9 gap-1.5 rounded-lg px-3.5 text-[13px] font-medium" onClick={() => navigate('/voice/clients/new')}>
+                <Plus size={15} /> New student
+              </Button>
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button className="h-9 gap-1.5 rounded-lg px-3.5 text-[13px] font-medium shadow-sm">
+                    <Plus size={15} /> New client
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="w-[95vw] max-w-[550px] max-h-[90vh] overflow-y-auto rounded-2xl p-0">
+                  <div className="p-6 sm:p-8">
+                    <DialogHeader className="mb-6">
+                      <DialogTitle className="text-xl font-serif font-medium tracking-tight">New client</DialogTitle>
+                      <DialogDescription>Create a new client profile in your clinical database.</DialogDescription>
+                    </DialogHeader>
+                    <ClientForm onSuccess={() => { setOpen(false); loadAllClients(); }} />
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           }
         />
+
+        {/* Scanability summary */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {[
+            { label: 'Needs attention', value: clients.filter(c => c.lifecycle_status === 'at_risk').length, tone: 'text-amber-700 bg-amber-500/10 border-amber-500/20' },
+            { label: 'Lapsed', value: clients.filter(c => c.lifecycle_status === 'lapsed').length, tone: 'text-muted-foreground bg-muted/40 border-border' },
+            { label: 'Upcoming', value: clients.filter(c => c.upcoming_count > 0).length, tone: 'text-primary-strong bg-primary/10 border-primary/20' },
+            { label: 'Active', value: clients.filter(c => c.lifecycle_status === 'active').length, tone: 'text-foreground bg-card border-border' },
+          ].map((stat) => (
+            <div key={stat.label} className={cn("rounded-xl border px-3 py-2.5 shadow-xs", stat.tone)}>
+              <p className="text-[11px] font-medium uppercase tracking-[0.08em] opacity-80">{stat.label}</p>
+              <p className="mt-1 text-lg font-semibold tabular-nums leading-none">{stat.value}</p>
+            </div>
+          ))}
+        </div>
 
         {/* One toolbar: search · lifecycle filter · sort · view */}
         <div className="flex flex-col gap-3 2xl:flex-row 2xl:items-center">
           <div className="relative w-full 2xl:max-w-xs">
             <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={15} />
             <Input
-              placeholder="Search name, email or suburb…"
-              className="h-9 rounded-lg border-border bg-card pl-9 text-[13px] shadow-xs"
+              aria-label="Search people"
+              placeholder="Search name, email, or suburb"
+              className={cn("h-9 rounded-lg border-border bg-card pl-9 text-[13px] shadow-xs", search && "pr-8")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                aria-label="Clear search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground transition-colors hover:bg-foreground/[0.04] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
 
-          <div className="no-scrollbar -mx-1 flex items-center gap-1 overflow-x-auto px-1">
+          <div className="no-scrollbar -mx-1 flex items-center gap-1 overflow-x-auto px-1" role="group" aria-label="Filter by lifecycle status">
             {(['all', 'lead', 'active', 'at_risk', 'lapsed', 'closed'] as const).map((s) => {
               const count = s === 'all' ? clients.length : clients.filter(c => c.lifecycle_status === s).length;
               const label = s === 'all' ? 'All' : s === 'at_risk' ? 'At risk' : s.charAt(0).toUpperCase() + s.slice(1);
@@ -314,9 +367,11 @@ export function ClientsTool() {
               return (
                 <button
                   key={s}
+                  type="button"
+                  aria-pressed={on}
                   onClick={() => setStatusFilter(s)}
                   className={cn(
-                    "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium",
+                    "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
                     on ? "bg-foreground/[0.07] text-foreground" : "text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground"
                   )}
                 >
@@ -328,6 +383,22 @@ export function ClientsTool() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 2xl:ml-auto">
+            <p className="text-[12px] text-muted-foreground tabular-nums mr-1" aria-live="polite">
+              {filteredClients.length} {filteredClients.length === 1 ? 'person' : 'people'}
+              {(search || statusFilter !== 'all' || practiceFilter !== 'all') && clients.length !== filteredClients.length ? (
+                <span className="text-muted-foreground/60"> of {clients.length}</span>
+              ) : null}
+            </p>
+            {(search || statusFilter !== 'all' || practiceFilter !== 'all') && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 rounded-lg px-2.5 text-[12px] text-muted-foreground hover:text-foreground"
+                onClick={() => { setSearch(""); setStatusFilter('all'); setPracticeFilter('all'); }}
+              >
+                <X size={13} className="mr-1" /> Clear
+              </Button>
+            )}
             <Select value={practiceFilter} onValueChange={(v) => setPracticeFilter(v as typeof practiceFilter)}>
               <SelectTrigger className="h-8 w-auto shrink-0 gap-1.5 rounded-lg border-border bg-card px-2.5 text-[13px] font-medium shadow-xs" aria-label="Filter by practice">
                 <SelectValue />
@@ -341,7 +412,7 @@ export function ClientsTool() {
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-              <SelectTrigger className="h-8 w-auto shrink-0 gap-1.5 rounded-lg border-border bg-card px-2.5 text-[13px] font-medium shadow-xs">
+              <SelectTrigger className="h-8 w-auto shrink-0 gap-1.5 rounded-lg border-border bg-card px-2.5 text-[13px] font-medium shadow-xs" aria-label="Sort people">
                 <ArrowUpDown size={13} className="text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>
@@ -353,15 +424,17 @@ export function ClientsTool() {
                 <SelectItem value="name">Name</SelectItem>
               </SelectContent>
             </Select>
-            <div className="flex items-center rounded-lg border border-border bg-card p-0.5 shadow-xs">
+            <div className="flex items-center rounded-lg border border-border bg-card p-0.5 shadow-xs" role="group" aria-label="View mode">
               {([['table', List, 'Table'], ['grid', LayoutGrid, 'Grid']] as const).map(([v, Icon, label]) => (
                 <button
                   key={v}
+                  type="button"
                   onClick={() => setView(v)}
                   aria-label={`${label} view`}
+                  aria-pressed={view === v}
                   title={`${label} view`}
                   className={cn(
-                    "flex h-7 w-8 items-center justify-center rounded-md",
+                    "flex h-7 w-8 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
                     view === v ? "bg-foreground/[0.07] text-foreground" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -424,12 +497,16 @@ export function ClientsTool() {
         ) : (
           <EmptyState
             icon={Search}
-            title={`No clients match "${search}"`}
-            hint="Try a different name, email, or suburb."
+            title={search ? `No people match "${search}"` : "No people match these filters"}
+            hint={search ? "Try a different name, email, or suburb." : "Try clearing a filter to see more people."}
             className="rounded-xl border border-dashed border-border bg-muted/20 py-20"
             action={
-              <Button variant="outline" className="h-10 rounded-lg px-4 text-sm font-medium" onClick={() => setSearch("")}>
-                Clear search
+              <Button
+                variant="outline"
+                className="h-10 rounded-lg px-4 text-sm font-medium"
+                onClick={() => { setSearch(""); setStatusFilter('all'); setPracticeFilter('all'); }}
+              >
+                Clear filters
               </Button>
             }
           />
@@ -440,8 +517,8 @@ export function ClientsTool() {
         <DialogContent className="w-[95vw] max-w-[550px] max-h-[90vh] overflow-y-auto rounded-2xl p-0">
           <div className="p-6 sm:p-8">
             <DialogHeader className="mb-6">
-              <DialogTitle className="text-2xl font-semibold">Quick Book Session</DialogTitle>
-              <DialogDescription className="font-medium">Schedule a new appointment for this client.</DialogDescription>
+              <DialogTitle className="text-xl font-serif font-medium tracking-tight">Quick book session</DialogTitle>
+              <DialogDescription>Schedule a new appointment for this client.</DialogDescription>
             </DialogHeader>
             {selectedClientId && <AppointmentForm initialClientId={selectedClientId} onSuccess={() => { setBookOpen(false); loadAllClients(); }} />}
           </div>

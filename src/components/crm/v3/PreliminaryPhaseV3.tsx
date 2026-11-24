@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { ArrowRight, AlertTriangle, CheckCircle2, ChevronRight, Dumbbell, Baby, Zap, Brain, Activity, Compass, RotateCcw, ClipboardList, Eye, FileText, Search, ExternalLink } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUp, AlertTriangle, Check, CheckCircle2, ChevronDown, ChevronRight, Dumbbell, Baby, Zap, Brain, Activity, Compass, RotateCcw, ClipboardList, Eye, FileText, Search, ExternalLink } from "lucide-react";
 import { differenceInDays } from "date-fns";
 import EditableField from "@/components/shared/EditableField";
 import BoltTestSection from "@/components/crm/BoltTestSection";
@@ -11,9 +11,17 @@ import { nerveStimLines, isLateralStim } from "@/components/crm/pathway-reflex-s
 import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
 import { BrainZoneAssessment } from "@/components/crm/BrainZoneAssessment";
 import RecheckTabV2 from "@/components/crm/v2/RecheckTabV2";
-import CheckItem from "@/components/crm/document-view/CheckItem";
+import { PathwayRow } from "@/components/crm/reflex-corrections/PathwayRow";
+import { ReflexQuickRow } from "@/components/crm/reflex-corrections/ReflexQuickRow";
+import { useItemCorrections } from "@/components/crm/reflex-corrections/useItemCorrections";
+import {
+  reflexCorrectionKey,
+  reflexPriorityKey,
+  type ReflexCorrection,
+} from "@/components/crm/reflex-corrections/types";
 import { safeParse } from "@/utils/safe-json";
 import { cn } from "@/lib/utils";
+import type { FindingPriority } from "@/components/crm/v2/v2-utils";
 import { getMuscleInfo } from "@/data/muscle-info-data";
 import MuscleInfoModal from "@/components/crm/MuscleInfoModal";
 import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from "@/data/muscle-data";
@@ -29,6 +37,7 @@ import {
   SectionHeader,
   AlertBanner,
   ConfirmationFooter,
+  SecondaryButton,
 } from "./DesignSystem";
 
 type SubTab = 'recheck' | 'intake' | 'quick' | 'muscles' | 'reflexes' | 'nerves' | 'zones' | 'eyes' | 'report';
@@ -66,7 +75,9 @@ const ResourceLink = ({ href, title }: { href: string; title: string }) => (
   </a>
 );
 
-type QuickPattern = Record<string, Record<string, string | undefined>>;
+type QuickPattern = Record<string, Record<string, string | undefined>> & {
+  reflexCorrections?: Record<string, ReflexCorrection[]>;
+};
 
 /**
  * One cranial nerve in Quick Assess. Stim lines are collapsed by default —
@@ -77,10 +88,26 @@ const CranialNerveRow = ({
   nerve,
   pattern,
   onToggle,
+  getCorrections,
+  isPriority,
+  getPriorityTier,
+  setPriorityTier,
+  addCorrection,
+  toggleHolding,
+  removeCorrection,
+  togglePriority,
 }: {
   nerve: (typeof CRANIAL_NERVES)[number];
   pattern: QuickPattern;
   onToggle: (name: string, nextStatus: string, side?: 'L' | 'R', parentName?: string) => void;
+  getCorrections: (category: string, name: string, side?: "L" | "R") => ReflexCorrection[];
+  isPriority: (category: string, name: string, side?: "L" | "R") => boolean;
+  getPriorityTier: (category: string, name: string, side?: "L" | "R") => FindingPriority | null;
+  setPriorityTier: (category: string, name: string, side: "L" | "R" | undefined, tier: FindingPriority | null) => void;
+  addCorrection: (category: string, name: string, correction: ReflexCorrection, side?: "L" | "R") => void | Promise<void>;
+  toggleHolding: (category: string, name: string, id: string, side?: "L" | "R") => void;
+  removeCorrection: (category: string, name: string, id: string, side?: "L" | "R") => void;
+  togglePriority: (category: string, name: string, side?: "L" | "R") => void;
 }) => {
   const nerveName = `${nerve.name}: ${nerve.latinName}`;
   const stimLines = nerveStimLines(nerve);
@@ -88,15 +115,18 @@ const CranialNerveRow = ({
   const hasStims = stimLines.length > 0;
 
   const parentStatus = pattern.cranialNerves?.[nerveName];
+  const leftStatus = pattern.cranialNerves?.[`${nerveName} (L)`];
+  const rightStatus = pattern.cranialNerves?.[`${nerveName} (R)`];
   const [expanded, setExpanded] = useState(false);
-  const [userToggled, setUserToggled] = useState(false);
 
-  // Marking the nerve inhibited opens its stim lines (unless the user has
-  // explicitly collapsed them this session).
+  // Marking the nerve inhibited on either side (or unsided) opens its stim
+  // lines, even if the row was manually collapsed just before.
   useEffect(() => {
-    if (userToggled) return;
-    if (parentStatus === 'Inhibited' || parentStatus === 'Inhibition') setExpanded(true);
-  }, [parentStatus, userToggled]);
+    const inhibited = [parentStatus, leftStatus, rightStatus].some(
+      (status) => status === 'Inhibited' || status === 'Inhibition'
+    );
+    if (inhibited) setExpanded(true);
+  }, [parentStatus, leftStatus, rightStatus]);
 
   const getStatus = (compositeName: string, side?: 'L' | 'R') => {
     const key = side ? `${compositeName} (${side})` : compositeName;
@@ -113,7 +143,7 @@ const CranialNerveRow = ({
       <div className="grid grid-cols-[1fr_auto] items-center gap-3">
         <button
           type="button"
-          onClick={() => { if (hasStims) { setUserToggled(true); setExpanded((v) => !v); } }}
+          onClick={() => { if (hasStims) setExpanded((v) => !v); }}
           className={cn("flex min-w-0 items-start gap-2 text-left", hasStims ? "cursor-pointer" : "cursor-default")}
           title={hasStims ? (expanded ? "Hide stim lines" : "Show stim lines") : undefined}
         >
@@ -132,13 +162,13 @@ const CranialNerveRow = ({
         </button>
         {!nerve.isLateralized && (
           <div className="flex items-center gap-2 shrink-0 justify-end">
-            <CheckItem category="cranialNerves" name={nerveName} pattern={pattern} onToggle={(cat, name, status, side) => onToggle(name, status, side)} />
+            <ReflexQuickRow category="cranialNerves" name={nerveName} pattern={pattern} onToggle={(cat, name, status, side) => onToggle(name, status, side)} corrections={getCorrections("cranialNerves", nerveName)} isPriority={isPriority("cranialNerves", nerveName)} onTogglePriority={() => togglePriority("cranialNerves", nerveName)} priorityTier={getPriorityTier("cranialNerves", nerveName)} onSetPriorityTier={(tier) => setPriorityTier("cranialNerves", nerveName, undefined, tier)} onAddCorrection={(c) => addCorrection("cranialNerves", nerveName, c)} onToggleHolding={(id) => toggleHolding("cranialNerves", nerveName, id)} onRemoveCorrection={(id) => removeCorrection("cranialNerves", nerveName, id)} />
           </div>
         )}
         {nerve.isLateralized && (
-          <div className="flex items-center gap-1.5 shrink-0 justify-end">
-            <CheckItem category="cranialNerves" name={nerveName} side="L" pattern={pattern} onToggle={(cat, name, status, side) => onToggle(name, status, side)} />
-            <CheckItem category="cranialNerves" name={nerveName} side="R" pattern={pattern} onToggle={(cat, name, status, side) => onToggle(name, status, side)} />
+          <div className="grid shrink-0 grid-cols-2 gap-1.5">
+            <ReflexQuickRow category="cranialNerves" name={nerveName} side="L" compact pattern={pattern} onToggle={(cat, name, status, side) => onToggle(name, status, side)} corrections={getCorrections("cranialNerves", nerveName, "L")} isPriority={isPriority("cranialNerves", nerveName, "L")} onTogglePriority={() => togglePriority("cranialNerves", nerveName, "L")} priorityTier={getPriorityTier("cranialNerves", nerveName, "L")} onSetPriorityTier={(tier) => setPriorityTier("cranialNerves", nerveName, "L", tier)} onAddCorrection={(c) => addCorrection("cranialNerves", nerveName, c, "L")} onToggleHolding={(id) => toggleHolding("cranialNerves", nerveName, id, "L")} onRemoveCorrection={(id) => removeCorrection("cranialNerves", nerveName, id, "L")} />
+            <ReflexQuickRow category="cranialNerves" name={nerveName} side="R" compact pattern={pattern} onToggle={(cat, name, status, side) => onToggle(name, status, side)} corrections={getCorrections("cranialNerves", nerveName, "R")} isPriority={isPriority("cranialNerves", nerveName, "R")} onTogglePriority={() => togglePriority("cranialNerves", nerveName, "R")} priorityTier={getPriorityTier("cranialNerves", nerveName, "R")} onSetPriorityTier={(tier) => setPriorityTier("cranialNerves", nerveName, "R", tier)} onAddCorrection={(c) => addCorrection("cranialNerves", nerveName, c, "R")} onToggleHolding={(id) => toggleHolding("cranialNerves", nerveName, id, "R")} onRemoveCorrection={(id) => removeCorrection("cranialNerves", nerveName, id, "R")} />
           </div>
         )}
       </div>
@@ -147,50 +177,73 @@ const CranialNerveRow = ({
           {stimLines.map((line, i) => {
             const lateral = isLatStim(i);
             const compositeName = `${nerveName} — ${line}`;
+            const rowPri = lateral ? (isPriority("cranialNerves", compositeName, "L") || isPriority("cranialNerves", compositeName, "R")) : isPriority("cranialNerves", compositeName);
+            const rowCorrections = lateral ? [...getCorrections("cranialNerves", compositeName, "L"), ...getCorrections("cranialNerves", compositeName, "R")] : getCorrections("cranialNerves", compositeName);
+            const addRowCorrection = (c: ReflexCorrection) => addCorrection("cranialNerves", compositeName, c, lateral ? "L" : undefined);
+            const toggleRowHolding = (id: string) => {
+              if (lateral) {
+                if (getCorrections("cranialNerves", compositeName, "L").some((c) => c.id === id)) toggleHolding("cranialNerves", compositeName, id, "L");
+                else toggleHolding("cranialNerves", compositeName, id, "R");
+              } else toggleHolding("cranialNerves", compositeName, id);
+            };
+            const removeRowCorrection = (id: string) => {
+              if (lateral) {
+                if (getCorrections("cranialNerves", compositeName, "L").some((c) => c.id === id)) removeCorrection("cranialNerves", compositeName, id, "L");
+                else removeCorrection("cranialNerves", compositeName, id, "R");
+              } else removeCorrection("cranialNerves", compositeName, id);
+            };
+            const toggleRowPriority = () => {
+              if (lateral) {
+                const next = !rowPri;
+                setPriorityTier("cranialNerves", compositeName, "L", next ? "priority" : null);
+                setPriorityTier("cranialNerves", compositeName, "R", next ? "priority" : null);
+              } else togglePriority("cranialNerves", compositeName);
+            };
             return (
-              <div key={i} className="grid grid-cols-[1fr_auto] items-center gap-3 py-0.5">
-                <p className="text-[12px] text-foreground/80 break-words">{line}</p>
-                <div className="flex items-center gap-1.5 justify-end">
-                  {lateral ? (
-                    <>
+              <PathwayRow key={i} itemName={compositeName} corrections={rowCorrections} isPriority={rowPri} onTogglePriority={toggleRowPriority} onAddCorrection={addRowCorrection} onToggleHolding={toggleRowHolding} onRemoveCorrection={removeRowCorrection} className="rounded-md">
+                <div className={cn("grid grid-cols-[1fr_auto] items-center gap-3 py-0.5 px-1 -mx-1 rounded-md", rowPri && "bg-primary/[0.03]")}>
+                  <p className="text-[12px] text-foreground/80 break-words">{line}</p>
+                  <div className="flex items-center gap-1.5 justify-end">
+                    {lateral ? (
+                      <>
+                        {(['L', 'R'] as const).map((side) => {
+                          const s = getStatus(compositeName, side);
+                          return (
+                            <button
+                              key={side}
+                              onClick={() => toggleStatus(compositeName, side)}
+                              title={`${side}: ${s === 'Inhibited' ? 'Inhibited' : s === 'Clear' ? 'Clear' : 'Untested'}`}
+                              aria-label={`${side}: ${s === 'Inhibited' ? 'Inhibited' : s === 'Clear' ? 'Clear' : 'Untested'}`}
+                              className={cn(
+                                "inline-flex h-7 w-8 items-center justify-center rounded-md border transition-colors",
+                                s === 'Inhibited' ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30" :
+                                s === 'Clear' ? "bg-primary/10 text-primary-strong dark:text-primary border-primary/30" :
+                                "border-border text-muted-foreground/60 hover:border-rose-300 hover:text-rose-600"
+                              )}
+                            >
+                              {s === 'Inhibited' ? <ArrowDown size={11} strokeWidth={2.5} /> : s === 'Clear' ? <Check size={11} strokeWidth={2.5} /> : <span className="text-[10px] font-bold">{side}</span>}
+                            </button>
+                          );
+                        })}
+                      </>
+                    ) : (
                       <button
-                        onClick={() => toggleStatus(compositeName, 'L')}
+                        onClick={() => toggleStatus(compositeName)}
+                        title={getStatus(compositeName) === 'Inhibited' ? 'Inhibited' : getStatus(compositeName) === 'Clear' ? 'Clear' : 'Untested'}
+                        aria-label={getStatus(compositeName) === 'Inhibited' ? 'Inhibited' : getStatus(compositeName) === 'Clear' ? 'Clear' : 'Untested'}
                         className={cn(
-                          "w-8 h-7 rounded-md text-[10px] font-bold border transition-colors",
-                          getStatus(compositeName, 'L') === 'Inhibited' ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30" :
-                          getStatus(compositeName, 'L') === 'Clear' ? "bg-primary/10 text-primary-strong dark:text-primary border-primary/30" :
+                          "inline-flex h-7 w-14 items-center justify-center rounded-md border transition-colors",
+                          getStatus(compositeName) === 'Inhibited' ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30" :
+                          getStatus(compositeName) === 'Clear' ? "bg-primary/10 text-primary-strong dark:text-primary border-primary/30" :
                           "border-border text-muted-foreground/60 hover:border-rose-300 hover:text-rose-600"
                         )}
                       >
-                        L
+                        {getStatus(compositeName) === 'Inhibited' ? <ArrowDown size={11} strokeWidth={2.5} /> : getStatus(compositeName) === 'Clear' ? <Check size={11} strokeWidth={2.5} /> : <span className="text-[10px] font-medium text-muted-foreground/60">—</span>}
                       </button>
-                      <button
-                        onClick={() => toggleStatus(compositeName, 'R')}
-                        className={cn(
-                          "w-8 h-7 rounded-md text-[10px] font-bold border transition-colors",
-                          getStatus(compositeName, 'R') === 'Inhibited' ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30" :
-                          getStatus(compositeName, 'R') === 'Clear' ? "bg-primary/10 text-primary-strong dark:text-primary border-primary/30" :
-                          "border-border text-muted-foreground/60 hover:border-rose-300 hover:text-rose-600"
-                        )}
-                      >
-                        R
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => toggleStatus(compositeName)}
-                      className={cn(
-                        "w-14 h-7 rounded-md text-[10px] font-bold border transition-colors",
-                        getStatus(compositeName) === 'Inhibited' ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30" :
-                        getStatus(compositeName) === 'Clear' ? "bg-primary/10 text-primary-strong dark:text-primary border-primary/30" :
-                        "border-border text-muted-foreground/60 hover:border-rose-300 hover:text-rose-600"
-                      )}
-                    >
-                      {getStatus(compositeName) === 'Inhibited' ? 'Inh' : getStatus(compositeName) === 'Clear' ? 'Clr' : '—'}
-                    </button>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
+              </PathwayRow>
             );
           })}
         </div>
@@ -199,11 +252,20 @@ const CranialNerveRow = ({
   );
 };
 
-const MuscleGroupGrid = ({ muscles, pattern, onToggle, onSelectMuscle }: {
+const MuscleGroupGrid = ({ muscles, pattern, onToggle, onSelectMuscle, getCorrections, isPriority, getPriorityTier, setPriorityTier, setPriorityTierForSides, addCorrection, toggleHolding, removeCorrection, togglePriority }: {
   muscles: string[];
   pattern: QuickPattern;
   onToggle: (cat: string, name: string, nextStatus: string, side?: 'L' | 'R') => void;
   onSelectMuscle?: (name: string) => void;
+  getCorrections: (category: string, name: string, side?: "L" | "R") => ReflexCorrection[];
+  isPriority: (category: string, name: string, side?: "L" | "R") => boolean;
+  getPriorityTier: (category: string, name: string, side?: "L" | "R") => FindingPriority | null;
+  setPriorityTier: (category: string, name: string, side: "L" | "R" | undefined, tier: FindingPriority | null) => void;
+  setPriorityTierForSides: (category: string, name: string, sides: Array<"L" | "R">, tier: FindingPriority | null) => void;
+  addCorrection: (category: string, name: string, correction: ReflexCorrection, side?: "L" | "R") => void | Promise<void>;
+  toggleHolding: (category: string, name: string, id: string, side?: "L" | "R") => void;
+  removeCorrection: (category: string, name: string, id: string, side?: "L" | "R") => void;
+  togglePriority: (category: string, name: string, side?: "L" | "R") => void;
 }) => {
   const [search, setSearch] = useState('');
   const filtered = useMemo(() => {
@@ -249,19 +311,23 @@ const MuscleGroupGrid = ({ muscles, pattern, onToggle, onSelectMuscle }: {
           return 'bg-card text-muted-foreground border-border hover:bg-muted/50';
         };
         return (
-          <div key={m} className="group py-3 px-3 -mx-3 rounded-lg flex items-start justify-between gap-6 hover:bg-muted/40 transition-all">
-            <div className="flex-1 min-w-0">
-              <button onClick={() => onSelectMuscle?.(m)} className="text-sm font-semibold text-foreground hover:text-primary transition-colors text-left">{m}</button>
-              {description && <div className="text-xs text-muted-foreground mt-0.5">{description}</div>}
-              {testingInstructions && <div className="text-[10px] text-muted-foreground/70 mt-1 leading-relaxed line-clamp-2">{testingInstructions}</div>}
+          <PathwayRow key={m} itemName={m} corrections={getCorrections("muscles", m)} isPriority={isPriority("muscles", m)} onTogglePriority={() => togglePriority("muscles", m)} priorityTier={getPriorityTier("muscles", m)} onSetPriorityTier={(tier) => setPriorityTier("muscles", m, undefined, tier)} onAddCorrection={(c) => addCorrection("muscles", m, c)} onToggleHolding={(id) => toggleHolding("muscles", m, id)} onRemoveCorrection={(id) => removeCorrection("muscles", m, id)}>
+            <div className={cn("group py-3 px-3 -mx-3 rounded-lg flex items-start justify-between gap-6 hover:bg-muted/40 transition-all", isPriority("muscles", m) && "bg-primary/[0.04]")}>
+              <div className="flex-1 min-w-0">
+                <button onClick={() => onSelectMuscle?.(m)} className="text-sm font-semibold text-foreground hover:text-primary transition-colors text-left">{m}</button>
+                {description && <div className="text-xs text-muted-foreground mt-0.5">{description}</div>}
+                {testingInstructions && <div className="text-[10px] text-muted-foreground/70 mt-1 leading-relaxed line-clamp-2">{testingInstructions}</div>}
+              </div>
+              <button
+                onClick={cycleStatus}
+                className={cn("inline-flex h-7 min-w-[52px] items-center justify-center rounded-md border px-2 transition-all shrink-0 shadow-sm hover:shadow", getColor(status))}
+                title={(status === 'Inhibited' || status === 'Inhibition') ? 'Inhibited' : status === 'Hypertonic' ? 'Hypertonic' : (status === 'Clear' || status === 'Normotonic') ? 'Clear' : 'Untested'}
+                aria-label={(status === 'Inhibited' || status === 'Inhibition') ? 'Inhibited' : status === 'Hypertonic' ? 'Hypertonic' : (status === 'Clear' || status === 'Normotonic') ? 'Clear' : 'Untested'}
+              >
+                {(status === 'Inhibited' || status === 'Inhibition') ? <ArrowDown size={13} strokeWidth={2.5} /> : status === 'Hypertonic' ? <ArrowUp size={13} strokeWidth={2.5} /> : (status === 'Clear' || status === 'Normotonic') ? <Check size={13} strokeWidth={2.5} /> : <span className="text-[10px] font-medium text-muted-foreground/60">—</span>}
+              </button>
             </div>
-            <button
-              onClick={cycleStatus}
-              className={cn("px-3 py-1 rounded-md text-[10px] font-semibold border transition-all shrink-0 shadow-sm hover:shadow", getColor(status))}
-            >
-              {(status === 'Inhibited' || status === 'Inhibition') ? 'Inhibited' : status === 'Hypertonic' ? 'Hypertonic' : (status === 'Clear' || status === 'Normotonic') ? 'Clear' : 'Untested'}
-            </button>
-          </div>
+          </PathwayRow>
         );
       }
       
@@ -290,37 +356,37 @@ const MuscleGroupGrid = ({ muscles, pattern, onToggle, onSelectMuscle }: {
         if (s === 'Inhibited' || s === 'Inhibition') return 'Inhibited';
         if (s === 'Hypertonic') return 'Hypertonic';
         if (s === 'Clear' || s === 'Normotonic') return 'Clear';
-        return '—';
+        return 'Untested';
       };
 
+      const renderStatusIcon = (s: unknown) => {
+        if (s === 'Inhibited' || s === 'Inhibition') return <ArrowDown size={13} strokeWidth={2.5} />;
+        if (s === 'Hypertonic') return <ArrowUp size={13} strokeWidth={2.5} />;
+        if (s === 'Clear' || s === 'Normotonic') return <Check size={13} strokeWidth={2.5} />;
+        return <span className="text-[10px] font-medium text-muted-foreground/60">—</span>;
+      };
+
+      const pri = isPriority("muscles", m, "L") || isPriority("muscles", m, "R");
       return (
-        <div key={m} className="group py-3 px-3 -mx-3 rounded-lg flex items-start justify-between gap-6 hover:bg-muted/40 transition-all">
-          <div className="flex-1 min-w-0">
-            <button onClick={() => onSelectMuscle?.(m)} className="text-sm font-semibold text-foreground hover:text-primary transition-colors text-left">{m}</button>
-            {description && <div className="text-xs text-muted-foreground mt-0.5">{description}</div>}
-            {testingInstructions && <div className="text-[10px] text-muted-foreground/70 mt-1 leading-relaxed line-clamp-2">{testingInstructions}</div>}
-          </div>
-          <div className="flex items-center gap-6 shrink-0">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">L</span>
-              <button
-                onClick={() => cycleStatus('L')}
-                className={cn("px-3 py-1 rounded-md text-[9px] font-bold border transition-all min-w-[76px] shadow-sm hover:shadow", getColor(statusL))}
-              >
-                {getLabel(statusL)}
-              </button>
+        <PathwayRow key={m} itemName={m} corrections={[...getCorrections("muscles", m, "L"), ...getCorrections("muscles", m, "R")]} isPriority={pri} onTogglePriority={() => { togglePriority("muscles", m, "L"); if (isPriority("muscles", m, "L") !== isPriority("muscles", m, "R")) togglePriority("muscles", m, "R"); }} priorityTier={getPriorityTier("muscles", m, "L") ?? getPriorityTier("muscles", m, "R")} onSetPriorityTier={(tier) => setPriorityTierForSides("muscles", m, ["L", "R"], tier)} onAddCorrection={(c) => addCorrection("muscles", m, c, "L")} onToggleHolding={(id) => { if (getCorrections("muscles", m, "L").some(c=>c.id===id)) toggleHolding("muscles", m, id, "L"); else toggleHolding("muscles", m, id, "R"); }} onRemoveCorrection={(id) => { if (getCorrections("muscles", m, "L").some(c=>c.id===id)) removeCorrection("muscles", m, id, "L"); else removeCorrection("muscles", m, id, "R"); }}>
+          <div className={cn("group py-3 px-3 -mx-3 rounded-lg flex items-start justify-between gap-6 hover:bg-muted/40 transition-all", pri && "bg-amber-500/[0.04]")}>
+            <div className="flex-1 min-w-0">
+              <button onClick={() => onSelectMuscle?.(m)} className="text-sm font-semibold text-foreground hover:text-primary transition-colors text-left">{m}</button>
+              {description && <div className="text-xs text-muted-foreground mt-0.5">{description}</div>}
+              {testingInstructions && <div className="text-[10px] text-muted-foreground/70 mt-1 leading-relaxed line-clamp-2">{testingInstructions}</div>}
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">R</span>
-              <button
-                onClick={() => cycleStatus('R')}
-                className={cn("px-3 py-1 rounded-md text-[9px] font-bold border transition-all min-w-[76px] shadow-sm hover:shadow", getColor(statusR))}
-              >
-                {getLabel(statusR)}
-              </button>
+            <div className="flex items-center gap-6 shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">L</span>
+                <button onClick={() => cycleStatus('L')} title={getLabel(statusL)} aria-label={`Left: ${getLabel(statusL)}`} className={cn("inline-flex h-7 min-w-[52px] items-center justify-center rounded-md border transition-all shadow-sm hover:shadow", getColor(statusL))}>{renderStatusIcon(statusL)}</button>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">R</span>
+                <button onClick={() => cycleStatus('R')} title={getLabel(statusR)} aria-label={`Right: ${getLabel(statusR)}`} className={cn("inline-flex h-7 min-w-[52px] items-center justify-center rounded-md border transition-all shadow-sm hover:shadow", getColor(statusR))}>{renderStatusIcon(statusR)}</button>
+              </div>
             </div>
           </div>
-        </div>
+        </PathwayRow>
       );
     })}
       </div>
@@ -331,8 +397,20 @@ const MuscleGroupGrid = ({ muscles, pattern, onToggle, onSelectMuscle }: {
 const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorityPattern, onJumpToPhase }: PhaseProps) => {
   const hasHistory = history.length >= 2;
   const [subTab, setSubTab] = useState<SubTab>('intake');
+  const [assessmentsOpen, setAssessmentsOpen] = useState(false);
   const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
   const [globalMuscleSearch, setGlobalMuscleSearch] = useState('');
+  const {
+    getCorrections,
+    isPriority,
+    getPriorityTier,
+    setPriorityTier,
+    setPriorityTierForSides,
+    addCorrection,
+    toggleHolding,
+    removeCorrection,
+    togglePriority,
+  } = useItemCorrections(appointment, saveField, onUpdate);
   const tabs = hasHistory
     ? [{ id: 'recheck' as SubTab, label: 'Recheck', icon: RotateCcw }, ...SUB_TABS]
     : SUB_TABS;
@@ -341,6 +419,15 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
   const lastSessionDate = previousSession?.date;
   const daysSinceLast = lastSessionDate ? differenceInDays(new Date(), new Date(lastSessionDate)) : 0;
   const isStale = daysSinceLast > 30;
+
+  const hasCogsNotes = Boolean(
+    appointment.sagittal_plane_notes || appointment.frontal_plane_notes || appointment.transverse_plane_notes,
+  );
+  const hasNeuroNotes = Boolean(
+    appointment.fakuda_notes || appointment.sharpened_rhombergs_notes ||
+    appointment.frontal_lobe_notes || appointment.righting_reflex_notes,
+  );
+  const recordedAssessments = Number(hasCogsNotes) + Number(hasNeuroNotes);
 
   return (
     <Section className="space-y-5">
@@ -351,8 +438,19 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
             variant="warning"
             icon={AlertTriangle}
             title={`Over ${Math.floor(daysSinceLast / 30)} months since the last session`}
+            className="border-warning/30 bg-warning/10"
           >
-            Baseline findings and CO₂ tolerance may have shifted.
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="min-w-0 flex-1 text-[13px] leading-relaxed text-foreground/80">
+                Baseline findings and CO₂ tolerance may have shifted. Check what carried over before you begin.
+              </p>
+              <SecondaryButton
+                onClick={() => setSubTab('recheck')}
+                className="h-8 shrink-0 rounded-lg px-3 text-[12px]"
+              >
+                Review baseline shifts <ArrowRight size={13} />
+              </SecondaryButton>
+            </div>
           </AlertBanner>
         )}
 
@@ -424,28 +522,51 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                   />
                 </Card>
 
-                {/* COGS — visual assessment */}
-                <Card padding="comfortable">
-                  <CogsAssessment
-                    appointmentId={appointment.id}
-                    initialSagittalNotes={appointment.sagittal_plane_notes}
-                    initialFrontalNotes={appointment.frontal_plane_notes}
-                    initialTransverseNotes={appointment.transverse_plane_notes}
-                    onUpdate={onUpdate}
-                  />
-                </Card>
+                {/* Secondary assessments — tucked away so the baseline reads first */}
+                <div className="space-y-3 border-t border-border/60 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setAssessmentsOpen((open) => !open)}
+                    aria-expanded={assessmentsOpen}
+                    className="flex w-full items-center justify-between gap-3 rounded-lg px-1 py-1 text-left transition-colors hover:bg-muted/40"
+                  >
+                    <span className="min-w-0">
+                      <span className="block text-card-title">Assessments</span>
+                      <span className="mt-0.5 block text-meta">
+                        COGS and neurological baseline · {recordedAssessments} of 2 recorded
+                      </span>
+                    </span>
+                    <ChevronDown
+                      size={16}
+                      className={cn("shrink-0 text-muted-foreground transition-transform", assessmentsOpen && "rotate-180")}
+                    />
+                  </button>
 
-                {/* Neurological baseline */}
-                <Card padding="comfortable">
-                  <NeurologicalAssessments
-                    appointmentId={appointment.id}
-                    initialFakudaNotes={appointment.fakuda_notes}
-                    initialRhombergsNotes={appointment.sharpened_rhombergs_notes}
-                    initialFrontalLobeNotes={appointment.frontal_lobe_notes}
-                    initialRightingReflexNotes={appointment.righting_reflex_notes}
-                    onUpdate={onUpdate}
-                  />
-                </Card>
+                  {assessmentsOpen && (
+                    <div className="space-y-4">
+                      <Card padding="comfortable">
+                        <CogsAssessment
+                          appointmentId={appointment.id}
+                          initialSagittalNotes={appointment.sagittal_plane_notes}
+                          initialFrontalNotes={appointment.frontal_plane_notes}
+                          initialTransverseNotes={appointment.transverse_plane_notes}
+                          onUpdate={onUpdate}
+                        />
+                      </Card>
+
+                      <Card padding="comfortable">
+                        <NeurologicalAssessments
+                          appointmentId={appointment.id}
+                          initialFakudaNotes={appointment.fakuda_notes}
+                          initialRhombergsNotes={appointment.sharpened_rhombergs_notes}
+                          initialFrontalLobeNotes={appointment.frontal_lobe_notes}
+                          initialRightingReflexNotes={appointment.righting_reflex_notes}
+                          onUpdate={onUpdate}
+                        />
+                      </Card>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Right: narrative/context (sticky) */}
@@ -486,6 +607,8 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
             const quickToggle = (cat: string, name: string, nextStatus: string, side?: 'L' | 'R') => {
               updatePriorityPattern(cat, name, nextStatus === 'Clear' ? null : nextStatus, side);
             };
+            const reflexCorrections = (pattern as any).reflexCorrections as Record<string, ReflexCorrection[]> | undefined;
+            const priorities = (pattern.priorities ?? {}) as Record<string, string | undefined>;
             // Cranial nerve toggle: when a stim line is marked inhibited, also mark the parent nerve.
             // When a stim line is cleared, un-inhibit the parent if no other stim lines remain inhibited.
             const cnToggle = (name: string, nextStatus: string, side?: 'L' | 'R', parentName?: string) => {
@@ -541,16 +664,39 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                       }).filter(r => group.reflexes.includes(r.id))
                       .sort((a, b) => group.reflexes.indexOf(a.id) - group.reflexes.indexOf(b.id));
                       if (groupReflexes.length === 0) return null;
+                      const trackCorrections = groupReflexes.flatMap((r) => {
+                        if (r.isLateralized) {
+                          return [
+                            ...((reflexCorrections?.[reflexCorrectionKey(r.name, 'L')] ?? []) as ReflexCorrection[]),
+                            ...((reflexCorrections?.[reflexCorrectionKey(r.name, 'R')] ?? []) as ReflexCorrection[]),
+                          ];
+                        }
+                        return ((reflexCorrections?.[reflexCorrectionKey(r.name)] ?? []) as ReflexCorrection[]);
+                      });
+                      const trackHolding = trackCorrections.filter((c) => c.holding).length;
+                      const trackPriority = groupReflexes.reduce((n, r) => {
+                        if (r.isLateralized) {
+                          return n + (priorities[reflexPriorityKey(reflexCorrectionKey(r.name, 'L'))] ? 1 : 0) + (priorities[reflexPriorityKey(reflexCorrectionKey(r.name, 'R'))] ? 1 : 0);
+                        }
+                        return n + (priorities[reflexPriorityKey(reflexCorrectionKey(r.name))] ? 1 : 0);
+                      }, 0);
                       return (
                         <div key={group.num} className="space-y-2">
                           <div className="flex items-center gap-3 px-1 py-1">
                             <div className="w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-semibold text-primary-foreground bg-primary">
                               {group.num}
                             </div>
-                            <div>
+                            <div className="min-w-0">
                               <h3 className="text-[12px] font-semibold tracking-tight text-foreground">{group.label}</h3>
                               <p className="text-[11px] text-muted-foreground">{group.desc}</p>
                             </div>
+                            {(trackHolding > 0 || trackPriority > 0) && (
+                              <span className="ml-auto shrink-0 text-[11px] text-muted-foreground tabular-nums">
+                                {trackHolding > 0 ? `${trackHolding} holding` : ""}
+                                {trackHolding > 0 && trackPriority > 0 ? <span className="mx-1.5 text-muted-foreground/40">·</span> : null}
+                                {trackPriority > 0 ? `${trackPriority} priority` : ""}
+                              </span>
+                            )}
                             <div className="flex-1 h-px bg-border" />
                           </div>
                           <div className="space-y-2">
@@ -582,27 +728,47 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                                 }
                               }
 
+                              const renderReflexRow = (r: typeof PRIMITIVE_REFLEXES[number], side?: 'L' | 'R') => {
+                                const key = reflexCorrectionKey(r.name, side);
+                                return (
+                                  <ReflexQuickRow
+                                    key={key}
+                                    category="primitiveReflexes"
+                                    name={r.name}
+                                    side={side}
+                                    pattern={pattern}
+                                    onToggle={quickToggle}
+                                    corrections={getCorrections("primitiveReflexes", r.name, side)}
+                                    isPriority={isPriority("primitiveReflexes", r.name, side)}
+                                    onTogglePriority={() => togglePriority("primitiveReflexes", r.name, side)}
+                                    priorityTier={getPriorityTier("primitiveReflexes", r.name, side)}
+                                    onSetPriorityTier={(tier) => setPriorityTier("primitiveReflexes", r.name, side, tier)}
+                                    onAddCorrection={(correction) => addCorrection("primitiveReflexes", r.name, correction, side)}
+                                    onToggleHolding={(id) => toggleHolding("primitiveReflexes", r.name, id, side)}
+                                    onRemoveCorrection={(id) => removeCorrection("primitiveReflexes", r.name, id, side)}
+                                  />
+                                );
+                              };
+
                               return paired.map((p, pi) => {
                                 if (p.type === 'pair') {
                                   return (
-                                    <div key={pi} className="flex items-center gap-2">
-                                      <CheckItem category="primitiveReflexes" name={p.items[0].name} pattern={pattern} onToggle={quickToggle} />
-                                      <CheckItem category="primitiveReflexes" name={p.items[1].name} pattern={pattern} onToggle={quickToggle} />
+                                    <div key={pi} className="flex items-start gap-2">
+                                      <div className="min-w-0 flex-1">{renderReflexRow(p.items[0])}</div>
+                                      <div className="min-w-0 flex-1">{renderReflexRow(p.items[1])}</div>
                                     </div>
                                   );
                                 }
                                 if (p.type === 'lateral') {
                                   const r = p.items[0];
                                   return (
-                                    <div key={pi} className="flex items-center gap-2">
-                                      <CheckItem category="primitiveReflexes" name={r.name} side="L" pattern={pattern} onToggle={quickToggle} />
-                                      <CheckItem category="primitiveReflexes" name={r.name} side="R" pattern={pattern} onToggle={quickToggle} />
+                                    <div key={pi} className="flex items-start gap-2">
+                                      <div className="min-w-0 flex-1">{renderReflexRow(r, 'L')}</div>
+                                      <div className="min-w-0 flex-1">{renderReflexRow(r, 'R')}</div>
                                     </div>
                                   );
                                 }
-                                return (
-                                  <CheckItem key={pi} category="primitiveReflexes" name={p.items[0].name} pattern={pattern} onToggle={quickToggle} />
-                                );
+                                return renderReflexRow(p.items[0]);
                               });
                             })()}
                           </div>
@@ -620,7 +786,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                   </SectionHeader>
                   <div>
                     {CRANIAL_NERVES.map(n => (
-                      <CranialNerveRow key={n.name} nerve={n} pattern={pattern} onToggle={cnToggle} />
+                      <CranialNerveRow key={n.name} nerve={n} pattern={pattern} onToggle={cnToggle} getCorrections={getCorrections} isPriority={isPriority} getPriorityTier={getPriorityTier} setPriorityTier={setPriorityTier} addCorrection={addCorrection} toggleHolding={toggleHolding} removeCorrection={removeCorrection} togglePriority={togglePriority} />
                     ))}
                   </div>
                 </Card>
@@ -628,14 +794,14 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                 {/* Muscles — Intrinsic Stabilisation */}
                 <Card className="space-y-3" padding="comfortable">
                   <SectionHeader icon={Dumbbell} title="Intrinsic stabilisation">
-                    <div className="flex items-center gap-3 text-[9px] text-muted-foreground/60">
-                      <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-rose-500/15 text-rose-600 dark:text-rose-400 text-[9px] font-bold">↓</span> Inhibited</span>
-                      <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 text-[9px] font-bold">↑</span> Hypertonic</span>
-                      <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-primary/10 text-primary-strong dark:text-primary text-[9px] font-bold">✓</span> Clear</span>
+                    <div className="flex items-center gap-3 text-[11px] text-muted-foreground/60">
+                      <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-rose-500/15 text-rose-600 dark:text-rose-400 text-[11px] font-bold">↓</span> Inhibited</span>
+                      <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 text-[11px] font-bold">↑</span> Hypertonic</span>
+                      <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-primary/10 text-primary-strong dark:text-primary text-[11px] font-bold">✓</span> Clear</span>
                     </div>
                     <ResourceLink href={FNH_LINKS.ligaments} title="Ligament reference" />
                   </SectionHeader>
-                  <MuscleGroupGrid muscles={MUSCLE_GROUPS['Intrinsic Stabilisation'] || []} pattern={pattern} onToggle={quickToggle} onSelectMuscle={setSelectedMuscle} />
+                  <MuscleGroupGrid muscles={MUSCLE_GROUPS['Intrinsic Stabilisation'] || []} pattern={pattern} onToggle={quickToggle} onSelectMuscle={setSelectedMuscle} getCorrections={getCorrections} isPriority={isPriority} getPriorityTier={getPriorityTier} setPriorityTier={setPriorityTier} setPriorityTierForSides={setPriorityTierForSides} addCorrection={addCorrection} toggleHolding={toggleHolding} removeCorrection={removeCorrection} togglePriority={togglePriority} />
                 </Card>
                 </div>
               </div>
@@ -699,7 +865,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                               </div>
                               <button
                                 onClick={cycleStatus}
-                                className={cn("px-3 py-1 rounded-md text-[9px] font-bold border transition-all shrink-0 shadow-sm hover:shadow", getColor(status))}
+                                className={cn("px-3 py-1 rounded-md text-[11px] font-bold border transition-all shrink-0 shadow-sm hover:shadow", getColor(status))}
                               >
                                 {(status === 'Inhibited' || status === 'Inhibition') ? 'Inhibited' : status === 'Hypertonic' ? 'Hypertonic' : (status === 'Clear' || status === 'Normotonic') ? 'Clear' : 'Untested'}
                               </button>
@@ -744,7 +910,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                                 <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">L</span>
                                 <button
                                   onClick={() => cycleStatus('L')}
-                                  className={cn("px-3 py-1 rounded-md text-[9px] font-bold border transition-all min-w-[76px] shadow-sm hover:shadow", getColor(statusL))}
+                                  className={cn("px-3 py-1 rounded-md text-[11px] font-bold border transition-all min-w-[76px] shadow-sm hover:shadow", getColor(statusL))}
                                 >
                                   {getLabel(statusL)}
                                 </button>
@@ -753,7 +919,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                                 <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">R</span>
                                 <button
                                   onClick={() => cycleStatus('R')}
-                                  className={cn("px-3 py-1 rounded-md text-[9px] font-bold border transition-all min-w-[76px] shadow-sm hover:shadow", getColor(statusR))}
+                                  className={cn("px-3 py-1 rounded-md text-[11px] font-bold border transition-all min-w-[76px] shadow-sm hover:shadow", getColor(statusR))}
                                 >
                                   {getLabel(statusR)}
                                 </button>
@@ -768,13 +934,13 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                   Object.entries(MUSCLE_GROUPS).map(([groupName, muscles]) => (
                     <Card key={groupName} className="space-y-3" padding="comfortable">
                       <SectionHeader icon={Dumbbell} title={groupName}>
-                        <div className="flex items-center gap-3 text-[9px] text-muted-foreground/60">
-                          <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-rose-500/15 text-rose-600 dark:text-rose-400 text-[9px] font-bold">↓</span> Inhibited</span>
-                          <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 text-[9px] font-bold">↑</span> Hypertonic</span>
-                          <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-primary/10 text-primary-strong dark:text-primary text-[9px] font-bold">✓</span> Clear</span>
+                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground/60">
+                          <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-rose-500/15 text-rose-600 dark:text-rose-400 text-[11px] font-bold">↓</span> Inhibited</span>
+                          <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 text-[11px] font-bold">↑</span> Hypertonic</span>
+                          <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-primary/10 text-primary-strong dark:text-primary text-[11px] font-bold">✓</span> Clear</span>
                         </div>
                       </SectionHeader>
-                      <MuscleGroupGrid muscles={muscles} pattern={pattern} onToggle={toggle} onSelectMuscle={setSelectedMuscle} />
+                      <MuscleGroupGrid muscles={muscles} pattern={pattern} onToggle={toggle} onSelectMuscle={setSelectedMuscle} getCorrections={getCorrections} isPriority={isPriority} getPriorityTier={getPriorityTier} setPriorityTier={setPriorityTier} setPriorityTierForSides={setPriorityTierForSides} addCorrection={addCorrection} toggleHolding={toggleHolding} removeCorrection={removeCorrection} togglePriority={togglePriority} />
                     </Card>
                   ))
                 )}
@@ -791,6 +957,8 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                 appointmentId={appointment.id}
                 priorityPattern={appointment.priority_pattern}
                 updatePriorityPattern={updatePriorityPattern}
+                saveField={saveField}
+                onUpdate={onUpdate}
               />
             </Section>
           )}
@@ -805,6 +973,8 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                 priorityPattern={appointment.priority_pattern}
                 updatePriorityPattern={updatePriorityPattern}
                 showImages
+                saveField={saveField}
+                onUpdate={onUpdate}
               />
             </Section>
           )}
@@ -863,6 +1033,33 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                 { name: "Peripheral Vision", desc: "Visual field module. Screen: distant fixation, challenge left/right peripheral fields. CN 2.", subs: [] },
               ]},
             ];
+            const EyeStatusButtons = ({ name, compact = false }: { name: string; compact?: boolean }) => {
+              const status = eyePattern[name];
+              const isInhibited = status === 'Inhibited';
+              const isClear = status === 'Clear';
+              const btn = compact ? "inline-flex h-6 w-8 items-center justify-center rounded border transition-colors" : "inline-flex h-7 w-9 items-center justify-center rounded-md border transition-colors";
+              const iconSize = compact ? 11 : 12;
+              return (
+                <div className={cn("flex items-center shrink-0", compact ? "gap-1.5" : "gap-2")}>
+                  <button
+                    onClick={() => toggle(name, isInhibited ? null : 'Inhibited')}
+                    title="Inhibited"
+                    aria-label={`${name}: inhibited`}
+                    className={cn(btn, isInhibited ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30" : "border-rose-300/60 text-rose-600/70 hover:bg-rose-50 dark:border-rose-700/50 dark:text-rose-400/70")}
+                  >
+                    <ArrowDown size={iconSize} strokeWidth={2.5} />
+                  </button>
+                  <button
+                    onClick={() => toggle(name, isClear ? null : 'Clear')}
+                    title="Clear"
+                    aria-label={`${name}: clear`}
+                    className={cn(btn, isClear ? "bg-primary/10 text-primary-strong dark:text-primary border-primary/30" : "border-primary/30 text-primary/70 hover:bg-primary/5 dark:border-primary/50 dark:text-primary/70")}
+                  >
+                    <Check size={iconSize} strokeWidth={2.5} />
+                  </button>
+                </div>
+              );
+            };
             return (
               <Section className="space-y-3">
                 <SectionHeader icon={Eye} title="Eye Systems" subtitle="Vergence, VOR, tracking, saccades, near-far, optokinetics, peripheral" />
@@ -878,88 +1075,48 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                           const isInhibited = status === 'Inhibited';
                           const isClear = status === 'Clear';
                           const hasSubs = eye.subs && eye.subs.length > 0;
+                          const pri = isPriority("eyeSystems", eye.name);
                           return (
-                            <div
-                              key={eye.name}
-                              className={cn(
-                                "rounded-xl border p-3 space-y-2 transition-all",
-                                isInhibited ? "bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-800" :
-                                isClear ? "bg-success/[0.04] border-success/20 opacity-80" :
-                                "border-border bg-card"
-                              )}
-                            >
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="min-w-0">
-                                  <p className="text-[12px] font-medium text-foreground">{eye.name}</p>
-                                  <p className="text-[10px] text-muted-foreground/70 leading-relaxed mt-0.5">{eye.desc}</p>
+                            <PathwayRow key={eye.name} itemName={eye.name} corrections={getCorrections("eyeSystems", eye.name)} isPriority={pri} onTogglePriority={() => togglePriority("eyeSystems", eye.name)} onAddCorrection={(c) => addCorrection("eyeSystems", eye.name, c)} onToggleHolding={(id) => toggleHolding("eyeSystems", eye.name, id)} onRemoveCorrection={(id) => removeCorrection("eyeSystems", eye.name, id)}>
+                              <div
+                                className={cn(
+                                  "rounded-xl border p-3 space-y-2 transition-all",
+                                  isInhibited ? "bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-800" :
+                                  isClear ? "bg-success/[0.04] border-success/20 opacity-80" :
+                                  "border-border bg-card",
+                                  pri && "ring-1 ring-primary/25"
+                                )}
+                              >
+                                <div className="flex items-center justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <p className="text-[12px] font-medium text-foreground">{eye.name}</p>
+                                    <p className="text-[10px] text-muted-foreground/70 leading-relaxed mt-0.5">{eye.desc}</p>
+                                  </div>
+                                  <EyeStatusButtons name={eye.name} />
                                 </div>
-                                <div className="flex items-center gap-2 shrink-0">
-                                  <button
-                                    onClick={() => toggle(eye.name, isInhibited ? null : 'Inhibited')}
-                                    className={cn(
-                                      "px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors border",
-                                      isInhibited
-                                        ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
-                                        : "border-rose-300 text-rose-600 hover:bg-rose-50 dark:border-rose-700 dark:text-rose-400"
-                                    )}
-                                  >
-                                    Inhibited
-                                  </button>
-                                  <button
-                                    onClick={() => toggle(eye.name, isClear ? null : 'Clear')}
-                                    className={cn(
-                                      "px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors border",
-                                      isClear
-                                        ? "bg-primary/10 text-primary-strong dark:text-primary border-primary/30"
-                                        : "border-primary/30 text-primary/70 hover:bg-primary/5 dark:border-primary/50 dark:text-primary/70"
-                                    )}
-                                  >
-                                    Clear
-                                  </button>
-                                </div>
+                                {hasSubs && (
+                                  <div className="ml-2 pl-3 border-l-2 border-border/40 space-y-1.5 mt-2">
+                                    {eye.subs!.map((sub) => {
+                                      const subStatus = eyePattern[sub.name];
+                                      const subInhibited = subStatus === 'Inhibited';
+                                      const subClear = subStatus === 'Clear';
+                                      const subPri = isPriority("eyeSystems", sub.name);
+                                      return (
+                                        <PathwayRow key={sub.name} itemName={sub.name} corrections={getCorrections("eyeSystems", sub.name)} isPriority={subPri} onTogglePriority={() => togglePriority("eyeSystems", sub.name)} onAddCorrection={(c) => addCorrection("eyeSystems", sub.name, c)} onToggleHolding={(id) => toggleHolding("eyeSystems", sub.name, id)} onRemoveCorrection={(id) => removeCorrection("eyeSystems", sub.name, id)} glow={false}>
+                                          <div className={cn("flex items-center justify-between gap-2 py-1 rounded-md px-1 -mx-1", subPri && "bg-primary/[0.04] ring-1 ring-primary/20")}>
+                                            <div className="min-w-0">
+                                              <p className="text-[11px] font-medium text-foreground/90">{sub.name.replace(eye.name + " ", "").replace(eye.name, "")}</p>
+                                              <p className="text-[11px] text-muted-foreground/60 leading-relaxed">{sub.desc}</p>
+                                            </div>
+                                            <EyeStatusButtons name={sub.name} compact />
+                                          </div>
+                                        </PathwayRow>
+                                      );
+                                    })}
+                                  </div>
+                                )}
                               </div>
-                              {hasSubs && (
-                                <div className="ml-2 pl-3 border-l-2 border-border/40 space-y-1.5 mt-2">
-                                  {eye.subs!.map((sub) => {
-                                    const subStatus = eyePattern[sub.name];
-                                    const subInhibited = subStatus === 'Inhibited';
-                                    const subClear = subStatus === 'Clear';
-                                    return (
-                                      <div key={sub.name} className="flex items-center justify-between gap-2 py-1">
-                                        <div className="min-w-0">
-                                          <p className="text-[11px] font-medium text-foreground/90">{sub.name.replace(eye.name + " ", "").replace(eye.name, "")}</p>
-                                          <p className="text-[9px] text-muted-foreground/60 leading-relaxed">{sub.desc}</p>
-                                        </div>
-                                        <div className="flex items-center gap-1.5 shrink-0">
-                                          <button
-                                            onClick={() => toggle(sub.name, subInhibited ? null : 'Inhibited')}
-                                            className={cn(
-                                              "px-2 py-0.5 rounded text-[9px] font-medium transition-colors border",
-                                              subInhibited
-                                                ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
-                                                : "border-rose-300/50 text-rose-600/70 hover:bg-rose-50 dark:border-rose-700/50 dark:text-rose-400/70"
-                                            )}
-                                          >
-                                            Inh
-                                          </button>
-                                          <button
-                                            onClick={() => toggle(sub.name, subClear ? null : 'Clear')}
-                                            className={cn(
-                                              "px-2 py-0.5 rounded text-[9px] font-medium transition-colors border",
-                                              subClear
-                                                ? "bg-primary/10 text-primary-strong dark:text-primary border-primary/30"
-                                                : "border-primary/30 text-primary/70 hover:bg-primary/5 dark:border-primary/50 dark:text-primary/70"
-                                            )}
-                                          >
-                                            Clr
-                                          </button>
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              )}
-                            </div>
+                            </PathwayRow>
                           );
                         })}
                       </div>

@@ -12,6 +12,8 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import MotorControlHierarchy from './MotorControlHierarchy';
+import { cn } from '@/lib/utils';
+import { PATHWAY_DIRECTION } from '@/lib/pathway-direction';
 
 const SectionHeader = ({ icon: Icon, title, color }: { icon: ElementType, title: string, color: string }) => (
   <h3 className={`text-2xl font-semibold flex items-center gap-3 ${color}`}>
@@ -100,8 +102,8 @@ const FnTheory = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
           <CardHeader className="bg-primary/5 p-8">
-            <SectionHeader icon={Brain} title="Mechanoreceptive Conscious" color="text-primary" />
-            <p className="text-blue-800 font-medium">Targets the DCML pathway (15% of afferent input) to the contralateral sensory cortex (S1).</p>
+            <SectionHeader icon={Brain} title="Mechanoreceptive conscious" color={PATHWAY_DIRECTION.afferent.strong} />
+            <p className={cn("font-medium", PATHWAY_DIRECTION.afferent.strong)}>Targets the DCML pathway (15% of afferent input) to the contralateral sensory cortex (S1).</p>
           </CardHeader>
           <CardContent className="p-8 space-y-6">
              <div className="p-4 bg-muted/50 rounded-2xl border border-border/50">
@@ -111,8 +113,8 @@ const FnTheory = () => {
         </Card>
         <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
           <CardHeader className="bg-primary/10 p-8">
-            <SectionHeader icon={Activity} title="Mechanoreceptive Unconscious" color="text-primary-strong" />
-            <p className="text-primary-strong font-medium">Targets spinocerebellar tracts (85% of afferent input) to the cerebellum.</p>
+            <SectionHeader icon={Activity} title="Mechanoreceptive unconscious" color={PATHWAY_DIRECTION.afferent.strong} />
+            <p className={cn("font-medium", PATHWAY_DIRECTION.afferent.strong)}>Targets spinocerebellar tracts (85% of afferent input) to the cerebellum.</p>
           </CardHeader>
           <CardContent className="p-8 space-y-6">
              <div className="p-4 bg-muted/50 rounded-2xl border border-border/50">

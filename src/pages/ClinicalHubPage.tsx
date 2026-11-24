@@ -61,7 +61,7 @@ const ClinicalHubPage = () => {
   const [selectedSession, setSelectedSession] = useState<RecentSession | null>(null);
 
   useEffect(() => {
-    if (!session) return;
+    if (!session?.user.id) return;
     supabase
       .from("appointments")
       .select("id, date, clients!inner(name), tag")
@@ -73,10 +73,10 @@ const ClinicalHubPage = () => {
         }
         setLoading(false);
       });
-  }, [session]);
+  }, [session?.user.id]);
 
   useEffect(() => {
-    if (!session) return;
+    if (!session?.user.id) return;
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
     supabase
@@ -92,7 +92,7 @@ const ClinicalHubPage = () => {
           setUpNext(data.map(toRecentSession));
         }
       });
-  }, [session]);
+  }, [session?.user.id]);
 
   const nextTimeLabel = (date: string) => {
     const d = new Date(date);

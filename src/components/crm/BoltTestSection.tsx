@@ -7,6 +7,7 @@ import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import BoltTimer from "./BoltTimer";
 import BoltResourcesModal from "./BoltResourcesModal";
 import BreathingRecoveryTimer from "./BreathingRecoveryTimer";
+import { BoltScoreGauge, BoltScoreTrend, type BoltScorePoint } from "./BoltScoreVisuals";
 
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
@@ -16,6 +17,12 @@ interface BoltTestSectionProps {
   initialBoltScore: number | null | undefined;
   onUpdate: () => void;
   history?: any[];
+}
+
+interface BoltHistoryRow {
+  id?: string;
+  date: string | Date;
+  bolt_score?: number | null;
 }
 
 const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = [] }: BoltTestSectionProps) => {
@@ -30,10 +37,19 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
     setTimerStartSignal(s => s + 1);
   };
 
-  const pastBoltScores = history
-    .filter((a: any) => a.bolt_score != null)
-    .map((a: any) => ({ date: new Date(a.date), score: a.bolt_score }))
-    .slice(0, 5);
+  // History is newest-first and includes the session on screen. Read oldest →
+  // newest so the shape of the progression is obvious without reading labels.
+  const trendScores: BoltScorePoint[] = history
+    .filter((a: BoltHistoryRow) => a.id !== appointmentId && a.bolt_score != null)
+    .slice(0, 4)
+    .map((a: BoltHistoryRow) => ({
+      label: format(new Date(a.date), "M/d"),
+      score: Number(a.bolt_score),
+    }))
+    .reverse();
+  if (initialBoltScore != null) {
+    trendScores.push({ label: "Now", score: initialBoltScore });
+  }
 
   const handleSaveScore = async (score: number) => {
     setLoading(true);
@@ -146,25 +162,33 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
                       )}
                     </div>
                   </div>
+
                 </div>
+
+                {initialBoltScore != null && (
+                  <div className="space-y-2 rounded-xl bg-muted/40 px-4 py-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+                        CO₂ tolerance range
+                      </span>
+                      <span className="text-[11px] font-medium tabular-nums text-foreground">
+                        {initialBoltScore}s · {initialBoltScore >= 40 ? "Optimal" : initialBoltScore >= 25 ? "Functional" : "Below target"}
+                      </span>
+                    </div>
+                    <BoltScoreGauge score={initialBoltScore} />
+                  </div>
+                )}
               </>
             )}
           </div>
 
-      {pastBoltScores.length > 0 && (
-        <div className="px-4 pb-4">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+      {trendScores.length > 1 && (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Target size={12} />
-            <span>Past BOLT Scores</span>
+            <span>Past BOLT scores</span>
           </div>
-          <div className="flex gap-2 overflow-x-auto">
-            {pastBoltScores.map((entry: any, i: number) => (
-              <div key={i} className="shrink-0 text-center px-3 py-2 rounded-lg bg-muted/50 border border-border">
-                <div className="text-sm font-semibold tabular-nums text-foreground">{entry.score}s</div>
-                <div className="text-[10px] text-muted-foreground">{format(entry.date, 'M/d')}</div>
-              </div>
-            ))}
-          </div>
+          <BoltScoreTrend scores={trendScores} />
         </div>
       )}
 

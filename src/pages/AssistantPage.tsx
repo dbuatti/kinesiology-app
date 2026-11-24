@@ -346,7 +346,7 @@ selectConversation: selectConversationBase, startNewChat: startNewChatBase, hand
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13.5px] font-medium text-foreground">
+                  <p className="truncate text-[13px] font-medium text-foreground">
                     {activeClientName ? <span className="blur-sensitive">{activeClientName}</span> : "General"}
                   </p>
                 </div>

@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { safeParse } from "@/utils/safe-json";
+import { PathwayRow } from "@/components/crm/reflex-corrections/PathwayRow";
+import { useItemCorrections } from "@/components/crm/reflex-corrections/useItemCorrections";
 
 interface ZoneTestItemProps {
   point: BrainReflexPoint;
@@ -142,13 +144,18 @@ export function BrainZoneAssessment({
   priorityPattern, 
   updatePriorityPattern,
   showImages,
-  compactMode
+  compactMode,
+  saveField,
+  onUpdate,
 }: { 
   priorityPattern?: string | null;
   updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
   showImages: boolean;
   compactMode?: boolean;
+  saveField?: (field: string, value: any) => Promise<void>;
+  onUpdate?: () => void;
 }) {
+  const corrections = useItemCorrections({ priority_pattern: priorityPattern }, saveField ?? (async () => {}), onUpdate ?? (() => {}));
   const [searchQuery, setSearchQuery] = useState("");
   const [customImages, setCustomImages] = useState<Record<string, string | null>>({});
 
@@ -200,20 +207,34 @@ export function BrainZoneAssessment({
       </div>
 
       <div className="grid grid-cols-1 gap-4">
-        {filteredZones.map((point) => (
-          <ZoneTestItem 
-            key={point.id}
-            point={point}
-            statusL={zonePattern[`${point.name} (L)`]}
-            statusR={zonePattern[`${point.name} (R)`]}
-            statusMidline={zonePattern[point.name]}
-            isLateralized={point.lateralization !== 'Bilateral' && point.lateralization !== 'Mixed'}
-            imageUrl={customImages[point.id]}
-            showImage={showImages}
-            compact={compactMode}
-            onUpdate={updatePriorityPattern}
-          />
-        ))}
+        {filteredZones.map((point) => {
+          const isLateralized = point.lateralization !== 'Bilateral' && point.lateralization !== 'Mixed';
+          const correctionProps = {
+            corrections: isLateralized ? [...corrections.getCorrections("brainZones", point.name, "L"), ...corrections.getCorrections("brainZones", point.name, "R")] : corrections.getCorrections("brainZones", point.name),
+            isPriority: isLateralized ? corrections.isPriority("brainZones", point.name, "L") || corrections.isPriority("brainZones", point.name, "R") : corrections.isPriority("brainZones", point.name),
+            onTogglePriority: () => isLateralized ? (corrections.togglePriority("brainZones", point.name, "L"), corrections.togglePriority("brainZones", point.name, "R")) : corrections.togglePriority("brainZones", point.name),
+            priorityTier: isLateralized ? corrections.getPriorityTier("brainZones", point.name, "L") ?? corrections.getPriorityTier("brainZones", point.name, "R") : corrections.getPriorityTier("brainZones", point.name),
+            onSetPriorityTier: (tier: any) => isLateralized ? corrections.setPriorityTierForSides("brainZones", point.name, ["L", "R"], tier) : corrections.setPriorityTier("brainZones", point.name, undefined, tier),
+            onAddCorrection: (c: any) => corrections.addCorrection("brainZones", point.name, c, isLateralized ? "L" : undefined),
+            onToggleHolding: (id: string) => { if (isLateralized) { if (corrections.getCorrections("brainZones", point.name, "L").some(x=>x.id===id)) corrections.toggleHolding("brainZones", point.name, id, "L"); else corrections.toggleHolding("brainZones", point.name, id, "R"); } else corrections.toggleHolding("brainZones", point.name, id); },
+            onRemoveCorrection: (id: string) => { if (isLateralized) { if (corrections.getCorrections("brainZones", point.name, "L").some(x=>x.id===id)) corrections.removeCorrection("brainZones", point.name, id, "L"); else corrections.removeCorrection("brainZones", point.name, id, "R"); } else corrections.removeCorrection("brainZones", point.name, id); },
+          };
+          return (
+            <PathwayRow key={point.id} itemName={point.name} {...correctionProps}>
+              <ZoneTestItem
+                point={point}
+                statusL={zonePattern[`${point.name} (L)`]}
+                statusR={zonePattern[`${point.name} (R)`]}
+                statusMidline={zonePattern[point.name]}
+                isLateralized={isLateralized}
+                imageUrl={customImages[point.id]}
+                showImage={showImages}
+                compact={compactMode}
+                onUpdate={updatePriorityPattern}
+              />
+            </PathwayRow>
+          );
+        })}
       </div>
     </div>
   );

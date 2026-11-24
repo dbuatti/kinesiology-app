@@ -116,8 +116,20 @@ interface VoiceBookingRow {
 const ClientDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get("tab") || "overview";
+  const [searchParams] = useSearchParams();
+  // Tab selection is internal state (initialised once from the URL) so
+  // switching tabs doesn't change the URL search params — which would
+  // remount the whole page via MainLayout's pathname+search key.
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "overview");
+  // Keep the URL in sync with the active tab for shareability, but via
+  // history.replaceState so React Router (and MainLayout's pathname+search
+  // key) don't see a navigation — switching tabs stays instant, no remount.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (activeTab && activeTab !== "overview") url.searchParams.set("tab", activeTab);
+    else url.searchParams.delete("tab");
+    window.history.replaceState(null, "", url.toString());
+  }, [activeTab]);
   
   const [client, setClient] = useState<Client | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -138,6 +150,7 @@ const ClientDetailPage = () => {
   const [savingContact, setSavingContact] = useState(false);
   const [voiceHistory, setVoiceHistory] = useState<VoiceHistoryEntry[]>([]);
   const [voiceLoading, setVoiceLoading] = useState(false);
+  const [showAllVoice, setShowAllVoice] = useState(false);
   const { addRecentClient } = useRecentClients();
   const { gridFor } = useClientGridData(appointments);
 
@@ -579,8 +592,9 @@ const ClientDetailPage = () => {
           }
         />
 
-        <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
-          <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-6 h-10 bg-muted p-1 rounded-xl mb-8 ">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="flex justify-center mb-8">
+            <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-6 h-10 bg-muted/60 p-1 rounded-xl shadow-xs">
             <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] hover:text-foreground">
               <LayoutDashboard size={14} /> <span className="hidden sm:inline">Overview</span>
             </TabsTrigger>
@@ -600,6 +614,7 @@ const ClientDetailPage = () => {
               <Bot size={14} /> <span className="hidden sm:inline">Assistant</span>
             </TabsTrigger>
           </TabsList>
+          </div>
 
           <TabsContent value="overview" className="space-y-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -613,11 +628,11 @@ const ClientDetailPage = () => {
                       <Zap size={16} className="text-chart-primary" /> Integrations
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-6 space-y-4">
+                  <CardContent className="p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-chart-primary">
-                          <Mail size={16} />
+                        <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-chart-primary">
+                          <Mail size={14} />
                         </div>
                         <span className="text-xs font-medium text-foreground">Kit</span>
                       </div>
@@ -626,7 +641,7 @@ const ClientDetailPage = () => {
                         size="sm" 
                         onClick={handleManualKitSync}
                         disabled={syncingKit}
-                        className="h-8 px-2.5 text-[11px] font-semibold text-chart-primary"
+                        className="h-7 px-2 text-[11px] font-semibold text-chart-primary"
                         title="Sync client to Kit"
                       >
                         {syncingKit ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
@@ -635,8 +650,8 @@ const ClientDetailPage = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-chart-primary">
-                          <CreditCard size={16} />
+                        <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-chart-primary">
+                          <CreditCard size={14} />
                         </div>
                         <span className="text-xs font-medium text-foreground">Stripe</span>
                       </div>
@@ -649,7 +664,7 @@ const ClientDetailPage = () => {
                           size="sm"
                           onClick={handleSyncToStripe}
                           disabled={syncingStripe}
-                          className="h-8 px-2.5 text-[11px] font-semibold text-chart-primary"
+                          className="h-7 px-2 text-[11px] font-semibold text-chart-primary"
                           title="Sync client to Stripe"
                         >
                           {syncingStripe ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
@@ -659,8 +674,8 @@ const ClientDetailPage = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-chart-primary">
-                          <ExternalLink size={16} />
+                        <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-chart-primary">
+                          <ExternalLink size={14} />
                         </div>
                         <span className="text-xs font-medium text-foreground">Notion</span>
                       </div>
@@ -684,7 +699,7 @@ const ClientDetailPage = () => {
                           size="sm"
                           onClick={handleSyncToNotion}
                           disabled={syncingNotion}
-                          className="h-8 px-2.5 text-[11px] font-semibold text-chart-primary"
+                          className="h-7 px-2 text-[11px] font-semibold text-chart-primary"
                           title="Sync client to Notion"
                         >
                           {syncingNotion ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
@@ -694,8 +709,8 @@ const ClientDetailPage = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-chart-emerald">
-                          <ShieldCheck size={16} />
+                        <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-chart-emerald">
+                          <ShieldCheck size={14} />
                         </div>
                         <span className="text-xs font-medium text-foreground">Onboarding</span>
                       </div>
@@ -918,8 +933,8 @@ const ClientDetailPage = () => {
                         {client.email ? `No voice lessons found for ${client.email}.` : "No email on this client — add one to match voice lessons."}
                       </p>
                     ) : (
-                      <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-                        {voiceHistory.map((l) => (
+                      <div className="space-y-2">
+                        {(showAllVoice ? voiceHistory : voiceHistory.slice(0, 3)).map((l) => (
                           <div key={l.key} className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border">
                             <div className="w-8 h-8 rounded-lg bg-chart-destructive/10 flex items-center justify-center shrink-0">
                               <Mic size={14} className="text-chart-destructive" />
@@ -953,6 +968,14 @@ const ClientDetailPage = () => {
                             )}
                           </div>
                         ))}
+                        {voiceHistory.length > 3 && (
+                          <button
+                            onClick={() => setShowAllVoice((v) => !v)}
+                            className="w-full text-center text-[11px] font-semibold text-chart-primary hover:underline py-1"
+                          >
+                            {showAllVoice ? "Show less" : `Show all ${voiceHistory.length} lessons`}
+                          </button>
+                        )}
                       </div>
                     )}
                   </CardContent>
@@ -1140,7 +1163,7 @@ const ClientDetailPage = () => {
 
                 <div className="flex justify-between items-center pt-6">
                   <h3 className="text-lg font-semibold text-foreground">Recent Activity</h3>
-                  <Button variant="ghost" size="sm" className="text-muted-foreground font-medium text-xs" onClick={() => setSearchParams({ tab: "appointments" })}>
+                  <Button variant="ghost" size="sm" className="text-muted-foreground font-medium text-xs" onClick={() => setActiveTab("appointments")}>
                     View All <ArrowRight size={14} className="ml-1" />
                   </Button>
                 </div>

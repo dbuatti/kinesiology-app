@@ -1,5 +1,6 @@
 
 import { cn } from '@/lib/utils';
+import { PATHWAY_DIRECTION } from '@/lib/pathway-direction';
 import {
   Compass,
   ShieldCheck,
@@ -8,8 +9,6 @@ import {
   ClipboardCheck,
   Brain,
   Heart,
-  ArrowDownCircle,
-  ArrowUpCircle,
   Droplets,
   Wind,
   Sparkles,
@@ -27,8 +26,8 @@ export const OUTLINE_ITEMS = [
   { id: "e-sec",       label: "E — Ease System",             icon: ShieldCheck,     letter: "E", color: "text-primary dark:text-primary" },
   { id: "a-sec",       label: "A — Align Hierarchy",         icon: List,            letter: "A", color: "text-violet-600 dark:text-violet-400" },
   { id: "c-sec",       label: "C — Correct",                 icon: Zap,             letter: "C", color: "text-amber-600 dark:text-amber-400" },
-  { id: "c-afferent",  label: "  Afferent (Bottom-Up)",      icon: ArrowDownCircle, letter: null, color: "text-muted-foreground" },
-  { id: "c-efferent",  label: "  Efferent (Top-Down)",       icon: ArrowUpCircle,   letter: null, color: "text-muted-foreground" },
+  { id: "c-afferent",  label: "  Afferent (Bottom-Up)",      icon: PATHWAY_DIRECTION.afferent.Icon, letter: null, color: PATHWAY_DIRECTION.afferent.strong },
+  { id: "c-efferent",  label: "  Efferent (Top-Down)",       icon: PATHWAY_DIRECTION.efferent.Icon, letter: null, color: PATHWAY_DIRECTION.efferent.strong },
   { id: "c-emotional", label: "  Emotional Protocol",        icon: Heart,           letter: null, color: "text-muted-foreground" },
   { id: "e2-sec",      label: "E — Embed",                   icon: ClipboardCheck,  letter: "E", color: "text-primary-strong dark:text-primary" },
 ];
@@ -122,6 +121,7 @@ const DocumentSidebar = ({ activeSection, scrollTo }: DocumentSidebarProps) => {
         {OUTLINE_ITEMS.map((item) => {
           const isActive = activeSection === item.id;
           const isSubItem = !item.letter;
+          const direction = item.id === "c-afferent" ? "afferent" : item.id === "c-efferent" ? "efferent" : null;
           return (
             <button
               key={item.id}
@@ -130,11 +130,13 @@ const DocumentSidebar = ({ activeSection, scrollTo }: DocumentSidebarProps) => {
                 "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl transition-all text-left",
                 isSubItem ? "ml-4 w-[calc(100%-1rem)]" : "",
                 isActive
-                  ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-semibold"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40 font-bold"
+                  ? direction
+                    ? cn(PATHWAY_DIRECTION[direction].active, "font-semibold")
+                    : "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-semibold"
+                  : cn(item.color, "hover:text-foreground hover:bg-muted/40 font-bold")
               )}
             >
-              <item.icon size={isSubItem ? 12 : 13} className={isActive ? "text-indigo-500" : "opacity-50"} />
+              <item.icon size={isSubItem ? 12 : 13} className={isActive && direction ? PATHWAY_DIRECTION[direction].strong : isActive ? "text-indigo-500" : ""} />
               <span className={isSubItem ? "text-[10px]" : "text-xs"}>{item.label.trimStart()}</span>
             </button>
           );

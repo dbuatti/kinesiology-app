@@ -108,7 +108,7 @@ export function TodayTimeline({ entries }: { entries: TimelineEntry[] }) {
       </div>
 
       {/* hour labels */}
-      <div className="relative mt-1.5 h-4 text-[10.5px] tabular-nums text-muted-foreground/80">
+      <div className="relative mt-1.5 h-4 text-[11px] tabular-nums text-muted-foreground/80">
         {hours.map((h, i) =>
           i % 2 === 0 ? (
             <span

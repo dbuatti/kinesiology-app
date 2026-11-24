@@ -324,7 +324,7 @@ export function ImageReferenceModal({ open, onClose }: ImageReferenceModalProps)
                       </button>
                       <div className="text-center">
                         <p className="text-[10px] font-medium text-foreground">{cn.title}</p>
-                        <p className="text-[8.5px] text-muted-foreground/60">{cn.latin}</p>
+                        <p className="text-[10px] text-muted-foreground/60">{cn.latin}</p>
                       </div>
                     </div>
                   ))}
@@ -359,7 +359,7 @@ export function ImageReferenceModal({ open, onClose }: ImageReferenceModalProps)
                                 >
                                   {m.name}
                                 </button>
-                                <span className="text-muted-foreground/60 text-[9.5px]"> ({m.gland})</span>
+                                <span className="text-muted-foreground/60 text-[11px]"> ({m.gland})</span>
                               </span>
                             ))}
                           </td>
@@ -386,7 +386,7 @@ export function ImageReferenceModal({ open, onClose }: ImageReferenceModalProps)
                       <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5">{g.zone}</p>
                       <div className="flex flex-wrap gap-1">
                         {g.nodes.map((node) => (
-                          <span key={node} className="rounded-md bg-card border border-border/40 px-2 py-0.5 text-[9.5px] font-medium text-foreground/80">
+                          <span key={node} className="rounded-md bg-card border border-border/40 px-2 py-0.5 text-[11px] font-medium text-foreground/80">
                             {node}
                           </span>
                         ))}
@@ -547,7 +547,7 @@ export function ImageReferenceModal({ open, onClose }: ImageReferenceModalProps)
           </div>
 
           <div className="flex shrink-0 items-center justify-center border-t border-border/60 px-5 py-2">
-            <span className="text-[9px] text-muted-foreground/40">
+            <span className="text-[11px] text-muted-foreground/40">
               Press <kbd className="rounded border border-border bg-muted/60 px-1 text-[8px] font-semibold">Esc</kbd> to close
             </span>
           </div>

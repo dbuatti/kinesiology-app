@@ -1,9 +1,16 @@
 import { useState, useMemo } from "react";
-import { Target, Route, Star, BookMarked, ArrowRight, SearchX, RotateCcw } from "lucide-react";
+import { Target, Route, BookMarked, ArrowRight, SearchX, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { safeParse } from "@/utils/safe-json";
 import { CATEGORY_LABELS, CATEGORY_ICONS } from "@/components/crm/v2/categoryConstants";
-import { getInhibitedFindings, priorityKey, findingLabel, stimPriorityKey } from "@/components/crm/v2/v2-utils";
+import {
+  getInhibitedFindings,
+  priorityKey,
+  findingLabel,
+  stimPriorityKey,
+  normalizeFindingPriority,
+  type FindingPriority,
+} from "@/components/crm/v2/v2-utils";
 import { useCranialNerveTests } from "@/hooks/useCranialNerveTests";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import {
@@ -13,6 +20,7 @@ import {
   cranialSideKey,
 } from "@/components/crm/pathway-reflex-stim-data";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";
+import PriorityTierControl from "@/components/crm/PriorityTierControl";
 import { useCorrectionDock, type CorrectionTab } from "@/components/crm/corrections/CorrectionDockContext";
 import {
   Card,
@@ -30,7 +38,7 @@ interface Finding {
   category: string;
   status: string;
   side?: 'L' | 'R';
-  priorityLevel: 'priority' | null;
+  priorityLevel: FindingPriority | null;
 }
 
 interface MarkedStimEntry {
@@ -64,11 +72,12 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
       category: f.catKey,
       status: f.status,
       side: f.side,
-      priorityLevel: f.priority ? 'priority' as const : null,
+      priorityLevel: f.priorityLevel,
     }));
+    const rank = (level: FindingPriority | null) => level === 'primary' ? 2 : level === 'priority' ? 1 : 0;
     items.sort((a, b) => {
-      const scoreA = a.priorityLevel === 'priority' ? 1 : 0;
-      const scoreB = b.priorityLevel === 'priority' ? 1 : 0;
+      const scoreA = rank(a.priorityLevel);
+      const scoreB = rank(b.priorityLevel);
       if (scoreA !== scoreB) return scoreB - scoreA;
       return a.name.localeCompare(b.name);
     });
@@ -83,26 +92,23 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
 
   const filteredFindings = useMemo(() => {
     return allFindings.filter(f => {
-      if (filter === 'priority') return f.priorityLevel === 'priority';
+      if (filter === 'priority') return f.priorityLevel !== null;
       if (filter !== 'all') return f.category === filter;
       return true;
     });
   }, [allFindings, filter]);
 
   const priorityPathway = (meta as Record<string, unknown>)?.priority_pathway as string || '';
-  const priorityCount = allFindings.filter(f => f.priorityLevel === 'priority').length;
+  const priorityCount = allFindings.filter(f => f.priorityLevel !== null).length;
+  const primaryCount = allFindings.filter(f => f.priorityLevel === 'primary').length;
 
-  const stimPriorities = useMemo(() => {
+  const allPriorities = useMemo(() => {
     const pattern = safeParse<Record<string, Record<string, string | undefined>>>(appointment.priority_pattern, {});
-    return (pattern.priorities || {}) as Record<string, string>;
+    return (pattern.priorities || {}) as Record<string, string | undefined>;
   }, [appointment.priority_pattern]);
 
-  const stimStatus = (stimKey: string): 'priority' | 'primary' | null => {
-    const status = stimPriorities[stimPriorityKey(stimKey)];
-    if (status === 'primary') return 'primary';
-    if (status === 'priority') return 'priority';
-    return null;
-  };
+  const stimStatus = (stimKey: string): FindingPriority | null =>
+    normalizeFindingPriority(allPriorities[stimPriorityKey(stimKey)]);
 
   const nerveStimsFor = (name: string, side?: 'L' | 'R'): MarkedStimEntry[] => {
     const nerve = CRANIAL_NERVES.find(n => `${n.name}: ${n.latinName}` === name);
@@ -126,34 +132,33 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
     return out;
   };
 
-  const setStimPriority = async (stimKey: string, isPriority: boolean) => {
-    const current = stimStatus(stimKey);
-    if (isPriority && !current) {
-      await updatePriorityPattern('priorities', stimPriorityKey(stimKey), 'priority');
-    } else if (!isPriority && (current === 'priority' || current === 'primary')) {
-      await updatePriorityPattern('priorities', stimPriorityKey(stimKey), null);
-    }
-    onUpdate();
-  };
-
-  const setStimPrimary = async (stimKey: string) => {
-    const current = stimStatus(stimKey);
-    if (current === 'primary') {
-      await updatePriorityPattern('priorities', stimPriorityKey(stimKey), 'priority');
-    } else {
-      const primaryKeys = Object.keys(stimPriorities).filter(k => stimPriorities[k] === 'primary');
-      for (const k of primaryKeys) {
-        await updatePriorityPattern('priorities', k, null);
+  /** There is one primary priority per session, whether finding or stim. */
+  const clearOtherPrimaries = async (exceptKey: string) => {
+    for (const [key, value] of Object.entries(allPriorities)) {
+      if (key !== exceptKey && normalizeFindingPriority(value) === 'primary') {
+        await updatePriorityPattern('priorities', key, 'priority');
       }
-      await updatePriorityPattern('priorities', stimPriorityKey(stimKey), 'primary');
     }
+  };
+
+  const setStimTier = async (stimKey: string, nextLevel: FindingPriority | null) => {
+    const key = stimPriorityKey(stimKey);
+    if (nextLevel === 'primary') await clearOtherPrimaries(key);
+    await updatePriorityPattern('priorities', key, nextLevel);
     onUpdate();
   };
 
-  const handleSetPriority = async (finding: Finding) => {
-    const key = priorityKey(finding.category, `${finding.name}${finding.side ? ` (${finding.side})` : ''}`);
-    const currentLevel = finding.priorityLevel === 'priority';
-    await updatePriorityPattern('priorities', key, currentLevel ? null : 'priority');
+  const setFindingPriority = async (finding: Finding, nextLevel: FindingPriority | null) => {
+    const key = priorityKey(
+      finding.category,
+      `${finding.name}${finding.side ? ` (${finding.side})` : ''}`,
+    );
+    if (nextLevel === 'primary') {
+      await clearOtherPrimaries(key);
+      await updatePriorityPattern('priorities', key, 'primary');
+    } else {
+      await updatePriorityPattern('priorities', key, nextLevel);
+    }
     onUpdate();
   };
 
@@ -207,11 +212,15 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
                 </div>
                 <div className="min-w-0">
                   <p className="text-[15px] font-semibold text-foreground">No priority pathway chosen</p>
-                  <p className="text-meta">Tap Set pathway on a finding below to choose the correction target.</p>
+                  <p className="text-meta">
+                    Use the None / Priority / Primary priority control on each finding. Primary is the single main target; Set pathway opens it in Correct.
+                  </p>
                 </div>
               </div>
               {priorityCount > 0 && (
-                <StatusBadge variant="pending">{priorityCount} marked 1°</StatusBadge>
+                <StatusBadge variant="pending">
+                  {priorityCount} priority{primaryCount > 0 ? ` · ${primaryCount} primary` : ''}
+                </StatusBadge>
               )}
             </div>
           </Card>
@@ -223,7 +232,7 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
             <div className="flex w-max items-center gap-1 rounded-xl border border-border/50 bg-muted/40 p-1">
               {(['all', 'priority', ...categoriesPresent] as Filter[]).map((f) => {
                 const active = filter === f;
-                const label = f === 'all' ? 'All' : f === 'priority' ? '1° Priority' : (CATEGORY_LABELS[f] || f);
+                const label = f === 'all' ? 'All' : f === 'priority' ? 'Priority' : (CATEGORY_LABELS[f] || f);
                 return (
                   <button
                     key={f}
@@ -251,7 +260,8 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
           <Card padding="none" className="divide-y divide-border/60 overflow-hidden">
             {filteredFindings.map((item, i) => {
               const Icon = CATEGORY_ICONS[item.category];
-              const isPriority = item.priorityLevel === 'priority';
+              const isPrimary = item.priorityLevel === 'primary';
+              const isPriority = item.priorityLevel !== null;
               const itemPathway = findingLabel(item.category, item.name, item.side);
               const isPathway = priorityPathway === itemPathway;
               const stims = item.category === 'cranialNerves' ? nerveStimsFor(item.name, item.side) : [];
@@ -260,14 +270,20 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
                   key={`${item.category}-${item.name}-${item.side || ''}-${i}`}
                   className={cn(
                     'transition-colors',
-                    (isPriority || isPathway) ? 'bg-primary/[0.05]' : 'hover:bg-muted/30'
+                    isPrimary
+                      ? 'bg-gold/[0.08] ring-1 ring-inset ring-gold/30'
+                      : isPriority || isPathway
+                        ? 'bg-primary/[0.05]'
+                        : 'hover:bg-muted/30'
                   )}
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3 sm:flex-nowrap">
+                  <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3">
                     <div className="flex min-w-0 items-center gap-3">
                       <div className={cn(
                         'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl',
-                        isPriority ? 'bg-primary/10 text-primary-strong' : 'bg-muted/60 text-muted-foreground'
+                        isPrimary
+                          ? 'bg-gold/15 text-gold-strong'
+                          : isPriority ? 'bg-primary/10 text-primary-strong' : 'bg-muted/60 text-muted-foreground'
                       )}>
                         {Icon && <Icon size={16} />}
                       </div>
@@ -275,6 +291,7 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
                         <p className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-sm font-semibold text-foreground">
                           <span className="truncate">{item.name}</span>
                           {item.side && <span className="font-normal text-muted-foreground">({item.side})</span>}
+                          {isPrimary && <StatusBadge variant="recorded" className="badge-gold">Primary priority</StatusBadge>}
                           {isPathway && <StatusBadge variant="recorded">Pathway</StatusBadge>}
                         </p>
                         <p className="mt-1 text-meta">
@@ -282,34 +299,25 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
                         </p>
                       </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      <button
-                        type="button"
-                        title={isPriority ? 'Remove from 1° priorities' : 'Mark as 1° priority'}
-                        aria-pressed={isPriority}
-                        onClick={() => handleSetPriority(item)}
-                        className={cn(
-                          'h-10 rounded-md border px-4 text-[13px] font-semibold transition-colors',
-                          isPriority
-                            ? 'border-success bg-success text-white'
-                            : 'border-border bg-background text-muted-foreground hover:border-success/60 hover:text-success'
-                        )}
-                      >
-                        1°
-                      </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <PriorityTierControl
+                        value={item.priorityLevel}
+                        onChange={(next) => setFindingPriority(item, next)}
+                        label={`Priority level for ${item.name}${item.side ? ` (${item.side})` : ''}`}
+                      />
                       <button
                         type="button"
                         title="Open the corrections reference for this finding"
                         aria-label="Open corrections reference"
                         onClick={() => openDock(correctionTargetFor(item.category))}
-                        className="flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                       >
                         <BookMarked size={15} />
                       </button>
                       <SecondaryButton
                         onClick={() => setPriorityPathway(itemPathway)}
                         title="Choose this finding as the correction pathway and open Correct"
-                        className="h-10 text-[13px]"
+                        className="h-10 text-[12px]"
                       >
                         <Route size={13} /> Set pathway
                       </SecondaryButton>
@@ -322,47 +330,20 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
                         <span className="text-[10px] tabular-nums text-muted-foreground/60">{stims.length}</span>
                       </div>
                       <div className="space-y-2">
-                        {stims.map(entry => {
-                          const status = stimStatus(entry.stimKey);
-                          const stimIsPriority = status === 'priority' || status === 'primary';
-                          const isPrimary = status === 'primary';
-                          return (
-                            <div key={entry.stimKey} className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-card py-2 pl-3 pr-2">
-                              <span className="min-w-0 truncate text-[13px] text-foreground/80">
-                                {entry.side && <span className="mr-2 font-semibold text-destructive">{entry.side}</span>}
-                                {entry.label}
-                              </span>
-                              <div className="flex shrink-0 items-center gap-2">
-                                <button
-                                  type="button"
-                                  title={stimIsPriority ? 'Remove from stim priorities' : 'Mark this stim as 1° priority'}
-                                  onClick={() => setStimPriority(entry.stimKey, !stimIsPriority)}
-                                  className={cn(
-                                    'h-7 rounded-md border px-2 text-[11px] font-semibold transition-colors',
-                                    stimIsPriority
-                                      ? 'border-success bg-success text-white'
-                                      : 'border-border bg-background text-muted-foreground hover:border-success/60 hover:text-success'
-                                  )}
-                                >
-                                  1°
-                                </button>
-                                <button
-                                  type="button"
-                                  title={isPrimary ? 'Remove primary stim (keeps 1°)' : 'Set this stim as the primary priority'}
-                                  onClick={() => setStimPrimary(entry.stimKey)}
-                                  className={cn(
-                                    'inline-flex h-7 items-center gap-1 rounded-md border px-2 text-[11px] font-semibold transition-colors',
-                                    isPrimary
-                                      ? 'border-primary bg-primary text-primary-foreground'
-                                      : 'border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-primary'
-                                  )}
-                                >
-                                  <Star size={10} /> Primary
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
+                        {stims.map(entry => (
+                          <div key={entry.stimKey} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/60 bg-card py-2 pl-3 pr-2">
+                            <span className="min-w-0 truncate text-[13px] text-foreground/80">
+                              {entry.side && <span className="mr-2 font-semibold text-destructive">{entry.side}</span>}
+                              {entry.label}
+                            </span>
+                            <PriorityTierControl
+                              compact
+                              value={stimStatus(entry.stimKey)}
+                              onChange={(next) => setStimTier(entry.stimKey, next)}
+                              label={`Priority level for stim ${entry.label}`}
+                            />
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}

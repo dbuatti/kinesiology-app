@@ -26,3 +26,8 @@ dist-ssr
 .vercel
 deno.lock
 supabase/.temp/
+
+# Environment (direnv)
+.env
+.env.local
+.env.*.local

@@ -88,19 +88,36 @@ export function useAppointment(id: string | undefined) {
   }, [id, isDemo]);
 
   const saveField = useCallback(async (field: string, value: any) => {
-    if (!id || !appointment) return;
+    if (!id) return;
     
-    const normalized = Array.isArray(value) 
+    let normalized = Array.isArray(value) 
       ? value 
       : (typeof value === 'string' ? (value.trim() === '' ? null : value.trim()) : value);
+
+    // Merge metadata writes against latestMetadataRef to avoid clobbering
+    // concurrent updates (quick corrections write pattern + metadata).
+    if (field === 'metadata') {
+      const incoming = normalizeMetadata(normalized);
+      const merged = { ...latestMetadataRef.current, ...incoming };
+      latestMetadataRef.current = merged;
+      normalized = JSON.stringify(merged);
+      setAppointment(prev => prev ? { ...prev, metadata: merged } as AppointmentWithClient : null);
+      if (isDemo) return;
+      try {
+        const { error } = await supabase.from('appointments').update({ metadata: merged }).eq('id', id);
+        if (error) throw error;
+      } catch (err: any) {
+        console.error('Save failed for metadata:', err);
+        showError('Failed to save metadata');
+        throw err;
+      }
+      return;
+    }
 
     if (isDemo) {
       setAppointment(prev => prev ? { ...prev, [field]: normalized } as AppointmentWithClient : null);
       if (field === 'priority_pattern') {
         latestPatternRef.current = safeParse(normalized, {});
-      }
-      if (field === 'metadata') {
-        latestMetadataRef.current = normalizeMetadata(normalized);
       }
       return;
     }
@@ -118,15 +135,12 @@ export function useAppointment(id: string | undefined) {
       if (field === 'priority_pattern') {
         latestPatternRef.current = safeParse(normalized, {});
       }
-      if (field === 'metadata') {
-        latestMetadataRef.current = normalizeMetadata(normalized);
-      }
     } catch (err: any) {
       console.error(`Save failed for ${field}:`, err);
       showError(`Failed to save ${field}`);
       throw err;
     }
-  }, [id, appointment, isDemo]);
+  }, [id, isDemo]);
 
   /**
    * Merge-safe metadata write. The updater receives the freshest metadata

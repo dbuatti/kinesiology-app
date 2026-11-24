@@ -1,8 +1,9 @@
 
 import { useMemo, useState, useEffect, useRef } from 'react'; import type { ReactNode } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Zap, ExternalLink, Info, CheckCircle2, Brain, Activity, Heart, ShieldAlert, Droplets, ArrowDownCircle, ArrowUpCircle, Layers, Copy, Check, History, Trash2 } from 'lucide-react';
+import { Zap, ExternalLink, Info, CheckCircle2, Brain, Activity, Heart, ShieldAlert, Droplets, Layers, Copy, Check, History, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PATHWAY_DIRECTION } from '@/lib/pathway-direction';
 import { Button } from '@/components/ui/button';
 import { showSuccess, showError } from '@/utils/toast';
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
@@ -438,9 +439,9 @@ Correction Method: ${method}`;
                           wizard_system: null // Reset system on direction change
                         });
                       }}
-                      className="h-4 w-4 border-foreground/20 rounded-none data-[state=checked]:bg-foreground"
+                      className={cn("h-4 w-4 rounded-none", PATHWAY_DIRECTION.afferent.border, PATHWAY_DIRECTION.afferent.checked)}
                     />
-                    <label htmlFor="dir-afferent" className="text-xs font-medium cursor-pointer">Afferent (Bottom-Up)</label>
+                    <label htmlFor="dir-afferent" className={cn("text-xs font-medium cursor-pointer", PATHWAY_DIRECTION.afferent.strong)}>Afferent (Bottom-Up)</label>
                   </div>
                   <div className="flex items-center gap-2">
                     <Checkbox 
@@ -452,9 +453,9 @@ Correction Method: ${method}`;
                           wizard_system: null // Reset system on direction change
                         });
                       }}
-                      className="h-4 w-4 border-foreground/20 rounded-none data-[state=checked]:bg-foreground"
+                      className={cn("h-4 w-4 rounded-none", PATHWAY_DIRECTION.efferent.border, PATHWAY_DIRECTION.efferent.checked)}
                     />
-                    <label htmlFor="dir-efferent" className="text-xs font-medium cursor-pointer">Efferent (Top-Down)</label>
+                    <label htmlFor="dir-efferent" className={cn("text-xs font-medium cursor-pointer", PATHWAY_DIRECTION.efferent.strong)}>Efferent (Top-Down)</label>
                   </div>
                 </div>
               </div>
@@ -655,8 +656,8 @@ Correction Method: ${method}`;
       {/* AFFERENT PROTOCOLS SECTION */}
       <div id="c-afferent" className="space-y-6 scroll-mt-24 px-4 md:px-6">
         <div className="flex items-center gap-2 border-b border-foreground/20 pb-2">
-          <ArrowDownCircle size={16} className="text-primary" />
-          <h4 className="text-sm font-semibold uppercase tracking-wider text-primary">Afferent (Bottom-Up) Protocols</h4>
+          <PATHWAY_DIRECTION.afferent.Icon size={16} className={PATHWAY_DIRECTION.afferent.text} />
+          <h4 className={cn("text-sm font-semibold uppercase tracking-wider", PATHWAY_DIRECTION.afferent.text)}>Afferent (Bottom-Up) Protocols</h4>
         </div>
 
         <div className="grid grid-cols-1 gap-4">
@@ -664,7 +665,7 @@ Correction Method: ${method}`;
             <CorrectSectionProtocolBlock 
               title="Mechanoreceptor (Unconscious)"
               icon={Activity}
-              color="bg-primary"
+              color={PATHWAY_DIRECTION.afferent.fill}
               desc="Unconscious mechanoreception — Golgi receptors in ligaments, tendons and fascia report joint stretch to the cerebellum via the spinocerebellar tract (~85% of unconscious input)."
               steps={[
                 "Confirm: inhibited DM → state afferent (facilitates) → X card 5-10s (facilitates) → GV16 TL confirms",
@@ -680,7 +681,7 @@ Correction Method: ${method}`;
             <CorrectSectionProtocolBlock 
               title="Physiological"
               icon={Droplets}
-              color="bg-primary"
+              color={PATHWAY_DIRECTION.afferent.fill}
               desc="Biochemical, nutritional, and organ-based signals. Addresses systemic imbalances."
               steps={[
                 "Address biochemical or organ-specific reflexes",
@@ -695,7 +696,7 @@ Correction Method: ${method}`;
             <CorrectSectionProtocolBlock 
               title="Nociceptive Threat"
               icon={ShieldAlert}
-              color="bg-orange-500"
+              color={PATHWAY_DIRECTION.afferent.fill}
               desc="Threat detection via the spinothalamic tract (anterolateral system). Nociceptors are threat receptors in every tissue, terminating at the thalamus. A-delta (fast) and C-fibre (slow) pathways."
               steps={[
                 "Identify the known site (scar, old injury, impact, or surgical site).",
@@ -713,8 +714,8 @@ Correction Method: ${method}`;
       {/* EFFERENT PROTOCOLS SECTION */}
       <div id="c-efferent" className="space-y-6 scroll-mt-24 px-4 md:px-6">
         <div className="flex items-center gap-2 border-b border-foreground/20 pb-2">
-          <ArrowUpCircle size={16} className="text-purple-600" />
-          <h4 className="text-sm font-semibold uppercase tracking-wider text-purple-600">Efferent (Top-Down) Protocols</h4>
+          <PATHWAY_DIRECTION.efferent.Icon size={16} className={PATHWAY_DIRECTION.efferent.text} />
+          <h4 className={cn("text-sm font-semibold uppercase tracking-wider", PATHWAY_DIRECTION.efferent.text)}>Efferent (Top-Down) Protocols</h4>
         </div>
 
         <div className="grid grid-cols-1 gap-4">
@@ -722,7 +723,7 @@ Correction Method: ${method}`;
             <CorrectSectionProtocolBlock 
               title="Cortical (Top-Down)"
               icon={Brain}
-              color="bg-purple-500"
+              color={PATHWAY_DIRECTION.efferent.fill}
               desc="Intentional, cognitive, and motor planning processes. Contralateral logic: right cortex controls left body."
               steps={[
                 "Identify primary cortical zone (PFC, M1, S1, etc.) and lateralize",
@@ -737,7 +738,7 @@ Correction Method: ${method}`;
             <CorrectSectionProtocolBlock 
               title="Subcortical (Autonomic)"
               icon={Layers}
-              color="bg-amber-500"
+              color={PATHWAY_DIRECTION.efferent.fill}
               desc="Automatic, reflexive, and autonomic regulation. Ipsilateral logic: left cerebellum controls left body."
               steps={[
                 "Identify subcortical zone (Limbic, Cerebellum, Hypothalamus, etc.)",
@@ -752,7 +753,7 @@ Correction Method: ${method}`;
             <CorrectSectionProtocolBlock 
               title="Emotional (Neuro-Emotional Integration)"
               icon={Heart}
-              color="bg-rose-500"
+              color={PATHWAY_DIRECTION.efferent.fill}
               desc="Limbic system and emotional processing. Standard 9-Step Clinical Protocol to identify, process, and clear trapped emotional charges."
               steps={[
                 "ESR Indicator Check: Hold Frontal Lobe (ESR) points (GB14) to see if the system is ready for emotional work.",

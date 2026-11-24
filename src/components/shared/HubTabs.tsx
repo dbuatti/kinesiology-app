@@ -38,7 +38,7 @@ export function HubTabs({
                 aria-selected={active}
                 onClick={() => onChange(t.id)}
                 className={cn(
-                  "relative flex h-11 shrink-0 items-center gap-2 rounded-md px-2.5 text-[13.5px] font-medium outline-none",
+                  "relative flex h-11 shrink-0 items-center gap-2 rounded-md px-2.5 text-[13px] font-medium outline-none",
                   active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                 )}
               >

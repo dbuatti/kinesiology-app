@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import {
   Zap,
   Brain,
@@ -8,14 +9,13 @@ import {
   CheckCircle2,
   Lightbulb,
   Layers,
-  ArrowUp,
-  ArrowDown,
   ShieldCheck,
   MessageCircle,
   RefreshCw,
   Search,
 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
+import { PATHWAY_DIRECTION } from "@/lib/pathway-direction";
 import { AFFERENT_PATHWAYS, EFFERENT_PATHWAYS, CORRECTION_METHODS } from "@/data/pathway-logic-data";
 
 export function CorrectionsReferenceTool() {
@@ -73,11 +73,11 @@ export function CorrectionsReferenceTool() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="border-2 border-primary/30 shadow-sm rounded-xl bg-card overflow-hidden">
+            <Card className={cn("border-2 shadow-sm rounded-xl bg-card overflow-hidden", PATHWAY_DIRECTION.afferent.border)}>
               <CardHeader className="p-6 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <ArrowDown size={20} className="text-primary" />
+                  <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", PATHWAY_DIRECTION.afferent.soft)}>
+                    <PATHWAY_DIRECTION.afferent.Icon size={20} className={PATHWAY_DIRECTION.afferent.text} />
                   </div>
                   <div>
                     <CardTitle className="text-lg font-semibold">Afferent (Bottom-Up)</CardTitle>
@@ -91,7 +91,7 @@ export function CorrectionsReferenceTool() {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {['Mechanoreceptor', 'Nociceptive', 'Physiological'].map(s => (
-                    <Badge key={s} variant="outline" className="text-primary border-primary/30">{s}</Badge>
+                    <Badge key={s} variant="outline" className={cn(PATHWAY_DIRECTION.afferent.strong, PATHWAY_DIRECTION.afferent.border)}>{s}</Badge>
                   ))}
                 </div>
                 <p className="text-xs text-muted-foreground/60 italic">
@@ -100,11 +100,11 @@ export function CorrectionsReferenceTool() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 border-purple-500/30 shadow-sm rounded-xl bg-card overflow-hidden">
+            <Card className={cn("border-2 shadow-sm rounded-xl bg-card overflow-hidden", PATHWAY_DIRECTION.efferent.border)}>
               <CardHeader className="p-6 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                    <ArrowUp size={20} className="text-purple-500" />
+                  <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", PATHWAY_DIRECTION.efferent.soft)}>
+                    <PATHWAY_DIRECTION.efferent.Icon size={20} className={PATHWAY_DIRECTION.efferent.text} />
                   </div>
                   <div>
                     <CardTitle className="text-lg font-semibold">Efferent (Top-Down)</CardTitle>
@@ -118,7 +118,7 @@ export function CorrectionsReferenceTool() {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {['Cortical', 'Subcortical', 'Emotional'].map(s => (
-                    <Badge key={s} variant="outline" className="text-purple-500 border-purple-500/30">{s}</Badge>
+                    <Badge key={s} variant="outline" className={cn(PATHWAY_DIRECTION.efferent.strong, PATHWAY_DIRECTION.efferent.border)}>{s}</Badge>
                   ))}
                 </div>
                 <p className="text-xs text-muted-foreground/60 italic">
@@ -163,8 +163,8 @@ export function CorrectionsReferenceTool() {
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-primary flex items-center gap-2 px-2">
-              <ArrowDown size={18} /> Afferent Systems
+            <h3 className={cn("text-lg font-semibold flex items-center gap-2 px-2", PATHWAY_DIRECTION.afferent.text)}>
+              <PATHWAY_DIRECTION.afferent.Icon size={18} /> Afferent Systems
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {AFFERENT_PATHWAYS.map((pathway) => {
@@ -204,8 +204,8 @@ export function CorrectionsReferenceTool() {
           </div>
 
           <div className="space-y-3 pt-4">
-            <h3 className="text-lg font-semibold text-purple-500 flex items-center gap-2 px-2">
-              <ArrowUp size={18} /> Efferent Systems
+            <h3 className={cn("text-lg font-semibold flex items-center gap-2 px-2", PATHWAY_DIRECTION.efferent.text)}>
+              <PATHWAY_DIRECTION.efferent.Icon size={18} /> Efferent Systems
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {EFFERENT_PATHWAYS.map((pathway) => {

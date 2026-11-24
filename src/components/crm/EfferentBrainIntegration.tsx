@@ -19,6 +19,7 @@ import {
   Search,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PATHWAY_DIRECTION } from '@/lib/pathway-direction';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
 import { CRANIAL_NERVES } from '@/data/cranial-nerve-data';
 import { supabase } from "@/integrations/supabase/client";
@@ -220,12 +221,24 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
         )}
 
         <div className="grid grid-cols-2 gap-3">
-          <div className={cn("p-3 rounded-xl border transition-all", coord.point?.category === 'Cortical' ? "bg-success/10 text-success-strong border-success/30" : "bg-muted/50 border-border")}>
-            <div className="flex items-center gap-2 mb-1"><ShieldAlert size={14} className="text-success" /><p className="text-[10px] font-semibold text-success uppercase tracking-wider">Cortical</p></div>
+          <div className={cn(
+            "p-3 rounded-xl border transition-all",
+            coord.point?.category === 'Cortical' ? PATHWAY_DIRECTION.efferent.active : "bg-muted/50 border-border",
+          )}>
+            <div className="flex items-center gap-2 mb-1">
+              <ShieldAlert size={14} className={PATHWAY_DIRECTION.efferent.strong} />
+              <p className={cn("text-[10px] font-semibold uppercase tracking-wider", PATHWAY_DIRECTION.efferent.strong)}>Cortical</p>
+            </div>
             <p className="text-[10px] font-semibold text-foreground">Contralateral Logic</p>
           </div>
-          <div className={cn("p-3 rounded-xl border transition-all", coord.point?.category === 'Subcortical' ? "bg-primary/10 text-primary-strong border-primary/30" : "bg-muted/50 border-border")}>
-            <div className="flex items-center gap-2 mb-1"><ShieldAlert size={14} className="text-primary" /><p className="text-[10px] font-semibold text-primary uppercase tracking-wider">Subcortical</p></div>
+          <div className={cn(
+            "p-3 rounded-xl border transition-all",
+            coord.point?.category === 'Subcortical' ? PATHWAY_DIRECTION.efferent.tint : "bg-muted/50 border-border",
+          )}>
+            <div className="flex items-center gap-2 mb-1">
+              <ShieldAlert size={14} className={PATHWAY_DIRECTION.efferent.text} />
+              <p className={cn("text-[10px] font-semibold uppercase tracking-wider", PATHWAY_DIRECTION.efferent.text)}>Subcortical</p>
+            </div>
             <p className="text-[10px] font-semibold text-foreground">Ipsilateral Logic</p>
           </div>
         </div>

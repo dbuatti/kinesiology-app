@@ -35,7 +35,7 @@ export function MobileTabBar({ onMore }: { onMore: () => void }) {
                   />
                 )}
                 <t.icon size={20} strokeWidth={on ? 2.1 : 1.8} className={cn("relative mt-1.5 h-8", on ? "text-primary" : "text-muted-foreground")} />
-                <span className={cn("relative -mt-0.5 text-[10.5px] font-medium", on ? "text-foreground" : "text-muted-foreground")}>{t.label}</span>
+                <span className={cn("relative -mt-0.5 text-[11px] font-medium", on ? "text-foreground" : "text-muted-foreground")}>{t.label}</span>
               </>
             );
             const cls = "relative flex flex-1 flex-col items-center justify-start active:scale-95 transition-transform";

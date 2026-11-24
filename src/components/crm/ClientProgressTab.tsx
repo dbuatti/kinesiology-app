@@ -94,7 +94,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
       {/* Quick Assessment Bar */}
       <div className="flex flex-wrap items-center gap-4 p-4 bg-card rounded-2xl border border-border shadow-sm">
         <div className="flex items-center gap-2 px-4 border-r border-border mr-2">
-          <Zap size={18} className="text-amber-500 fill-amber-500/40" />
+          <Zap size={18} className="text-primary fill-primary/40" />
           <span className="text-xs font-medium text-muted-foreground">Quick Assessment</span>
         </div>
         <Button 
@@ -313,7 +313,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
             </div>
             <CardHeader>
               <CardTitle className="text-lg font-medium flex items-center gap-2">
-                <Zap size={20} className="text-amber-300 fill-amber-300/40" /> Case strategy
+                <Zap size={20} className="text-warning fill-warning/40" /> Case strategy
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 relative z-10">

@@ -9,7 +9,8 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import PathwayFindingsList from "@/components/crm/PathwayFindingsList";
-import CheckItem from "@/components/crm/document-view/CheckItem";
+import { ReflexQuickRow } from "@/components/crm/reflex-corrections/ReflexQuickRow";
+import { useItemCorrections } from "@/components/crm/reflex-corrections/useItemCorrections";
 import { ShowingLog, type CorrectionEntry } from "@/components/crm/ShowingLog";
 import { RecheckSection } from "@/components/crm/RecheckSection";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
@@ -17,6 +18,8 @@ import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from "@/data/muscle-data";
 import { getMuscleInfo } from "@/data/muscle-info-data";
 import { AppointmentWithClient } from "@/types/crm";
+import { cn } from "@/lib/utils";
+import { PATHWAY_DIRECTION, directionForProcess, directionFromText } from "@/lib/pathway-direction";
 import { safeParse } from "@/utils/safe-json";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -65,7 +68,7 @@ const EditableField = ({ label, value, field, onSave, editable = false }: {
     return (
       <div className="mb-4 pb-4 border-b border-border/30 last:border-b-0">
         <p className="text-xs font-medium text-muted-foreground mb-1">{label}</p>
-        <p className="text-[12.5px] text-foreground leading-relaxed whitespace-pre-wrap">{value || "—"}</p>
+        <p className="text-[13px] text-foreground leading-relaxed whitespace-pre-wrap">{value || "—"}</p>
       </div>
     );
   }
@@ -83,7 +86,7 @@ const EditableField = ({ label, value, field, onSave, editable = false }: {
         }}
         onBlur={() => onSave?.(field, draft)}
         rows={1}
-        className="w-full bg-transparent text-[12.5px] text-foreground leading-relaxed border border-dashed border-border/40 rounded px-2 py-1.5 focus:outline-none focus:border-primary/50 focus:bg-muted/20 resize-none hover:border-border/80 transition-colors overflow-hidden"
+        className="w-full bg-transparent text-[13px] text-foreground leading-relaxed border border-dashed border-border/40 rounded px-2 py-1.5 focus:outline-none focus:border-primary/50 focus:bg-muted/20 resize-none hover:border-border/80 transition-colors overflow-hidden"
         placeholder="Type here..."
       />
     </div>
@@ -196,6 +199,8 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
   const handleAssessmentToggle = useCallback((category: string, name: string, nextStatus: string, side?: 'L' | 'R') => {
     updatePriorityPattern(category, name, nextStatus === 'Clear' ? null : nextStatus, side);
   }, [updatePriorityPattern]);
+  const corr = useItemCorrections(appointment, saveField ?? (async () => {}), () => {});
+  const { getCorrections, isPriority, getPriorityTier, togglePriority, setPriorityTier, addCorrection, toggleHolding, removeCorrection } = corr;
 
   const handleCorrectionStatusChange = useCallback(async (index: number, status: 'cleared' | 'still_showing') => {
     setCorrectionEntries(prev => {
@@ -309,7 +314,7 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
                 </div>
               </div>
               <div className="hidden print:block text-right">
-                <p className="text-[7px] font-bold uppercase tracking-wider text-muted-foreground">Resonance Kinesiology</p>
+                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">Resonance Kinesiology</p>
               </div>
             </div>
           </div>
@@ -382,11 +387,11 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
                     const nerveName = `${n.name}: ${n.latinName}`;
                     return n.isLateralized ? (
                       <Fragment key={n.name}>
-                        <CheckItem category="cranialNerves" name={nerveName} side="L" pattern={pattern} onToggle={handleAssessmentToggle} />
-                        <CheckItem category="cranialNerves" name={nerveName} side="R" pattern={pattern} onToggle={handleAssessmentToggle} />
+                        <ReflexQuickRow category="cranialNerves" name={nerveName} side="L" pattern={pattern} onToggle={handleAssessmentToggle} corrections={getCorrections("cranialNerves", nerveName, "L")} isPriority={isPriority("cranialNerves", nerveName, "L")} priorityTier={getPriorityTier("cranialNerves", nerveName, "L")} onSetPriorityTier={(t)=>setPriorityTier("cranialNerves", nerveName, "L", t)} onTogglePriority={()=>togglePriority("cranialNerves", nerveName, "L")} onAddCorrection={(c)=>addCorrection("cranialNerves", nerveName, c, "L")} onToggleHolding={(id)=>toggleHolding("cranialNerves", nerveName, id, "L")} onRemoveCorrection={(id)=>removeCorrection("cranialNerves", nerveName, id, "L")} />
+                        <ReflexQuickRow category="cranialNerves" name={nerveName} side="R" pattern={pattern} onToggle={handleAssessmentToggle} corrections={getCorrections("cranialNerves", nerveName, "R")} isPriority={isPriority("cranialNerves", nerveName, "R")} priorityTier={getPriorityTier("cranialNerves", nerveName, "R")} onSetPriorityTier={(t)=>setPriorityTier("cranialNerves", nerveName, "R", t)} onTogglePriority={()=>togglePriority("cranialNerves", nerveName, "R")} onAddCorrection={(c)=>addCorrection("cranialNerves", nerveName, c, "R")} onToggleHolding={(id)=>toggleHolding("cranialNerves", nerveName, id, "R")} onRemoveCorrection={(id)=>removeCorrection("cranialNerves", nerveName, id, "R")} />
                       </Fragment>
                     ) : (
-                      <CheckItem key={n.name} category="cranialNerves" name={nerveName} pattern={pattern} onToggle={handleAssessmentToggle} />
+                      <ReflexQuickRow key={n.name} category="cranialNerves" name={nerveName} pattern={pattern} onToggle={handleAssessmentToggle} corrections={getCorrections("cranialNerves", nerveName)} isPriority={isPriority("cranialNerves", nerveName)} priorityTier={getPriorityTier("cranialNerves", nerveName)} onSetPriorityTier={(t)=>setPriorityTier("cranialNerves", nerveName, undefined, t)} onTogglePriority={()=>togglePriority("cranialNerves", nerveName)} onAddCorrection={(c)=>addCorrection("cranialNerves", nerveName, c)} onToggleHolding={(id)=>toggleHolding("cranialNerves", nerveName, id)} onRemoveCorrection={(id)=>removeCorrection("cranialNerves", nerveName, id)} />
                     );
                   })}
                 </div>
@@ -400,11 +405,11 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {PRIMITIVE_REFLEXES.map(r => r.isLateralized ? (
                     <Fragment key={r.id}>
-                      <CheckItem category="primitiveReflexes" name={r.name} side="L" pattern={pattern} onToggle={handleAssessmentToggle} />
-                      <CheckItem category="primitiveReflexes" name={r.name} side="R" pattern={pattern} onToggle={handleAssessmentToggle} />
+                      <ReflexQuickRow category="primitiveReflexes" name={r.name} side="L" pattern={pattern} onToggle={handleAssessmentToggle} corrections={getCorrections("primitiveReflexes", r.name, "L")} isPriority={isPriority("primitiveReflexes", r.name, "L")} priorityTier={getPriorityTier("primitiveReflexes", r.name, "L")} onSetPriorityTier={(t)=>setPriorityTier("primitiveReflexes", r.name, "L", t)} onTogglePriority={()=>togglePriority("primitiveReflexes", r.name, "L")} onAddCorrection={(c)=>addCorrection("primitiveReflexes", r.name, c, "L")} onToggleHolding={(id)=>toggleHolding("primitiveReflexes", r.name, id, "L")} onRemoveCorrection={(id)=>removeCorrection("primitiveReflexes", r.name, id, "L")} />
+                      <ReflexQuickRow category="primitiveReflexes" name={r.name} side="R" pattern={pattern} onToggle={handleAssessmentToggle} corrections={getCorrections("primitiveReflexes", r.name, "R")} isPriority={isPriority("primitiveReflexes", r.name, "R")} priorityTier={getPriorityTier("primitiveReflexes", r.name, "R")} onSetPriorityTier={(t)=>setPriorityTier("primitiveReflexes", r.name, "R", t)} onTogglePriority={()=>togglePriority("primitiveReflexes", r.name, "R")} onAddCorrection={(c)=>addCorrection("primitiveReflexes", r.name, c, "R")} onToggleHolding={(id)=>toggleHolding("primitiveReflexes", r.name, id, "R")} onRemoveCorrection={(id)=>removeCorrection("primitiveReflexes", r.name, id, "R")} />
                     </Fragment>
                   ) : (
-                    <CheckItem key={r.id} category="primitiveReflexes" name={r.name} pattern={pattern} onToggle={handleAssessmentToggle} />
+                    <ReflexQuickRow key={r.id} category="primitiveReflexes" name={r.name} pattern={pattern} onToggle={handleAssessmentToggle} corrections={getCorrections("primitiveReflexes", r.name)} isPriority={isPriority("primitiveReflexes", r.name)} priorityTier={getPriorityTier("primitiveReflexes", r.name)} onSetPriorityTier={(t)=>setPriorityTier("primitiveReflexes", r.name, undefined, t)} onTogglePriority={()=>togglePriority("primitiveReflexes", r.name)} onAddCorrection={(c)=>addCorrection("primitiveReflexes", r.name, c)} onToggleHolding={(id)=>toggleHolding("primitiveReflexes", r.name, id)} onRemoveCorrection={(id)=>removeCorrection("primitiveReflexes", r.name, id)} />
                   ))}
                 </div>
               </div>
@@ -417,12 +422,12 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {(MUSCLE_GROUPS['Intrinsic Stabilisation'] || []).map(m => MIDLINE_MUSCLES.includes(m) ? (
                     <Fragment key={m}>
-                      <CheckItem category="muscles" name={m} pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} onToggle={handleAssessmentToggle} />
+                      <ReflexQuickRow category="muscles" name={m} pattern={pattern} onToggle={handleAssessmentToggle} corrections={getCorrections("muscles", m)} isPriority={isPriority("muscles", m)} priorityTier={getPriorityTier("muscles", m)} onSetPriorityTier={(t)=>setPriorityTier("muscles", m, undefined, t)} onTogglePriority={()=>togglePriority("muscles", m)} onAddCorrection={(c)=>addCorrection("muscles", m, c)} onToggleHolding={(id)=>toggleHolding("muscles", m, id)} onRemoveCorrection={(id)=>removeCorrection("muscles", m, id)} />
                     </Fragment>
                   ) : (
                     <Fragment key={m}>
-                      <CheckItem category="muscles" name={m} side="L" pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} onToggle={handleAssessmentToggle} />
-                      <CheckItem category="muscles" name={m} side="R" pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} onToggle={handleAssessmentToggle} />
+                      <ReflexQuickRow category="muscles" name={m} side="L" pattern={pattern} onToggle={handleAssessmentToggle} corrections={getCorrections("muscles", m, "L")} isPriority={isPriority("muscles", m, "L")} priorityTier={getPriorityTier("muscles", m, "L")} onSetPriorityTier={(t)=>setPriorityTier("muscles", m, "L", t)} onTogglePriority={()=>togglePriority("muscles", m, "L")} onAddCorrection={(c)=>addCorrection("muscles", m, c, "L")} onToggleHolding={(id)=>toggleHolding("muscles", m, id, "L")} onRemoveCorrection={(id)=>removeCorrection("muscles", m, id, "L")} />
+                      <ReflexQuickRow category="muscles" name={m} side="R" pattern={pattern} onToggle={handleAssessmentToggle} corrections={getCorrections("muscles", m, "R")} isPriority={isPriority("muscles", m, "R")} priorityTier={getPriorityTier("muscles", m, "R")} onSetPriorityTier={(t)=>setPriorityTier("muscles", m, "R", t)} onTogglePriority={()=>togglePriority("muscles", m, "R")} onAddCorrection={(c)=>addCorrection("muscles", m, c, "R")} onToggleHolding={(id)=>toggleHolding("muscles", m, id, "R")} onRemoveCorrection={(id)=>removeCorrection("muscles", m, id, "R")} />
                     </Fragment>
                   ))}
                 </div>
@@ -496,22 +501,39 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
               <>
                 {correctionsHistory.length > 0 && (
                   <div className="mb-4 pb-4 border-b border-border/30 space-y-3">
-                    {correctionsHistory.map((c: any, i: number) => (
-                      <div key={c.timestamp ? `${c.timestamp}-${i}` : `corr-${i}`} className="p-3 bg-amber-500/10 border border-amber-500/20 rounded transition-all hover:bg-amber-500/15 animate-in fade-in slide-in-from-top-2 duration-300" style={{ animationDelay: `${i * 60}ms` }}>
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Correction #{i + 1}</span>
-                          <span className="text-[10px] text-amber-600/40">·</span>
-                          <span className="text-[12px] font-semibold text-amber-700 dark:text-amber-300 truncate">{c.pathway}</span>
-                          {c.timestamp && (
-                            <>
-                              <span className="text-[10px] text-amber-600/40">·</span>
-                              <span className="text-[10px] text-amber-600/40">{format(new Date(c.timestamp), "h:mm a")}</span>
-                            </>
+                    {correctionsHistory.map((c: any, i: number) => {
+                      const direction = directionForProcess(c.process || '', c.processId)
+                        ?? directionFromText(`${c.pathway || ''} ${c.process || ''}`);
+                      const dirStyle = direction ? PATHWAY_DIRECTION[direction] : null;
+                      const DirectionIcon = dirStyle?.Icon;
+                      return (
+                        <div
+                          key={c.timestamp ? `${c.timestamp}-${i}` : `corr-${i}`}
+                          className={cn(
+                            "p-3 rounded border transition-all animate-in fade-in slide-in-from-top-2 duration-300",
+                            dirStyle ? dirStyle.tint : "bg-muted/50 border-border",
                           )}
+                          style={{ animationDelay: `${i * 60}ms` }}
+                        >
+                          <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Correction #{i + 1}</span>
+                            {dirStyle && DirectionIcon && (
+                              <span className={cn("inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium", dirStyle.soft, dirStyle.strong)}>
+                                <DirectionIcon size={10} /> {dirStyle.label}
+                              </span>
+                            )}
+                            <span className="text-[12px] font-semibold text-foreground truncate">{c.pathway}</span>
+                            {c.timestamp && (
+                              <>
+                                <span className="text-[10px] text-muted-foreground/50">·</span>
+                                <span className="text-[10px] tabular-nums text-muted-foreground/70">{format(new Date(c.timestamp), "h:mm a")}</span>
+                              </>
+                            )}
+                          </div>
+                          <p className="text-[12px] leading-relaxed whitespace-pre-wrap text-muted-foreground">{c.summary}</p>
                         </div>
-                        <p className="text-[12px] text-amber-900 dark:text-amber-100 leading-relaxed whitespace-pre-wrap">{c.summary}</p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
 
@@ -586,10 +608,10 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
 
           {/* Document footer */}
           <div className="pt-8 text-center">
-            <p className="text-[7px] font-medium text-muted-foreground/30 uppercase tracking-wider">
+            <p className="text-[8px] font-medium text-muted-foreground/30 uppercase tracking-wider">
               — End of Session Notes —
             </p>
-            <p className="text-[7px] text-muted-foreground/25 mt-2">
+            <p className="text-[8px] text-muted-foreground/25 mt-2">
               Generated by Resonance Kinesiology Practice Suite · {format(new Date(), "MMMM d, yyyy 'at' h:mm a")}
             </p>
           </div>

@@ -1,5 +1,5 @@
 
-import type { SyntheticEvent } from 'react';
+import type { ReactNode, SyntheticEvent } from 'react';
 import { Check, ArrowDown, ArrowUp, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -14,9 +14,29 @@ interface CheckItemProps {
   onToggle: (category: string, name: string, nextStatus: string, side?: 'L' | 'R') => void;
   /** Override the name used as the pattern key (for display deduplication). */
   patternName?: string;
+  /** Extra controls rendered at the right edge (pills, menu trigger). */
+  trailing?: ReactNode;
+  onContextMenu?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  className?: string;
+  /** Compact display: show only side label for lateralized rows. */
+  compact?: boolean;
 }
 
-const CheckItem = ({ category, name, side, pattern, description, testingInstructions, showFullInstructions = false, onToggle, patternName }: CheckItemProps) => {
+const CheckItem = ({
+  category,
+  name,
+  side,
+  pattern,
+  description,
+  testingInstructions,
+  showFullInstructions = false,
+  onToggle,
+  patternName,
+  trailing,
+  onContextMenu,
+  className,
+  compact = false,
+}: CheckItemProps) => {
   const keyName = patternName || name;
   const fullName = side ? `${keyName} (${side})` : keyName;
   let rawStatus = pattern[category]?.[fullName];
@@ -52,35 +72,32 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
   };
 
   return (
-    <div 
+    <div
       className={cn(
-        "flex items-center justify-between px-2 py-1.5 transition-all cursor-pointer group border rounded-lg",
-        status === 'Inhibited' 
-          ? isCleared 
-            ? "bg-primary/[0.06] border-primary/25 text-foreground/80" 
+        "flex items-center justify-between gap-2 px-2 py-1.5 transition-all group border rounded-lg",
+        status === 'Inhibited'
+          ? isCleared
+            ? "bg-primary/[0.06] border-primary/25 text-foreground/80"
             : "bg-rose-500/[0.06] border-rose-500/25 text-rose-700 dark:text-rose-300"
           : status === 'Hypertonic'
             ? isCleared
               ? "bg-primary/[0.06] border-primary/25 text-foreground/80"
               : "bg-amber-500/[0.08] border-amber-500/25 text-amber-700 dark:text-amber-300"
-            : "hover:bg-muted/50 border-transparent text-muted-foreground"
+            : "hover:bg-muted/50 border-transparent text-muted-foreground",
+        className,
       )}
-      role="button"
-      tabIndex={0}
-      onClick={handleCycle}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleCycle(e);
-        }
-      }}
+      onContextMenu={onContextMenu}
     >
-      <div className="flex items-center gap-2 min-w-0">
+      <button
+        type="button"
+        className="flex min-w-0 flex-1 items-center gap-2 text-left"
+        onClick={handleCycle}
+      >
         <div className={cn(
           "w-4 h-4 border flex items-center justify-center transition-all shrink-0 rounded-md",
-          status === 'Inhibited' 
-            ? isCleared 
-              ? "bg-primary/90 border-primary/90 text-white" 
+          status === 'Inhibited'
+            ? isCleared
+              ? "bg-primary/90 border-primary/90 text-white"
               : "bg-rose-500/90 border-rose-500/90 text-white"
             : status === 'Hypertonic'
               ? isCleared
@@ -99,7 +116,7 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
             status === 'Hypertonic' && !isCleared && "text-amber-600 dark:text-amber-300",
             isCleared && "text-muted-foreground line-through"
           )}>
-            {side ? `${side}: ${name}` : name}
+            {compact && side ? side : side ? `${side}: ${name}` : name}
           </span>
           {description && (
             <span className="text-[11px] text-muted-foreground/60 break-words leading-tight italic">{description}</span>
@@ -113,12 +130,17 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
             </span>
           )}
         </div>
-      </div>
+      </button>
 
-      {isCleared && (
-        <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[8px] font-semibold uppercase tracking-wider text-primary-strong dark:text-primary">
-          Cleared
-        </span>
+      {(trailing || isCleared) && (
+        <div className="flex shrink-0 items-center gap-1">
+          {trailing}
+          {isCleared && (
+            <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[8px] font-semibold uppercase tracking-wider text-primary-strong dark:text-primary">
+              Cleared
+            </span>
+          )}
+        </div>
       )}
     </div>
   );

@@ -228,7 +228,7 @@ export const EMOTION_ORGANS: Record<string, OrganOption[]> = {
   ],
 };
 
-const EMOTION_NOTES: Record<string, string> = Object.fromEntries(
+export const EMOTION_NOTES: Record<string, string> = Object.fromEntries(
   EMOTIONS.map((emotion) => {
     const organs = EMOTION_ORGANS[emotion];
     return [

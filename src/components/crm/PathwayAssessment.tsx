@@ -42,6 +42,8 @@ interface PathwayAssessmentProps {
   onUpdateItem: (category: string, item: string, status: Status | null, side?: 'L' | 'R') => Promise<void>;
   onJumpToCalibrate?: (itemName: string) => void;
   nucleiFilter?: Nuclei | null;
+  saveField?: (field: string, value: any) => Promise<void>;
+  onUpdate?: () => void;
 }
 
 const PathwayAssessment = ({ 
@@ -51,7 +53,9 @@ const PathwayAssessment = ({
   onSave, 
   onUpdateItem, 
   onJumpToCalibrate, 
-  nucleiFilter 
+  nucleiFilter,
+  saveField,
+  onUpdate,
 }: PathwayAssessmentProps) => {
   const results = useMemo(() => safeParse(initialValue, {} as Record<string, Record<string, Status>>), [initialValue]);
   const [showImages, setShowImages] = useState(true);
@@ -292,6 +296,8 @@ const PathwayAssessment = ({
             priorityPattern={initialValue}
             updatePriorityPattern={onUpdateItem}
             compactMode={compactMode}
+            saveField={saveField}
+            onUpdate={onUpdate}
           />
         </AssessmentSection>
       </div>
@@ -310,6 +316,8 @@ const PathwayAssessment = ({
             updatePriorityPattern={onUpdateItem}
             showImages={showImages}
             compactMode={compactMode}
+            saveField={saveField}
+            onUpdate={onUpdate}
           />
         </AssessmentSection>
       </div>

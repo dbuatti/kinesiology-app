@@ -107,12 +107,33 @@ const AppointmentV2Page = () => {
   const [ctmOpen, setCtmOpen] = useState(false);
   const [intakeEditOpen, setIntakeEditOpen] = useState(false);
   const [clientSheetOpen, setClientSheetOpen] = useState(false);
-  const [clientRailOpen, setClientRailOpen] = useState(true);
+  const [clientRailOpen, setClientRailOpen] = useState(() => localStorage.getItem('rk_client_rail_open') !== 'false');
   const [draftOpen, setDraftOpen] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
   const [activePhase, setActivePhase] = useState(0);
   const [phrenicChecked, setPhrenicChecked] = useState(false);
   const [lymphChecked, setLymphChecked] = useState(false);
+
+  useEffect(() => {
+    if (!appointment?.id) return;
+    try {
+      const raw = localStorage.getItem(`rk_session_checks:${appointment.id}`);
+      if (!raw) { setPhrenicChecked(false); setLymphChecked(false); return; }
+      const parsed = JSON.parse(raw) as { phrenic?: boolean; lymph?: boolean };
+      setPhrenicChecked(!!parsed.phrenic);
+      setLymphChecked(!!parsed.lymph);
+    } catch {
+      setPhrenicChecked(false);
+      setLymphChecked(false);
+    }
+  }, [appointment?.id]);
+
+  useEffect(() => {
+    if (!appointment?.id) return;
+    try {
+      localStorage.setItem(`rk_session_checks:${appointment.id}`, JSON.stringify({ phrenic: phrenicChecked, lymph: lymphChecked }));
+    } catch { /* ignore storage errors */ }
+  }, [appointment?.id, phrenicChecked, lymphChecked]);
 
   // Correction logs written at the table (metadata.protocol_logs).
   const metadata = useMemo<Record<string, unknown>>(() => {
@@ -143,6 +164,8 @@ const AppointmentV2Page = () => {
   const timerRef = useRef<number | null>(null);
   const timerEndsAtRef = useRef<number | null>(null);
   const timerDoneRef = useRef<number | null>(null);
+  const pageRef = useRef<HTMLDivElement>(null);
+  const sessionHeaderRef = useRef<HTMLElement>(null);
 
   const stopTimer = useCallback(() => {
     if (timerRef.current) window.clearInterval(timerRef.current);
@@ -231,7 +254,7 @@ const AppointmentV2Page = () => {
   const sessionVitals = useMemo(() => {
     const chips: { label: string; value: string; accent: string }[] = [];
     if (!appointment) return chips;
-    if (appointment.bolt_score != null) chips.push({ label: "BOLT", value: `${appointment.bolt_score}s`, accent: "text-chart-emerald" });
+    if (appointment.bolt_score != null) chips.push({ label: "BOLT", value: `${appointment.bolt_score}s`, accent: "text-primary-strong" });
     if (appointment.coherence_score != null) chips.push({ label: "Coherence", value: `${appointment.coherence_score}`, accent: "text-primary-strong" });
     const hasCOGS = appointment.sagittal_plane_notes || appointment.frontal_plane_notes || appointment.transverse_plane_notes;
     const hasNeuro = appointment.fakuda_notes || appointment.sharpened_rhombergs_notes || appointment.frontal_lobe_notes || appointment.righting_reflex_notes;
@@ -298,6 +321,26 @@ const AppointmentV2Page = () => {
     window.addEventListener('rk_fullscreen_change', handler);
     return () => window.removeEventListener('rk_fullscreen_change', handler);
   }, []);
+
+  // Remember the rail choice across refreshes: collapsing it should keep it
+  // out of the way on the next visit to a session.
+  useEffect(() => {
+    localStorage.setItem('rk_client_rail_open', String(clientRailOpen));
+  }, [clientRailOpen]);
+
+  // The client rail sticks below the session header, not underneath it. The
+  // header changes height between views (the PEACE stepper adds a second row),
+  // so publish its measured height to the rail via an inherited CSS variable.
+  useEffect(() => {
+    const page = pageRef.current;
+    const header = sessionHeaderRef.current;
+    if (!page || !header) return;
+    const sync = () => page.style.setProperty('--session-header-h', `${header.getBoundingClientRect().height}px`);
+    sync();
+    const observer = new ResizeObserver(sync);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, [loading]);
 
   // Walk through the session-draft workflow once, on the first session page
   // visit in this browser; afterwards it stays in the More menu.
@@ -408,9 +451,9 @@ const AppointmentV2Page = () => {
       onInhibitionPathwayChange={handleInhibitionPathwayChange}
     >
       <CorrectionDockShortcuts />
-      <div className={cn("min-h-screen bg-background", isFullScreen && "fixed inset-0 z-50 overflow-y-auto")}>
+      <div ref={pageRef} className={cn("min-h-screen bg-background", isFullScreen && "fixed inset-0 z-50 overflow-y-auto")}>
       {/* ── Unified session dashboard strip ── */}
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
+      <header ref={sessionHeaderRef} className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-xl">
         {/* Thin progress line */}
         <div className="h-[2px] w-full bg-border/20">
           <div className="h-full bg-primary transition-all duration-500 ease-out" style={{ width: `${phaseProgress}%` }} />
@@ -424,10 +467,15 @@ const AppointmentV2Page = () => {
               <button
                 onClick={() => navigate(isDemo ? '/' : '/practice/clinical-hub')}
                 title={isDemo ? "Back to home" : "Back to Clinical Hub"}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
               >
                 <ArrowLeft size={15} />
               </button>
+            )}
+            {isDemo && (
+              <span className="hidden sm:inline-flex items-center rounded-full border border-amber-500/25 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-amber-700">
+                Demo
+              </span>
             )}
             <div className="hidden items-center rounded-xl bg-muted/60 p-1 sm:flex">
               {MODE_TABS.map(tab => {
@@ -440,7 +488,7 @@ const AppointmentV2Page = () => {
                     title={tab.id === 'grid' ? 'Free-form pathway stimulation' : tab.id === 'doc' ? 'Document view' : 'Guided PEACE flow'}
                     aria-pressed={isActive}
                     className={cn(
-                      "flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-semibold transition-colors",
+                      "flex h-7 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
                       isActive
                         ? "bg-card text-foreground shadow-xs"
                         : "text-muted-foreground/70 hover:text-foreground"
@@ -462,13 +510,19 @@ const AppointmentV2Page = () => {
                 else setClientSheetOpen(true);
               }}
               title={`${appointment.clients?.name || "Client"} — client overview`}
-              aria-label="Client overview"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary-strong ring-1 ring-primary/20 transition-colors hover:bg-primary/15"
+              aria-label={`Client overview for ${appointment.clients?.name || "client"}`}
+              aria-pressed={clientRailOpen}
+              className={cn(
+                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
+                clientRailOpen
+                  ? "bg-primary/15 text-primary-strong ring-primary/30"
+                  : "bg-primary/10 text-primary-strong ring-primary/20 hover:bg-primary/15"
+              )}
             >
               {initialsOf(appointment.clients?.name)}
             </button>
             {/* Session timer — 3 / 6 / 9 min; the active pill becomes a live countdown */}
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="hidden sm:flex items-center gap-1.5 shrink-0">
               {timerDone && (
                 <button
                   onClick={() => setTimerDone(false)}
@@ -484,10 +538,12 @@ const AppointmentV2Page = () => {
                 return (
                   <button
                     key={min}
+                    type="button"
+                    aria-pressed={active}
                     onClick={() => (active ? stopTimer() : startTimer(min))}
-                    title={active ? `${formatTimer(timerRemaining)} left — tap to stop` : `Start ${min} minute timer (key ${[3, 6, 9].indexOf(min) + 1})`}
+                    title={active ? `${formatTimer(timerRemaining)} left — tap to stop` : `Start ${min} minute timer`}
                     className={cn(
-                      "inline-flex h-7 items-center justify-center rounded-full border px-2.5 text-[11px] font-medium tabular-nums transition-colors",
+                      "inline-flex h-7 items-center justify-center rounded-full border px-2.5 text-[11px] font-medium tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
                       active
                         ? "min-w-[52px] border-amber-500 bg-amber-500 font-bold text-white shadow-xs"
                         : "border-border bg-muted/40 text-muted-foreground hover:text-foreground"
@@ -498,13 +554,35 @@ const AppointmentV2Page = () => {
                 );
               })}
             </div>
-            <span className="h-5 w-px bg-border/70" aria-hidden />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="sm:hidden inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-muted/30 px-2 text-[11px] font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+                  aria-label="Session timer"
+                  title="Session timer"
+                >
+                  {timerDuration ? formatTimer(timerRemaining) : "Timer"}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="rounded-xl">
+                {[3, 6, 9].map((min) => (
+                  <DropdownMenuItem key={min} onClick={() => startTimer(min)}>
+                    Start {min} min timer
+                  </DropdownMenuItem>
+                ))}
+                {timerDuration && <DropdownMenuItem onClick={stopTimer}>Stop timer</DropdownMenuItem>}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <span className="hidden sm:block h-5 w-px bg-border/70" aria-hidden />
             {/* Action icons (muted) */}
             <div className="flex items-center gap-0.5">
             <button
+              type="button"
               onClick={() => setNotesOpen(true)}
               title="Session notes (N)"
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+              aria-label="Session notes"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
             >
               <StickyNote size={15} />
             </button>
@@ -515,7 +593,8 @@ const AppointmentV2Page = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+                  type="button"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
                   aria-label="More session actions"
                 >
                   <MoreHorizontal size={15} />
@@ -645,17 +724,18 @@ const AppointmentV2Page = () => {
               <button
                 type="button"
                 onClick={() => setPhrenicChecked((v) => !v)}
+                aria-pressed={phrenicChecked}
                 title="Phrenic nerve — check every session"
                 className={cn(
-                  "inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[10.5px] font-medium transition-colors",
+                  "inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
                   phrenicChecked
                     ? "border-primary/30 bg-primary/10 text-primary-strong dark:text-primary"
                     : "border-border bg-muted/40 text-muted-foreground hover:text-foreground"
                 )}
               >
-                <span className={cn("flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[9px] font-bold",
+                <span className={cn("flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[10px] font-bold",
                   phrenicChecked ? "border-primary bg-primary text-primary-foreground" : "border-border"
-                )}>
+                )} aria-hidden>
                   {phrenicChecked ? "✓" : ""}
                 </span>
                 Phrenic
@@ -663,17 +743,18 @@ const AppointmentV2Page = () => {
               <button
                 type="button"
                 onClick={() => setLymphChecked((v) => !v)}
+                aria-pressed={lymphChecked}
                 title="Lymph — check every session"
                 className={cn(
-                  "inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[10.5px] font-medium transition-colors",
+                  "inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
                   lymphChecked
                     ? "border-primary/30 bg-primary/10 text-primary-strong dark:text-primary"
                     : "border-border bg-muted/40 text-muted-foreground hover:text-foreground"
                 )}
               >
-                <span className={cn("flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[9px] font-bold",
+                <span className={cn("flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[10px] font-bold",
                   lymphChecked ? "border-primary bg-primary text-primary-foreground" : "border-border"
-                )}>
+                )} aria-hidden>
                   {lymphChecked ? "✓" : ""}
                 </span>
                 Lymph
@@ -740,6 +821,9 @@ const AppointmentV2Page = () => {
             <PathwayReflexStimGrid
               appointmentId={appointment.id}
               priorityPattern={appointment.priority_pattern}
+              metadata={typeof appointment.metadata === 'string' ? appointment.metadata : JSON.stringify(appointment.metadata ?? {})}
+              saveField={saveField}
+              onUpdate={refresh}
               updatePriorityPattern={updatePriorityPattern}
               isFullScreen={isFullScreen}
               onToggleFullScreen={toggleFullScreen}

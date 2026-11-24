@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { safeParse } from "@/utils/safe-json";
 import { getMuscleInfo } from "@/data/muscle-info-data";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { PathwayRow } from "@/components/crm/reflex-corrections/PathwayRow";
+import { useItemCorrections } from "@/components/crm/reflex-corrections/useItemCorrections";
 
 const STATUS_CONFIG = {
   Inhibited: { label: "Inh", fullLabel: "Inhibited", color: "bg-rose-500 text-white border-rose-500", muted: "border-rose-300 text-rose-600 hover:bg-rose-50 dark:border-rose-700 dark:text-rose-400" },
@@ -106,13 +108,18 @@ export function MuscleAssessment({
   priorityPattern,
   updatePriorityPattern,
   showImages: _showImages,
-  compactMode: _compactMode
+  compactMode: _compactMode,
+  saveField,
+  onUpdate,
 }: {
   priorityPattern?: string | null;
   updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | null, side?: 'L' | 'R') => Promise<void>;
   showImages: boolean;
   compactMode?: boolean;
+  saveField?: (field: string, value: any) => Promise<void>;
+  onUpdate?: () => void;
 }) {
+  const corrections = useItemCorrections({ priority_pattern: priorityPattern }, saveField ?? (async () => {}), onUpdate ?? (() => {}));
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMuscle, setSelectedMuscle] = useState<string | null>(null);
 
@@ -189,19 +196,42 @@ export function MuscleAssessment({
               <div className="col-span-2 px-3 py-2 bg-muted/40 border-b border-border/40">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">{group}</span>
               </div>
-              {muscles.map(muscle => (
-                <MuscleRow
-                  key={muscle}
-                  name={muscle}
-                  statusL={musclePattern[`${muscle} (L)`]}
-                  statusR={musclePattern[`${muscle} (R)`]}
-                  statusMidline={musclePattern[muscle]}
-                  isLateralized={!MIDLINE_MUSCLES.includes(muscle)}
-                  info={getMuscleInfo(muscle)}
-                  onUpdate={updatePriorityPattern}
-                  onSelect={setSelectedMuscle}
-                />
-              ))}
+              {muscles.map(muscle => {
+                const isLateralized = !MIDLINE_MUSCLES.includes(muscle);
+                const correctionProps = isLateralized ? {
+                  corrections: [...corrections.getCorrections("muscles", muscle, "L"), ...corrections.getCorrections("muscles", muscle, "R")],
+                  isPriority: corrections.isPriority("muscles", muscle, "L") || corrections.isPriority("muscles", muscle, "R"),
+                  onTogglePriority: () => { corrections.togglePriority("muscles", muscle, "L"); corrections.togglePriority("muscles", muscle, "R"); },
+                  priorityTier: corrections.getPriorityTier("muscles", muscle, "L") ?? corrections.getPriorityTier("muscles", muscle, "R"),
+                  onSetPriorityTier: (tier: any) => corrections.setPriorityTierForSides("muscles", muscle, ["L", "R"], tier),
+                  onAddCorrection: (c: any) => corrections.addCorrection("muscles", muscle, c, "L"),
+                  onToggleHolding: (id: string) => { if (corrections.getCorrections("muscles", muscle, "L").some(x=>x.id===id)) corrections.toggleHolding("muscles", muscle, id, "L"); else corrections.toggleHolding("muscles", muscle, id, "R"); },
+                  onRemoveCorrection: (id: string) => { if (corrections.getCorrections("muscles", muscle, "L").some(x=>x.id===id)) corrections.removeCorrection("muscles", muscle, id, "L"); else corrections.removeCorrection("muscles", muscle, id, "R"); },
+                } : {
+                  corrections: corrections.getCorrections("muscles", muscle),
+                  isPriority: corrections.isPriority("muscles", muscle),
+                  onTogglePriority: () => corrections.togglePriority("muscles", muscle),
+                  priorityTier: corrections.getPriorityTier("muscles", muscle),
+                  onSetPriorityTier: (tier: any) => corrections.setPriorityTier("muscles", muscle, undefined, tier),
+                  onAddCorrection: (c: any) => corrections.addCorrection("muscles", muscle, c),
+                  onToggleHolding: (id: string) => corrections.toggleHolding("muscles", muscle, id),
+                  onRemoveCorrection: (id: string) => corrections.removeCorrection("muscles", muscle, id),
+                };
+                return (
+                  <PathwayRow key={muscle} itemName={muscle} {...correctionProps}>
+                    <MuscleRow
+                      name={muscle}
+                      statusL={musclePattern[`${muscle} (L)`]}
+                      statusR={musclePattern[`${muscle} (R)`]}
+                      statusMidline={musclePattern[muscle]}
+                      isLateralized={isLateralized}
+                      info={getMuscleInfo(muscle)}
+                      onUpdate={updatePriorityPattern}
+                      onSelect={setSelectedMuscle}
+                    />
+                  </PathwayRow>
+                );
+              })}
             </div>
           ))}
         </div>

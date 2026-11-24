@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowDownCircle, ArrowUpCircle, BookMarked, Check, ChevronDown, ChevronRight, Heart, X } from "lucide-react";
+import { BookMarked, Check, ChevronDown, ChevronRight, Heart, Star, Target, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PATHWAY_DIRECTION } from "@/lib/pathway-direction";
 import CorrectionsManualContent from "@/components/crm/CorrectionsManualContent";
 import { processLabel } from "@/data/correction-process-list";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
@@ -18,7 +19,7 @@ const statusLabel = (status) => {
     case "hypertonic": return "Hypertonic";
     case "clear": return "Clear";
     case "priority": return "Priority";
-    case "primary_priority": return "Primary";
+    case "primary_priority": return "Primary priority";
     default: return "—";
   }
 };
@@ -36,6 +37,8 @@ const CorrectionDock = () => {
   const DOCK_MIN = 360;
   const DOCK_MAX = 760;
   const dockWidthPx = dockWidth ?? 560;
+  const AfferentIcon = PATHWAY_DIRECTION.afferent.Icon;
+  const EfferentIcon = PATHWAY_DIRECTION.efferent.Icon;
 
   const handleRef = useRef(null);
   const widthRef = useRef(dockWidthPx);
@@ -107,13 +110,13 @@ const CorrectionDock = () => {
   if (!isOpen) {
     return (
       <aside className="sticky top-[59px] flex h-[calc(100dvh-59px)] w-12 shrink-0 self-start flex-col items-center gap-0.5 border-l border-border bg-card py-2.5 coarse:w-14 coarse:gap-1">
-        <button onClick={() => openDock({ tab: "afferent", view: "folder" })} title="Afferent corrections (A)" aria-label="Open afferent corrections" className="flex h-9 w-9 items-center justify-center rounded-xl text-primary-strong transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25 coarse:h-11 coarse:w-11">
-          <ArrowDownCircle size={17} className="coarse:h-5 coarse:w-5" />
+        <button onClick={() => openDock({ tab: "afferent", view: "folder" })} title="Afferent corrections (A)" aria-label="Open afferent corrections" className={cn("flex h-9 w-9 items-center justify-center rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25 coarse:h-11 coarse:w-11", PATHWAY_DIRECTION.afferent.strong, PATHWAY_DIRECTION.afferent.hover)}>
+          <AfferentIcon size={17} className="coarse:h-5 coarse:w-5" />
         </button>
-        <button onClick={() => openDock({ tab: "efferent", view: "folder" })} title="Efferent corrections (E)" aria-label="Open efferent corrections" className="flex h-9 w-9 items-center justify-center rounded-xl text-purple-600 transition-colors hover:bg-purple-500/10 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25 dark:text-purple-300 coarse:h-11 coarse:w-11">
-          <ArrowUpCircle size={17} className="coarse:h-5 coarse:w-5" />
+        <button onClick={() => openDock({ tab: "efferent", view: "folder" })} title="Efferent corrections (E)" aria-label="Open efferent corrections" className={cn("flex h-9 w-9 items-center justify-center rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25 coarse:h-11 coarse:w-11", PATHWAY_DIRECTION.efferent.strong, PATHWAY_DIRECTION.efferent.hover)}>
+          <EfferentIcon size={17} className="coarse:h-5 coarse:w-5" />
         </button>
-        <button onClick={() => openDock({ tab: "efferent", item: "emotional" })} title="Emotional protocol" aria-label="Open the emotional protocol" className="flex h-9 w-9 items-center justify-center rounded-xl text-rose-500 transition-colors hover:bg-rose-500/10 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25 coarse:h-11 coarse:w-11">
+        <button onClick={() => openDock({ tab: "efferent", item: "emotional" })} title="Emotional protocol — efferent" aria-label="Open the efferent emotional protocol" className={cn("flex h-9 w-9 items-center justify-center rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25 coarse:h-11 coarse:w-11", PATHWAY_DIRECTION.efferent.strong, PATHWAY_DIRECTION.efferent.hover)}>
           <Heart size={17} className="coarse:h-5 coarse:w-5" />
         </button>
         <div className="my-1.5 h-px w-5 bg-border" />
@@ -140,10 +143,12 @@ const CorrectionDock = () => {
               {target?.item ? processLabel(target.item) : "Corrections Manual"}
             </p>
             {target && target.view !== "folder" && (
-              <p className="truncate text-[9px] text-muted-foreground/50 tracking-tight">
-                {target.tab === "afferent" ? "Afferent" : "Efferent"}
-                {target.group ? " · " + target.group : ""}
-                {target.item ? " · " + processLabel(target.item) : ""}
+              <p className="truncate text-[11px] tracking-tight">
+                <span className={PATHWAY_DIRECTION[target.tab].strong}>
+                  {PATHWAY_DIRECTION[target.tab].label}
+                </span>
+                {target.group ? <span className="text-muted-foreground/50"> · {target.group}</span> : null}
+                {target.item ? <span className="text-muted-foreground/50"> · {processLabel(target.item)}</span> : null}
               </p>
             )}
           </div>
@@ -156,7 +161,7 @@ const CorrectionDock = () => {
                       {inhibitionPathway.pathway?.notes}
                     </span>
                     {(inhibitionPathway.pathway?.side === "L" || inhibitionPathway.pathway?.side === "R") && (
-                      <span className="text-[9px] text-muted-foreground/60">
+                      <span className="text-[11px] text-muted-foreground/60">
                         {inhibitionPathway.pathway.side} · {statusLabel(inhibitionPathway.status).toLowerCase()}
                       </span>
                     )}
@@ -170,7 +175,7 @@ const CorrectionDock = () => {
                 <div className="px-5 py-3 border-b border-border/60 bg-muted/20">
                   <div className="flex items-center justify-between">
                     <p className="text-[13px] font-semibold text-foreground">Inhibition Pathway</p>
-                    <div className="flex items-center gap-3 text-[9px] text-muted-foreground/50">
+                    <div className="flex items-center gap-3 text-[11px] text-muted-foreground/50">
                       <span className="flex items-center gap-1"><span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-white text-[11px] font-black shadow-sm">↓</span> Inhibited</span>
                       <span className="flex items-center gap-1"><span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-white text-[11px] font-black shadow-sm">↑</span> Hypertonic</span>
                     </div>
@@ -221,7 +226,7 @@ const CorrectionDock = () => {
                       return groupOrder.map((phase) => (
                         <div key={phase} className="mb-1">
                           {groupOrder.length > 1 && (
-                            <p className="px-5 py-1.5 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40">
+                            <p className="px-5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/40">
                               {groupLabels[phase] || phase}
                             </p>
                           )}
@@ -251,8 +256,8 @@ const CorrectionDock = () => {
                                     </p>
                                   </span>
                                   {/* Status arrow indicator */}
-                                  <span className={cn("shrink-0 flex h-9 w-9 items-center justify-center rounded-full text-[14px] font-black shadow-sm", displayStatus === "clear" ? "bg-success text-white" : displayStatus === "hypertonic" ? "bg-amber-500 text-white" : displayStatus === "inhibited" ? "bg-rose-500 text-white" : displayStatus === "priority" ? "bg-amber-500 text-white" : displayStatus === "primary_priority" ? "bg-amber-700 text-white" : "bg-muted text-muted-foreground")}>
-                                    {displayStatus === "hypertonic" ? "↑" : displayStatus === "inhibited" ? "↓" : displayStatus === "clear" ? "✓" : displayStatus === "priority" || displayStatus === "primary_priority" ? "↓" : "–"}
+                                  <span className={cn("shrink-0 flex h-9 w-9 items-center justify-center rounded-full text-[14px] font-black shadow-sm", displayStatus === "clear" ? "bg-success text-white" : displayStatus === "hypertonic" ? "bg-amber-500 text-white" : displayStatus === "inhibited" ? "bg-rose-500 text-white" : displayStatus === "priority" ? "bg-primary text-primary-foreground" : displayStatus === "primary_priority" ? "bg-gold text-foreground dark:text-background" : "bg-muted text-muted-foreground")}>
+                                    {displayStatus === "hypertonic" ? "↑" : displayStatus === "inhibited" ? "↓" : displayStatus === "clear" ? "✓" : displayStatus === "priority" ? <Target size={14} /> : displayStatus === "primary_priority" ? <Star size={14} fill="currentColor" /> : "–"}
                                   </span>
                                   {/* Priority toggle buttons */}
                                   <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
@@ -276,8 +281,8 @@ const CorrectionDock = () => {
                                       className={cn(
                                         "w-6 h-5 flex items-center justify-center rounded text-[8px] font-bold border",
                                         isPriority
-                                          ? "bg-amber-500 text-white border-amber-500"
-                                          : "border-amber-300/50 text-amber-600/70 hover:bg-amber-50 dark:border-amber-700/50 dark:text-amber-400/70"
+                                          ? "bg-primary text-primary-foreground border-primary"
+                                          : "border-primary/30 text-primary-strong/70 hover:bg-primary/10 dark:border-primary/40"
                                       )}
                                       title="Toggle Priority"
                                     >
@@ -302,8 +307,8 @@ const CorrectionDock = () => {
                                       className={cn(
                                         "w-6 h-5 flex items-center justify-center rounded text-[8px] font-bold border",
                                         isPrimary
-                                          ? "bg-amber-700 text-white border-amber-700"
-                                          : "border-amber-300/50 text-amber-600/70 hover:bg-amber-50 dark:border-amber-700/50 dark:text-amber-400/70"
+                                          ? "bg-gold text-foreground dark:text-background border-gold"
+                                          : "border-gold/50 text-gold-strong/80 hover:bg-gold/10"
                                       )}
                                       title="Toggle Primary Priority"
                                     >

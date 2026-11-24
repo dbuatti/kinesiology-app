@@ -219,7 +219,7 @@ export function ClientSideContent({
               {clientName}
             </p>
             {isDemo && (
-              <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[9px] font-medium tracking-tight text-muted-foreground">
+              <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-[11px] font-medium tracking-tight text-muted-foreground">
                 Demo
               </span>
             )}
@@ -253,8 +253,21 @@ export function ClientSideContent({
       </Link>
 
       {loading ? (
-        <div className="flex items-center justify-center gap-2 py-16 text-[13px] text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Loading client…
+        <div className="space-y-5 px-5 py-5 animate-pulse" aria-busy="true" aria-label="Loading client">
+          <div className="space-y-2">
+            <div className="h-3 w-24 rounded-md bg-muted" />
+            <div className="h-4 w-40 rounded-md bg-muted" />
+            <div className="h-3 w-32 rounded-md bg-muted" />
+          </div>
+          <div className="rounded-2xl bg-muted/40 p-4 space-y-2">
+            <div className="h-3 w-20 rounded-md bg-muted" />
+            <div className="h-4 w-36 rounded-md bg-muted" />
+          </div>
+          <div className="space-y-2">
+            <div className="h-3 w-28 rounded-md bg-muted" />
+            <div className="h-3 w-full rounded-md bg-muted" />
+            <div className="h-3 w-5/6 rounded-md bg-muted" />
+          </div>
         </div>
       ) : (
         <div className="space-y-5 px-5 py-5">
@@ -516,7 +529,11 @@ export function SessionClientRail({
   return (
     <aside
       data-client-rail
-      className="sticky top-0 z-10 hidden h-[100dvh] w-[320px] shrink-0 self-start overflow-hidden flex-col border-l border-border/60 bg-background/95 min-[1100px]:flex"
+      style={{
+        top: "var(--session-header-h, 0px)",
+        height: "calc(100dvh - var(--session-header-h, 0px))",
+      }}
+      className="sticky z-10 hidden w-[320px] shrink-0 self-start flex-col overflow-hidden border-l border-border/60 bg-background/95 min-[1100px]:flex"
     >
       <div className="flex h-10 shrink-0 items-center justify-between border-b border-border/60 px-4">
         <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/60">

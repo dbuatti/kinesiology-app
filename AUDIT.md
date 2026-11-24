@@ -46,8 +46,39 @@ elements nested up to 4 deep · 112 text nodes at 9px · 11 distinct font sizes 
 - [x] Business workspace aura (zones.ts) green wash → violet; dot indigo
 - [x] Kept intentionally: TCM Wood element dot (ProtocolLogSheet), organ
       colours in vagus/tcm data, mechano plane cards (domain data)
-- [ ] Browser pixel sweep pending — in-app browser was disconnected; verify
-      on next reconnect (last sweep measured 0 green pixels)
+- [x] Browser pixel sweep — verified 0 green pixels on /appointments/:id (live
+      studio) and /appointments/demo (local dev) via Chrome extension
+      (2026-11-24). Confirmed 0 emerald/green computed colors on both.
+- [x] App-wide green sweep via in-house browser (authenticated): 0 green pixels
+      on / (Today), /clients (People), and /appointments/:id. All three pages
+      clean.
+- [x] Font-size floor pass (app-wide): 9px → 11px (12 files), 9.5px → 11px,
+      8.5px → 10px, 10.5px → 11px. Remaining sub-10px text is 7/8px in
+      printables/badges only.
+
+### Direction audit — afferent / efferent ✅
+- [x] Added `--afferent` / `--efferent` tokens (afferent = deep indigo,
+      efferent = existing chart-purple hue) plus `PATHWAY_DIRECTION` helpers in
+      `src/lib/pathway-direction.ts`; documented in `DESIGN.md`
+- [x] Direction is carried by circled `ArrowDownCircle` / `ArrowUpCircle`
+      icons — plain `↓` / `↑` remain inhibited / hypertonic status glyphs
+- [x] Raw direction colours in pathway data, reflex pills/modal, correction
+      dock/manual, document view, session report, logs, brain-zone references,
+      Heart Wall tool/protocol and F.n theory now resolve through the tokens
+- [x] Clinical status colours remain untouched: rose = inhibited, amber =
+      hypertonic, primary/success = clear/complete
+- [x] Align priority is a single explicit three-state control:
+      None → Priority → Primary priority. One primary per session; replacing
+      it demotes the old primary to Priority rather than clearing it.
+- [x] Right-click pathway menu (`PathwayRow` / `ReflexQuickRow`) now uses the
+      same direction tokens/icons in its Afferent / Efferent submenus and the
+      same three-state priority radio control. Priority row glow moved off
+      amber (status colour) onto primary indigo.
+- [x] Priority tiers now have two distinct colours: Priority = indigo
+      (`--primary`), Primary priority = gold (`--priority-gold`,
+      `--priority-gold-strong`). Gold is deliberately a hue away from amber
+      (hypertonic) and rose (inhibited). Applied in Align (v2/v3/document),
+      assessment cards, correction dock, reflex pills/modal and context menus.
 
 ### Pre-existing `any` lint errors (not yet done)
 - [ ] AppointmentV2Page (7), PreliminaryPhaseV3 (~13), CorrectPhaseV3,

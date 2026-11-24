@@ -73,6 +73,25 @@ export default {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        // Correction direction coding — never reuse a status tint for these.
+        afferent: {
+          DEFAULT: "hsl(var(--afferent))",
+          strong: "hsl(var(--afferent-strong))",
+        },
+        efferent: {
+          DEFAULT: "hsl(var(--efferent))",
+          strong: "hsl(var(--efferent-strong))",
+        },
+        // Primary priority — gold, never amber (amber = hypertonic status).
+        gold: {
+          DEFAULT: "hsl(var(--priority-gold))",
+          strong: "hsl(var(--priority-gold-strong))",
+        },
+        cleared: {
+          DEFAULT: "hsl(var(--status-cleared))",
+          foreground: "hsl(var(--status-cleared-foreground))",
+          strong: "hsl(var(--status-cleared-strong))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",

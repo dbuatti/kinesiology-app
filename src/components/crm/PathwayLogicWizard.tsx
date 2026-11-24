@@ -2,8 +2,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  GitBranch,
-  Sparkles,
   Brain,
   Activity,
   CheckCircle2,
@@ -22,6 +20,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PATHWAY_DIRECTION } from '@/lib/pathway-direction';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -394,24 +393,24 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => goToStep('AFFERENT_SELECT')}
-                  className="min-h-[128px] rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-primary/50 hover:bg-primary/[0.03] hover:shadow-sm"
+                  className={cn("min-h-[128px] rounded-xl border border-border bg-card p-4 text-left transition-all hover:shadow-sm", PATHWAY_DIRECTION.afferent.hover)}
                 >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary-strong">
-                    <GitBranch size={17} strokeWidth={1.75} />
+                  <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl", PATHWAY_DIRECTION.afferent.soft, PATHWAY_DIRECTION.afferent.strong)}>
+                    <PATHWAY_DIRECTION.afferent.Icon size={17} strokeWidth={1.75} />
                   </div>
-                  <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-primary">Bottom-Up</p>
+                  <p className={cn("mt-2 text-[11px] font-semibold uppercase tracking-[0.08em]", PATHWAY_DIRECTION.afferent.text)}>Bottom-Up</p>
                   <p className="text-[15px] font-semibold text-foreground">Afferent</p>
                   <p className="mt-1 text-[13px] leading-snug text-muted-foreground">Sensory input from the body</p>
                 </button>
 
                 <button
                   onClick={() => goToStep('EFFERENT_SELECT')}
-                  className="min-h-[128px] rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-primary/50 hover:bg-primary/[0.03] hover:shadow-sm"
+                  className={cn("min-h-[128px] rounded-xl border border-border bg-card p-4 text-left transition-all hover:shadow-sm", PATHWAY_DIRECTION.efferent.hover)}
                 >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground">
-                    <Sparkles size={17} strokeWidth={1.75} />
+                  <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl", PATHWAY_DIRECTION.efferent.soft, PATHWAY_DIRECTION.efferent.strong)}>
+                    <PATHWAY_DIRECTION.efferent.Icon size={17} strokeWidth={1.75} />
                   </div>
-                  <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Top-Down</p>
+                  <p className={cn("mt-2 text-[11px] font-semibold uppercase tracking-[0.08em]", PATHWAY_DIRECTION.efferent.text)}>Top-Down</p>
                   <p className="text-[15px] font-semibold text-foreground">Efferent</p>
                   <p className="mt-1 text-[13px] leading-snug text-muted-foreground">Brain processing & output</p>
                 </button>
@@ -473,7 +472,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                 <p className="text-xs font-medium text-muted-foreground">Correcting</p>
                 <p className="text-sm font-medium text-foreground">{effectiveItem || "General"}</p>
               </div>
-              <Badge className="bg-primary/10 text-primary-strong border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0 rounded-full">Afferent</Badge>
+              <Badge className={cn("border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0 rounded-full", PATHWAY_DIRECTION.afferent.tint)}>Afferent</Badge>
             </div>
             {[
               { type: 'Mechanoreceptive', icon: Activity, step: 'MECHANO_PROCESS', desc: 'Joint and muscle receptor calibration' },
@@ -482,7 +481,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
               <button key={item.type} onClick={() => goToStep(item.step as Step)} className="p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors text-left group w-full">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <item.icon size={16} className="text-primary shrink-0" />
+                    <item.icon size={16} className={cn("shrink-0", PATHWAY_DIRECTION.afferent.text)} />
                     <div>
                       <p className="text-sm font-medium text-foreground">{item.type}</p>
                       <p className="text-[10px] text-muted-foreground">{item.desc}</p>
@@ -503,7 +502,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                 <p className="text-xs font-medium text-muted-foreground">Correcting</p>
                 <p className="text-sm font-medium text-foreground">{effectiveItem || "General"}</p>
               </div>
-              <Badge className="bg-foreground/10 text-foreground border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0 rounded-full">Efferent</Badge>
+              <Badge className={cn("border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0 rounded-full", PATHWAY_DIRECTION.efferent.tint)}>Efferent</Badge>
             </div>
             {[
               { type: 'Brain Integration', icon: Brain, step: 'EFFERENT_PROCESS', desc: 'Cortical and subcortical zone pairing' },
@@ -512,7 +511,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
               <button key={item.type} onClick={() => goToStep(item.step as Step)} className="p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors text-left group w-full">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <item.icon size={16} className="text-muted-foreground shrink-0" />
+                    <item.icon size={16} className={cn("shrink-0", PATHWAY_DIRECTION.efferent.text)} />
                     <div>
                       <p className="text-sm font-medium text-foreground">{item.type}</p>
                       <p className="text-[10px] text-muted-foreground">{item.desc}</p>

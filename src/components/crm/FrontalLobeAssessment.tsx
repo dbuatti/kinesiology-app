@@ -332,7 +332,7 @@ const FrontalLobeAssessment = ({
             "Compare performance between the two hands.",
           ].map((step, i) => (
             <li key={i} className="flex gap-2.5 text-[12px] leading-relaxed text-muted-foreground">
-              <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-muted text-[9px] font-bold text-muted-foreground">
+              <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-bold text-muted-foreground">
                 {i + 1}
               </span>
               {step}

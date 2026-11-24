@@ -136,7 +136,7 @@ export default function LandingPage() {
                   "You leave with written notes and one or two things to practise",
                   "We track the same markers session to session, so progress isn't just a feeling",
                 ].map((line) => (
-                  <li key={line} className="flex items-start gap-2.5 text-[13.5px] leading-snug">
+                  <li key={line} className="flex items-start gap-2.5 text-[13px] leading-snug">
                     <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
                     {line}
                   </li>

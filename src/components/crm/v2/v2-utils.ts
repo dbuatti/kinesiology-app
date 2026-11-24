@@ -25,6 +25,15 @@ export const priorityKey = (catKey: string, fullName: string): string => `${catK
 
 export const stimPriorityKey = (stimKey: string): string => `stim|${stimKey}`;
 
+export type FindingPriority = "priority" | "primary";
+
+/** Old data used several spellings for the same two priority tiers. */
+export const normalizeFindingPriority = (value: unknown): FindingPriority | null => {
+  if (value === "primary" || value === "primary_priority" || value === "primary priority") return "primary";
+  if (value === "priority") return "priority";
+  return null;
+};
+
 export const findingLabel = (catKey: string, baseName: string, side?: "L" | "R", status?: string): string => {
   const sidePart = side ? ` (${side})` : "";
   const statusPart = status ? ` — ${status}` : "";
@@ -38,7 +47,9 @@ export interface PatternFinding {
   baseName: string;
   status: string;
   side?: "L" | "R";
+  /** Backwards-compatible boolean: true for both priority tiers. */
   priority: boolean;
+  priorityLevel: FindingPriority | null;
 }
 
 export const parsePattern = (raw: string | object | null | undefined): Record<string, Record<string, string>> => {
@@ -60,13 +71,15 @@ export const getInhibitedFindings = (raw: string | object | null | undefined): P
     Object.entries(categoryItems || {}).forEach(([fullName, status]) => {
       if (!isInhibitedStatus(String(status))) return;
       const { baseName, side } = parseSideFromName(fullName);
+      const priorityLevel = normalizeFindingPriority(priorities[priorityKey(catKey, fullName)]);
       items.push({
         catKey,
         fullName,
         baseName,
         status: String(status),
         side,
-        priority: priorities[priorityKey(catKey, fullName)] === "priority",
+        priority: priorityLevel !== null,
+        priorityLevel,
       });
     });
   });

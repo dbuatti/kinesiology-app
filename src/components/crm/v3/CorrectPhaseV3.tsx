@@ -423,7 +423,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
                       {row.processTitle}
                       <span className="ml-1.5 uppercase tracking-wide">{row.group}</span>
                       {row.live && (
-                        <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        <span className="ml-1.5 rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                           in progress
                         </span>
                       )}

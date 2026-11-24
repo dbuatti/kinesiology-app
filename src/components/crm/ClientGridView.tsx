@@ -62,7 +62,8 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGri
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {clients.map((client) => {
         const isVoice = client.kind === "voice";
-        const profileHref = isVoice ? `/clients/${client.id}/hub` : `/clients/${client.id}`;
+        const isVoiceOnly = String(client.id).startsWith("voice:");
+            const profileHref = isVoiceOnly ? `/clients/${client.id}/hub` : `/clients/${client.id}`;
         return (
         <Card
           key={client.id}
@@ -71,12 +72,12 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGri
         >
           <CardContent className="p-6 space-y-5">
             <div className="flex items-start justify-between">
-              <div className="w-12 h-12 rounded-full bg-primary/10 text-primary-strong flex items-center justify-center text-lg font-semibold uppercase shrink-0">
+              <div className="w-11 h-11 rounded-full bg-primary/10 text-primary-strong flex items-center justify-center text-base font-semibold uppercase shrink-0 ring-1 ring-primary/10">
                 {client.name.charAt(0)}
               </div>
               <div className="flex flex-col items-end gap-1">
                 <div className="flex items-center gap-1.5">
-                  <Badge className="bg-chart-emerald/10 text-chart-emerald border-none font-medium text-[10px]">
+                  <Badge variant="secondary" className="border-none bg-primary/10 text-primary-strong font-medium text-[10px]">
                     {client.session_count} sessions
                   </Badge>
                   {(client.upcoming_count ?? 0) > 0 && (
@@ -129,7 +130,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGri
               {!isVoice && (
                 <div className="flex items-center gap-1 text-xs font-medium">
                   {client.standard_rate === 0 ? (
-                    <span className="text-chart-emerald font-semibold">$0 · Free</span>
+                    <span className="text-primary-strong font-semibold">$0 · Free</span>
                   ) : client.standard_rate != null ? (
                     <span className="text-foreground font-semibold">${client.standard_rate}</span>
                   ) : (
@@ -153,13 +154,13 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGri
                   which still lives in full on the Clinical Profile. */}
               <div className="p-2.5 rounded-xl border border-border bg-muted/30 flex flex-col items-center text-center">
                 <Mail size={13} className="mb-1 text-muted-foreground" />
-                <p className="text-[10px] font-medium uppercase tracking-wide opacity-60">Last Contacted</p>
-                <p className="text-base font-semibold">{client.last_contacted_at ? format(new Date(client.last_contacted_at), "MMM d") : "Never"}</p>
+                <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">Last Contacted</p>
+                <p className="text-sm font-semibold tabular-nums">{client.last_contacted_at ? format(new Date(client.last_contacted_at), "MMM d") : "Never"}</p>
               </div>
               <div className="p-2.5 rounded-xl border border-border bg-muted/30 flex flex-col items-center text-center">
                 <Activity size={13} className="mb-1 text-primary" />
-                <p className="text-[10px] font-medium uppercase tracking-wide opacity-60">Sessions</p>
-                <p className="text-base font-semibold">{client.session_count}</p>
+                <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">Sessions</p>
+                <p className="text-sm font-semibold tabular-nums">{client.session_count}</p>
               </div>
             </div>
 
@@ -169,8 +170,8 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGri
                   <div className={cn("flex items-center gap-2.5 text-xs font-medium text-muted-foreground min-w-0 truncate", isPrivate && "blur-[2px] select-none")}>
                     <Mail size={13} className="text-muted-foreground shrink-0" /> <span className="truncate">{client.email}</span>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity shrink-0" asChild onClick={(e) => e.stopPropagation()}>
-                    <a href={`mailto:${client.email}`}><ArrowRight size={12} className="-rotate-45" /></a>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg opacity-100 sm:opacity-0 sm:group-hover/contact:opacity-100 sm:focus-within:opacity-100 transition-opacity shrink-0 focus-visible:ring-2 focus-visible:ring-ring/40" asChild onClick={(e) => e.stopPropagation()}>
+                    <a href={`mailto:${client.email}`} aria-label={`Email ${client.name}`}><ArrowRight size={12} className="-rotate-45" /></a>
                   </Button>
                 </div>
               )}
@@ -179,8 +180,8 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGri
                   <div className={cn("flex items-center gap-2.5 text-xs font-medium text-muted-foreground", isPrivate && "blur-[2px] select-none")}>
                     <Phone size={13} className="text-muted-foreground" /> {client.phone}
                   </div>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" asChild onClick={(e) => e.stopPropagation()}>
-                    <a href={`tel:${client.phone}`}><ArrowRight size={12} className="-rotate-45" /></a>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg opacity-100 sm:opacity-0 sm:group-hover/contact:opacity-100 sm:focus-within:opacity-100 transition-opacity focus-visible:ring-2 focus-visible:ring-ring/40" asChild onClick={(e) => e.stopPropagation()}>
+                    <a href={`tel:${client.phone}`} aria-label={`Call ${client.name}`}><ArrowRight size={12} className="-rotate-45" /></a>
                   </Button>
                 </div>
               )}
@@ -189,17 +190,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGri
             <div className="pt-3 flex items-center justify-between gap-2">
               <div className="flex items-center gap-1">
                 {isVoice ? (
-                  // Voice students don't have a `clients` row for
-                  // AppointmentForm's client_id FK to attach to — routes
-                  // into the Assistant Hub's own booking flow instead,
-                  // which auto-sends this prompt straight to a proposed
-                  // slot (see AssistantInput's autoSend).
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="px-2 h-8 text-primary-strong font-medium text-xs hover:bg-primary/5"
-                    asChild
-                  >
+                  <Button variant="ghost" size="sm" className="px-2 h-8 text-primary-strong font-medium text-xs hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring/40" asChild>
                     <Link
                       to={`/clients/${client.id}/hub?prompt=${encodeURIComponent(`Find a good slot and book ${client.name.split(" ")[0]}'s next session — check their availability notes and usual pattern first.`)}`}
                       onClick={(e) => e.stopPropagation()}
@@ -211,7 +202,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGri
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="px-2 h-8 text-primary-strong font-medium text-xs hover:bg-primary/5"
+                    className="px-2 h-8 text-primary-strong font-medium text-xs hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-ring/40"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickBook(client.id); }}
                   >
                     <CalendarPlus size={14} className="mr-1.5" /> Quick Book
@@ -223,8 +214,9 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGri
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-amber-600 hover:bg-amber-500/10"
+                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-amber-700 hover:bg-amber-500/10 focus-visible:ring-2 focus-visible:ring-ring/40"
                         disabled={sendingId === client.id}
+                        aria-label={`Send onboarding email to ${client.name}`}
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSendOnboarding(client); }}
                       >
                         {sendingId === client.id ? <Loader2 size={14} className="animate-spin" /> : <Mail size={14} />}
@@ -259,14 +251,14 @@ function ActivityIndicator({ score }: { score?: number }) {
         <span
           key={i}
           className={cn(
-            "w-2 h-2 rounded-full",
+            "h-1.5 w-1.5 rounded-full",
             i < filled
               ? i >= 4
-                ? "bg-chart-emerald"
+                ? "bg-primary"
                 : i >= 3
-                  ? "bg-chart-primary"
-                  : "bg-amber-500"
-              : "bg-muted"
+                  ? "bg-primary/60"
+                  : "bg-amber-400"
+              : "bg-border"
           )}
         />
       ))}

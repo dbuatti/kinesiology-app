@@ -28,6 +28,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import StimResultsSummary from "@/components/crm/StimResultsSummary";
+import { PathwayRow } from "@/components/crm/reflex-corrections/PathwayRow";
+import { useItemCorrections } from "@/components/crm/reflex-corrections/useItemCorrections";
 import { clickableProps } from '@/lib/a11y';
 
 interface NerveTestItemProps {
@@ -102,8 +104,8 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
     <section className={cn(
       "rounded-xl border transition-all",
       compact ? "p-2 space-y-1" : "p-3 space-y-2",
-      test.is_primary_priority ? "bg-indigo-50/40 border-indigo-300 ring-1 ring-indigo-100" : 
-      test.is_priority ? "bg-amber-50/40 border-amber-200" : 
+      test.is_primary_priority ? "bg-gold/[0.06] border-gold/35" :
+      test.is_priority ? "bg-primary/[0.04] border-primary/20" :
       !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') ? "bg-success/[0.04] border-success/20" :
       "border-border bg-card"
     )}>
@@ -209,10 +211,10 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
               onClick={() => onUpdate(nerve.id.toString(), { is_primary_priority: !test.is_primary_priority })}
               className={cn(
                 "h-5 px-2 text-[7px] font-medium transition-all rounded-md",
-                test.is_primary_priority ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                test.is_primary_priority ? "bg-gold text-foreground dark:text-background" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              {test.is_primary_priority ? "Primary" : "Set 1°"}
+              {test.is_primary_priority ? "Primary priority" : "Set 1°"}
             </Button>
             <Button 
               variant="ghost" 
@@ -360,7 +362,9 @@ export function CranialNerveAssessment({
   updatePriorityPattern,
   showImages,
   compactMode,
-  onShowInfo
+  onShowInfo,
+  saveField,
+  onUpdate,
 }: { 
   appointmentId: string;
   priorityPattern?: string | null;
@@ -368,8 +372,11 @@ export function CranialNerveAssessment({
   showImages: boolean;
   compactMode?: boolean;
   onShowInfo?: (nerveId: number) => void;
+  saveField?: (field: string, value: any) => Promise<void>;
+  onUpdate?: () => void;
 }) {
   const { tests, loading, updateTest } = useCranialNerveTests(appointmentId, priorityPattern, updatePriorityPattern);
+  const corrections = useItemCorrections({ priority_pattern: priorityPattern }, saveField ?? (async () => {}), onUpdate ?? (() => {}));
   const [showOnlyInhibited, setShowOnlyInhibited] = useState(false);
   const [showOnlyPriority, setShowOnlyPriority] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -488,21 +495,32 @@ export function CranialNerveAssessment({
               <div className="grid grid-cols-1 gap-4">
                 {clusterNerves.map((nerve) => {
                   const nerveName = `${nerve.name}: ${nerve.latinName}`;
+                  const correctionProps = {
+                    corrections: nerve.isLateralized ? [...corrections.getCorrections("cranialNerves", nerveName, "L"), ...corrections.getCorrections("cranialNerves", nerveName, "R")] : corrections.getCorrections("cranialNerves", nerveName),
+                    isPriority: nerve.isLateralized ? corrections.isPriority("cranialNerves", nerveName, "L") || corrections.isPriority("cranialNerves", nerveName, "R") : corrections.isPriority("cranialNerves", nerveName),
+                    onTogglePriority: () => nerve.isLateralized ? (corrections.togglePriority("cranialNerves", nerveName, "L"), corrections.togglePriority("cranialNerves", nerveName, "R")) : corrections.togglePriority("cranialNerves", nerveName),
+                    priorityTier: nerve.isLateralized ? corrections.getPriorityTier("cranialNerves", nerveName, "L") ?? corrections.getPriorityTier("cranialNerves", nerveName, "R") : corrections.getPriorityTier("cranialNerves", nerveName),
+                    onSetPriorityTier: (tier: any) => nerve.isLateralized ? corrections.setPriorityTierForSides("cranialNerves", nerveName, ["L", "R"], tier) : corrections.setPriorityTier("cranialNerves", nerveName, undefined, tier),
+                    onAddCorrection: (c: any) => corrections.addCorrection("cranialNerves", nerveName, c, nerve.isLateralized ? "L" : undefined),
+                    onToggleHolding: (id: string) => { if (nerve.isLateralized) { if (corrections.getCorrections("cranialNerves", nerveName, "L").some(x=>x.id===id)) corrections.toggleHolding("cranialNerves", nerveName, id, "L"); else corrections.toggleHolding("cranialNerves", nerveName, id, "R"); } else corrections.toggleHolding("cranialNerves", nerveName, id); },
+                    onRemoveCorrection: (id: string) => { if (nerve.isLateralized) { if (corrections.getCorrections("cranialNerves", nerveName, "L").some(x=>x.id===id)) corrections.removeCorrection("cranialNerves", nerveName, id, "L"); else corrections.removeCorrection("cranialNerves", nerveName, id, "R"); } else corrections.removeCorrection("cranialNerves", nerveName, id); },
+                  };
                   return (
-                    <NerveTestItem 
-                      key={nerve.id}
-                      nerve={nerve}
-                      test={tests.find(t => t.nerve_id === nerve.id.toString()) || {}}
-                      statusL={nervePattern[`${nerveName} (L)`]}
-                      statusR={nervePattern[`${nerveName} (R)`]}
-                      statusMidline={nervePattern[nerveName]}
-                      isLateralized={nerve.isLateralized || false}
-                      images={customImages[`cn${nerve.id}`]}
-                      showImage={showImages}
-                      compact={compactMode}
-                      onUpdate={updateTest}
-                      onShowInfo={onShowInfo}
-                    />
+                    <PathwayRow key={nerve.id} itemName={nerveName} {...correctionProps}>
+                      <NerveTestItem
+                        nerve={nerve}
+                        test={tests.find(t => t.nerve_id === nerve.id.toString()) || {}}
+                        statusL={nervePattern[`${nerveName} (L)`]}
+                        statusR={nervePattern[`${nerveName} (R)`]}
+                        statusMidline={nervePattern[nerveName]}
+                        isLateralized={nerve.isLateralized || false}
+                        images={customImages[`cn${nerve.id}`]}
+                        showImage={showImages}
+                        compact={compactMode}
+                        onUpdate={updateTest}
+                        onShowInfo={onShowInfo}
+                      />
+                    </PathwayRow>
                   );
                 })}
               </div>

@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { ArrowLeft, Loader2, ScrollText, User } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { PATHWAY_DIRECTION, directionForProcess, directionFromText } from "@/lib/pathway-direction";
 import type { LogCorrection, LogInhibition, SessionLog } from "@/lib/client-log";
 
 export interface LogClientSummary {
@@ -37,10 +38,26 @@ const statusMark = (status: string): string => {
   return "↓";
 };
 
-function InhibitionLine({ item }: { item: LogInhibition }) {
+function InhibitionLine({ item, clearedBy, corrections }: { item: LogInhibition; clearedBy?: LogCorrection; corrections?: LogCorrection[] }) {
+  // Cleared status is authoritative from metadata — a correction can clear
+  // things indirectly (fractal/domino effect), so don't require a matching
+  // correction to display "cleared". Show the correction on hover when one
+  // matches; otherwise note it was cleared without a direct correction.
+  const correctionText = corrections && corrections.length > 0
+    ? corrections.map((c) => `${c.process}${c.detail ? ` — ${c.detail}` : ""}`).join("; ")
+    : undefined;
+  const tooltip = item.cleared
+    ? (clearedBy
+        ? `Cleared by: ${clearedBy.process}${clearedBy.detail ? ` — ${clearedBy.detail}` : ""}${clearedBy.pathway ? ` (on ${clearedBy.pathway})` : ""}`
+        : "Cleared (no direct correction logged — likely a fractal/domino effect)")
+    : (correctionText ? `Correction: ${correctionText}` : undefined);
   return (
-    <div className="flex items-baseline gap-1.5 text-[13px]">
-      <span className={cn("font-semibold", item.cleared ? "text-chart-emerald" : statusTone(item.status))}>
+    <div
+      className="group relative flex flex-col gap-0.5 text-[13px]"
+      title={tooltip}
+    >
+      <div className="flex items-baseline gap-1.5">
+      <span className={cn("font-semibold", item.cleared ? "text-cleared" : statusTone(item.status))}>
         {item.cleared ? "✓" : statusMark(item.status)}
       </span>
       <span className={cn(item.cleared ? "text-muted-foreground line-through" : "text-foreground")}>
@@ -50,39 +67,38 @@ function InhibitionLine({ item }: { item: LogInhibition }) {
       <span
         className={cn(
           "text-[11px]",
-          item.cleared ? "font-medium text-chart-emerald" : "text-muted-foreground/60",
+          item.cleared ? "font-medium text-cleared cursor-help" : "text-muted-foreground/60",
         )}
       >
         {item.cleared ? "cleared" : displayStatus(item.status)}
       </span>
+      {corrections && corrections.length > 0 && (
+        <span className="inline-flex items-center rounded-full bg-cleared/10 px-1.5 py-0.5 text-[10px] font-bold text-cleared">
+          corrected
+        </span>
+      )}
+      {tooltip && (
+        <span className="pointer-events-none absolute left-0 top-full z-50 mt-1 hidden max-w-xs rounded-md bg-foreground px-2 py-1 text-[11px] leading-snug text-background shadow-lg group-hover:block">
+          {tooltip}
+        </span>
+      )}
+      </div>
     </div>
   );
 }
 
+const processDirection = (process: string, processId?: string) =>
+  directionForProcess(process, processId) ?? directionFromText(process);
+
 function processPill(process: string, processId?: string): string {
-  const key = (processId || process || "").toLowerCase();
-  if (key.includes("mechanoreceptor") || key.includes("mechano")) return "bg-chart-primary/10 text-chart-primary";
-  if (key.includes("nociceptive") || key.includes("nocicept")) return "bg-orange-500/10 text-orange-600 dark:text-orange-400";
-  if (key.includes("physiological")) return "bg-chart-emerald/10 text-chart-emerald";
-  if (key.includes("cortical")) return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
-  if (key.includes("subcortical")) return "bg-amber-500/10 text-amber-600 dark:text-amber-400";
-  if (key.includes("emotional") || key.includes("esr")) return "bg-rose-500/10 text-rose-600 dark:text-rose-400";
-  if (key.includes("heart wall") || key.includes("hw")) return "bg-rose-500/10 text-rose-500 dark:text-rose-400";
-  if (key.includes("belief") || key.includes("lb")) return "bg-sky-500/10 text-sky-600 dark:text-sky-400";
-  return "bg-muted text-foreground";
+  const direction = processDirection(process, processId);
+  if (!direction) return "bg-muted text-foreground";
+  return cn(PATHWAY_DIRECTION[direction].soft, PATHWAY_DIRECTION[direction].strong);
 }
 
 function processColor(process: string, processId?: string): string {
-  const key = (processId || process || "").toLowerCase();
-  if (key.includes("mechanoreceptor") || key.includes("mechano")) return "text-chart-primary";
-  if (key.includes("nociceptive") || key.includes("nocicept")) return "text-orange-600 dark:text-orange-400";
-  if (key.includes("physiological")) return "text-chart-emerald";
-  if (key.includes("cortical")) return "text-purple-600 dark:text-purple-400";
-  if (key.includes("subcortical")) return "text-amber-600 dark:text-amber-400";
-  if (key.includes("emotional") || key.includes("esr")) return "text-rose-600 dark:text-rose-400";
-  if (key.includes("heart wall") || key.includes("hw")) return "text-rose-500 dark:text-rose-400";
-  if (key.includes("belief") || key.includes("lb")) return "text-sky-600 dark:text-sky-400";
-  return "text-foreground";
+  const direction = processDirection(process, processId);
+  return direction ? PATHWAY_DIRECTION[direction].strong : "text-foreground";
 }
 
 function CorrectionLine({ correction }: { correction: LogCorrection }) {
@@ -108,7 +124,37 @@ function CorrectionLine({ correction }: { correction: LogCorrection }) {
 }
 
 function SessionEntry({ session, latest }: { session: SessionLog; latest: boolean }) {
+  const [showAllInh, setShowAllInh] = useState(false);
   const { appointment } = session;
+  const clearedByMap = useMemo(() => {
+    const m = new Map<string, LogCorrection>();
+    for (const inh of session.inhibitions) {
+      if (!inh.cleared) continue;
+      const name = inh.name.toLowerCase();
+      const match = session.corrections.find((c) => {
+        const haystack = `${c.pathway || ""} ${c.detail || ""} ${c.process || ""}`.toLowerCase();
+        return haystack.includes(name);
+      });
+      if (match) m.set(inh.key, match);
+    }
+    return m;
+  }, [session]);
+
+  // Corrections applied to each inhibition (matched by pathway), regardless of
+  // cleared status — so an inhibited finding that was corrected still surfaces
+  // the correction beneath it.
+  const correctionsByInhibition = useMemo(() => {
+    const m = new Map<string, LogCorrection[]>();
+    for (const inh of session.inhibitions) {
+      const name = inh.name.toLowerCase();
+      const matches = session.corrections.filter((c) => {
+        const haystack = `${c.pathway || ""} ${c.detail || ""} ${c.process || ""}`.toLowerCase();
+        return haystack.includes(name);
+      });
+      if (matches.length > 0) m.set(inh.key, matches);
+    }
+    return m;
+  }, [session]);
   const cancelled = String(appointment.status || "").toLowerCase() === "cancelled";
   const upcoming = appointment.date.getTime() > Date.now();
   const empty = session.inhibitions.length === 0 && session.corrections.length === 0;
@@ -138,16 +184,16 @@ function SessionEntry({ session, latest }: { session: SessionLog; latest: boolea
         >
           {format(appointment.date, "EEE d MMM yyyy")}
         </Link>
+        {cancelled && (
+          <span className="inline-flex items-center rounded-full bg-muted-foreground/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Cancelled
+          </span>
+        )}
         <span className="text-[11px] tabular-nums text-muted-foreground/70">
           {format(appointment.date, "h:mm a")}
         </span>
         {latest && !cancelled && !upcoming && (
           <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary/70">Latest</span>
-        )}
-        {cancelled && (
-          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
-            Cancelled
-          </span>
         )}
         {!cancelled && upcoming && (
           <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">
@@ -167,11 +213,127 @@ function SessionEntry({ session, latest }: { session: SessionLog; latest: boolea
           <h2 className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/60">
             Inhibitions
           </h2>
-          <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 sm:grid-cols-3">
-            {session.inhibitions.map((item) => (
-              <InhibitionLine key={item.key} item={item} />
-            ))}
-          </div>
+          {(() => {
+            const visible = showAllInh ? session.inhibitions : session.inhibitions.slice(0, 9);
+            const cranial = visible.filter((i) => i.category === "Cranial nerve");
+            const others = visible.filter((i) => i.category !== "Cranial nerve");
+
+            const nerveMap = new Map<string, typeof visible>();
+            for (const item of cranial) {
+              const nerve = item.name.split(" \u2014 ")[0].trim();
+              if (!nerveMap.has(nerve)) nerveMap.set(nerve, []);
+              nerveMap.get(nerve)!.push(item);
+            }
+            // Drop redundant base-nerve entries when a stim exists for that side.
+            for (const [nerve, items] of nerveMap) {
+              const stimSides = new Set(items.filter((i) => i.name.includes(" \u2014 ")).map((i) => i.side));
+              if (stimSides.size === 0) continue;
+              nerveMap.set(nerve, items.filter((i) => i.name.includes(" \u2014 ") || !stimSides.has(i.side)));
+            }
+
+            const otherGroups = new Map<string, typeof visible>();
+            for (const item of others) {
+              if (!otherGroups.has(item.category)) otherGroups.set(item.category, []);
+              otherGroups.get(item.category)!.push(item);
+            }
+
+            return (
+              <div className="mt-2 space-y-3">
+                {nerveMap.size > 0 && (
+                  <div>
+                    <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/50">
+                      Cranial nerve
+                    </p>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {[...nerveMap.entries()].map(([nerve, items]) => {
+                        const sides = new Map<string, typeof items>();
+                        for (const it of items) {
+                          const s = it.side || "\u2014";
+                          if (!sides.has(s)) sides.set(s, []);
+                          sides.get(s)!.push(it);
+                        }
+                        return (
+                          <div key={nerve} className="group relative rounded-lg bg-muted/40 px-3 py-2">
+                            <p className="text-[12px] font-semibold text-foreground">{nerve}</p>
+                            <div className={cn("mt-1 grid gap-1", [...sides.keys()].length > 1 ? "grid-cols-2" : "grid-cols-1")}>
+                              {[...sides.entries()].map(([side, sideItems]) => (
+                                <div key={side} className="space-y-0.5">
+                                  {sideItems.map((item) => {
+                                    const stim = item.name.includes(" \u2014 ") ? item.name.split(" \u2014 ")[1].trim() : null;
+                                    const isCleared = item.cleared;
+                                    const tooltip = item.cleared
+                                      ? (clearedByMap.get(item.key)
+                                          ? `Cleared by: ${clearedByMap.get(item.key)!.process}${clearedByMap.get(item.key)!.detail ? ` \u2014 ${clearedByMap.get(item.key)!.detail}` : ""}`
+                                          : "Cleared (fractal/domino effect \u2014 no direct correction logged)")
+                                      : (correctionsByInhibition.get(item.key)
+                                          ? `Correction: ${correctionsByInhibition.get(item.key)!.map((c) => `${c.process}${c.detail ? ` \u2014 ${c.detail}` : ""}`).join("; ")}`
+                                          : undefined);
+                                    return (
+                                      <div key={item.key} className="group relative flex flex-col gap-0.5">
+                                        <div className="flex items-baseline gap-1.5 text-[12px]">
+                                          <span className="text-[10px] font-bold text-muted-foreground/70 shrink-0 w-3">{side}</span>
+                                          <span className={cn("font-semibold shrink-0", item.cleared ? "text-cleared" : statusTone(item.status))}>
+                                            {item.cleared ? "\u2713" : statusMark(item.status)}
+                                          </span>
+                                          {stim && <span className="text-foreground min-w-0 line-clamp-2">{stim}</span>}
+                                          <span
+                                            title={item.cleared
+                                              ? (clearedByMap.get(item.key)
+                                                  ? `Cleared by: ${clearedByMap.get(item.key)!.process}${clearedByMap.get(item.key)!.detail ? ` \u2014 ${clearedByMap.get(item.key)!.detail}` : ""}`
+                                                  : "Cleared (fractal/domino effect \u2014 no direct correction logged)")
+                                              : (correctionsByInhibition.get(item.key)
+                                                  ? `Correction: ${correctionsByInhibition.get(item.key)!.map((c) => `${c.process}${c.detail ? ` \u2014 ${c.detail}` : ""}`).join("; ")}`
+                                                  : undefined)}
+                                            className={cn("text-[10px] shrink-0", item.cleared ? "font-medium text-cleared cursor-help" : "text-muted-foreground/60")}
+                                          >
+                                            {item.cleared ? "cleared" : displayStatus(item.status)}
+                                          </span>
+                                          {correctionsByInhibition.get(item.key) && (
+                                            <span className="inline-flex items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-primary-strong">
+                                              corrected
+                                            </span>
+                                          )}
+                                          {tooltip && (
+                                            <span className="pointer-events-none absolute left-0 top-full z-50 mt-1 hidden max-w-xs rounded-md bg-foreground px-2 py-1 text-[11px] leading-snug text-background shadow-lg group-hover:block">
+                                              {tooltip}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                {[...otherGroups.entries()].map(([category, items]) => (
+                  <div key={category}>
+                    <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/50">
+                      {category}
+                    </p>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 sm:grid-cols-3">
+                      {items.map((item) => (
+                        <InhibitionLine key={item.key} item={item} clearedBy={clearedByMap.get(item.key)} corrections={correctionsByInhibition.get(item.key)} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+          {session.inhibitions.length > 9 && (
+            <button
+              onClick={() => setShowAllInh((v) => !v)}
+              className="mt-2 text-[11px] font-semibold text-chart-primary hover:underline"
+            >
+              {showAllInh ? "Show less" : `Show all ${session.inhibitions.length} inhibitions`}
+            </button>
+          )}
         </section>
       )}
 
@@ -214,11 +376,11 @@ interface ClientLogViewProps {
  */
 export default function ClientLogView({ client, sessions, loading, error }: ClientLogViewProps) {
   const correctionCounts = useMemo(() => {
-    const m = new Map<string, { processId?: string; count: number }>();
+    const m = new Map<string, { processId?: string; count: number; pathways: Set<string> }>();
     for (const s of sessions) for (const c of s.corrections) {
       const entry = m.get(c.process);
-      if (entry) entry.count++;
-      else m.set(c.process, { processId: c.processId, count: 1 });
+      if (entry) { entry.count++; if (c.pathway) entry.pathways.add(c.pathway); }
+      else m.set(c.process, { processId: c.processId, count: 1, pathways: new Set(c.pathway ? [c.pathway] : []) });
     }
     return [...m.entries()].sort((a, b) => b[1].count - a[1].count);
   }, [sessions]);
@@ -256,9 +418,9 @@ export default function ClientLogView({ client, sessions, loading, error }: Clie
     const mixed = hypertonic && inhibited;
     const arrow = mixed ? "↓↑" : hypertonic ? "↑" : "↓";
     const color = mixed
-      ? "text-violet-600 dark:text-violet-400"
+      ? "text-chart-purple"
       : hypertonic
-        ? "text-amber-600 dark:text-amber-400"
+        ? "text-warning-strong"
         : "text-chart-destructive";
     return { arrow, color, cleared: s.has("cleared"), mixed, hypertonic };
   };
@@ -342,17 +504,17 @@ export default function ClientLogView({ client, sessions, loading, error }: Clie
       </div>
 
       {(correctionCounts.length > 0 || pathwayCounts.length > 0) && (
-        <div className="mt-4 rounded-3xl bg-muted p-5 space-y-5">
-          {correctionCounts.length > 0 && (
+        <div className="mt-4 rounded-2xl border border-border/40 bg-muted/60 p-5 space-y-5">          {correctionCounts.length > 0 && (
             <div>
               <p className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
                 Corrections
               </p>
               <div className="flex flex-wrap gap-2">
-                {correctionCounts.map(([name, { processId, count }]) => (
+                {correctionCounts.map(([name, { processId, count, pathways }]) => (
                   <span
                     key={name}
-                    className="inline-flex items-center gap-2 rounded-full bg-card py-1 pl-3.5 pr-1.5 shadow-xs"
+                    title={pathways.size > 0 ? `Pathways: ${[...pathways].join(", ")}` : undefined}
+                    className="inline-flex items-center gap-2 rounded-full bg-card py-1 pl-3.5 pr-1.5 shadow-xs cursor-help"
                   >
                     <span className={cn("text-[12px] font-bold", processColor(name, processId))}>
                       {name}
@@ -388,10 +550,10 @@ export default function ClientLogView({ client, sessions, loading, error }: Clie
                           "flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white",
                           status
                             ? status.mixed
-                              ? "bg-violet-400 dark:bg-violet-500"
+                              ? "bg-chart-purple"
                               : status.hypertonic
-                                ? "bg-amber-400 dark:bg-amber-500"
-                                : "bg-rose-400 dark:bg-rose-500"
+                                ? "bg-warning"
+                                : "bg-chart-destructive"
                             : "bg-muted-foreground/30",
                         )}
                       >

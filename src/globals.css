@@ -41,6 +41,11 @@
 
     --success: 243 58% 42%;
     --success-foreground: 0 0% 100%;
+    /* Cleared/corrected state — the one place green is permitted (status
+       language for resolved findings). Distinct from the banned emerald-* palette. */
+    --status-cleared: 142 71% 45%;
+    --status-cleared-foreground: 0 0% 100%;
+    --status-cleared-strong: 142 71% 35%;
     /* Text-safe companions to the hues above. The fills stay exactly on spec;
        these darker steps exist so 11–13px text clears WCAG AA when it sits on
        its own 10% tint (a badge, a soft chip) instead of plain white. */
@@ -54,6 +59,19 @@
     --destructive-foreground: 0 0% 100%;
     --destructive-strong: 356 72% 46%;
     --primary-strong: 243 58% 34%;
+
+    /* Correction direction coding. Afferent shares the deep-indigo accent;
+       efferent uses the existing chart-purple hue. Keep these independent so
+       a clinical status colour can never silently redefine a pathway. */
+    --afferent: 243 58% 42%;
+    --afferent-strong: 243 58% 34%;
+    --efferent: 266 48% 54%;
+    --efferent-strong: 266 52% 38%;
+
+    /* Priority tiers: Priority stays indigo; Primary priority is gold, kept
+       deliberately distinct from amber (hypertonic) and rose (inhibited). */
+    --priority-gold: 46 88% 52%;
+    --priority-gold-strong: 40 90% 34%;
 
     --border: 214 32% 89%;          /* #E2E8F0 */
     --input: 214 32% 89%;
@@ -105,6 +123,9 @@
     --success: 243 80% 68%;
     --success-foreground: 0 0% 100%;
     --success-strong: 243 80% 68%;
+    --status-cleared: 142 71% 55%;
+    --status-cleared-foreground: 0 0% 100%;
+    --status-cleared-strong: 142 71% 65%;
 
     --warning: 32 88% 50%;
     --warning-foreground: 0 0% 100%;
@@ -114,6 +135,14 @@
     --destructive-foreground: 0 0% 100%;
     --destructive-strong: 356 76% 66%;
     --primary-strong: 243 80% 68%;
+
+    --afferent: 243 80% 68%;
+    --afferent-strong: 243 80% 74%;
+    --efferent: 266 70% 72%;
+    --efferent-strong: 266 80% 80%;
+
+    --priority-gold: 46 90% 64%;
+    --priority-gold-strong: 46 95% 74%;
 
     --border: 214 32% 18%;
     --input: 214 32% 18%;
@@ -299,6 +328,7 @@
   .badge-warning { @apply bg-warning/10 text-[hsl(var(--warning-strong))]; }
   .badge-pending { @apply bg-muted text-muted-foreground; }
   .badge-recorded { @apply bg-primary/10 text-[hsl(var(--primary-strong))]; }
+  .badge-gold { @apply bg-gold/15 text-[hsl(var(--priority-gold-strong))]; }
 
   /* Text-safe semantic colours — use on tinted surfaces where the plain
      brand hue would fall under 4.5:1. */
@@ -333,7 +363,7 @@
 
   /* Keyboard hint chip */
   .kbd {
-    @apply inline-flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-[5px] border border-border/60 bg-background px-1 font-sans text-[10.5px] font-medium text-muted-foreground;
+    @apply inline-flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-[5px] border border-border/60 bg-background px-1 font-sans text-[11px] font-medium text-muted-foreground;
     box-shadow: 0 1px 0 hsl(var(--border) / 0.5);
   }
 

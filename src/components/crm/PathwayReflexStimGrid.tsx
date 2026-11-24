@@ -9,6 +9,7 @@ import PathwayReflexStimGridBoard from "./PathwayReflexStimGridBoard";
 import PathwayReflexStimGridSummary from "./PathwayReflexStimGridSummary";
 import { buildCheckedMap } from "./grid-checked";
 import { StimXMark } from "./StimXMark";
+import { useItemCorrections } from "@/components/crm/reflex-corrections/useItemCorrections";
 import {
   INTRINSIC_GRID_MUSCLES,
   seedMuscleState,
@@ -43,6 +44,9 @@ const GRID_TABS: { id: GridTab; label: string; icon: React.ComponentType<{ size?
 interface PathwayReflexStimGridProps {
   appointmentId: string;
   priorityPattern?: string | null;
+  metadata?: string | null;
+  saveField?: (field: string, value: any) => Promise<void>;
+  onUpdate?: () => void;
   updatePriorityPattern?: (category: string, itemName: string, status: string | null, side?: 'L' | 'R') => Promise<void>;
   isFullScreen?: boolean;
   onToggleFullScreen?: () => void;
@@ -51,6 +55,9 @@ interface PathwayReflexStimGridProps {
 export function PathwayReflexStimGrid({
   appointmentId,
   priorityPattern,
+  metadata,
+  saveField,
+  onUpdate,
   updatePriorityPattern,
   isFullScreen,
   onToggleFullScreen,
@@ -59,6 +66,8 @@ export function PathwayReflexStimGrid({
     usePrimitiveReflexTests(appointmentId, priorityPattern, updatePriorityPattern);
   const { tests: nerveTests, loading: nerveLoading, updateTest: updateNerve } =
     useCranialNerveTests(appointmentId, priorityPattern, updatePriorityPattern);
+  const corrSave = saveField ?? (async () => {});
+  const corr = useItemCorrections({ priority_pattern: priorityPattern, metadata: metadata ?? null }, corrSave, onUpdate ?? (() => {}));
 
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [muscleState, setMuscleState] = useState<Record<string, MuscleGridState>>({});
@@ -593,6 +602,7 @@ export function PathwayReflexStimGrid({
                 muscleState={muscleState}
                 onMuscleToggle={handleMuscleToggle}
                 showOnlyInhibited={showOnlyInhibited}
+                corr={corr}
               />
             </div>
           )}

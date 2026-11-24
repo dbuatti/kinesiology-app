@@ -24,6 +24,8 @@ import { Label } from "@/components/ui/label";
 import { safeParse } from "@/utils/safe-json";
 import { PrimitiveReflexTest } from "@/types/crm";
 import StimResultsSummary from "@/components/crm/StimResultsSummary";
+import { PathwayRow } from "@/components/crm/reflex-corrections/PathwayRow";
+import { useItemCorrections } from "@/components/crm/reflex-corrections/useItemCorrections";
 
 function HighlightPattern({ text }: { text: string }) {
   const parts = text.split(/(flexors|extensors|flexor|extensor)/gi);
@@ -108,8 +110,8 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
     <section className={cn(
       "rounded-xl border transition-all",
       compact ? "p-2 space-y-1" : "p-3 space-y-2",
-      test.is_primary_priority ? "bg-primary/[0.04] border-primary/20" : 
-      test.is_priority ? "bg-warning/[0.04] border-warning/20" : 
+      test.is_primary_priority ? "bg-gold/[0.06] border-gold/35" :
+      test.is_priority ? "bg-primary/[0.04] border-primary/20" :
       !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') ? "bg-success/[0.04] border-success/20" :
       "border-border bg-card"
     )}>
@@ -238,10 +240,10 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
             onClick={() => onUpdate(reflex.id, { is_primary_priority: !test.is_primary_priority })}
             className={cn(
               "h-5 px-2 text-[7px] font-medium transition-all rounded-md",
-              test.is_primary_priority ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              test.is_primary_priority ? "bg-gold text-foreground dark:text-background" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            {test.is_primary_priority ? "Primary" : "Set 1°"}
+            {test.is_primary_priority ? "Primary priority" : "Set 1°"}
           </Button>
           <Button 
             variant="ghost" 
@@ -320,13 +322,22 @@ export function PrimitiveReflexAssessment({
   appointmentId, 
   priorityPattern, 
   updatePriorityPattern,
-  compactMode
+  compactMode,
+  saveField,
+  onUpdate,
 }: { 
   appointmentId: string;
   priorityPattern?: string | null;
   updatePriorityPattern?: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
   compactMode?: boolean;
+  saveField?: (field: string, value: any) => Promise<void>;
+  onUpdate?: () => void;
 }) {
+  const corrections = useItemCorrections(
+    { priority_pattern: priorityPattern },
+    saveField ?? (async () => {}),
+    onUpdate ?? (() => {}),
+  );
   const { tests, loading, updateTest } = usePrimitiveReflexTests(appointmentId, priorityPattern, updatePriorityPattern);
   const [showOnlyInhibited, setShowOnlyInhibited] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -480,20 +491,53 @@ export function PrimitiveReflexAssessment({
                     </div>
                     <div className="flex-1 h-px bg-border" />
                   </div>
-                  {group.reflexes.map(reflex => (
-                    <ReflexTestItem 
-                      key={reflex.id}
-                      reflex={reflex}
-                      test={tests.find(t => t.reflex_id === reflex.id) || {}}
-                      statusL={reflexPattern[`${reflex.name} (L)`]}
-                      statusR={reflexPattern[`${reflex.name} (R)`]}
-                      statusMidline={reflexPattern[reflex.name]}
-                      isLateralized={reflex.isLateralized}
-                      images={customImages[reflex.id]}
-                      compact={compactMode}
-                      onUpdate={updateTest}
-                    />
-                  ))}
+                  {group.reflexes.map(reflex => {
+                    const correctionProps = {
+                      corrections: reflex.isLateralized
+                        ? [...corrections.getCorrections("primitiveReflexes", reflex.name, "L"), ...corrections.getCorrections("primitiveReflexes", reflex.name, "R")]
+                        : corrections.getCorrections("primitiveReflexes", reflex.name),
+                      isPriority: reflex.isLateralized
+                        ? corrections.isPriority("primitiveReflexes", reflex.name, "L") || corrections.isPriority("primitiveReflexes", reflex.name, "R")
+                        : corrections.isPriority("primitiveReflexes", reflex.name),
+                      onTogglePriority: () => reflex.isLateralized
+                        ? (corrections.togglePriority("primitiveReflexes", reflex.name, "L"), corrections.togglePriority("primitiveReflexes", reflex.name, "R"))
+                        : corrections.togglePriority("primitiveReflexes", reflex.name),
+                      priorityTier: reflex.isLateralized
+                        ? corrections.getPriorityTier("primitiveReflexes", reflex.name, "L") ?? corrections.getPriorityTier("primitiveReflexes", reflex.name, "R")
+                        : corrections.getPriorityTier("primitiveReflexes", reflex.name),
+                      onSetPriorityTier: (tier: any) => reflex.isLateralized
+                        ? corrections.setPriorityTierForSides("primitiveReflexes", reflex.name, ["L", "R"], tier)
+                        : corrections.setPriorityTier("primitiveReflexes", reflex.name, undefined, tier),
+                      onAddCorrection: (c: any) => corrections.addCorrection("primitiveReflexes", reflex.name, c, reflex.isLateralized ? "L" : undefined),
+                      onToggleHolding: (id: string) => {
+                        if (reflex.isLateralized) {
+                          if (corrections.getCorrections("primitiveReflexes", reflex.name, "L").some(x => x.id === id)) corrections.toggleHolding("primitiveReflexes", reflex.name, id, "L");
+                          else corrections.toggleHolding("primitiveReflexes", reflex.name, id, "R");
+                        } else corrections.toggleHolding("primitiveReflexes", reflex.name, id);
+                      },
+                      onRemoveCorrection: (id: string) => {
+                        if (reflex.isLateralized) {
+                          if (corrections.getCorrections("primitiveReflexes", reflex.name, "L").some(x => x.id === id)) corrections.removeCorrection("primitiveReflexes", reflex.name, id, "L");
+                          else corrections.removeCorrection("primitiveReflexes", reflex.name, id, "R");
+                        } else corrections.removeCorrection("primitiveReflexes", reflex.name, id);
+                      },
+                    };
+                    return (
+                      <PathwayRow key={reflex.id} itemName={reflex.name} {...correctionProps}>
+                        <ReflexTestItem
+                          reflex={reflex}
+                          test={tests.find(t => t.reflex_id === reflex.id) || {}}
+                          statusL={reflexPattern[`${reflex.name} (L)`]}
+                          statusR={reflexPattern[`${reflex.name} (R)`]}
+                          statusMidline={reflexPattern[reflex.name]}
+                          isLateralized={reflex.isLateralized}
+                          images={customImages[reflex.id]}
+                          compact={compactMode}
+                          onUpdate={updateTest}
+                        />
+                      </PathwayRow>
+                    );
+                  })}
                 </div>
               )
             ))}
@@ -506,20 +550,23 @@ export function PrimitiveReflexAssessment({
                   <h3 className="text-xs font-medium text-muted-foreground">Other</h3>
                   <div className="flex-1 h-px bg-border" />
                 </div>
-                {noTrack.map(reflex => (
-                  <ReflexTestItem 
-                    key={reflex.id}
-                    reflex={reflex}
-                    test={tests.find(t => t.reflex_id === reflex.id) || {}}
-                    statusL={reflexPattern[`${reflex.name} (L)`]}
-                    statusR={reflexPattern[`${reflex.name} (R)`]}
-                    statusMidline={reflexPattern[reflex.name]}
-                    isLateralized={reflex.isLateralized}
-                    images={customImages[reflex.id]}
-                    compact={compactMode}
-                    onUpdate={updateTest}
-                  />
-                ))}
+                {noTrack.map(reflex => {
+                  const correctionProps = {
+                    corrections: reflex.isLateralized ? [...corrections.getCorrections("primitiveReflexes", reflex.name, "L"), ...corrections.getCorrections("primitiveReflexes", reflex.name, "R")] : corrections.getCorrections("primitiveReflexes", reflex.name),
+                    isPriority: reflex.isLateralized ? corrections.isPriority("primitiveReflexes", reflex.name, "L") || corrections.isPriority("primitiveReflexes", reflex.name, "R") : corrections.isPriority("primitiveReflexes", reflex.name),
+                    onTogglePriority: () => reflex.isLateralized ? (corrections.togglePriority("primitiveReflexes", reflex.name, "L"), corrections.togglePriority("primitiveReflexes", reflex.name, "R")) : corrections.togglePriority("primitiveReflexes", reflex.name),
+                    priorityTier: reflex.isLateralized ? corrections.getPriorityTier("primitiveReflexes", reflex.name, "L") ?? corrections.getPriorityTier("primitiveReflexes", reflex.name, "R") : corrections.getPriorityTier("primitiveReflexes", reflex.name),
+                    onSetPriorityTier: (tier: any) => reflex.isLateralized ? corrections.setPriorityTierForSides("primitiveReflexes", reflex.name, ["L", "R"], tier) : corrections.setPriorityTier("primitiveReflexes", reflex.name, undefined, tier),
+                    onAddCorrection: (c: any) => corrections.addCorrection("primitiveReflexes", reflex.name, c, reflex.isLateralized ? "L" : undefined),
+                    onToggleHolding: (id: string) => { if (reflex.isLateralized) { if (corrections.getCorrections("primitiveReflexes", reflex.name, "L").some(x=>x.id===id)) corrections.toggleHolding("primitiveReflexes", reflex.name, id, "L"); else corrections.toggleHolding("primitiveReflexes", reflex.name, id, "R"); } else corrections.toggleHolding("primitiveReflexes", reflex.name, id); },
+                    onRemoveCorrection: (id: string) => { if (reflex.isLateralized) { if (corrections.getCorrections("primitiveReflexes", reflex.name, "L").some(x=>x.id===id)) corrections.removeCorrection("primitiveReflexes", reflex.name, id, "L"); else corrections.removeCorrection("primitiveReflexes", reflex.name, id, "R"); } else corrections.removeCorrection("primitiveReflexes", reflex.name, id); },
+                  };
+                  return (
+                    <PathwayRow key={reflex.id} itemName={reflex.name} {...correctionProps}>
+                      <ReflexTestItem reflex={reflex} test={tests.find(t => t.reflex_id === reflex.id) || {}} statusL={reflexPattern[`${reflex.name} (L)`]} statusR={reflexPattern[`${reflex.name} (R)`]} statusMidline={reflexPattern[reflex.name]} isLateralized={reflex.isLateralized} images={customImages[reflex.id]} compact={compactMode} onUpdate={updateTest} />
+                    </PathwayRow>
+                  );
+                })}
               </div>
             )}
           </>

@@ -236,7 +236,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
     stimulus: "Humming or swallowing. Test indicator muscle before and after to assess CN IX function.",
     clinicalPearl: "CN IX and CN X share medullary nuclei (nucleus ambiguus and nucleus solitarius). GB12 is the primary medulla stim point for the CN IX–XII group. Carotid sinus hypersensitivity (CN IX) can present as unexplained syncope or dizziness with neck pressure. Always assess CN IX and X together.",
     color: "bg-rose-50",
-    isLateralized: false,
+    isLateralized: true,
     dysfunctionConsequences: "CN IX dysfunction disrupts the pharyngeal phase of swallowing, causing dysphagia that is often silent (no coughing) and therefore underdiagnosed. Loss of taste on the posterior tongue affects appetite and nutritional intake. The carotid sinus branch monitors blood pressure and oxygen levels — CN IX dysfunction can cause carotid sinus hypersensitivity, presenting as unexplained syncope, dizziness, or drop attacks triggered by neck pressure (tight collars, turning the head). Because CN IX and CN X share medullary nuclei, dysfunction in one is almost always accompanied by some degree of the other — a combined CN IX/X assessment is standard FNH practice.",
     assessmentProtocol: "Hold GB21 (halfway between the neck and shoulder tip, in the belly of the Upper Trapezius) as the reflex point. Stimulus: humming or swallowing. Test indicator muscle before and after to assess CN IX function.",
     videoUrl: "https://embed-ssl.wistia.com/deliveries/c951c07cedadced7e1d2291c60a8dc22d90ac90a.mp4",

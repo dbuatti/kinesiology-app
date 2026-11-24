@@ -5,11 +5,12 @@ import { Zap, AlertCircle, RefreshCw, Activity, X, Loader2 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/crm/AppLayout";
-import { supabase } from "@/integrations/supabase/client";
 import { QuickSessionDialog } from "@/components/crm/QuickSessionDialog";
 import TodayTimeline, { type TimelineEntry } from "@/components/crm/TodayTimeline";
 import { DayStats, TodayList, NeedsYou, ComingUp, PracticeRow, type NeedLine } from "@/components/today/TodaySections";
 import { itemStart, unpaidItems, sumAmount } from "@/lib/calendarItems";
+import { createTodaySelfSession, getSelfClient, getTodaySelfSession, type SelfSessionRow } from "@/lib/selfPractice";
+import { showError } from "@/utils/toast";
 import {
   loadTodayItems,
   splitToday,
@@ -52,7 +53,8 @@ const TodayPage = () => {
   const [now, setNow] = useState(new Date());
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
   const [selfCheckOpen, setSelfCheckOpen] = useState(false);
-  const [selfAppt, setSelfAppt] = useState<{ id: string; date: string; tag: string } | null>(null);
+  const [selfAppt, setSelfAppt] = useState<SelfSessionRow | null>(null);
+  const [selfClientId, setSelfClientId] = useState<string | null>(null);
   const [selfApptLoading, setSelfApptLoading] = useState(false);
   const [morningDone] = useState(readMorningDone);
   useEffect(() => {
@@ -69,17 +71,27 @@ const TodayPage = () => {
   const openSelfCheck = async () => {
     setSelfCheckOpen(true);
     setSelfApptLoading(true);
+    setSelfAppt(null);
     try {
-      const { data } = await supabase
-        .from("appointments")
-        .select("id, date, tag, status")
-        .eq("client_id", "083d3518-449e-43c6-bdda-c31c116b3984")
-        .order("date", { ascending: false })
-        .limit(1);
-      const row = (data || [])[0];
-      setSelfAppt(row ? { id: row.id, date: row.date, tag: row.tag || "Session" } : null);
-    } catch {
-      setSelfAppt(null);
+      const client = await getSelfClient();
+      if (!client) throw new Error("No self-practice record found.");
+      setSelfClientId(client.id);
+      setSelfAppt(await getTodaySelfSession(client.id));
+    } catch (error) {
+      setSelfClientId(null);
+      showError(error instanceof Error ? error.message : "Could not load your self-session.");
+    } finally {
+      setSelfApptLoading(false);
+    }
+  };
+
+  const startTodaySelfSession = async () => {
+    if (!selfClientId) return;
+    setSelfApptLoading(true);
+    try {
+      setSelfAppt(await createTodaySelfSession(selfClientId));
+    } catch (error) {
+      showError(error instanceof Error ? error.message : "Could not create your self-session.");
     } finally {
       setSelfApptLoading(false);
     }
@@ -232,24 +244,29 @@ const TodayPage = () => {
               </Button>
             </div>
             <p className="text-sm text-muted-foreground">
-              Run the full PEACE process on yourself. Opens your most recent self-session, where all assessments save to your own record.
+              Run the full PEACE process on yourself. Always opens <span className="font-medium text-foreground">today&apos;s</span> self-session, where assessments save to your own record — never as a chargeable client session.
             </p>
             {selfApptLoading ? (
               <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
             ) : selfAppt ? (
               <div className="space-y-3">
                 <div className="rounded-xl bg-muted/50 px-4 py-3">
-                  <div className="text-sm font-semibold text-foreground">{selfAppt.tag}</div>
+                  <div className="text-sm font-semibold text-foreground">{selfAppt.name || selfAppt.tag || "Self Practice"}</div>
                   <div className="text-xs text-muted-foreground">{new Date(selfAppt.date).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Australia/Melbourne" })}</div>
                 </div>
                 <Button className="w-full gap-1.5" onClick={() => { window.open(`/appointments/${selfAppt.id}`, "_blank"); setSelfCheckOpen(false); }}>
-                  <Activity className="h-4 w-4" /> Open PEACE session
+                  <Activity className="h-4 w-4" /> Open today&apos;s PEACE session
                 </Button>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground italic">No self-session found. Create one from Sessions → New, then reopen.</p>
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">No self-session for today yet.</p>
+                <Button className="w-full gap-1.5" onClick={startTodaySelfSession} disabled={!selfClientId}>
+                  <Activity className="h-4 w-4" /> Start today&apos;s self-session
+                </Button>
+              </div>
             )}
-            <p className="text-[11px] text-muted-foreground">Opens in a new tab.</p>
+            <p className="text-[11px] text-muted-foreground">Free of charge. Opens in a new tab.</p>
           </div>
         </div>
       )}

@@ -52,6 +52,7 @@ Never hardcode hex in components.
 | `--muted-foreground` | `210 10% 45%` | `210 10% 65%` | Secondary text |
 | `--border` | `214 32% 89%` | `214 32% 18%` | Hairlines; often at `/30…/70` |
 | `--brand` | `#172B5F` | — | Public website navy only, never in-app |
+| `--status-cleared` | `142 71% 45%` (green) | `142 71% 55%` | **Deliberate exception** — cleared/corrected findings only (via `cleared` Tailwind color). Green is otherwise banned; this token exists solely for the cleared/corrected state in the client log. |
 
 ### Status language (fixed mapping — do not remix)
 
@@ -66,6 +67,34 @@ Rules: tinted backgrounds at **6–20% opacity** with matching text color. Solid
 fills are reserved for the one solid primary button per view. Raw palette
 classes (`emerald-*`, `green-*`) are banned; `scripts/gen-dark-palette.mjs`
 remaps legacy light-palette classes for dark mode, but new code uses tokens.
+
+### Correction direction (fixed mapping — do not remix)
+
+Direction is **not** clinical status. Use `src/lib/pathway-direction.ts` and its
+`PATHWAY_DIRECTION` classes rather than palette colours or the `↓`/`↑` status
+glyphs.
+
+| Meaning | Icon (lucide) | Treatment |
+|---|---|---|
+| Afferent (bottom-up) | `ArrowDownCircle` | `--afferent` (deep indigo), `--afferent-strong` on tints |
+| Efferent (top-down) | `ArrowUpCircle` | `--efferent` (existing chart-purple hue), `--efferent-strong` on tints |
+
+`--efferent` reuses the approved `--chart-purple` hue — it is a direction
+token, not a new brand colour. Direction arrows are always the circled lucide
+icons; plain `↓` and `↑` stay reserved for inhibited and hypertonic status.
+`directionForProcess()` / `directionFromText()` resolve older log entries, so
+mechanoreceptor, nociceptive and physiological read as afferent, while
+cortical, subcortical, emotional, heart wall and limiting-belief processes read
+as efferent. Unknown processes stay neutral.
+
+### Priority tiers
+
+Priority is a single three-state control: **None → Priority → Primary priority**.
+Priority uses the indigo `--primary` token; Primary priority uses gold
+(`--priority-gold` / `--priority-gold-strong`, exposed as `bg-gold` /
+`text-gold-strong`). Gold is intentionally distinct from amber (hypertonic) and
+rose (inhibited), which stay clinical status colours. One primary per session;
+replacing it demotes the old primary to Priority.
 
 ### Charts (Recharts/SVG)
 
@@ -179,6 +208,11 @@ fundamentals, history.
 ## 9. Pre-commit checklist (UI work)
 
 - [ ] No new colors, hexes, or palette classes outside §2
+- [ ] Afferent/efferent surfaces use `PATHWAY_DIRECTION`, never status colours
+      (including right-click pathway menus)
+- [ ] Priority is one three-state control — None / Priority / Primary priority —
+      including right-click pathway menus. Priority = indigo, Primary priority =
+      gold (`--priority-gold`); amber is hypertonic and rose is inhibited.
 - [ ] No green anywhere (search `emerald`, `green-`, `success` before push —
       `success` token exists but resolves to indigo)
 - [ ] One solid primary button per view

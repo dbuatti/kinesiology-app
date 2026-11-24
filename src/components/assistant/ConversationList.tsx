@@ -101,7 +101,7 @@ export default function ConversationList({ conversations, activeId, onSelect, on
                   >
                     <button onClick={() => onSelect(c.id)} className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
                       {initials ? (
-                        <span className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[10.5px] font-semibold", c.voice_student_name ? "bg-chart-destructive/10 text-chart-destructive" : "bg-primary/10 text-primary-strong")}>
+                        <span className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold", c.voice_student_name ? "bg-chart-destructive/10 text-chart-destructive" : "bg-primary/10 text-primary-strong")}>
                           {initials}
                         </span>
                       ) : (

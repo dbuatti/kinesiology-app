@@ -36,7 +36,7 @@ export const AFFERENT_PATHWAYS: PathwayOption[] = [
     label: 'Mechanoreceptor (Unconscious)',
     direction: 'Afferent (Bottom-Up)',
     icon: Activity,
-    color: 'text-primary',
+    color: 'text-afferent',
     description: 'Unconscious mechanoreception — Golgi receptors in ligaments, tendons and fascia report joint stretch to the cerebellum via the spinocerebellar tract (~85% of unconscious input).',
     confirmationTest: 'Inhibited DM → state afferent (facilitates) → X card 5-10s (facilitates) → Unconscious mechanoreception confirmed',
     protocols: [
@@ -52,7 +52,7 @@ export const AFFERENT_PATHWAYS: PathwayOption[] = [
     label: 'Nociceptive (Threat Detection)',
     direction: 'Afferent (Bottom-Up)',
     icon: AlertTriangle,
-    color: 'text-orange-500',
+    color: 'text-afferent',
     description: 'Threat detection via the spinothalamic tract (anterolateral system). Nociceptors are threat receptors in every tissue, terminating at the thalamus. A-delta (fast) and C-fibre (slow) pathways.',
     confirmationTest: 'Compression over site → muscle locks (5-10s) confirms nociception',
     protocols: [
@@ -68,7 +68,7 @@ export const AFFERENT_PATHWAYS: PathwayOption[] = [
     label: 'Physiological',
     direction: 'Afferent (Bottom-Up)',
     icon: Droplets,
-    color: 'text-emerald-500',
+    color: 'text-afferent',
     description: 'Biochemical, nutritional, and organ-based signals. Addresses systemic imbalances.',
     protocols: [
       'Address biochemical or organ-specific reflexes',
@@ -85,7 +85,7 @@ export const EFFERENT_PATHWAYS: PathwayOption[] = [
     label: 'Cortical (Top-Down)',
     direction: 'Efferent (Top-Down)',
     icon: Brain,
-    color: 'text-purple-500',
+    color: 'text-efferent',
     description: 'Intentional, cognitive, and motor planning processes. Contralateral logic: right cortex controls left body.',
     protocols: [
       'Identify primary cortical zone (PFC, M1, S1, etc.) and lateralize',
@@ -99,7 +99,7 @@ export const EFFERENT_PATHWAYS: PathwayOption[] = [
     label: 'Subcortical (Autonomic)',
     direction: 'Efferent (Top-Down)',
     icon: Zap,
-    color: 'text-amber-500',
+    color: 'text-efferent',
     description: 'Automatic, reflexive, and autonomic regulation. Ipsilateral logic: left cerebellum controls left body.',
     protocols: [
       'Identify subcortical zone (Limbic, Cerebellum, Hypothalamus, etc.)',
@@ -113,7 +113,7 @@ export const EFFERENT_PATHWAYS: PathwayOption[] = [
     label: 'Emotional',
     direction: 'Efferent (Top-Down)',
     icon: Heart,
-    color: 'text-rose-500',
+    color: 'text-efferent',
     description: 'Limbic system and emotional processing. Final check if afferent and efferent are clear.',
     protocols: [
       'Apply ESR (Emotional Stress Release) points',

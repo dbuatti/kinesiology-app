@@ -30,6 +30,7 @@ import {
   SkipForward,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PATHWAY_DIRECTION } from "@/lib/pathway-direction";
 import { showError, showSuccess } from "@/utils/toast";
 import { useHeartWallSession } from "@/hooks/useHeartWallSession";
 import { HeartWallLayer, HeartWallLayerPhase, HeartWallLayerStatus } from "@/types/crm";
@@ -51,7 +52,7 @@ const ASSESSMENT_STEPS: { phase: HeartWallLayerPhase; label: string; icon: React
   { phase: "count", label: "Count", icon: Layers, color: "text-chart-primary" },
   { phase: "find-emotion", label: "Find Emotion", icon: Heart, color: "text-rose-600" },
   { phase: "assess-muscles", label: "Muscles", icon: Dumbbell, color: "text-primary-strong" },
-  { phase: "brain-zones", label: "Brain Zones", icon: Brain, color: "text-indigo-600" },
+  { phase: "brain-zones", label: "Brain Zones", icon: Brain, color: PATHWAY_DIRECTION.efferent.strong },
   { phase: "context", label: "Context", icon: Info, color: "text-amber-600" },
   { phase: "confirm", label: "Confirm", icon: Sparkles, color: "text-amber-500" },
 ];
@@ -59,7 +60,7 @@ const ASSESSMENT_STEPS: { phase: HeartWallLayerPhase; label: string; icon: React
 const CORRECTION_STEPS: { phase: HeartWallLayerPhase; label: string; icon: React.ComponentType<{ size?: number }>; color: string }[] = [
   { phase: "correct-stim", label: "Stim", icon: Activity, color: "text-rose-500" },
   { phase: "correct-hold", label: "Hold Point", icon: Dumbbell, color: "text-chart-primary" },
-  { phase: "correct-tap", label: "Tap Zones", icon: Brain, color: "text-indigo-600" },
+  { phase: "correct-tap", label: "Tap Zones", icon: Brain, color: PATHWAY_DIRECTION.efferent.strong },
   { phase: "recheck", label: "Recheck", icon: RefreshCw, color: "text-primary-strong" },
 ];
 
@@ -762,12 +763,12 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                   {/* ─ Brain Zones ─ */}
                   {currentStep.phase === "brain-zones" && (
                     <div className="space-y-3">
-                      <div className="p-5 bg-indigo-50 rounded-xl border border-indigo-100 space-y-3">
+                      <div className={cn("p-5 rounded-xl border space-y-3", PATHWAY_DIRECTION.efferent.tint)}>
                         <div className="flex items-center gap-2">
-                          <Brain size={16} className="text-indigo-600" />
-                          <p className="text-sm font-semibold text-indigo-900">Find efferent brain zones</p>
+                          <Brain size={16} className={PATHWAY_DIRECTION.efferent.strong} />
+                          <p className={cn("text-sm font-semibold", PATHWAY_DIRECTION.efferent.strong)}>Find efferent brain zones</p>
                         </div>
-                        <p className="text-xs text-indigo-800 leading-relaxed">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
                           Challenge in sequence: Cortical → Subcortical → Cerebellum → Limbic → Prefrontal Cortex, etc.
                           Select the specific brain zones involved. Click the side label (L/R) to toggle side.
                         </p>
@@ -928,8 +929,8 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                         </div>
                       </div>
 
-                      <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
-                        <p className="text-xs font-medium text-indigo-800 leading-relaxed">
+                      <div className="p-4 bg-muted/50 rounded-xl border border-border">
+                        <p className="text-xs font-medium text-muted-foreground leading-relaxed">
                           <strong>Intention cue:</strong> While stimulating, state in your mind:
                           "Heart wall, {pendingLayer.organ || 'organ'}, {pendingLayer.emotion || 'emotion'}{pendingLayer.contextInherited ? `, inherited from ${pendingLayer.contextParent || 'origin'}` : ''}."
                           Keep repeating this over the 3-minute period — it anchors the correction.
@@ -971,25 +972,25 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                   {/* ─ Tap ─ */}
                   {currentStep.phase === "correct-tap" && (
                     <div className="space-y-3">
-                      <div className="p-5 bg-indigo-50 rounded-xl border border-indigo-100 space-y-3">
+                      <div className={cn("p-5 rounded-xl border space-y-3", PATHWAY_DIRECTION.efferent.tint)}>
                         <div className="flex items-center gap-2">
-                          <Brain size={16} className="text-indigo-600" />
-                          <p className="text-sm font-semibold text-indigo-900">Tap efferent brain zones</p>
+                          <Brain size={16} className={PATHWAY_DIRECTION.efferent.strong} />
+                          <p className={cn("text-sm font-semibold", PATHWAY_DIRECTION.efferent.strong)}>Tap efferent brain zones</p>
                         </div>
-                        <p className="text-xs text-indigo-800 leading-relaxed">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
                           Tap the identified brain zones <strong>simultaneously</strong> while holding the pulse point.
                           This collapses the whole circuit — the emotion, organ, muscles, and brain zones all at once.
                         </p>
                         {pendingLayer.brainZones && (
                           <div className="p-3 bg-background/60 rounded-lg space-y-2">
-                            <p className="text-[10px] font-bold text-indigo-700 uppercase">Identified zones — tap each simultaneously</p>
+                            <p className={cn("text-[10px] font-bold uppercase", PATHWAY_DIRECTION.efferent.strong)}>Identified zones — tap each simultaneously</p>
                             <div className="flex flex-wrap gap-1.5">
                               {pendingLayer.brainZones.split(", ").map((zone, i) => {
                                 const match = zone.match(/^(.+)\s+\((L|R|B)\)$/);
                                 const name = match ? match[1] : zone;
                                 const side = match ? match[2] : null;
                                 return (
-                                  <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-100 text-indigo-800 rounded-lg text-xs font-semibold border border-indigo-200">
+                                  <span key={i} className={cn("inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold border", PATHWAY_DIRECTION.efferent.soft, PATHWAY_DIRECTION.efferent.strong, PATHWAY_DIRECTION.efferent.border)}>
                                     <Brain size={10} />
                                     {name}
                                     {side && (
@@ -1008,8 +1009,8 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                         )}
                         <div className="grid grid-cols-2 gap-3 mt-2">
                           <div className="p-3 bg-background/60 rounded-lg">
-                            <p className="text-[10px] font-bold text-indigo-700 uppercase">Standard (3 min)</p>
-                            <p className="text-xs text-indigo-800 font-medium">Hold points and state the intention for 3 minutes. Keep repeating: "Heart wall, organ, emotion, inherited from…"</p>
+                            <p className={cn("text-[10px] font-bold uppercase", PATHWAY_DIRECTION.efferent.strong)}>Standard (3 min)</p>
+                            <p className="text-xs text-muted-foreground font-medium">Hold points and state the intention for 3 minutes. Keep repeating: "Heart wall, organ, emotion, inherited from…"</p>
                           </div>
                           <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
                             <p className="text-[10px] font-bold text-amber-700 uppercase">If Inherited (10 swipes)</p>

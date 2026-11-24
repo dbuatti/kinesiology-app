@@ -1153,7 +1153,7 @@ export function CTMModal({
                 i === step ? "bg-chart-primary text-white shadow-sm" : "bg-muted/50 text-muted-foreground hover:bg-muted"
               )}
             >
-              <span className={cn("w-4 h-4 rounded-full text-[9px] flex items-center justify-center font-bold", i === step ? "bg-white/20" : "bg-muted-foreground/20")}>{i + 1}</span>
+              <span className={cn("w-4 h-4 rounded-full text-[11px] flex items-center justify-center font-bold", i === step ? "bg-white/20" : "bg-muted-foreground/20")}>{i + 1}</span>
               {p.label}
             </button>
           ))}
@@ -1329,7 +1329,7 @@ export function CTMModal({
                     "After each correction, re-screen off the same pathway. Deep patterns often need two or three passes.",
                   ].map((s, i) => (
                     <li key={i} className="flex gap-2 text-[11px] text-foreground/80 leading-relaxed">
-                      <span className="w-5 h-5 rounded-full bg-chart-primary/10 text-chart-primary flex items-center justify-center text-[9px] font-extrabold shrink-0">{i + 1}</span>
+                      <span className="w-5 h-5 rounded-full bg-chart-primary/10 text-chart-primary flex items-center justify-center text-[11px] font-extrabold shrink-0">{i + 1}</span>
                       <span>{s}</span>
                     </li>
                   ))}

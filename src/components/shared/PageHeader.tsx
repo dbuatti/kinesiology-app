@@ -34,7 +34,7 @@ export function PageHeader({
         )}
         <div className="min-w-0">
           <h1 className="font-serif sm:truncate text-[26px] font-medium leading-[1.15] tracking-[-0.02em] text-foreground">{title}</h1>
-          {subtitle && <p className="mt-0.5 line-clamp-2 text-[13.5px] text-muted-foreground">{subtitle}</p>}
+          {subtitle && <p className="mt-0.5 line-clamp-2 text-[13px] text-muted-foreground">{subtitle}</p>}
         </div>
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2 md:max-w-[60%] md:justify-end">{actions}</div>}

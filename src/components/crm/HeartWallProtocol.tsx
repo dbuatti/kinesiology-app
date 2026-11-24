@@ -22,6 +22,7 @@ import {
   Volume2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PATHWAY_DIRECTION } from '@/lib/pathway-direction';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EMOTION_CODE_CHART, ROW_DATA } from '@/data/emotion-code-data';
@@ -207,14 +208,14 @@ const HeartWallProtocol = () => {
               </div>
             </CollapsibleSection>
 
-            <CollapsibleSection title="5. Find Efferent Coordinates" icon={Brain} color="bg-indigo-600" desc="Identify the brain zones involved." defaultOpen>
+            <CollapsibleSection title="5. Find Efferent Coordinates" icon={Brain} color={PATHWAY_DIRECTION.efferent.fill} desc="Identify the brain zones involved." defaultOpen>
               <div className="space-y-2 text-sm">
                 <p className="font-medium leading-relaxed">
                   As you normally would: challenge Cortical → Subcortical → Cerebellum → Limbic, etc.
                   Find which specific brain zones are involved and write them down.
                 </p>
-                <div className="p-3 bg-indigo-50 rounded-lg">
-                  <p className="text-xs font-bold text-indigo-800">From the demo: "Cortical → Subcortical → Cerebellum → Thalamus"</p>
+                <div className={cn("p-3 rounded-lg", PATHWAY_DIRECTION.efferent.soft)}>
+                  <p className={cn("text-xs font-bold", PATHWAY_DIRECTION.efferent.strong)}>From the demo: "Cortical → Subcortical → Cerebellum → Thalamus"</p>
                 </div>
               </div>
             </CollapsibleSection>
@@ -412,9 +413,9 @@ const HeartWallProtocol = () => {
                   <li>• Jaw / Neck (occasionally)</li>
                 </ul>
               </div>
-              <div className="flex items-start gap-3 p-3 bg-indigo-50 rounded-lg">
-                <Brain size={16} className="text-indigo-600 shrink-0 mt-0.5" />
-                <p className="text-xs font-medium text-indigo-800 leading-relaxed">
+              <div className={cn("flex items-start gap-3 p-3 rounded-lg", PATHWAY_DIRECTION.efferent.soft)}>
+                <Brain size={16} className={cn(PATHWAY_DIRECTION.efferent.strong, "shrink-0 mt-0.5")} />
+                <p className={cn("text-xs font-medium leading-relaxed", PATHWAY_DIRECTION.efferent.strong)}>
                   <strong>Intention cue:</strong> While holding the points, state in your mind:
                   {`"Heart wall, {organ}, {emotion}, inherited from {parent}."`}
                   Keep repeating this over the 3-minute period — it anchors the correction.
@@ -438,7 +439,7 @@ const HeartWallProtocol = () => {
             </div>
           </CollapsibleSection>
 
-          <CollapsibleSection title="4. Tap Efferent Zones" icon={Brain} color="bg-indigo-600" desc="Collapse the circuit through the brain coordinates." defaultOpen>
+          <CollapsibleSection title="4. Tap Efferent Zones" icon={Brain} color={PATHWAY_DIRECTION.efferent.fill} desc="Collapse the circuit through the brain coordinates." defaultOpen>
             <div className="space-y-3 text-sm">
               <p className="font-medium leading-relaxed">
                 Tap the identified brain zones (e.g. Right Prefrontal Cortex + Pons, or Cerebellum + Thalamus).

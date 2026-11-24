@@ -29,6 +29,7 @@ import { format, isToday, startOfToday, differenceInDays } from "date-fns";
 import { Link, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
+import { getSelfClient, SELF_SESSION_BILLING } from "@/lib/selfPractice";
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -54,33 +55,25 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  const { data: { user } } = await supabase.auth.getUser();
  if (!user) return;
 
- // 1. Find or create the "Self" client record
- const selfLookup = await supabase
- .from('clients')
- .select('*')
- .eq('user_id', user.id)
- .eq('is_practitioner', true)
- .single();
- let client = selfLookup.data;
- const clientError = selfLookup.error;
+ // 1. Resolve the one canonical self record (the practitioner is also a client)
+ let client = await getSelfClient();
 
- if (clientError && clientError.code === 'PGRST116') {
+ if (!client) {
  const { data: newClient, error: createError } = await supabase
  .from('clients')
  .insert({
  user_id: user.id,
- name: "Practitioner (Self)",
+ name: "Daniele Buatti",
  is_practitioner: true,
  email: user.email,
- pronouns: "Practitioner"
+ pronouns: "Practitioner",
+ standard_rate: 0
  })
  .select()
  .single();
- 
+
  if (createError) throw createError;
  client = newClient;
- } else if (clientError) {
- throw clientError;
  }
 
  setSelfClient(client);
@@ -117,9 +110,9 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  client_id: selfClient.id,
  name: `Self Practice - ${format(now, "MMM d, yyyy")}`,
  date: now.toISOString(),
- tag: "Self Practice",
  status: "Scheduled",
- goal: goal || "Personal health monitoring & protocol practice"
+ goal: goal || "Personal health monitoring & protocol practice",
+ ...SELF_SESSION_BILLING
  })
  .select()
  .single();

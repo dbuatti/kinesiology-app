@@ -17,20 +17,10 @@ self.addEventListener("activate", (event) => {
       .keys()
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
-      .then(() => self.clients.matchAll({ type: "window" }))
-      .then((clients) =>
-        Promise.all(
-          clients.map((client) => {
-            // Force any page controlled by an older service worker to reload,
-            // so users are never stuck on a stale shell referencing dead assets.
-            if (typeof client.navigate === "function") {
-              return client.navigate(client.url).catch(() => client.postMessage({ type: "SW_UPDATED" }));
-            }
-            return client.postMessage({ type: "SW_UPDATED" });
-          })
-        )
-      )
   );
+  // Do not navigate controlled pages here. An update takes effect on the next
+  // navigation; forcing every open tab to reload mid-session is what caused
+  // the app to refresh seemingly at random (and lost in-progress edits).
 });
 
 self.addEventListener("fetch", (event) => {

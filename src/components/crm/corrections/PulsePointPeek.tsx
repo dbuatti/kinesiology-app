@@ -83,7 +83,7 @@ export const PulsePointPeek = ({
         />
         <span className="mt-2 flex items-baseline justify-between gap-2 px-1 pb-0.5">
           <span className="text-[12px] font-bold text-foreground">{pulse}</span>
-          <span className="text-[9px] font-medium uppercase tracking-wide text-muted-foreground">
+          <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
             Pulse point
           </span>
         </span>

@@ -8,6 +8,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import BoltTimer from "./BoltTimer";
 import CoherenceAssessment from "./CoherenceAssessment";
 import { cn } from "@/lib/utils";
+import { getSelfClient, SELF_SESSION_BILLING } from "@/lib/selfPractice";
 
 interface PractitionerVitalsProps {
   onComplete: () => void;
@@ -24,14 +25,7 @@ const PractitionerVitals = ({ onComplete }: PractitionerVitalsProps) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data } = await supabase
-        .from('clients')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('is_practitioner', true)
-        .single();
-      
-      setSelfClient(data);
+      setSelfClient(await getSelfClient());
     };
     fetchSelf();
   }, []);
@@ -49,10 +43,10 @@ const PractitionerVitals = ({ onComplete }: PractitionerVitalsProps) => {
           user_id: user!.id,
           client_id: selfClient.id,
           date: now.toISOString(),
-          tag: "Self Practice",
           status: "Completed",
           name: `Morning Vitals - ${now.toLocaleDateString()}`,
-          ...data
+          ...data,
+          ...SELF_SESSION_BILLING
         });
 
       if (error) throw error;

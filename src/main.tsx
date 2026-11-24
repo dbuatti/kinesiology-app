@@ -28,22 +28,9 @@ createRoot(document.getElementById("root")!).render(
 
 // Register the service worker for offline PWA support.
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
-  // Reload once when a new service worker takes control, so users never
-  // stay on a stale cached shell referencing dead asset hashes.
-  let reloading = false;
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (reloading) return;
-    reloading = true;
-    window.location.reload();
-  });
-  navigator.serviceWorker.addEventListener("message", (event) => {
-    if (event.data && event.data.type === "SW_UPDATED") {
-      if (reloading) return;
-      reloading = true;
-      window.location.reload();
-    }
-  });
-
+  // A new worker takes effect on the next navigation. Never reload an active
+  // tab on controllerchange: it fires on first registration and on every
+  // update, which was refreshing the app mid-session (and losing edits).
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/sw.js").catch((err) => {
       console.error("[SW] registration failed:", err);

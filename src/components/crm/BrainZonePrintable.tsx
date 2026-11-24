@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { BRAIN_REFLEX_POINTS, BrainReflexPoint } from '@/data/brain-reflex-data';
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from '@/lib/utils';
+import { PATHWAY_DIRECTION } from '@/lib/pathway-direction';
 import { Brain, Layers, Columns, Rows, Maximize2, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import BrainReflexModal from './BrainReflexModal';
@@ -99,7 +100,7 @@ const BrainZonePrintable = () => {
 
         <div className={cn(
           "space-y-1 text-foreground",
-          isCompact ? "text-[8.5px] sm:text-[7px] leading-[1.1]" : "text-[10px] sm:text-[8.5px] leading-tight"
+          isCompact ? "text-[10px] sm:text-[7px] leading-[1.1]" : "text-[10px] sm:text-[10px] leading-tight"
         )}>
           <p><strong>L:</strong> {point.location}</p>
           <p><strong>S:</strong> {point.stimulus || point.technique || "Standard"}</p>
@@ -167,9 +168,9 @@ const BrainZonePrintable = () => {
       <div className="space-y-8">
         {/* Cortical Section */}
         <div className="space-y-3">
-          <div className="flex items-center gap-2 border-b-2 border-purple-600 pb-1">
-            <Brain size={14} className="text-purple-600" />
-            <h2 className="text-[11px] font-semibold uppercase text-purple-600 tracking-wider">Cortical Zones (Contralateral)</h2>
+          <div className={cn("flex items-center gap-2 border-b-2 pb-1", PATHWAY_DIRECTION.efferent.border)}>
+            <Brain size={14} className={PATHWAY_DIRECTION.efferent.strong} />
+            <h2 className={cn("text-[11px] font-semibold uppercase tracking-wider", PATHWAY_DIRECTION.efferent.strong)}>Cortical Zones (Contralateral)</h2>
           </div>
           <div className={cn(
             "grid gap-3 grid-cols-1 sm:grid-cols-2",
@@ -181,7 +182,7 @@ const BrainZonePrintable = () => {
               <ZoneCard 
                 key={p.id} 
                 point={p} 
-                color="bg-purple-600" 
+                color={PATHWAY_DIRECTION.efferent.fill} 
                 onClick={() => handleCardClick(p)}
               />
             ))}
@@ -190,9 +191,9 @@ const BrainZonePrintable = () => {
 
         {/* Subcortical Section */}
         <div className="space-y-3">
-          <div className="flex items-center gap-2 border-b-2 border-indigo-600 pb-1">
-            <Layers size={14} className="text-indigo-600" />
-            <h2 className="text-[11px] font-semibold uppercase text-indigo-600 tracking-wider">Subcortical Zones (Ipsilateral)</h2>
+          <div className={cn("flex items-center gap-2 border-b-2 pb-1", PATHWAY_DIRECTION.efferent.border)}>
+            <Layers size={14} className={PATHWAY_DIRECTION.efferent.text} />
+            <h2 className={cn("text-[11px] font-semibold uppercase tracking-wider", PATHWAY_DIRECTION.efferent.text)}>Subcortical Zones (Ipsilateral)</h2>
           </div>
           <div className={cn(
             "grid gap-3 grid-cols-1 sm:grid-cols-2",
@@ -204,7 +205,7 @@ const BrainZonePrintable = () => {
               <ZoneCard 
                 key={p.id} 
                 point={p} 
-                color="bg-indigo-600" 
+                color="bg-efferent/70" 
                 onClick={() => handleCardClick(p)}
               />
             ))}
@@ -216,10 +217,10 @@ const BrainZonePrintable = () => {
       <div className="mt-8 pt-2 border-t border-border flex justify-between items-center">
         <div className="flex gap-6 text-xs font-medium text-muted-foreground">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-purple-600" /> Cortical (Opposite Side)
+            <div className={cn("w-2 h-2 rounded-full", PATHWAY_DIRECTION.efferent.fill)} /> Cortical (Opposite Side)
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-indigo-600" /> Subcortical (Same Side)
+            <div className="w-2 h-2 rounded-full bg-efferent/70" /> Subcortical (Same Side)
           </div>
         </div>
         <p className="text-xs font-medium text-muted-foreground/60">Confidential Practitioner Resource</p>

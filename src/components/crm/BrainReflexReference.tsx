@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { PATHWAY_DIRECTION } from "@/lib/pathway-direction";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
@@ -297,13 +298,13 @@ const BrainReflexReference = () => {
             </p>
           </div>
           <div className="flex gap-3">
-            <div className="px-4 py-2 bg-muted dark:bg-indigo-900/20 rounded-xl border border-border dark:border-indigo-900/30 text-center">
-              <p className="text-[10px] font-medium text-chart-primary uppercase tracking-wider">Cortical</p>
-              <p className="text-xl font-semibold text-chart-primary dark:text-indigo-400">{corticalCount}</p>
+            <div className={cn("px-4 py-2 bg-muted rounded-xl border border-border text-center", PATHWAY_DIRECTION.efferent.border)}>
+              <p className={cn("text-[10px] font-medium uppercase tracking-wider", PATHWAY_DIRECTION.efferent.strong)}>Cortical</p>
+              <p className={cn("text-xl font-semibold", PATHWAY_DIRECTION.efferent.strong)}>{corticalCount}</p>
             </div>
-            <div className="px-4 py-2 bg-muted dark:bg-rose-900/20 rounded-xl border border-border dark:border-rose-900/30 text-center">
-              <p className="text-[10px] font-medium text-chart-destructive uppercase tracking-wider">Sub-Cortical</p>
-              <p className="text-xl font-semibold text-chart-destructive dark:text-rose-400">{subcorticalCount}</p>
+            <div className={cn("px-4 py-2 bg-muted rounded-xl border border-border text-center", PATHWAY_DIRECTION.efferent.border)}>
+              <p className={cn("text-[10px] font-medium uppercase tracking-wider", PATHWAY_DIRECTION.efferent.text)}>Sub-cortical</p>
+              <p className={cn("text-xl font-semibold", PATHWAY_DIRECTION.efferent.text)}>{subcorticalCount}</p>
             </div>
           </div>
         </div>
@@ -313,7 +314,7 @@ const BrainReflexReference = () => {
           <CardHeader className="p-8 pb-4 flex flex-row items-center justify-between">
             <div className="space-y-1">
               <CardTitle className="text-xl font-semibold flex items-center gap-3">
-                <MapIcon size={24} className="text-chart-primary" /> Brain Zone Reference Map
+                <MapIcon size={24} className={PATHWAY_DIRECTION.efferent.strong} /> Brain Zone Reference Map
               </CardTitle>
               <CardDescription className="text-muted-foreground font-medium">
                 Use this diagram to locate zones on the skull before applying each protocol
@@ -414,9 +415,9 @@ const BrainReflexReference = () => {
                       <div className="flex gap-2 mb-2">
                         <Badge className={cn(
                           "border-none font-medium text-[10px] uppercase tracking-wider",
-                          point.category === 'Cortical' ? "bg-chart-primary/10 text-chart-primary" :
-                          point.category === 'Subcortical' ? "bg-chart-destructive/10 text-chart-destructive" :
-                          "bg-chart-emerald/10 text-chart-emerald"
+                          point.category === 'Cortical' ? cn(PATHWAY_DIRECTION.efferent.soft, PATHWAY_DIRECTION.efferent.strong) :
+                          point.category === 'Subcortical' ? cn(PATHWAY_DIRECTION.efferent.soft, PATHWAY_DIRECTION.efferent.text) :
+                          "bg-muted text-muted-foreground"
                         )}>
                           {point.category}
                         </Badge>

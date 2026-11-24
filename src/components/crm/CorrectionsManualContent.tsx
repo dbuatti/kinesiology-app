@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { PATHWAY_DIRECTION, type PathwayDirection } from "@/lib/pathway-direction";
 import {
-    ArrowDownCircle,
-    ArrowUpCircle,
     ArrowRightCircle,
     ArrowDown,
     Activity,
@@ -320,17 +319,9 @@ const CorrectionsManualContent = ({
 
   const activeId = activeTab === "afferent" ? afferentActive : efferentActive;
 
-  // Accent follows the active item so Heart Wall stays rose and Limiting
-  // Beliefs stays red, even though both now sit under the Efferent tab.
-  const efferentAccent = efferentActive === "hw"
-    ? "text-rose-600 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-800"
-    : efferentActive === "lb-process"
-    ? "text-destructive bg-destructive/10 border-destructive/20"
-    : "text-purple-600 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-800";
-
-  const tabAccent = activeTab === "afferent"
-    ? "text-primary dark:text-blue-300 bg-primary/5 dark:bg-primary/50 border-primary/20 dark:border-blue-800"
-    : efferentAccent;
+  // One direction colour per tab: every efferent process — including Heart
+  // Wall and Limiting Beliefs — inherits the efferent purple coding.
+  const tabAccent = PATHWAY_DIRECTION[activeTab as PathwayDirection].active;
 
   // Apply a deep-link request (finding row, dock shortcut, keyboard).
   useEffect(() => {
@@ -404,7 +395,7 @@ const CorrectionsManualContent = ({
     );
   };
 
-  const renderSteps = (steps: string[], accent: string, processId?: string) => {
+  const renderSteps = (steps: string[], direction: PathwayDirection, processId?: string) => {
     const done = (processId && protocolLogs?.[processId]?.steps) || [];
     const canTick = !!(processId && onProtocolLogChange);
 
@@ -420,13 +411,11 @@ const CorrectionsManualContent = ({
       });
     };
 
-    const stepColor = accent === "text-primary"
-      ? { done: "bg-primary text-primary-foreground", pending: "bg-primary/10 dark:bg-primary/50 text-primary dark:text-blue-300" }
-      : accent === "text-purple-600"
-        ? { done: "bg-primary text-primary-foreground", pending: "bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300" }
-        : accent === "text-rose-600"
-          ? { done: "bg-primary text-primary-foreground", pending: "bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300" }
-          : { done: "bg-primary text-primary-foreground", pending: "bg-destructive/10 text-destructive" };
+    const directionStyle = PATHWAY_DIRECTION[direction];
+    const stepColor = {
+      done: cn(directionStyle.fill, "text-primary-foreground"),
+      pending: cn(directionStyle.soft, directionStyle.strong),
+    };
 
     return (
       <div className="space-y-1">
@@ -446,7 +435,7 @@ const CorrectionsManualContent = ({
                 disabled={!canTick}
                 title={canTick ? (isDone ? "Mark as not done" : "Mark as done") : undefined}
                 className={cn(
-                  "shrink-0 flex h-6 w-6 items-center justify-center rounded-md text-[9.5px] font-semibold transition-colors",
+                  "shrink-0 flex h-6 w-6 items-center justify-center rounded-md text-[11px] font-semibold transition-colors",
                   canTick && "cursor-pointer",
                   isDone ? stepColor.done : stepColor.pending
                 )}
@@ -566,7 +555,7 @@ const CorrectionsManualContent = ({
     const filtered = filteredBrainZones(points);
     return (
       <div>
-        <h4 className={cn("text-[9.5px] font-semibold uppercase tracking-wider mb-2", accent)}>{label}</h4>
+        <h4 className={cn("text-[11px] font-semibold uppercase tracking-wider mb-2", accent)}>{label}</h4>
         <div className="flex flex-wrap gap-1">
           {filtered.map((p) => (
             <button
@@ -594,7 +583,7 @@ const CorrectionsManualContent = ({
               <StepProgress processId={afferentActive} total={content.steps.length} />
             </div>
             {logBar(afferentActive)}
-            {renderSteps(content.steps, "text-primary", afferentActive)}
+            {renderSteps(content.steps, "afferent", afferentActive)}
             {trailingFields(afferentActive)}
           </div>
         );
@@ -615,7 +604,7 @@ const CorrectionsManualContent = ({
                 <StepProgress processId={efferentActive} total={content.steps.length} />
               </div>
               {logBar(efferentActive)}
-              {renderSteps(content.steps, "text-purple-600", efferentActive)}
+              {renderSteps(content.steps, "efferent", efferentActive)}
               {trailingFields(efferentActive)}
             </div>
 
@@ -624,7 +613,7 @@ const CorrectionsManualContent = ({
                 <BrainZoneList
                   points={efferentActive === "cortical" ? corticalPoints : subcorticalPoints}
                   label={efferentActive === "cortical" ? "Cortical zones" : "Subcortical zones"}
-                  accent="text-purple-600 dark:text-purple-400"
+                  accent={PATHWAY_DIRECTION.efferent.strong}
                 />
               </div>
             )}
@@ -632,7 +621,7 @@ const CorrectionsManualContent = ({
               <div className="space-y-4">
                 {/* NLP Eye Position Reference */}
                 <div className="panel p-4">
-                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 mb-3">NLP Eye Accessing Cues</h3>
+                  <h3 className={cn("text-[10px] font-bold uppercase tracking-wider mb-3", PATHWAY_DIRECTION.efferent.strong)}>NLP Eye Accessing Cues</h3>
                   <div className="mb-3 overflow-hidden rounded-lg border border-border bg-white">
                     <ReferenceImage
                       src="/images/eye-modes.png"
@@ -653,12 +642,12 @@ const CorrectionsManualContent = ({
                           className={cn(
                             "flex w-full items-start gap-2 rounded-md px-2 py-1 text-left text-[10px] transition-colors",
                             active
-                              ? "bg-purple-50 text-purple-900 ring-1 ring-purple-200 dark:bg-purple-950/40 dark:text-purple-200 dark:ring-purple-800"
+                              ? cn(PATHWAY_DIRECTION.efferent.active, "text-foreground ring-1 ring-efferent/25")
                               : canLogEmotional && "hover:bg-muted/50"
                           )}
                         >
                           <span className="flex w-[70px] shrink-0 items-center gap-1 font-bold text-foreground">
-                            {active && <Check size={10} strokeWidth={3} className="text-purple-600" />}
+                            {active && <Check size={10} strokeWidth={3} className={PATHWAY_DIRECTION.efferent.strong} />}
                             {row.full}
                           </span>
                           <span className="w-24 shrink-0 font-semibold text-foreground/80">{row.cue}</span>
@@ -776,14 +765,14 @@ const CorrectionsManualContent = ({
               className="scroll-mt-2 space-y-2 border-t border-border/50 pt-4 first:border-t-0 first:pt-0"
             >
               <div className="flex items-center gap-2">
-                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded text-[9px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded text-[11px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
                   {index + 1}
                 </span>
                 <h3 className="text-sm font-medium tracking-tight">{section.title}</h3>
                 <StepProgress processId={sectionId} total={section.steps.length} />
               </div>
               {logBar(sectionId, section.title)}
-              {renderSteps(section.steps, "text-rose-600", sectionId)}
+              {renderSteps(section.steps, "efferent", sectionId)}
               {trailingFields(sectionId)}
             </section>
           );
@@ -820,7 +809,7 @@ const CorrectionsManualContent = ({
         {/* Belief header — prominent input for the core belief */}
         <div className="border border-border/60 rounded-lg bg-card/50 p-3">
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="flex items-center justify-center w-4 h-4 rounded text-[9px] font-bold bg-primary/10 text-primary shrink-0">B</span>
+            <span className="flex items-center justify-center w-4 h-4 rounded text-[11px] font-bold bg-primary/10 text-primary shrink-0">B</span>
             <p className="text-[11px] font-medium text-foreground">Limiting Belief</p>
           </div>
           <input
@@ -895,7 +884,7 @@ const CorrectionsManualContent = ({
                         placeholder="Type your notes here…"
                         rows={2}
                         className={cn(
-                          "w-full min-w-0 resize-none rounded-md border border-transparent bg-transparent px-2 py-1 text-[10.5px] text-foreground focus:outline-none focus:border-primary/30 focus:bg-muted/20 transition-all",
+                          "w-full min-w-0 resize-none rounded-md border border-transparent bg-transparent px-2 py-1 text-[11px] text-foreground focus:outline-none focus:border-primary/30 focus:bg-muted/20 transition-all",
                           isFilled && "placeholder:text-transparent",
                         )}
                       />
@@ -1063,11 +1052,11 @@ const CorrectionsManualContent = ({
             )}
             <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); if (compact) setInstructionsOpen(false); }}>
               <TabsList className={cn("bg-muted/50", compact ? "h-7" : "h-8")}>
-                <TabsTrigger value="afferent" className={cn(compact ? "h-6 text-[10.5px] px-2" : "h-7 text-[11px] px-2.5")}>
-                  <ArrowDownCircle size={11} className="mr-1" /> Afferent
+                <TabsTrigger value="afferent" className={cn(compact ? "h-6 text-[11px] px-2" : "h-7 text-[11px] px-2.5")}>
+                  <PATHWAY_DIRECTION.afferent.Icon size={11} className="mr-1" /> Afferent
                 </TabsTrigger>
-                <TabsTrigger value="efferent" className={cn(compact ? "h-6 text-[10.5px] px-2" : "h-7 text-[11px] px-2.5")}>
-                  <ArrowUpCircle size={11} className="mr-1" /> Efferent
+                <TabsTrigger value="efferent" className={cn(compact ? "h-6 text-[11px] px-2" : "h-7 text-[11px] px-2.5")}>
+                  <PATHWAY_DIRECTION.efferent.Icon size={11} className="mr-1" /> Efferent
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -1138,7 +1127,7 @@ const CorrectionsManualContent = ({
                           setInstructionsOpen(true);
                         }}
                         className={cn(
-                          "group relative px-2 py-1.5 rounded-lg border text-[10.5px] font-medium transition-all",
+                          "group relative px-2 py-1.5 rounded-lg border text-[11px] font-medium transition-all",
                           instructionsOpen && "w-full text-left",
                           item.id === activeId
                             ? cn(tabAccent, "shadow-sm")

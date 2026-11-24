@@ -46,7 +46,14 @@ export default function ClientHubPage() {
   const [client, setClient] = useState<HubClient | null>(null);
   const doesLessons = !!client?.email && !!client?.practices.some((p) => p !== "kinesiology");
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<"chat" | "email">(searchParams.get("view") === "email" ? "email" : "chat");
+  // Default to the email thread (a record of real contact) rather than the
+  // AI chat — clicking a person's name should land on their record first,
+  // with the assistant one click away. Deep links via ?view=chat still win,
+  // and an incoming ?prompt= (Follow-up quick actions) forces chat so the
+  // drafted instruction actually sends.
+  const [viewMode, setViewMode] = useState<"chat" | "email">(
+    searchParams.get("view") === "chat" || !!searchParams.get("prompt") ? "chat" : "email",
+  );
   const [mobileShowList, setMobileShowList] = useState(true);
 
   useEffect(() => {

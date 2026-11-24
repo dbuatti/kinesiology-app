@@ -28,7 +28,7 @@ const CorrectionsSidebar = ({ items, activeId, setActiveId, tabAccent }: Correct
             {showGroup && (
               <p
                 className={cn(
-                  "px-2.5 pb-1 text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground/40",
+                  "px-2.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40",
                   i === 0 ? "pt-0" : "pt-2.5"
                 )}
               >

@@ -4,6 +4,7 @@ import { ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { StimXMark } from "./StimXMark";
+import { PathwayRow } from "@/components/crm/reflex-corrections/PathwayRow";
 import { getMuscleInfo } from "@/data/muscle-info-data";
 import type { CranialNerve } from "@/data/cranial-nerve-data";
 import {
@@ -37,6 +38,7 @@ interface PathwayReflexStimGridBoardProps {
   muscleState?: Record<string, MuscleGridState>;
   onMuscleToggle?: (key: string) => void;
   showOnlyInhibited?: boolean;
+  corr?: ReturnType<typeof import("@/components/crm/reflex-corrections/useItemCorrections").useItemCorrections>;
 }
 
 const SectionHeader = ({ children }: { children: React.ReactNode }) => (
@@ -189,76 +191,108 @@ const ReflexRow = ({
   checked,
   onToggle,
   query,
+  corr,
 }: {
   reflex: { id: string; short: string; name: string; stimulus: string; inhibition: string; lateralized?: boolean; stims?: string[] };
   checked: Record<string, boolean>;
   onToggle: (key: string) => void;
   query: string;
+  corr?: PathwayReflexStimGridBoardProps["corr"];
 }) => {
   const match = primitiveReflexMatches(reflex, query);
   const lateral = !!reflex.lateralized;
   const stims = reflex.stims ?? [reflex.stimulus];
   return (
     <div>
-      {stims.map((label, i) => (
-        <div
-          key={i}
-          id={i === 0 ? `prim-row-${reflex.short}` : undefined}
-          className={cn(
-            "flex items-stretch border-t border-border/50 transition-colors",
-            match && "bg-yellow-100/60"
-          )}
-        >
-          <div className="flex w-72 shrink-0 items-center border-r border-border/50 bg-muted/30 px-4 py-3">
-            {i === 0 ? (
-              <Tooltip delayDuration={200}>
-                <TooltipTrigger asChild>
-                  <Link
-                    to="/resources?tab=primitive"
-                    className="text-sm font-semibold text-foreground hover:text-chart-primary"
-                  >
-                    {reflex.short} — {reflex.name}
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="rounded-xl max-w-[260px] text-[10px] leading-relaxed bg-foreground text-background border-none shadow-xl">
-                  <p className="font-semibold uppercase tracking-wider text-[10px] mb-1">{reflex.short} — Inhibition</p>
-                  <p className="font-medium">{reflex.inhibition}</p>
-                </TooltipContent>
-              </Tooltip>
-            ) : (
-              <span className="text-xs font-medium text-muted-foreground/60">
-                {reflex.short} · {i + 1}
-              </span>
+      {stims.map((label, i) => {
+        const itemName = reflex.stims?.length ? `${reflex.name} — ${label}` : reflex.name;
+        const category = "primitiveReflexes";
+        const side = undefined;
+        const corrProps = corr ? {
+          corrections: lateral ? [...corr.getCorrections(category, itemName, "L"), ...corr.getCorrections(category, itemName, "R")] : corr.getCorrections(category, itemName, side),
+          isPriority: lateral ? (corr.isPriority(category, itemName, "L") || corr.isPriority(category, itemName, "R")) : corr.isPriority(category, itemName, side),
+          onTogglePriority: () => {
+            if (lateral) {
+              const next = !(corr.isPriority(category, itemName, "L") || corr.isPriority(category, itemName, "R"));
+              corr.setPriorityTier(category, itemName, "L", next ? "priority" : null);
+              corr.setPriorityTier(category, itemName, "R", next ? "priority" : null);
+            } else corr.togglePriority(category, itemName, side);
+          },
+          onAddCorrection: (c: any) => corr.addCorrection(category, itemName, c, lateral ? "L" : side),
+          onToggleHolding: (id: string) => {
+            if (lateral) {
+              if (corr.getCorrections(category, itemName, "L").some((c:any)=>c.id===id)) corr.toggleHolding(category, itemName, id, "L");
+              else corr.toggleHolding(category, itemName, id, "R");
+            } else corr.toggleHolding(category, itemName, id, side);
+          },
+          onRemoveCorrection: (id: string) => {
+            if (lateral) {
+              if (corr.getCorrections(category, itemName, "L").some((c:any)=>c.id===id)) corr.removeCorrection(category, itemName, id, "L");
+              else corr.removeCorrection(category, itemName, id, "R");
+            } else corr.removeCorrection(category, itemName, id, side);
+          },
+        } : null;
+        const row = (
+          <div
+            id={i === 0 ? `prim-row-${reflex.short}` : undefined}
+            className={cn(
+              "flex items-stretch border-t border-border/50 transition-colors",
+              match && "bg-yellow-100/60",
+              corrProps?.isPriority && "bg-primary/[0.03]"
             )}
+          >
+            <div className="flex w-72 shrink-0 items-center border-r border-border/50 bg-muted/30 px-4 py-3">
+              {i === 0 ? (
+                <Tooltip delayDuration={200}>
+                  <TooltipTrigger asChild>
+                    <Link
+                      to="/resources?tab=primitive"
+                      className="text-sm font-semibold text-foreground hover:text-chart-primary"
+                    >
+                      {reflex.short} — {reflex.name}
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="rounded-xl max-w-[260px] text-[10px] leading-relaxed bg-foreground text-background border-none shadow-xl">
+                    <p className="font-semibold uppercase tracking-wider text-[10px] mb-1">{reflex.short} — Inhibition</p>
+                    <p className="font-medium">{reflex.inhibition}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <span className="text-xs font-medium text-muted-foreground/60">
+                  {reflex.short} · {i + 1}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-1 items-center px-4 py-3 text-xs font-medium text-foreground/75">
+              {label}
+            </div>
+            <div className="flex w-24 shrink-0 items-center justify-center border-l border-border/50 bg-muted/30 px-3 py-3">
+              {lateral ? (
+                <SideSplit
+                  lKey={primitiveSideKey(reflex, "L")}
+                  rKey={primitiveSideKey(reflex, "R")}
+                  checked={checked}
+                  onToggle={onToggle}
+                  itemTitle={`mark ${reflex.name} showing`}
+                />
+              ) : reflex.stims?.length ? (
+                <MarkButton
+                  marked={!!checked[primitiveStimKeyAt(reflex, i)]}
+                  onClick={() => onToggle(primitiveStimKeyAt(reflex, i))}
+                  title={`${reflex.name} — ${label}, click to mark showing`}
+                />
+              ) : (
+                <MarkButton
+                  marked={!!checked[primitiveStimKey(reflex)]}
+                  onClick={() => onToggle(primitiveStimKey(reflex))}
+                  title={`${reflex.name} — click to mark showing`}
+                />
+              )}
+            </div>
           </div>
-          <div className="flex flex-1 items-center px-4 py-3 text-xs font-medium text-foreground/75">
-            {label}
-          </div>
-          <div className="flex w-24 shrink-0 items-center justify-center border-l border-border/50 bg-muted/30 px-3 py-3">
-            {lateral ? (
-              <SideSplit
-                lKey={primitiveSideKey(reflex, "L")}
-                rKey={primitiveSideKey(reflex, "R")}
-                checked={checked}
-                onToggle={onToggle}
-                itemTitle={`mark ${reflex.name} showing`}
-              />
-            ) : reflex.stims?.length ? (
-              <MarkButton
-                marked={!!checked[primitiveStimKeyAt(reflex, i)]}
-                onClick={() => onToggle(primitiveStimKeyAt(reflex, i))}
-                title={`${reflex.name} — ${label}, click to mark showing`}
-              />
-            ) : (
-              <MarkButton
-                marked={!!checked[primitiveStimKey(reflex)]}
-                onClick={() => onToggle(primitiveStimKey(reflex))}
-                title={`${reflex.name} — click to mark showing`}
-              />
-            )}
-          </div>
-        </div>
-      ))}
+        );
+        return corrProps ? <PathwayRow key={i} itemName={itemName} {...corrProps}>{row}</PathwayRow> : <React.Fragment key={i}>{row}</React.Fragment>;
+      })}
     </div>
   );
 };
@@ -268,11 +302,13 @@ const NerveBlock = ({
   checked,
   onToggle,
   query,
+  corr,
 }: {
   nerve: CranialNerve;
   checked: Record<string, boolean>;
   onToggle: (key: string) => void;
   query: string;
+  corr?: PathwayReflexStimGridBoardProps["corr"];
 }) => {
   const entries = nerveStimEntries(nerve);
   const nerveInhibited =
@@ -314,13 +350,39 @@ const NerveBlock = ({
           else if (l) activeSide = "L";
           else if (r) activeSide = "R";
         }
-        return (
+        const itemName = `${nerve.name}: ${nerve.latinName} — ${line}`;
+        const category = "cranialNerves";
+        const corrProps = corr ? {
+          corrections: lateral ? [...corr.getCorrections(category, itemName, "L"), ...corr.getCorrections(category, itemName, "R")] : corr.getCorrections(category, itemName),
+          isPriority: lateral ? (corr.isPriority(category, itemName, "L") || corr.isPriority(category, itemName, "R")) : corr.isPriority(category, itemName),
+          onTogglePriority: () => {
+            if (lateral) {
+              const next = !(corr.isPriority(category, itemName, "L") || corr.isPriority(category, itemName, "R"));
+              corr.setPriorityTier(category, itemName, "L", next ? "priority" : null);
+              corr.setPriorityTier(category, itemName, "R", next ? "priority" : null);
+            } else corr.togglePriority(category, itemName);
+          },
+          onAddCorrection: (c: any) => corr.addCorrection(category, itemName, c, lateral ? "L" : undefined),
+          onToggleHolding: (id: string) => {
+            if (lateral) {
+              if (corr.getCorrections(category, itemName, "L").some((c:any)=>c.id===id)) corr.toggleHolding(category, itemName, id, "L");
+              else corr.toggleHolding(category, itemName, id, "R");
+            } else corr.toggleHolding(category, itemName, id);
+          },
+          onRemoveCorrection: (id: string) => {
+            if (lateral) {
+              if (corr.getCorrections(category, itemName, "L").some((c:any)=>c.id===id)) corr.removeCorrection(category, itemName, id, "L");
+              else corr.removeCorrection(category, itemName, id, "R");
+            } else corr.removeCorrection(category, itemName, id);
+          },
+        } : null;
+        const row = (
           <div
             id={`cn-row-${nerve.id}-${i}`}
-            key={i}
             className={cn(
               "flex items-stretch border-t border-border/40 transition-colors",
-              match && "bg-yellow-100/60"
+              match && "bg-yellow-100/60",
+              corrProps?.isPriority && "bg-primary/[0.03]"
             )}
           >
             <div className="flex flex-1 items-center px-4 py-3 text-xs font-medium text-foreground/75">
@@ -347,6 +409,7 @@ const NerveBlock = ({
             </div>
           </div>
         );
+        return corrProps ? <PathwayRow key={i} itemName={itemName} {...corrProps}>{row}</PathwayRow> : <React.Fragment key={i}>{row}</React.Fragment>;
       })}
     </div>
   );
@@ -435,6 +498,7 @@ const MuscleRow = ({
   checked,
   onToggle,
   query,
+  corr,
 }: {
   name: string;
   midline: boolean;
@@ -442,15 +506,42 @@ const MuscleRow = ({
   checked: Record<string, MuscleGridState>;
   onToggle: (key: string) => void;
   query: string;
+  corr?: PathwayReflexStimGridBoardProps["corr"];
 }) => {
   const info = getMuscleInfo(name);
   const match = muscleMatches({ name, midline, group }, query);
-  return (
+  const itemName = name;
+  const category = "muscles";
+  const corrProps = corr ? {
+    corrections: midline ? corr.getCorrections(category, itemName) : [...corr.getCorrections(category, itemName, "L"), ...corr.getCorrections(category, itemName, "R")],
+    isPriority: midline ? corr.isPriority(category, itemName) : (corr.isPriority(category, itemName, "L") || corr.isPriority(category, itemName, "R")),
+    onTogglePriority: () => {
+      if (midline) corr.togglePriority(category, itemName);
+      else {
+        const next = !(corr.isPriority(category, itemName, "L") || corr.isPriority(category, itemName, "R"));
+        corr.setPriorityTier(category, itemName, "L", next ? "priority" : null);
+        corr.setPriorityTier(category, itemName, "R", next ? "priority" : null);
+      }
+    },
+    onAddCorrection: (c: any) => corr.addCorrection(category, itemName, c, midline ? undefined : "L"),
+    onToggleHolding: (id: string) => {
+      if (midline) corr.toggleHolding(category, itemName, id);
+      else if (corr.getCorrections(category, itemName, "L").some((c:any)=>c.id===id)) corr.toggleHolding(category, itemName, id, "L");
+      else corr.toggleHolding(category, itemName, id, "R");
+    },
+    onRemoveCorrection: (id: string) => {
+      if (midline) corr.removeCorrection(category, itemName, id);
+      else if (corr.getCorrections(category, itemName, "L").some((c:any)=>c.id===id)) corr.removeCorrection(category, itemName, id, "L");
+      else corr.removeCorrection(category, itemName, id, "R");
+    },
+  } : null;
+  const row = (
     <div
       id={`mus-row-${name}`}
       className={cn(
         "flex items-stretch border-t border-border/50 transition-colors",
-        match && "bg-yellow-100/60"
+        match && "bg-yellow-100/60",
+        corrProps?.isPriority && "bg-primary/[0.03]"
       )}
     >
       <div className="flex w-72 shrink-0 items-center border-r border-border/50 bg-muted/30 px-4 py-3">
@@ -483,6 +574,7 @@ const MuscleRow = ({
       </div>
     </div>
   );
+  return corrProps ? <PathwayRow itemName={itemName} {...corrProps}>{row}</PathwayRow> : row;
 };
 
 export function PathwayReflexStimGridBoard({
@@ -493,6 +585,7 @@ export function PathwayReflexStimGridBoard({
   muscleState = {},
   onMuscleToggle,
   showOnlyInhibited = false,
+  corr,
 }: PathwayReflexStimGridBoardProps) {
   const muscleToggle = onMuscleToggle ?? onToggle;
   return (
@@ -528,6 +621,7 @@ export function PathwayReflexStimGridBoard({
                     checked={checked}
                     onToggle={onToggle}
                     query={query}
+                    corr={corr}
                   />
                 ))}
               </div>
@@ -567,6 +661,7 @@ export function PathwayReflexStimGridBoard({
                     checked={checked}
                     onToggle={onToggle}
                     query={query}
+                    corr={corr}
                   />
                 ))}
               </div>
@@ -618,6 +713,7 @@ export function PathwayReflexStimGridBoard({
                     checked={muscleState}
                     onToggle={muscleToggle}
                     query={query}
+                    corr={corr}
                   />
                 ))}
               </div>

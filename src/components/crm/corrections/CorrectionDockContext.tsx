@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 import type { ProtocolLog, ProtocolLogPatch } from "@/data/protocol-log";
+import { normalizeFindingPriority, priorityKey } from "@/components/crm/v2/v2-utils";
 
 export type CorrectionTab = "afferent" | "efferent";
 
@@ -14,6 +15,11 @@ export interface InhibitionPathway {
 }
 
 export type InhibitionPathwayStatus = "inhibited" | "hypertonic" | "clear" | "holding" | "priority" | "primary_priority";
+
+const dockPriorityStatus = (
+  level: ReturnType<typeof normalizeFindingPriority>,
+): InhibitionPathwayStatus | null =>
+  level === "primary" ? "primary_priority" : level === "priority" ? "priority" : null;
 
 export interface InhibitionPathwayState {
   pathway: InhibitionPathway;
@@ -194,26 +200,48 @@ export const CorrectionDockProvider = ({
     const result: InhibitionPathwayState[] = [];
     if (!priorityPattern) return result;
 
+    // Align stores the priority tier in `priorities`; the dock needs it as a
+    // pathway status so P / PP reflect what the practitioner chose there.
+    const priorities = priorityPattern.priorities ?? {};
+    const statusFor = (category: string, key: string, rawStatus: string): InhibitionPathwayStatus => {
+      const valLower = rawStatus.toLowerCase();
+      const fromPriorities = dockPriorityStatus(
+        normalizeFindingPriority(priorities[priorityKey(category, key)]),
+      );
+      if (fromPriorities) return fromPriorities;
+      if (valLower === "hypertonic") return "hypertonic";
+      if (valLower === "priority") return "priority";
+      if (valLower === "primary_priority" || valLower === "primary priority") return "primary_priority";
+      return "inhibited";
+    };
+    const isInhibited = (rawStatus: string) => {
+      const value = rawStatus.toLowerCase();
+      return value === "inhibited" || value === "inhibition" || value === "hypertonic" ||
+        value === "priority" || value === "primary_priority" || value === "primary priority";
+    };
+    const sideAndName = (key: string) => {
+      const sideMatch = key.match(/\s*\((L|R)\)\s*$/);
+      return {
+        side: sideMatch ? (sideMatch[1] as "L" | "R") : ("midline" as const),
+        name: sideMatch ? key.slice(0, sideMatch.index).trim() : key,
+      };
+    };
+
     // muscles: { "Psoas (R)": "Inhibited", "Diaphragm": "Inhibited" }
     const muscles = priorityPattern.muscles;
     if (muscles && typeof muscles === "object") {
       for (const [key, val] of Object.entries(muscles)) {
-        const valLower = String(val).toLowerCase();
-        if (valLower === "inhibited" || valLower === "hypertonic" || valLower === "priority" || valLower === "primary_priority" || valLower === "primary priority") {
-          const sideMatch = key.match(/\s*\((L|R)\)\s*$/);
-          const side = sideMatch ? (sideMatch[1] as "L" | "R") : "midline";
-          const name = sideMatch ? key.slice(0, sideMatch.index).trim() : key;
-          const pid = `muscle-${name.toLowerCase().replace(/\s+/g, "-")}`;
-          result.push({
-            pathway: {
-              processId: pid,
-              phase: "muscle",
-              side,
-              notes: name,
-            },
-            status: valLower === "hypertonic" ? "hypertonic" : valLower === "priority" ? "priority" : valLower === "primary_priority" || valLower === "primary priority" ? "primary_priority" : "inhibited",
-          });
-        }
+        if (!isInhibited(String(val))) continue;
+        const { side, name } = sideAndName(key);
+        result.push({
+          pathway: {
+            processId: `muscle-${name.toLowerCase().replace(/\s+/g, "-")}`,
+            phase: "muscle",
+            side,
+            notes: name,
+          },
+          status: statusFor("muscles", key, String(val)),
+        });
       }
     }
 
@@ -221,22 +249,17 @@ export const CorrectionDockProvider = ({
     const reflexes = priorityPattern.primitiveReflexes;
     if (reflexes && typeof reflexes === "object") {
       for (const [key, val] of Object.entries(reflexes)) {
-        const valLower = String(val).toLowerCase();
-        if (valLower === "inhibited" || valLower === "hypertonic" || valLower === "priority" || valLower === "primary_priority" || valLower === "primary priority") {
-          const sideMatch = key.match(/\s*\((L|R)\)\s*$/);
-          const side = sideMatch ? (sideMatch[1] as "L" | "R") : "midline";
-          const name = sideMatch ? key.slice(0, sideMatch.index).trim() : key;
-          const pid = `reflex-${name.toLowerCase().replace(/\s+/g, "-")}`;
-          result.push({
-            pathway: {
-              processId: pid,
-              phase: "primitiveReflex",
-              side,
-              notes: name,
-            },
-            status: valLower === "hypertonic" ? "hypertonic" : valLower === "priority" ? "priority" : valLower === "primary_priority" || valLower === "primary priority" ? "primary_priority" : "inhibited",
-          });
-        }
+        if (!isInhibited(String(val))) continue;
+        const { side, name } = sideAndName(key);
+        result.push({
+          pathway: {
+            processId: `reflex-${name.toLowerCase().replace(/\s+/g, "-")}`,
+            phase: "primitiveReflex",
+            side,
+            notes: name,
+          },
+          status: statusFor("primitiveReflexes", key, String(val)),
+        });
       }
     }
 
@@ -244,22 +267,17 @@ export const CorrectionDockProvider = ({
     const nerves = priorityPattern.cranialNerves;
     if (nerves && typeof nerves === "object") {
       for (const [key, val] of Object.entries(nerves)) {
-        const valLower = String(val).toLowerCase();
-        if (valLower === "inhibited" || valLower === "hypertonic" || valLower === "priority" || valLower === "primary_priority" || valLower === "primary priority") {
-          const sideMatch = key.match(/\s*\((L|R)\)\s*$/);
-          const side = sideMatch ? (sideMatch[1] as "L" | "R") : "midline";
-          const name = sideMatch ? key.slice(0, sideMatch.index).trim() : key;
-          const pid = `nerve-${name.toLowerCase().replace(/\s+/g, "-")}`;
-          result.push({
-            pathway: {
-              processId: pid,
-              phase: "cranialNerve",
-              side,
-              notes: name,
-            },
-            status: valLower === "hypertonic" ? "hypertonic" : valLower === "priority" ? "priority" : valLower === "primary_priority" || valLower === "primary priority" ? "primary_priority" : "inhibited",
-          });
-        }
+        if (!isInhibited(String(val))) continue;
+        const { side, name } = sideAndName(key);
+        result.push({
+          pathway: {
+            processId: `nerve-${name.toLowerCase().replace(/\s+/g, "-")}`,
+            phase: "cranialNerve",
+            side,
+            notes: name,
+          },
+          status: statusFor("cranialNerves", key, String(val)),
+        });
       }
     }
 

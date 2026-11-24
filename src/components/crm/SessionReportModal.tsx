@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { safeParse } from "@/utils/safe-json";
 import { Button } from "@/components/ui/button";
 import { useCorrectionDock, type InhibitionPathwayStatus } from "@/components/crm/corrections/CorrectionDockContext";
+import { PATHWAY_DIRECTION, directionForProcess, directionFromText } from "@/lib/pathway-direction";
 import { clickableProps } from "@/lib/a11y";
 
 interface Finding {
@@ -355,35 +356,50 @@ export default function SessionReportModal({ open, onClose, appointment, updateM
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {pathways.map((pathway) => (
-                    <div key={pathway.id} className="border rounded-lg overflow-hidden">
-                      <div className="flex items-center justify-between p-3 bg-muted/30 cursor-pointer" {...clickableProps(() => handleOpenPathwayInManual(pathway.id))}>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium">{pathway.name}</span>
-                          {pathway.cleared && <CheckCircle2 className="w-3 h-3 text-primary-strong" />}
-                          <span title="Open in manual">
-                            <BookOpen className="w-3.5 h-3.5 text-muted-foreground/40" />
-                          </span>
+                  {pathways.map((pathway) => {
+                    const direction = directionForProcess(pathway.name)
+                      ?? directionFromText(pathway.name);
+                    const dirStyle = direction ? PATHWAY_DIRECTION[direction] : null;
+                    const DirectionIcon = dirStyle?.Icon;
+                    return (
+                      <div key={pathway.id} className="border rounded-lg overflow-hidden">
+                        <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-muted/30 cursor-pointer" {...clickableProps(() => handleOpenPathwayInManual(pathway.id))}>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {dirStyle && DirectionIcon && (
+                              <span className={cn("inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium", dirStyle.soft, dirStyle.strong)}>
+                                <DirectionIcon size={10} /> {dirStyle.label}
+                              </span>
+                            )}
+                            <span className="text-sm font-medium">{pathway.name}</span>
+                            {pathway.cleared && <CheckCircle2 className="w-3 h-3 text-primary-strong" />}
+                            <span title="Open in manual">
+                              <BookOpen className="w-3.5 h-3.5 text-muted-foreground/40" />
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">
+                              {pathway.entries.length} correction{pathway.entries.length !== 1 ? 's' : ''}
+                            </span>
+                            {pathway.cleared ? <span className="text-xs text-primary-strong">Cleared</span> : (
+                              <Button size="sm" variant="outline" className="text-xs h-6" onClick={(e) => { e.stopPropagation(); markPathwayCleared(pathway.id); }}>Mark cleared</Button>
+                            )}
+                            {pathway.entries.length > 0 && <ChevronDown className="w-3 h-3" />}
+                          </div>
                         </div>
-                        {pathway.entries.length} correction{pathway.entries.length !== 1 ? 's' : ''}
-                        {pathway.cleared ? <span className="text-xs text-primary-strong">Cleared</span> : (
-                          <Button size="sm" variant="outline" className="text-xs h-6" onClick={(e) => { e.stopPropagation(); markPathwayCleared(pathway.id); }}>Mark Cleared</Button>
+                        {pathway.entries?.length > 0 && (
+                          <div className="p-3 space-y-2">
+                            {pathway.entries.map((entry: any, idx: number) => (
+                              <div key={idx} className={cn("border-l-2 pl-3", dirStyle ? dirStyle.border : "border-primary")}>
+                                <p className="text-xs text-muted-foreground mb-1">{new Date(entry.timestamp || entry.savedAt).toLocaleString()}</p>
+                                <p className="text-sm">{entry.summary}</p>
+                                {entry.values && <div className="grid grid-cols-2 gap-1 mt-1 text-xs">{Object.entries(entry.values).map(([k, v]) => <div key={k} className="flex justify-between"><span className="text-muted-foreground">{k}:</span><span>{String(v)}</span></div>)}</div>}
+                              </div>
+                            ))}
+                          </div>
                         )}
-                        {pathway.entries.length > 0 && <ChevronDown className="w-3 h-3" />}
                       </div>
-                      {pathway.entries?.length > 0 && (
-                        <div className="p-3 space-y-2">
-                          {pathway.entries.map((entry: any, idx: number) => (
-                            <div key={idx} className="border-l-2 border-primary pl-3">
-                              <p className="text-xs text-muted-foreground mb-1">{new Date(entry.timestamp || entry.savedAt).toLocaleString()}</p>
-                              <p className="text-sm">{entry.summary}</p>
-                              {entry.values && <div className="grid grid-cols-2 gap-1 mt-1 text-xs">{Object.entries(entry.values).map(([k, v]) => <div key={k} className="flex justify-between"><span className="text-muted-foreground">{k}:</span><span>{String(v)}</span></div>)}</div>}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

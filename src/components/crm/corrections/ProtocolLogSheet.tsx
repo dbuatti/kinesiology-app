@@ -419,7 +419,7 @@ const ProtocolEntryList = ({
 
   return (
     <div className={cn("px-1.5 py-1", className)}>
-      <p className="px-1 pb-1 text-[9.5px] font-bold uppercase tracking-wider text-muted-foreground">
+      <p className="px-1 pb-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
         Saved · {entries.length}
       </p>
       <ul className="max-h-28 space-y-px overflow-y-auto">
@@ -437,7 +437,7 @@ const ProtocolEntryList = ({
                   reading in full when you check what you already did. */}
               <span className="min-w-0 flex-1">
                 {entry.pathway && (
-                  <span className="block truncate text-[9.5px] font-bold uppercase tracking-wider text-primary-strong">
+                  <span className="block truncate text-[11px] font-bold uppercase tracking-wider text-primary-strong">
                     {entry.pathway}
                   </span>
                 )}
@@ -495,7 +495,7 @@ export const ProtocolLogBar = ({
         >
           <span className="font-bold uppercase tracking-wider text-muted-foreground">{heading}</span>
           {savedCount > 0 && (
-            <span className="ml-1.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[9.5px] font-bold text-primary-strong">
+            <span className="ml-1.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[11px] font-bold text-primary-strong">
               {savedCount} saved
             </span>
           )}
@@ -539,7 +539,7 @@ const ChipsControl = ({
 
   if (options.length === 0) {
     return emptyHint ? (
-      <p className="text-[10.5px] text-muted-foreground/60">{emptyHint}</p>
+      <p className="text-[11px] text-muted-foreground/60">{emptyHint}</p>
     ) : null;
   }
 
@@ -583,12 +583,12 @@ const ChipsControl = ({
         })}
       </div>
       {caption && (
-        <p className="text-[10.5px] leading-relaxed text-muted-foreground">
+        <p className="text-[11px] leading-relaxed text-muted-foreground">
           <CaptionWithPulse caption={caption} />
         </p>
       )}
       {selected.length === 0 && emptyHint && (
-        <p className="text-[10.5px] text-muted-foreground/60">{emptyHint}</p>
+        <p className="text-[11px] text-muted-foreground/60">{emptyHint}</p>
       )}
     </div>
   );
@@ -790,7 +790,7 @@ const EyeControl = ({
       </div>
 
       {position ? (
-        <p className="rounded-lg border border-border/70 bg-card px-2 py-1.5 text-[9.5px] leading-relaxed">
+        <p className="rounded-lg border border-border/70 bg-card px-2 py-1.5 text-[11px] leading-relaxed">
           <span className="font-bold text-foreground">
             {position.full} · {position.cue}
           </span>{" "}
@@ -884,7 +884,7 @@ const StatusControl = ({
           aria-pressed={active}
           onClick={() => onChange(active ? null : option.value)}
           className={cn(
-            "min-h-10 rounded-lg border px-1.5 py-1 text-[10.5px] font-bold transition-all coarse:min-h-12 coarse:px-1 coarse:text-[12px]",
+            "min-h-10 rounded-lg border px-1.5 py-1 text-[11px] font-bold transition-all coarse:min-h-12 coarse:px-1 coarse:text-[12px]",
             active
               ? TONE_ACTIVE[option.tone]
               : "border-border bg-card text-muted-foreground hover:text-foreground"

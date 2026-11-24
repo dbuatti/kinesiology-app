@@ -16,7 +16,6 @@ import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment"
 import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
 import { BrainZoneAssessment } from "@/components/crm/BrainZoneAssessment";
 import RecheckTabV2 from "@/components/crm/v2/RecheckTabV2";
-import CheckItem from "@/components/crm/document-view/CheckItem";
 import { PhaseHeader, PhasePanel, SectionHeading } from "@/components/crm/v2/PhaseComponents";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
@@ -24,6 +23,8 @@ import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from "@/data/muscle-data";
 import { getMuscleInfo } from "@/data/muscle-info-data";
 import { safeParse } from "@/utils/safe-json";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";
+import { ReflexQuickRow } from "@/components/crm/reflex-corrections/ReflexQuickRow";
+import { useItemCorrections } from "@/components/crm/reflex-corrections/useItemCorrections";
 
 type SubTab = 'recheck' | 'intake' | 'quick' | 'intrinsic' | 'muscles' | 'reflexes' | 'nerves' | 'zones';
 
@@ -37,11 +38,14 @@ const SUB_TABS: { id: SubTab; label: string; icon: any }[] = [
   { id: 'zones', label: 'Brain Zones', icon: Brain },
 ];
 
-const MuscleGroupGrid = ({ muscles, pattern, onToggle }: {
+const MuscleGroupGrid = ({ muscles, pattern, onToggle, corr }: {
   muscles: string[];
   pattern: any;
   onToggle: (cat: string, name: string, nextStatus: string, side?: 'L' | 'R') => void;
-}) => (
+  corr: ReturnType<typeof useItemCorrections>;
+}) => {
+  const { getCorrections, isPriority, getPriorityTier, togglePriority, setPriorityTier, addCorrection, toggleHolding, removeCorrection } = corr;
+  return (
   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
     {muscles.map(m => {
       const info = getMuscleInfo(m);
@@ -49,22 +53,24 @@ const MuscleGroupGrid = ({ muscles, pattern, onToggle }: {
       const testingInstructions = info.testingPosition || undefined;
       if (MIDLINE_MUSCLES.includes(m)) {
         return (
-          <CheckItem key={m} category="muscles" name={m} pattern={pattern} description={description} testingInstructions={testingInstructions} showFullInstructions onToggle={onToggle} />
+          <ReflexQuickRow key={m} category="muscles" name={m} pattern={pattern} onToggle={onToggle} corrections={getCorrections("muscles", m)} isPriority={isPriority("muscles", m)} priorityTier={getPriorityTier("muscles", m)} onSetPriorityTier={(t)=>setPriorityTier("muscles", m, undefined, t)} onTogglePriority={()=>togglePriority("muscles", m)} onAddCorrection={(c)=>addCorrection("muscles", m, c)} onToggleHolding={(id)=>toggleHolding("muscles", m, id)} onRemoveCorrection={(id)=>removeCorrection("muscles", m, id)} />
         );
       }
       return (
         <Fragment key={m}>
-          <CheckItem category="muscles" name={m} side="L" pattern={pattern} description={description} testingInstructions={testingInstructions} showFullInstructions onToggle={onToggle} />
-          <CheckItem category="muscles" name={m} side="R" pattern={pattern} description={description} testingInstructions={testingInstructions} showFullInstructions onToggle={onToggle} />
+          <ReflexQuickRow category="muscles" name={m} side="L" pattern={pattern} onToggle={onToggle} corrections={getCorrections("muscles", m, "L")} isPriority={isPriority("muscles", m, "L")} priorityTier={getPriorityTier("muscles", m, "L")} onSetPriorityTier={(t)=>setPriorityTier("muscles", m, "L", t)} onTogglePriority={()=>togglePriority("muscles", m, "L")} onAddCorrection={(c)=>addCorrection("muscles", m, c, "L")} onToggleHolding={(id)=>toggleHolding("muscles", m, id, "L")} onRemoveCorrection={(id)=>removeCorrection("muscles", m, id, "L")} />
+          <ReflexQuickRow category="muscles" name={m} side="R" pattern={pattern} onToggle={onToggle} corrections={getCorrections("muscles", m, "R")} isPriority={isPriority("muscles", m, "R")} priorityTier={getPriorityTier("muscles", m, "R")} onSetPriorityTier={(t)=>setPriorityTier("muscles", m, "R", t)} onTogglePriority={()=>togglePriority("muscles", m, "R")} onAddCorrection={(c)=>addCorrection("muscles", m, c, "R")} onToggleHolding={(id)=>toggleHolding("muscles", m, id, "R")} onRemoveCorrection={(id)=>removeCorrection("muscles", m, id, "R")} />
         </Fragment>
       );
     })}
   </div>
-);
+  );
+};
 
 const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePriorityPattern, onJumpToPhase }: PhaseProps) => {
   const hasHistory = history.length >= 2;
   const [subTab, setSubTab] = useState<SubTab>('intake');
+  const corr = useItemCorrections(appointment, saveField, onUpdate);
   const tabs = hasHistory
     ? [{ id: 'recheck' as SubTab, label: 'Recheck', icon: RotateCcw }, ...SUB_TABS]
     : SUB_TABS;
@@ -226,6 +232,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
           const quickToggle = (cat: string, name: string, nextStatus: string, side?: 'L' | 'R') => {
             updatePriorityPattern(cat, name, nextStatus === 'Clear' ? null : nextStatus, side);
           };
+          const { getCorrections, isPriority, getPriorityTier, togglePriority, setPriorityTier, addCorrection, toggleHolding, removeCorrection } = corr;
           return (
             <div className="space-y-4">
               {/* Primitive Reflexes */}
@@ -234,11 +241,11 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                 <div className="grid grid-cols-2 gap-1.5 md:grid-cols-3 lg:grid-cols-4">
                   {PRIMITIVE_REFLEXES.map(r => r.isLateralized ? (
                     <Fragment key={r.id}>
-                      <CheckItem category="primitiveReflexes" name={r.name} side="L" pattern={pattern} onToggle={quickToggle} />
-                      <CheckItem category="primitiveReflexes" name={r.name} side="R" pattern={pattern} onToggle={quickToggle} />
+                      <ReflexQuickRow category="primitiveReflexes" name={r.name} side="L" pattern={pattern} onToggle={quickToggle} corrections={getCorrections("primitiveReflexes", r.name, "L")} isPriority={isPriority("primitiveReflexes", r.name, "L")} priorityTier={getPriorityTier("primitiveReflexes", r.name, "L")} onSetPriorityTier={(t)=>setPriorityTier("primitiveReflexes", r.name, "L", t)} onTogglePriority={()=>togglePriority("primitiveReflexes", r.name, "L")} onAddCorrection={(c)=>addCorrection("primitiveReflexes", r.name, c, "L")} onToggleHolding={(id)=>toggleHolding("primitiveReflexes", r.name, id, "L")} onRemoveCorrection={(id)=>removeCorrection("primitiveReflexes", r.name, id, "L")} />
+                      <ReflexQuickRow category="primitiveReflexes" name={r.name} side="R" pattern={pattern} onToggle={quickToggle} corrections={getCorrections("primitiveReflexes", r.name, "R")} isPriority={isPriority("primitiveReflexes", r.name, "R")} priorityTier={getPriorityTier("primitiveReflexes", r.name, "R")} onSetPriorityTier={(t)=>setPriorityTier("primitiveReflexes", r.name, "R", t)} onTogglePriority={()=>togglePriority("primitiveReflexes", r.name, "R")} onAddCorrection={(c)=>addCorrection("primitiveReflexes", r.name, c, "R")} onToggleHolding={(id)=>toggleHolding("primitiveReflexes", r.name, id, "R")} onRemoveCorrection={(id)=>removeCorrection("primitiveReflexes", r.name, id, "R")} />
                     </Fragment>
                   ) : (
-                    <CheckItem key={r.id} category="primitiveReflexes" name={r.name} pattern={pattern} onToggle={quickToggle} />
+                    <ReflexQuickRow key={r.id} category="primitiveReflexes" name={r.name} pattern={pattern} onToggle={quickToggle} corrections={getCorrections("primitiveReflexes", r.name)} isPriority={isPriority("primitiveReflexes", r.name)} priorityTier={getPriorityTier("primitiveReflexes", r.name)} onSetPriorityTier={(t)=>setPriorityTier("primitiveReflexes", r.name, undefined, t)} onTogglePriority={()=>togglePriority("primitiveReflexes", r.name)} onAddCorrection={(c)=>addCorrection("primitiveReflexes", r.name, c)} onToggleHolding={(id)=>toggleHolding("primitiveReflexes", r.name, id)} onRemoveCorrection={(id)=>removeCorrection("primitiveReflexes", r.name, id)} />
                   ))}
                 </div>
               </PhasePanel>
@@ -251,11 +258,11 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                     const nerveName = `${n.name}: ${n.latinName}`;
                     return n.isLateralized ? (
                       <Fragment key={n.name}>
-                        <CheckItem category="cranialNerves" name={nerveName} side="L" pattern={pattern} onToggle={quickToggle} />
-                        <CheckItem category="cranialNerves" name={nerveName} side="R" pattern={pattern} onToggle={quickToggle} />
+                        <ReflexQuickRow category="cranialNerves" name={nerveName} side="L" pattern={pattern} onToggle={quickToggle} corrections={getCorrections("cranialNerves", nerveName, "L")} isPriority={isPriority("cranialNerves", nerveName, "L")} priorityTier={getPriorityTier("cranialNerves", nerveName, "L")} onSetPriorityTier={(t)=>setPriorityTier("cranialNerves", nerveName, "L", t)} onTogglePriority={()=>togglePriority("cranialNerves", nerveName, "L")} onAddCorrection={(c)=>addCorrection("cranialNerves", nerveName, c, "L")} onToggleHolding={(id)=>toggleHolding("cranialNerves", nerveName, id, "L")} onRemoveCorrection={(id)=>removeCorrection("cranialNerves", nerveName, id, "L")} />
+                        <ReflexQuickRow category="cranialNerves" name={nerveName} side="R" pattern={pattern} onToggle={quickToggle} corrections={getCorrections("cranialNerves", nerveName, "R")} isPriority={isPriority("cranialNerves", nerveName, "R")} priorityTier={getPriorityTier("cranialNerves", nerveName, "R")} onSetPriorityTier={(t)=>setPriorityTier("cranialNerves", nerveName, "R", t)} onTogglePriority={()=>togglePriority("cranialNerves", nerveName, "R")} onAddCorrection={(c)=>addCorrection("cranialNerves", nerveName, c, "R")} onToggleHolding={(id)=>toggleHolding("cranialNerves", nerveName, id, "R")} onRemoveCorrection={(id)=>removeCorrection("cranialNerves", nerveName, id, "R")} />
                       </Fragment>
                     ) : (
-                      <CheckItem key={n.name} category="cranialNerves" name={nerveName} pattern={pattern} onToggle={quickToggle} />
+                      <ReflexQuickRow key={n.name} category="cranialNerves" name={nerveName} pattern={pattern} onToggle={quickToggle} corrections={getCorrections("cranialNerves", nerveName)} isPriority={isPriority("cranialNerves", nerveName)} priorityTier={getPriorityTier("cranialNerves", nerveName)} onSetPriorityTier={(t)=>setPriorityTier("cranialNerves", nerveName, undefined, t)} onTogglePriority={()=>togglePriority("cranialNerves", nerveName)} onAddCorrection={(c)=>addCorrection("cranialNerves", nerveName, c)} onToggleHolding={(id)=>toggleHolding("cranialNerves", nerveName, id)} onRemoveCorrection={(id)=>removeCorrection("cranialNerves", nerveName, id)} />
                     );
                   })}
                 </div>
@@ -264,7 +271,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
               {/* Muscles — Intrinsic Stabilisation */}
               <PhasePanel className="space-y-3">
                 <SectionHeading icon={Dumbbell} title="Intrinsic stabilisation" />
-                <MuscleGroupGrid muscles={MUSCLE_GROUPS['Intrinsic Stabilisation'] || []} pattern={pattern} onToggle={quickToggle} />
+                <MuscleGroupGrid muscles={MUSCLE_GROUPS['Intrinsic Stabilisation'] || []} pattern={pattern} onToggle={quickToggle} corr={corr} />
               </PhasePanel>
             </div>
           );
@@ -279,7 +286,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
           return (
             <PhasePanel className="space-y-3">
               <SectionHeading icon={Dumbbell} title="Intrinsic stabilisation" />
-              <MuscleGroupGrid muscles={intrinsicMuscles} pattern={pattern} onToggle={toggle} />
+              <MuscleGroupGrid muscles={intrinsicMuscles} pattern={pattern} onToggle={toggle} corr={corr} />
             </PhasePanel>
           );
         })()}
@@ -294,7 +301,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
               {Object.entries(MUSCLE_GROUPS).map(([groupName, muscles]) => (
                 <PhasePanel key={groupName} className="space-y-3">
                   <SectionHeading icon={Dumbbell} title={groupName} />
-                  <MuscleGroupGrid muscles={muscles} pattern={pattern} onToggle={toggle} />
+                  <MuscleGroupGrid muscles={muscles} pattern={pattern} onToggle={toggle} corr={corr} />
                 </PhasePanel>
               ))}
             </div>
@@ -308,6 +315,8 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
               appointmentId={appointment.id}
               priorityPattern={appointment.priority_pattern}
               updatePriorityPattern={updatePriorityPattern}
+              saveField={saveField}
+              onUpdate={onUpdate}
             />
           </div>
         )}
@@ -320,6 +329,8 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
               priorityPattern={appointment.priority_pattern}
               updatePriorityPattern={updatePriorityPattern}
               showImages
+              saveField={saveField}
+              onUpdate={onUpdate}
             />
           </div>
         )}

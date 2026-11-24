@@ -57,24 +57,25 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientTa
 
   return (
     <div className="bg-card rounded-xl border border-border shadow-xs overflow-hidden">
-      <div className="overflow-x-auto overflow-y-clip">
+      <div className="overflow-x-auto">
       <Table>
-        <TableHeader className="bg-muted/40">
+        <TableHeader className="bg-muted/40 sticky top-0 z-10">
           <TableRow className="hover:bg-transparent border-border">
-            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10 px-6">Client Name</TableHead>
-            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10">Age / Sign</TableHead>
-            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10">Rate</TableHead>
-            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10">Last Session</TableHead>
-            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10">Last Contacted</TableHead>
-            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10 text-center">Total</TableHead>
-            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10 text-center">Upcoming</TableHead>
-            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10 text-right px-6">Actions</TableHead>
+            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10 px-6 bg-muted/40">Client</TableHead>
+            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10 bg-muted/40">Age / Sign</TableHead>
+            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10 bg-muted/40">Rate</TableHead>
+            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10 bg-muted/40">Last Session</TableHead>
+            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10 bg-muted/40">Last Contacted</TableHead>
+            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10 text-center bg-muted/40">Total</TableHead>
+            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10 text-center bg-muted/40">Upcoming</TableHead>
+            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10 text-right px-6 bg-muted/40">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {clients.map((client) => {
             const isVoice = client.kind === "voice";
-            const profileHref = isVoice ? `/clients/${client.id}/hub` : `/clients/${client.id}`;
+            const isVoiceOnly = String(client.id).startsWith("voice:");
+            const profileHref = isVoiceOnly ? `/clients/${client.id}/hub` : `/clients/${client.id}`;
             return (
             <TableRow key={client.id} className="hover:bg-foreground/[0.02] transition-colors group border-border">
               <TableCell className="px-6 py-3">
@@ -112,7 +113,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientTa
                           className="text-[11px] font-medium text-primary hover:underline">Reopen</button>
                       )}
                     </div>
-                    <span className={cn("text-xs text-muted-foreground font-medium", isPrivate && "blur-[2px] select-none")}>{client.email || 'No email recorded'}</span>
+                    <span className={cn("text-xs text-muted-foreground font-medium truncate max-w-[280px]", isPrivate && "blur-[2px] select-none")} title={client.email || undefined}>{client.email || 'No email recorded'}</span>
                     <ActivityIndicator score={client.activity_score} />
                   </div>
                 </Link>
@@ -133,7 +134,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientTa
                 {isVoice ? (
                   <span className="text-xs text-muted-foreground">—</span>
                 ) : client.standard_rate === 0 ? (
-                  <span className="text-sm font-semibold text-chart-emerald">$0 · Free</span>
+                  <span className="text-sm font-semibold text-primary-strong">$0 · Free</span>
                 ) : client.standard_rate != null ? (
                   <div className="flex flex-col">
                     <span className="text-sm font-medium text-foreground">${client.standard_rate}</span>
@@ -166,12 +167,12 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientTa
                 )}
               </TableCell>
               <TableCell className="text-right px-6">
-                <div className="flex items-center justify-end gap-1">
+                <div className="flex items-center justify-end gap-1 opacity-100 sm:opacity-70 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity">
                   {client.email && (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-accent" asChild>
-                          <a href={`mailto:${client.email}`}><Mail size={16} /></a>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/40" asChild>
+                          <a href={`mailto:${client.email}`} aria-label={`Email ${client.name}`}><Mail size={16} /></a>
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent className="text-xs">Email Client</TooltipContent>
@@ -180,8 +181,8 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientTa
                   {client.phone && (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-accent" asChild>
-                          <a href={`tel:${client.phone}`}><Phone size={16} /></a>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/40" asChild>
+                          <a href={`tel:${client.phone}`} aria-label={`Call ${client.name}`}><Phone size={16} /></a>
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent className="text-xs">Call Client</TooltipContent>
@@ -193,8 +194,9 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientTa
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-amber-600 hover:bg-amber-500/10"
+                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-amber-700 hover:bg-amber-500/10 focus-visible:ring-2 focus-visible:ring-ring/40"
                           disabled={sendingId === client.id}
+                          aria-label={`Send onboarding email to ${client.name}`}
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSendOnboarding(client); }}
                         >
                           {sendingId === client.id ? <Loader2 size={15} className="animate-spin" /> : <Mail size={15} />}
@@ -206,17 +208,13 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientTa
                     </Tooltip>
                   )}
                   {isVoice ? (
-                    // Voice students don't have a `clients` row for
-                    // AppointmentForm's client_id FK to attach to — routes
-                    // into the Assistant Hub's own booking flow instead,
-                    // which auto-sends this prompt straight to a proposed
-                    // slot (see AssistantInput's autoSend).
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive-strong hover:bg-destructive/10" asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary-strong hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-ring/40" asChild>
                           <Link
                             to={`/clients/${client.id}/hub?prompt=${encodeURIComponent(`Find a good slot and book ${client.name.split(" ")[0]}'s next session — check their availability notes and usual pattern first.`)}`}
                             onClick={(e) => e.stopPropagation()}
+                            aria-label={`Quick book ${client.name} via assistant`}
                           >
                             <CalendarPlus size={16} />
                           </Link>
@@ -230,7 +228,8 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientTa
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive-strong hover:bg-destructive/10"
+                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary-strong hover:bg-primary/10 focus-visible:ring-2 focus-visible:ring-ring/40"
+                          aria-label={`Quick book ${client.name}`}
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickBook(client.id); }}
                         >
                           <CalendarPlus size={16} />
@@ -240,7 +239,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientTa
                     </Tooltip>
                   )}
                   <Link to={profileHref}>
-                    <Button variant="outline" size="sm" className="h-8 rounded-lg font-medium text-xs border-border hover:bg-muted ml-1">View Profile</Button>
+                    <Button variant="outline" size="sm" className="h-8 rounded-lg font-medium text-xs border-border hover:bg-muted ml-1 focus-visible:ring-2 focus-visible:ring-ring/40">View Profile</Button>
                   </Link>
                 </div>
               </TableCell>
@@ -265,14 +264,14 @@ function ActivityIndicator({ score }: { score?: number }) {
         <span
           key={i}
           className={cn(
-            "w-2 h-2 rounded-full",
+            "h-1.5 w-1.5 rounded-full",
             i < filled
               ? i >= 4
-                ? "bg-chart-emerald"
+                ? "bg-primary"
                 : i >= 3
-                  ? "bg-chart-primary"
-                  : "bg-amber-500"
-              : "bg-muted"
+                  ? "bg-primary/60"
+                  : "bg-amber-400"
+              : "bg-border"
           )}
         />
       ))}

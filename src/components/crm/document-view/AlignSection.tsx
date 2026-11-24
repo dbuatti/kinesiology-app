@@ -2,6 +2,8 @@
 import { useState, useMemo } from 'react';
 import { Baby, Zap, Dumbbell, Brain, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { normalizeFindingPriority, type FindingPriority } from '@/components/crm/v2/v2-utils';
+import PriorityTierControl from '@/components/crm/PriorityTierControl';
 
 interface AlignSectionProps {
   pattern: any;
@@ -17,7 +19,7 @@ interface Finding {
   displayName: string;
   side?: 'L' | 'R';
   status: string;
-  priorityLevel: 'priority' | null;
+  priorityLevel: FindingPriority | null;
   icon: React.ComponentType<{ size?: number; className?: string }>;
 }
 
@@ -51,7 +53,7 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
         const baseName = rawName.replace(/ \([LR]\)$/, '');
 
         const priorityKey = `${catKey}|${rawName}`;
-        const pLevel = priorities[priorityKey] as 'priority' | undefined || null;
+        const pLevel = normalizeFindingPriority(priorities[priorityKey]);
 
         items.push({
           category: catKey,
@@ -66,9 +68,10 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
       });
     });
 
+    const rank = (level: FindingPriority | null) => level === 'primary' ? 2 : level === 'priority' ? 1 : 0;
     items.sort((a, b) => {
-      const scoreA = a.priorityLevel === 'priority' ? 1 : 0;
-      const scoreB = b.priorityLevel === 'priority' ? 1 : 0;
+      const scoreA = rank(a.priorityLevel);
+      const scoreB = rank(b.priorityLevel);
       if (scoreA !== scoreB) return scoreB - scoreA;
       if (a.category !== b.category) return a.category.localeCompare(b.category);
       return a.name.localeCompare(b.name);
@@ -79,7 +82,7 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
 
   const filteredFindings = useMemo(() => {
     return allFindings.filter(f => {
-      if (showOnlyPriority && f.priorityLevel !== 'priority') return false;
+      if (showOnlyPriority && f.priorityLevel === null) return false;
       return true;
     });
   }, [allFindings, showOnlyPriority]);
@@ -93,11 +96,17 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
     return groups;
   }, [filteredFindings]);
 
-  const handleSetPriority = (finding: Finding) => {
+  const setFindingPriority = (finding: Finding, nextLevel: FindingPriority | null) => {
     const key = `${finding.category}|${finding.displayName}`;
-    const currentLevel = priorities[key];
-    const nextLevel = currentLevel === 'priority' ? null : 'priority';
-    onToggle('priorities', key, nextLevel || 'Clear');
+    if (nextLevel === 'primary') {
+      // One primary priority per session — replace any existing one.
+      Object.entries(priorities).forEach(([otherKey, value]) => {
+        if (otherKey !== key && normalizeFindingPriority(value) === 'primary') {
+          onToggle('priorities', otherKey, 'priority');
+        }
+      });
+    }
+    onToggle('priorities', key, nextLevel ?? 'Clear');
   };
 
   const handleSetPathway = (finding: Finding) => {
@@ -106,7 +115,8 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
     onSetPriorityPathway(label);
   };
 
-  const priorityCount = allFindings.filter(f => f.priorityLevel === 'priority').length;
+  const priorityCount = allFindings.filter(f => f.priorityLevel !== null).length;
+  const primaryCount = allFindings.filter(f => f.priorityLevel === 'primary').length;
 
   if (allFindings.length === 0) {
     return (
@@ -136,11 +146,11 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
           className={cn(
             "px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all flex items-center gap-1.5",
             showOnlyPriority
-              ? "bg-chart-emerald text-primary-foreground border-chart-emerald"
-              : "bg-card border-border text-muted-foreground hover:border-chart-emerald/40"
+              ? "bg-primary/10 text-primary-strong border-primary/30"
+              : "bg-card border-border text-muted-foreground hover:border-primary/40"
           )}
         >
-          <Target size={10} /> 1° ({priorityCount})
+          <Target size={10} /> Priority ({priorityCount}){primaryCount > 0 ? ` · ${primaryCount} primary` : ''}
         </button>
       </div>
 
@@ -177,37 +187,45 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
 
               <div className="space-y-1">
                 {findings.map((finding, idx) => {
-                  const isPriority = finding.priorityLevel === 'priority';
+                  const isPrimary = finding.priorityLevel === 'primary';
+                  const isPriority = finding.priorityLevel !== null;
 
                   return (
                     <div
                       key={`${finding.category}-${finding.displayName}-${idx}`}
                       className={cn(
-                        "flex items-center justify-between gap-3 py-2 px-3 rounded-lg border transition-all",
-                        isPriority
-                          ? "bg-chart-emerald/8 border-chart-emerald/25"
-                          : "bg-destructive/5 border-border hover:border-destructive/25"
+                        "flex flex-wrap items-center justify-between gap-3 py-2 px-3 rounded-lg border transition-all",
+                        isPrimary
+                          ? "bg-gold/[0.08] border-gold/40"
+                          : isPriority
+                            ? "bg-primary/[0.05] border-primary/25"
+                            : "bg-destructive/5 border-border hover:border-destructive/25"
                       )}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className={cn(
                           "w-5 h-5 rounded flex items-center justify-center shrink-0",
-                          isPriority ? "bg-chart-emerald text-primary-foreground" :
+                          isPrimary ? "bg-gold/15 text-gold-strong" :
+                          isPriority ? "bg-primary/10 text-primary-strong" :
                           "bg-destructive/15 text-destructive-strong"
                         )}>
                           <Icon size={11} />
                         </div>
                         <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex flex-wrap items-center gap-1.5">
                             <span className={cn(
                               "text-[11px] font-bold truncate",
-                              isPriority && "text-chart-emerald",
-                              !isPriority && "text-foreground"
+                              isPrimary ? "text-gold-strong" : isPriority ? "text-primary-strong" : "text-foreground"
                             )}>
                               {finding.name}
                             </span>
                             {finding.side && (
                               <span className="text-[10px] font-bold text-muted-foreground">({finding.side})</span>
+                            )}
+                            {isPrimary && (
+                              <span className="rounded bg-gold/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-gold-strong ring-1 ring-gold/40">
+                                Primary priority
+                              </span>
                             )}
                           </div>
                           <span className="text-[10px] text-muted-foreground/60">
@@ -216,24 +234,21 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          onClick={() => handleSetPriority(finding)}
-                          className={cn(
-                            "px-2 py-1 rounded text-[11px] font-bold border transition-all",
-                            isPriority
-                              ? "bg-chart-emerald text-primary-foreground border-chart-emerald"
-                              : "bg-card border-border text-muted-foreground hover:border-chart-emerald/50 hover:text-chart-emerald"
-                          )}
-                        >
-                          1°
-                        </button>
+                      <div className="flex flex-wrap items-center gap-1">
+                        <PriorityTierControl
+                          compact
+                          value={finding.priorityLevel}
+                          onChange={(next) => setFindingPriority(finding, next)}
+                          label={`Priority level for ${finding.name}${finding.side ? ` (${finding.side})` : ''}`}
+                        />
                         {onSetPriorityPathway && (
                           <button
+                            type="button"
                             onClick={() => handleSetPathway(finding)}
-                            className="px-2 py-1 rounded text-[11px] font-bold border border-border text-muted-foreground hover:bg-primary/10 hover:text-primary-strong hover:border-primary/30 transition-all"
+                            title="Choose this finding as the correction pathway and open Correct"
+                            className="px-2 py-1 rounded text-[11px] font-medium border border-border text-muted-foreground hover:bg-primary/10 hover:text-primary-strong hover:border-primary/30 transition-all"
                           >
-                            Set 1°
+                            Set pathway
                           </button>
                         )}
                       </div>

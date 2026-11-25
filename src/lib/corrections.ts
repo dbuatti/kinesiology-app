@@ -618,6 +618,26 @@ export function resolvePathwayIdentity(args: {
   return { processId: `pathway:${name || "unknown"}`, synthetic: true };
 }
 
+export function correctionDisplayLines(appointment: { priority_pattern?: string | null; metadata?: string | null; modes_balances?: string | null }): string[] {
+  const records = collectCorrectionRecords(appointment);
+  const lines = records
+    .map((c) => correctionSummary(c))
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length > 0) return lines;
+  if (typeof appointment.modes_balances === "string") {
+    return appointment.modes_balances
+      .split("\n")
+      .map((line) => line.replace(/^\s*[-*•]\s*/, "").trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+export function correctionDisplayText(appointment: { priority_pattern?: string | null; metadata?: string | null; modes_balances?: string | null }): string {
+  return correctionDisplayLines(appointment).join("\n");
+}
+
 export function latestCorrectionLinkForProcess(metadata: Meta, processId: string, pathwayName?: string) {
   const logs = isObj(metadata?.protocol_logs) ? (metadata.protocol_logs as Record<string, any>) : {};
   const log = logs[processId];

@@ -155,7 +155,7 @@ const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = t
       {findings.map((finding, idx) => {
         const isCleared = finding.status.endsWith('_Cleared') || finding.status === 'Normotonic' || finding.status === 'Clear';
         const displayStatus = isCleared ? 'Cleared' : finding.status.replace('_Cleared', ' (Cleared)');
-        const tone = isCleared ? "success" : /primary|priority/i.test(finding.status) ? "primary" : "warning";
+        const tone = isCleared ? "cleared" : /primary|priority/i.test(finding.status) ? "primary" : "warning";
         const categoryIconTone = categoryTone(finding.category);
 
         return (
@@ -183,7 +183,7 @@ const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = t
             <span
               className={cn(
                 "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider",
-                tone === "success" && "bg-cleared/10 text-cleared",
+                tone === "cleared" && "bg-cleared/10 text-cleared",
                 tone === "primary" && "bg-primary/10 text-primary-strong",
                 tone === "warning" && "bg-warning/10 text-warning-strong"
               )}

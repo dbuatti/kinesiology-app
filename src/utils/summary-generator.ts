@@ -1,6 +1,7 @@
 
 import { format } from "date-fns";
 import { AppointmentWithClient } from "@/types/crm";
+import { correctionDisplayText } from "@/lib/corrections";
 
 /**
  * Helper to format the priority pattern JSON into a readable string
@@ -88,12 +89,13 @@ export const generateSessionSummary = (appointment: AppointmentWithClient): stri
     summary += `\n`;
   }
 
-  if (appointment.priority_pattern || appointment.modes_balances) {
+  const correctionText = correctionDisplayText(appointment);
+  if (appointment.priority_pattern || correctionText) {
     summary += `[6] PATHWAY & CORRECTIONS\n`;
     if (appointment.priority_pattern) {
       summary += `- Findings: ${formatPriorityPattern(appointment.priority_pattern)}\n`;
     }
-    if (appointment.modes_balances) summary += `- Corrections Applied: ${appointment.modes_balances}\n`;
+    if (correctionText) summary += `- Corrections Applied:\n${correctionText.split("\n").map((line) => `  - ${line}`).join("\n")}\n`;
     summary += `\n`;
   }
 
@@ -148,6 +150,7 @@ export const generateAICasePrompt = (client: any, appointments: any[]): string =
   const latestApp = appointments[0];
   if (!latestApp) return "No session data available for analysis.";
 
+  const correctionText = correctionDisplayText(latestApp);
   const prompt = `I am a Kinesiology practitioner analyzing a client case. Please provide clinical insights based on the following data:
 
 CLIENT PROFILE:
@@ -174,7 +177,7 @@ RANGE OF MOTION (COGS):
 
 PATHWAY & PATTERNS:
 - Findings: ${latestApp.priority_pattern || 'N/A'}
-- Corrections Applied: ${latestApp.modes_balances || 'N/A'}
+- Corrections Applied: ${correctionText || 'N/A'}
 - Acupoints: ${latestApp.acupoints || 'N/A'}
 
 PRACTITIONER REFLECTION:

@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { PATHWAY_DIRECTION, directionForProcess, directionFromText } from "@/lib/pathway-direction";
 import { safeParse } from "@/utils/safe-json";
 import { supabase } from "@/integrations/supabase/client";
+import { correctionDisplayText } from "@/lib/corrections";
 
 interface DocViewProps {
   appointment: AppointmentWithClient;
@@ -547,7 +548,7 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
                   </div>
                 )}
 
-                <EditableField label="Corrections Summary" value={appointment.modes_balances} field="modes_balances" onSave={sb} editable={editable} />
+                <EditableField label="Corrections Summary" value={editable ? appointment.modes_balances : correctionDisplayText(appointment)} field="modes_balances" onSave={sb} editable={editable} />
                 <EditableField label="Acupoints" value={appointment.acupoints} field="acupoints" onSave={sb} editable={editable} />
               </>
             ) : (

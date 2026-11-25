@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { safeParse } from "@/utils/safe-json";
 import { showSuccess, showError } from "@/utils/toast";
+import { correctionDisplayText } from "@/lib/corrections";
 import EditableField from "@/components/shared/EditableField";
 import PathwayFindingsList from "@/components/crm/PathwayFindingsList";
 import { usePrimitiveReflexTests } from "@/hooks/usePrimitiveReflexTests";
@@ -599,7 +600,7 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
             <div className="space-y-4 xl:pl-6">
               <div>
                 <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">Corrections &amp; balances</p>
-                <p className="text-xs font-medium italic leading-relaxed text-muted-foreground">{appointment.modes_balances || 'No specific corrections logged.'}</p>
+                <p className="text-xs font-medium italic leading-relaxed text-muted-foreground whitespace-pre-wrap">{correctionDisplayText(appointment) || 'No specific corrections logged.'}</p>
               </div>
               <div>
                 <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">Acupoints</p>

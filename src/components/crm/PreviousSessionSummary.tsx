@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { correctionDisplayText } from "@/lib/corrections";
 import PathwayFindingsList from "./PathwayFindingsList";
 
 interface PreviousSessionSummaryProps {
@@ -147,8 +148,8 @@ const PreviousSessionSummary = ({ previousSession, clientId }: PreviousSessionSu
                 <h4 className="text-xs font-medium text-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
                   <Heart size={14} className="text-chart-destructive" /> Corrections Used
                 </h4>
-                <p className="text-sm text-muted-foreground bg-muted p-3 rounded-xl border border-border min-h-[80px]">
-                  {previousSession.modes_balances || "No correction notes recorded."}
+                <p className="text-sm text-muted-foreground bg-muted p-3 rounded-xl border border-border min-h-[80px] whitespace-pre-wrap">
+                  {correctionDisplayText(previousSession) || "No correction notes recorded."}
                 </p>
               </div>
             </div>

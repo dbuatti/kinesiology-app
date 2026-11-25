@@ -5,7 +5,7 @@ import { Zap, ExternalLink, Info, CheckCircle2, Brain, Activity, Heart, ShieldAl
 import { cn } from '@/lib/utils';
 import { PATHWAY_DIRECTION } from '@/lib/pathway-direction';
 import { Button } from '@/components/ui/button';
-import { showSuccess, showError } from '@/utils/toast';
+import { showSuccess, showError, showUndo } from '@/utils/toast';
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 interface CorrectSectionProps {
@@ -197,13 +197,18 @@ Correction Method: ${method}`;
   const executeDeleteLog = async () => {
     if (deleteTarget === null) return;
     const indexToDelete = deleteTarget.index;
+    const removed = pastCorrections[indexToDelete];
     setDeleteTarget(null);
     
     try {
       const updatedLogs = pastCorrections.filter((_, idx) => idx !== indexToDelete);
       const updatedText = updatedLogs.join('\n');
       await saveField('modes_balances', updatedText === "" ? null : updatedText);
-      showSuccess("Correction removed from log.");
+      showUndo("Correction removed from log.", async () => {
+        const restored = [...updatedLogs];
+        restored.splice(indexToDelete, 0, removed);
+        await saveField('modes_balances', restored.join('\n') || null);
+      });
     } catch {
       showError("Failed to delete correction.");
     }

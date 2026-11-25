@@ -14,6 +14,7 @@ import { itemCorrectionKey, itemPriorityKey, type ItemCorrection, type ReflexCor
 import { normalizeFindingPriority, type FindingPriority } from "@/components/crm/v2/v2-utils";
 import { categoryTone } from "@/components/crm/v2/categoryConstants";
 import { collectCorrectionRecords, correctionSummary, removeQuickCorrectionRecord, upsertQuickCorrectionRecord } from "@/lib/corrections";
+import { showUndo } from "@/utils/toast";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import {
   cranialNerveFullName,
@@ -223,6 +224,7 @@ export default function SessionReportModal({ open, onClose, appointment, updateM
 
   const removeCorrection = useCallback(async (finding: Finding, correctionId: string) => {
     if (!window.confirm("Remove this correction?")) return;
+    const removed = (getCorrectionsFor(finding) as any[]).find((c) => c.id === correctionId) || null;
     const next = removeQuickCorrectionRecord({
       appointment: { priority_pattern: appointment?.priority_pattern, metadata: appointment?.metadata },
       category: finding.patternCategory,
@@ -233,7 +235,12 @@ export default function SessionReportModal({ open, onClose, appointment, updateM
     await saveField('priority_pattern', JSON.stringify(next.pattern));
     await saveField('metadata', JSON.stringify(next.metadata));
     onUpdate();
-  }, [appointment?.metadata, appointment?.priority_pattern, onUpdate, saveField]);
+    if (removed) {
+      showUndo("Correction removed.", async () => {
+        await applyCorrection({ finding, direction: removed.direction, pathway: removed.pathway, correction: removed }, removed);
+      });
+    }
+  }, [appointment?.metadata, appointment?.priority_pattern, applyCorrection, getCorrectionsFor, onUpdate, saveField]);
 
   const markPathwayCleared = async (pathwayId: string) => {
     const existing = metadata.cleared_findings || [];
@@ -624,7 +631,7 @@ export default function SessionReportModal({ open, onClose, appointment, updateM
                               const bits = [!raw ? summary : null, values.method, values.retest, values.emotion, values.organ, values.correctionTimerMinutes ? `${values.correctionTimerMinutes} min${values.correctionTimerCompleted ? " done" : ""}` : null].filter(Boolean) as string[];
                               return (
                                 <div key={idx} className={cn("border-l-2 pl-3 space-y-1.5", dirStyle ? dirStyle.border : "border-primary")}>
-                                  <p className="text-[11px] text-muted-foreground">{new Date(entry.timestamp || entry.savedAt).toLocaleString()}</p>
+                                  <p className="text-[11px] text-muted-foreground">{new Date(entry.timestamp || entry.savedAt).toLocaleString()}{entry.id ? ` · ${String(entry.id).slice(0, 8)}` : ""}</p>
                                   {(zone1 || zone2) && (
                                     <div className="flex flex-wrap gap-1.5">
                                       {[{k:'Zone 1',z:zone1},{k:'Zone 2',z:zone2}].filter(x=>x.z).map(({k,z}) => {

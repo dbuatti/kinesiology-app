@@ -1,23 +1,22 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Target, Plus, X, Check, ArrowRight, History } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PathwayLogicWizard from "@/components/crm/PathwayLogicWizard";
 import ProtocolLogSheet from "@/components/crm/corrections/ProtocolLogSheet";
 import { PROTOCOL_FIELDS, PROTOCOL_STEP_MAP, summariseValues, type ProtocolLog, type ProtocolEntry } from "@/data/protocol-log";
 import { getInhibitedFindings, findingLabel } from "@/components/crm/v2/v2-utils";
 import { extractProtocolPathway } from "@/lib/client-log";
+import { findingNameFromPathway } from "@/lib/pathway-finding";
 import type { InhibitionPathwayStatus } from "@/components/crm/corrections/CorrectionDockContext";
 import { safeParse } from "@/utils/safe-json";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";
 import { useCorrectionDock, inhibitionPathwayLabel } from "@/components/crm/corrections/CorrectionDockContext";
+import { appendManualCorrectionRecord, collectCorrectionRecords, correctionSummary, resolvePathwayIdentity } from "@/lib/corrections";
 import {
   Card,
   Section,
   PrimaryButton,
-  GhostButton,
   StatusBadge,
   EmptyState,
   ConfirmationFooter,
@@ -58,7 +57,7 @@ const fmtTime = (iso?: string) => {
   }
 };
 
-const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: PhaseProps) => {
+const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern, onJumpToPhase }: PhaseProps) => {
   const {
     protocolLogs,
     logProtocol,
@@ -67,11 +66,9 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
     setInhibitionStatus,
   } = useCorrectionDock();
   const pathwayLabel = inhibitionPathwayLabel(inhibitionPathway);
-  const [pathModalOpen, setPathModalOpen] = useState(false);
-  const [customPathway, setCustomPathway] = useState("");
-  const [customMode, setCustomMode] = useState(false);
   const [acuInput, setAcuInput] = useState("");
   const [draft, setDraft] = useState(appointment.modes_balances ?? "");
+  const sheetRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const meta = useMemo(() => {
     if (!appointment.metadata) return {};
@@ -80,7 +77,6 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
   }, [appointment.metadata]);
 
   const priorityPathway = (meta as Record<string, unknown>)?.priority_pathway as string || "";
-  const isCustom = priorityPathway === 'CUSTOM';
 
   /**
    * The pathway string stamped on corrections: the dock's selected inhibition
@@ -88,12 +84,6 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
    */
   const stampedPathway =
     pathwayLabel ?? (priorityPathway && priorityPathway !== 'CUSTOM' ? priorityPathway : undefined);
-
-  useEffect(() => {
-    if (priorityPathway && priorityPathway !== 'CUSTOM') {
-      setCustomPathway(priorityPathway);
-    }
-  }, [priorityPathway]);
 
   // Keep the composer in sync when the note changes elsewhere (wizard saves).
   useEffect(() => {
@@ -106,11 +96,6 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
       category: f.catKey,
     }));
   }, [appointment.priority_pattern]);
-
-  const initialFinding = useMemo(() => {
-    if (!priorityPathway) return undefined;
-    return priorityPathway.split(' — ')[0];
-  }, [priorityPathway]);
 
   // Processes with saved data reopen automatically; the picker adds more.
   const [openIds, setOpenIds] = useState<string[]>(() =>
@@ -127,6 +112,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
   const appliedCorrections = useMemo(() => {
     const rows: Array<{
       key: string;
+      id: string;
       processId: string;
       processTitle: string;
       group: string;
@@ -136,45 +122,80 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
       entry?: ProtocolEntry;
       live: boolean;
     }> = [];
+    const seen = new Set<string>();
 
     for (const proc of LOGGABLE) {
-      const log = protocolLogs?.[proc.id];
-      if (!log) continue;
+      const matchingLogs = Object.entries(protocolLogs ?? {}).filter(([key, log]) => {
+        if (key === proc.id) return true;
+        return String((log as any)?.process ?? "").toLowerCase() === proc.id.toLowerCase();
+      });
 
-      for (const entry of log.entries ?? []) {
-        rows.push({
-          key: entry.id,
-          processId: proc.id,
-          processTitle: proc.title,
-          group: proc.group,
-          pathway: entry.pathway ?? extractProtocolPathway(proc.id, entry.values),
-          summary: summariseValues(proc.id, entry.values).join(" · ") || "Logged",
-          savedAt: entry.savedAt,
-          entry,
-          live: false,
-        });
-      }
+      for (const [logKey, rawLog] of matchingLogs) {
+        const log = rawLog as ProtocolLog;
+        for (const entry of (log.entries ?? []) as any[]) {
+          const entryKey = String(entry?.id ?? `${logKey}-${rows.length}`);
+          if (seen.has(entryKey)) continue;
+          seen.add(entryKey);
+          const values = (entry?.values ?? {}) as Record<string, unknown>;
+          const pathway = entry?.pathway ?? (typeof values.finding === "string" ? values.finding : undefined) ?? extractProtocolPathway(proc.id, values);
+          const summary = summariseValues(proc.id, values).join(" · ") || (typeof values.note === "string" && values.note) || "Logged";
+          rows.push({
+            key: `${proc.id}-${entryKey}`,
+            id: entryKey,
+            processId: proc.id,
+            processTitle: proc.title,
+            group: proc.group,
+            pathway,
+            summary,
+            savedAt: entry?.savedAt,
+            entry,
+            live: false,
+          });
+        }
 
-      if (hasLiveData(log)) {
-        rows.push({
-          key: `${proc.id}-live`,
-          processId: proc.id,
-          processTitle: proc.title,
-          group: proc.group,
-          pathway: stampedPathway ?? extractProtocolPathway(proc.id, log.values),
-          summary: summariseValues(proc.id, log.values ?? {}).join(" · ") || "In progress",
-          savedAt: log.updatedAt,
-          live: true,
-        });
+        if (logKey === proc.id && hasLiveData(log)) {
+          rows.push({
+            key: `${proc.id}-live`,
+            id: `${proc.id}-live`,
+            processId: proc.id,
+            processTitle: proc.title,
+            group: proc.group,
+            pathway: stampedPathway ?? extractProtocolPathway(proc.id, log.values),
+            summary: summariseValues(proc.id, log.values ?? {}).join(" · ") || "In progress",
+            savedAt: log.updatedAt,
+            live: true,
+          });
+        }
       }
     }
 
-    // A live form that exactly repeats an already-banked entry is noise.
+    // Fallback for corrections not represented in protocol logs (quick/manual/legacy).
+    const normalized = collectCorrectionRecords({ priority_pattern: appointment.priority_pattern, metadata: appointment.metadata });
+    for (const c of normalized) {
+      const pathwayId = String(c.pathway || c.processId || "").toLowerCase();
+      const proc = LOGGABLE.find(l => l.id === pathwayId);
+      if (!proc) continue;
+      const id = String(c.id || `${proc.id}-${c.timestamp || rows.length}`);
+      if (seen.has(id)) continue;
+      seen.add(id);
+      rows.push({
+        key: `${proc.id}-${id}`,
+        id,
+        processId: proc.id,
+        processTitle: proc.title,
+        group: proc.group,
+        pathway: c.finding || c.pathway,
+        summary: correctionSummary(c),
+        savedAt: c.timestamp || c.updatedAt || c.createdAt,
+        live: false,
+      });
+    }
+
     const bankedSummaries = new Set(rows.filter(r => !r.live).map(r => r.summary));
     return rows
       .filter(r => (r.live ? !bankedSummaries.has(r.summary) : true))
       .sort((a, b) => (a.savedAt ?? "").localeCompare(b.savedAt ?? ""));
-  }, [protocolLogs, stampedPathway]);
+  }, [protocolLogs, stampedPathway, meta]);
 
   /** What the corrections cluster into — the practitioner reads the pattern. */
   const patterns = useMemo(() => {
@@ -187,35 +208,97 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
     return [...counts.values()].sort((a, b) => b.count - a.count);
   }, [appliedCorrections]);
 
-  /** Pathways touched this session — the ones you can now state as clear / holding. */
+  /** Pathways touched this session — keyed by resolved process IDs, never synthetic when avoidable. */
   const touchedPathways = useMemo(() => {
-    const names: string[] = [];
+    const byName = new Map<string, { name: string; processId: string }>();
     for (const row of appliedCorrections) {
-      if (row.pathway && !names.includes(row.pathway)) names.push(row.pathway);
+      if (!row.pathway) continue;
+      const resolved = resolvePathwayIdentity({
+        name: row.pathway,
+        processId: row.processId,
+        pathway: row.pathway,
+        notes: row.pathway,
+        correctionId: row.id,
+      });
+      const existing = byName.get(row.pathway);
+      const processId = existing?.processId && !existing.processId.startsWith("pathway:") ? existing.processId : resolved.processId;
+      byName.set(row.pathway, { name: row.pathway, processId });
     }
-    return names;
+    return Array.from(byName.values());
   }, [appliedCorrections]);
 
   const pathwayStatusKey = (name: string) =>
     `pathway:${name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-:]/g, "")}`;
 
-  const pathwayStatus = (name: string): InhibitionPathwayStatus | "none" => {
-    const state = inhibitionPathwayState?.[pathwayStatusKey(name)];
-    return (state?.status as InhibitionPathwayStatus) ?? "none";
+  const linkedPathwayState = (name: string, preferredProcessId?: string) => {
+    const syntheticId = pathwayStatusKey(name);
+    const resolved = resolvePathwayIdentity({ name, processId: preferredProcessId, pathway: name, notes: name });
+    const candidates = [preferredProcessId, resolved.processId, syntheticId].filter(Boolean) as string[];
+    for (const id of new Set(candidates)) {
+      const st = inhibitionPathwayState?.[id];
+      if (st) return { id, state: st };
+    }
+    const lower = name.toLowerCase();
+    for (const [pid, st] of Object.entries(inhibitionPathwayState ?? {})) {
+      if ((st?.pathway?.notes || "").toLowerCase() === lower) return { id: pid, state: st };
+    }
+    return { id: resolved.processId || preferredProcessId || syntheticId, state: undefined };
   };
 
-  const setPathwayStatus = (name: string, status: Exclude<InhibitionPathwayStatus, "priority" | "primary_priority"> | "none") => {
+  const pathwayStatus = (name: string, preferredProcessId?: string): InhibitionPathwayStatus | "none" => {
+    return (linkedPathwayState(name, preferredProcessId).state?.status as InhibitionPathwayStatus) ?? "none";
+  };
+
+  const setPathwayStatus = (name: string, status: Exclude<InhibitionPathwayStatus, "priority" | "primary_priority"> | "none", preferredProcessId?: string) => {
+    const { id, state } = linkedPathwayState(name, preferredProcessId);
+    const last = [...appliedCorrections].reverse().find((r) => r.pathway === name);
+    const resolved = resolvePathwayIdentity({ name, processId: state?.pathway?.processId || preferredProcessId || id, pathway: name, notes: name, correctionId: last?.id });
+    const processId = resolved.processId || id;
     setInhibitionStatus(
-      pathwayStatusKey(name),
-      { processId: pathwayStatusKey(name), phase: "other", side: "midline", notes: name },
+      processId,
+      state?.pathway ? { ...state.pathway, processId } : { processId, phase: "other", side: "midline", notes: name },
       status === "none" ? "inhibited" : status,
+      state?.priorityStep,
+      last ? { correctionId: last.id, entryId: last.id } : state?.correctionId || state?.entryId ? { correctionId: state.correctionId, entryId: state.entryId } : undefined,
     );
   };
 
   const corrections = useMemo(
-    () => ((((meta as Record<string, unknown>)?.corrections || []) as { pathway: string; summary: string; timestamp: string }[])),
+    () => ((((meta as Record<string, unknown>)?.corrections || []) as { pathway: string; summary: string; timestamp: string; details?: any; finding?: string }[])),
     [meta]
   );
+
+  const fmtDetailValue = (v: any): string => {
+    if (v == null || v === "") return "";
+    if (typeof v === "string" || typeof v === "number" || typeof v === "boolean") return String(v);
+    if (Array.isArray(v)) return v.map(fmtDetailValue).filter(Boolean).join(", ");
+    if (typeof v === "object") {
+      if (v.name) return `${v.name}${v.side ? ` (${v.side})` : v.category ? ` · ${v.category}` : ""}`;
+      return Object.entries(v).filter(([, x]) => x != null && x !== "").map(([k, x]) => `${k}: ${fmtDetailValue(x)}`).join(", ");
+    }
+    return String(v);
+  };
+  const fmtCorrectionSummary = (c: { summary?: string; details?: any; finding?: string }) => {
+    const d = c.details || {};
+    const parts: string[] = [];
+    if (c.finding) parts.push(c.finding);
+    if (d.zone1?.name) parts.push(`Z1 ${d.zone1.name}${d.zone1.side ? ` (${d.zone1.side})` : ""}`);
+    if (d.zone2?.name) parts.push(`Z2 ${d.zone2.name}${d.zone2.side ? ` (${d.zone2.side})` : ""}`);
+    const method = typeof d.method === "string" ? d.method : "";
+    const timer = d.correctionTimerMinutes ? `${d.correctionTimerMinutes} min${d.correctionTimerCompleted ? " done" : ""}` : "";
+    if (method && timer && method !== timer) parts.push(method, timer);
+    else if (method || timer) parts.push(method || timer);
+    if (d.retest) parts.push(String(d.retest));
+    if (d.emotion) parts.push(String(d.emotion));
+    if (d.organ) parts.push(String(d.organ));
+    if (parts.length) return parts.join(" · ");
+    const s = c.summary || "";
+    if (!s.includes('{"') && !s.includes("zone1:")) return s;
+    return Object.entries(d)
+      .filter(([k, v]) => v != null && v !== "" && !(Array.isArray(v) && v.length === 0) && !["correctionTimerMinutes", "correctionTimerRemainingSeconds", "correctionTimerCompleted"].includes(k))
+      .map(([k, v]) => `${k}: ${fmtDetailValue(v)}`)
+      .join(" · ") || s;
+  };
 
   /** The latest logged note for this pathway — recording the same text twice adds noise, not information. */
   const lastLogged = useMemo(() => {
@@ -229,20 +312,12 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
     [appointment.acupoints]
   );
 
-  const selectPathway = async (val: string) => {
-    if (val === 'CUSTOM') {
-      setCustomMode(true);
-      return;
-    }
-    setCustomMode(false);
-    await saveField('metadata', { ...meta, priority_pathway: val });
-    onUpdate();
-  };
-
-  const saveCustom = async () => {
-    if (!customPathway.trim()) return;
-    setCustomMode(false);
-    await saveField('metadata', { ...meta, priority_pathway: customPathway.trim() });
+  /** The wizard dropdown is the single place that changes the correction target. */
+  const changeWizardFinding = async (findingName: string) => {
+    if (!findingName) return;
+    const pathway = pathwayFindings.find(f => findingNameFromPathway(f.value) === findingName)?.value
+      ?? findingName;
+    await saveField('metadata', { ...meta, priority_pathway: pathway });
     onUpdate();
   };
 
@@ -252,8 +327,15 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
     if (!clean) return;
     await saveField('modes_balances', clean);
     if (priorityPathway) {
-      const next = [...corrections, { pathway: priorityPathway, summary: clean, timestamp: new Date().toISOString() }];
-      await saveField('metadata', { ...meta, corrections: next });
+      const next = appendManualCorrectionRecord({
+        appointment: { priority_pattern: appointment.priority_pattern, metadata: appointment.metadata },
+        pathway: priorityPathway,
+        summary: clean,
+      });
+      await saveField('metadata', JSON.stringify(next.metadata));
+      if (next.pattern && JSON.stringify(next.pattern) !== JSON.stringify(safeParse(appointment.priority_pattern, {}))) {
+        await saveField('priority_pattern', JSON.stringify(next.pattern));
+      }
     }
     onUpdate();
   };
@@ -285,78 +367,32 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
     <>
     <Section className="space-y-5">
 
-        {/* Sticky pathway reminder (compact) */}
+        {/* Read-only reminder — the wizard dropdown is the single editor. */}
         <div className="sticky top-[108px] z-20 -mx-1 border-b border-border/60 bg-background/90 px-1 py-2 backdrop-blur-xl">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-2">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-strong">
-                <Target size={15} strokeWidth={2} />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                  Priority pathway
-                </p>
-                <p className="text-[13px] font-semibold leading-snug text-foreground">
-                  {priorityPathway && priorityPathway !== 'CUSTOM' ? priorityPathway : 'None selected'}
-                </p>
-              </div>
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-strong">
+              <Target size={15} strokeWidth={2} />
             </div>
-            <GhostButton onClick={() => setPathModalOpen(true)} className="h-9 shrink-0 text-[13px]">
-              Change
-            </GhostButton>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                Priority pathway
+              </p>
+              <p className="text-[13px] font-semibold leading-snug text-foreground">
+                {priorityPathway && priorityPathway !== 'CUSTOM' ? priorityPathway : 'None selected'}
+              </p>
+            </div>
           </div>
         </div>
-
-        {/* Finding selector (until a real pathway is set) */}
-        {pathwayFindings.length > 0 && (!priorityPathway || isCustom || customMode) && (
-          <Card padding="comfortable" className="space-y-3">
-            <p className="text-card-title">Select finding to correct</p>
-            <Select
-              value={priorityPathway && priorityPathway !== 'CUSTOM' ? priorityPathway : ''}
-              onValueChange={selectPathway}
-            >
-              <SelectTrigger className="h-10 w-full rounded-md border-border bg-background text-sm">
-                <SelectValue placeholder="Choose an inhibited finding…" />
-              </SelectTrigger>
-              <SelectContent className="max-h-[200px] rounded-xl border-border">
-                {pathwayFindings.map(f => (
-                  <SelectItem key={f.value} value={f.value} className="rounded-md py-2 text-[13px] font-medium">
-                    {f.value}
-                  </SelectItem>
-                ))}
-                <SelectItem value="CUSTOM" className="rounded-md py-2 text-[13px] font-medium text-primary">
-                  <Plus size={12} className="mr-2 inline" /> Custom entry
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            {(isCustom || customMode) && (
-              <div className="flex items-center gap-2">
-                <input
-                  value={customPathway}
-                  onChange={e => setCustomPathway(e.target.value)}
-                  placeholder="e.g. Startle Reflex — Primitive Reflex"
-                  className="input"
-                  autoFocus
-                />
-                <PrimaryButton
-                  disabled={!customPathway.trim()}
-                  onClick={saveCustom}
-                  className="h-10 shrink-0 px-4 text-[13px]"
-                >
-                  Save pathway
-                </PrimaryButton>
-              </div>
-            )}
-          </Card>
-        )}
 
         {/* Correction wizard */}
         <PathwayLogicWizard
           onSave={logCorrection}
           onClearItem={() => onUpdate()}
           priorityPattern={appointment.priority_pattern}
-          initialFinding={initialFinding}
+          initialFinding={priorityPathway || undefined}
           appointmentId={appointment.id}
+          updatePriorityPattern={updatePriorityPattern}
+          onChangeFinding={(name) => void changeWizardFinding(name)}
         />
 
         {/* Corrections applied — log as many processes as the session needs */}
@@ -365,7 +401,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
             <div>
               <p className="text-card-title">Corrections applied</p>
               <p className="text-meta">
-                What was corrected and how — every process you log lands here.
+                Recorded corrections from protocol logs and quick corrections.
               </p>
             </div>
             <StatusBadge variant={appliedCorrections.length > 0 ? 'recorded' : 'pending'}>
@@ -404,7 +440,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
                       'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full',
                       row.live
                         ? 'bg-primary/15 text-primary-strong'
-                        : 'bg-success/15 text-success'
+                        : 'bg-primary/15 text-primary-strong'
                     )}
                   >
                     <Check size={12} strokeWidth={3} />
@@ -441,11 +477,12 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
                     {!row.live && row.entry && (
                       <button
                         type="button"
-                        onClick={() =>
+                        onClick={() => {
+                          if (!window.confirm("Delete this correction entry?")) return;
                           logProtocol(row.processId, (previous) => ({
                             entries: (previous.entries ?? []).filter((e) => e.id !== row.entry!.id),
-                          }))
-                        }
+                          }));
+                        }}
                         aria-label="Delete this correction"
                         className="rounded p-0.5 text-muted-foreground/60 transition-colors hover:bg-destructive/10 hover:text-destructive-strong"
                       >
@@ -469,38 +506,41 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
             <div className="space-y-2 rounded-xl border border-border/70 bg-muted/20 p-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <p className="text-card-title">Pathway status</p>
-                <p className="text-meta">Are they holding? State each pathway once — re-checks read this.</p>
+                <p className="text-meta">State each touched pathway once after re-testing.</p>
               </div>
-              {touchedPathways.map(name => {
-                const status = pathwayStatus(name);
+              {touchedPathways.map(({ name, processId }) => {
+                const status = pathwayStatus(name, processId);
+                const normalizedStatus = status === "holding" ? "clear" : status;
                 const options = [
                   { key: "inhibited" as const, label: "Not holding", glyph: "↓", active: "bg-card text-rose-700 dark:text-rose-300 shadow-xs" },
                   { key: "clear" as const, label: "Clear", glyph: "✓", active: "bg-card text-primary-strong dark:text-primary shadow-xs" },
-                  { key: "holding" as const, label: "Holding strong", glyph: "✓✓", active: "bg-card text-primary-strong dark:text-primary shadow-xs ring-1 ring-primary/40" },
                 ];
+                const last = [...appliedCorrections].reverse().find(r => r.pathway === name);
+                const linked = linkedPathwayState(name, processId).state;
                 return (
                   <div
-                    key={name}
+                    key={`${processId || "unknown"}:${name}`}
                     className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-background px-3 py-2"
                   >
-                    <p className="min-w-0 truncate text-[13px] font-semibold text-foreground">{name}</p>
+                    <div className="min-w-0">
+                      <p className="truncate text-[13px] font-semibold text-foreground">{name}</p>
+                      {last && <p className="truncate text-[11px] text-muted-foreground">{last.processTitle}{last.savedAt ? ` · ${fmtTime(last.savedAt)}` : ""}{(linked?.correctionId || last.id) ? ` · ${String(linked?.correctionId || last.id).slice(0, 8)}` : ""}</p>}
+                    </div>
                     <div className="inline-flex items-center rounded-lg bg-muted/60 p-0.5">
                       {options.map(o => (
                         <button
                           key={o.key}
                           type="button"
-                          onClick={() => setPathwayStatus(name, o.key)}
-                          aria-pressed={status === o.key}
+                          onClick={() => setPathwayStatus(name, o.key, processId)}
+                          aria-pressed={normalizedStatus === o.key}
                           title={
                             o.key === "inhibited"
                               ? "Still not holding — needs more work"
-                              : o.key === "clear"
-                                ? "Cleared on re-test"
-                                : "Cleared and holding strong on re-challenge"
+                              : "Cleared on re-test"
                           }
                           className={cn(
                             "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-[11px] font-semibold transition-colors",
-                            status === o.key ? o.active : "text-muted-foreground hover:text-foreground",
+                            normalizedStatus === o.key ? o.active : "text-muted-foreground hover:text-foreground",
                           )}
                         >
                           <span aria-hidden>{o.glyph}</span> {o.label}
@@ -531,7 +571,18 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
                     <button
                       key={proc.id}
                       type="button"
-                      onClick={() => setOpenIds(prev => prev.includes(proc.id) ? prev : [...prev, proc.id])}
+                      aria-pressed={open}
+                      title={open ? `Close ${proc.title} log` : `Open ${proc.title} log`}
+                      onClick={() => {
+                        setOpenIds(prev => {
+                          const isOpen = prev.includes(proc.id);
+                          if (isOpen) return prev.filter(id => id !== proc.id);
+                          requestAnimationFrame(() => {
+                            sheetRefs.current[proc.id]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                          });
+                          return [...prev, proc.id];
+                        });
+                      }}
                       className={cn(
                         'flex h-8 items-center gap-2 whitespace-nowrap rounded-md border px-2 text-xs font-medium transition-colors',
                         open
@@ -546,6 +597,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
                           {count}
                         </span>
                       )}
+                      {open ? <X size={12} className="opacity-70" /> : <Plus size={12} className="opacity-70" />}
                     </button>
                   );
                 })}
@@ -563,7 +615,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
                 const doneSteps = log?.steps?.length ?? 0;
                 const totalSteps = stepTotal(pid);
                 return (
-                  <div key={pid} className="overflow-hidden rounded-xl border border-border/70 bg-background">
+                  <div key={pid} ref={(el) => { sheetRefs.current[pid] = el; }} className="overflow-hidden rounded-xl border border-border/70 bg-background scroll-mt-28">
                     <div className="flex items-center justify-between gap-2 border-b border-border/60 bg-muted/30 px-4 py-2">
                       <div className="flex min-w-0 items-center gap-2">
                         <p className="text-[13px] font-semibold leading-snug text-foreground">{proc.title}</p>
@@ -607,8 +659,8 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
         <Card padding="comfortable" className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <p className="text-card-title">Corrections &amp; balances note</p>
-              <p className="text-meta">Coordinates, polarity and method — the running record.</p>
+              <p className="text-card-title">Clinical note (manual)</p>
+              <p className="text-meta">Optional narrative note; structured corrections are logged above.</p>
             </div>
             {corrections.length > 0 && (
               <StatusBadge variant="recorded">{corrections.length} entries</StatusBadge>
@@ -619,7 +671,7 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
             <div className="space-y-2">
               {corrections.map((c, i) => (
                 <div key={i} className="flex gap-2 rounded-xl border border-border/60 bg-background px-4 py-3">
-                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-success" />
+                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary/50" />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                       <span className="text-[13px] font-semibold text-foreground">{c.pathway}</span>
@@ -627,9 +679,37 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
                         <span className="text-[11px] tabular-nums text-muted-foreground">{fmtTime(c.timestamp)}</span>
                       )}
                     </div>
-                    <p className="mt-1 whitespace-pre-wrap text-[13px] leading-relaxed text-foreground/80">
-                      {c.summary}
-                    </p>
+                    <div className="mt-1 space-y-1 text-[13px] leading-relaxed text-foreground/80">
+                      {c.finding && <p className="font-medium text-foreground/90">{c.finding}</p>}
+                      {(c.details?.zone1?.name || c.details?.zone2?.name) ? (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {[
+                            { key: "Zone 1", z: c.details?.zone1 },
+                            { key: "Zone 2", z: c.details?.zone2 },
+                          ].filter((x) => x.z?.name).map(({ key, z }) => {
+                            const cat = z.category === "Subcortical" ? "Subcortical" : "Cortical";
+                            const tone = cat === "Cortical"
+                              ? "bg-efferent/10 border-efferent/25 text-efferent-strong"
+                              : "bg-efferent/[0.07] border-efferent/20 text-efferent";
+                            return (
+                              <span key={key} className={cn("inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11px] font-medium", tone)}>
+                                <span className="uppercase tracking-[0.08em] opacity-70">{key}</span>
+                                <span>{z.name}{z.side ? ` (${z.side})` : ""}</span>
+                                <span className="opacity-70">· {cat}</span>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      ) : null}
+                      {(() => {
+                        const d = c.details || {};
+                        const method = typeof d.method === "string" ? d.method : "";
+                        const timer = d.correctionTimerMinutes ? `${d.correctionTimerMinutes} min${d.correctionTimerCompleted ? " done" : ""}` : "";
+                        const bits = [method && timer && method !== timer ? method : null, method && timer && method !== timer ? timer : (method || timer || null), d.retest, d.emotion, d.organ].filter(Boolean) as string[];
+                        const fallback = !bits.length && !c.details?.zone1?.name && !c.details?.zone2?.name ? fmtCorrectionSummary(c) : null;
+                        return bits.length ? <p className="text-muted-foreground">{bits.join(" · ")}</p> : fallback ? <p>{fallback}</p> : null;
+                      })()}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -695,9 +775,9 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
         {onJumpToPhase && (
           <ConfirmationFooter
             title="Done with Correct?"
-            description="Next, re-challenge and embed."
+            description={appliedCorrections.length > 0 ? "Next, re-challenge and embed." : "Log at least one correction before moving to Embed."}
             action={
-              <PrimaryButton onClick={() => onJumpToPhase(4)} className="h-10 gap-2 px-4 text-sm font-medium">
+              <PrimaryButton onClick={() => onJumpToPhase(4)} disabled={appliedCorrections.length === 0} className="h-10 gap-2 px-4 text-sm font-medium">
                 Continue to Embed <ArrowRight size={14} />
               </PrimaryButton>
             }
@@ -705,95 +785,6 @@ const CorrectPhaseV3 = ({ appointment, onUpdate, saveField, onJumpToPhase }: Pha
         )}
       </Section>
 
-      {/* Priority pathway modal */}
-      <Dialog open={pathModalOpen} onOpenChange={setPathModalOpen}>
-        <DialogContent className="mx-4 flex max-h-[85vh] w-[calc(100%-2rem)] flex-col rounded-2xl p-0 sm:max-w-[500px]">
-          <DialogHeader className="shrink-0 border-b border-border px-6 pb-4 pt-6">
-            <DialogTitle className="flex items-center gap-2 text-[15px] font-semibold">
-              <Target size={17} className="text-primary" /> Priority pathway
-            </DialogTitle>
-          </DialogHeader>
-          <div className="min-w-0 flex-1 space-y-4 overflow-y-auto px-6 py-4">
-            <div className="space-y-2">
-              <p className="text-card-title">Correction target</p>
-              <Select
-                value={priorityPathway && priorityPathway !== 'CUSTOM' ? priorityPathway : ''}
-                onValueChange={(val) => {
-                  setCustomPathway("");
-                  selectPathway(val);
-                }}
-              >
-                <SelectTrigger className="h-10 w-full rounded-md border-border text-sm">
-                  <SelectValue placeholder="Select the priority finding…" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border-border">
-                  {pathwayFindings.map(f => (
-                    <SelectItem key={f.value} value={f.value} className="rounded-md py-2 text-[13px] font-medium">
-                      {f.value}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="CUSTOM" className="rounded-md py-2 text-[13px] font-medium text-primary">
-                    <Plus size={13} className="mr-2 inline" /> Custom entry
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              {(isCustom || customMode) && (
-                <div className="mt-2 flex items-center gap-2">
-                  <input
-                    value={customPathway}
-                    onChange={e => setCustomPathway(e.target.value)}
-                    placeholder="e.g. Startle Reflex — Primitive Reflex"
-                    className="input"
-                    autoFocus
-                  />
-                  <PrimaryButton
-                    disabled={!customPathway.trim()}
-                    onClick={saveCustom}
-                    className="h-10 shrink-0 px-4 text-[13px]"
-                  >
-                    Save pathway
-                  </PrimaryButton>
-                </div>
-              )}
-            </div>
-            {priorityPathway && priorityPathway !== 'CUSTOM' && (
-              <div className="space-y-3">
-                <div className="space-y-2 rounded-xl border border-border bg-muted/40 p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Priority pathway</p>
-                  <p className="text-sm font-semibold text-foreground">{priorityPathway}</p>
-                </div>
-                {(() => {
-                  const pathwayCorrections = corrections.filter(c => c.pathway === priorityPathway);
-                  const list = pathwayCorrections.length > 0 ? pathwayCorrections
-                    : appointment.modes_balances
-                      ? [{ pathway: priorityPathway, summary: appointment.modes_balances, timestamp: "" }]
-                      : [];
-                  return list.length > 0 ? (
-                    <div className="space-y-2">
-                      <p className="px-1 text-xs font-medium text-muted-foreground">
-                        Corrections linked to {priorityPathway}
-                      </p>
-                      {list.map((c, i) => (
-                        <div key={i} className="space-y-2 rounded-xl border border-border bg-muted/40 p-4">
-                          {list.length > 1 && (
-                            <p className="text-xs font-medium text-muted-foreground">Correction #{i + 1}</p>
-                          )}
-                          <p className="text-sm font-medium leading-relaxed text-foreground">{c.summary}</p>
-                          <div className="flex items-center gap-2 text-[10px] font-medium text-muted-foreground">
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" />
-                            Linked to {c.pathway}
-                            {c.timestamp && <span className="tabular-nums">· {fmtTime(c.timestamp)}</span>}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null;
-                })()}
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 };

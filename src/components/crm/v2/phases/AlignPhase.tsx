@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
+import { getReportSortPriority } from "@/lib/report-settings";
 import { GitBranch, Target, Route, AlertCircle, BookMarked } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { safeParse } from "@/utils/safe-json";
 import { Button } from "@/components/ui/button";
 import { PhaseHeader, PhaseEmptyState, PathwayBanner } from "@/components/crm/v2/PhaseComponents";
-import { CATEGORY_LABELS, CATEGORY_ICONS } from "@/components/crm/v2/categoryConstants";
+import { CATEGORY_LABELS, CATEGORY_ICONS, categoryTone } from "@/components/crm/v2/categoryConstants";
 import {
   getInhibitedFindings,
   priorityKey,
@@ -66,11 +67,14 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
       side: f.side,
       priorityLevel: f.priorityLevel,
     }));
+    const sortByPriority = getReportSortPriority();
     const rank = (level: FindingPriority | null) => level === 'primary' ? 2 : level === 'priority' ? 1 : 0;
     items.sort((a, b) => {
-      const scoreA = rank(a.priorityLevel);
-      const scoreB = rank(b.priorityLevel);
-      if (scoreA !== scoreB) return scoreB - scoreA;
+      if (sortByPriority) {
+        const scoreA = rank(a.priorityLevel);
+        const scoreB = rank(b.priorityLevel);
+        if (scoreA !== scoreB) return scoreB - scoreA;
+      }
       return a.name.localeCompare(b.name);
     });
     return items;
@@ -222,10 +226,11 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
             });
             return Object.entries(groups).map(([catKey, findings]) => {
               const Icon = CATEGORY_ICONS[catKey];
+              const tone = categoryTone(catKey);
               return (
                 <section key={catKey} className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-xs">
                   <header className="flex items-center gap-2 border-b border-border/60 bg-muted/20 px-3.5 py-2">
-                    {Icon && <Icon size={13} className="shrink-0 text-muted-foreground" />}
+                    {Icon && <Icon size={13} className={cn("shrink-0", tone.text)} />}
                     <h4 className="text-[11px] font-semibold uppercase tracking-[0.11em] text-muted-foreground">
                       {CATEGORY_LABELS[catKey] || catKey}
                     </h4>
@@ -255,7 +260,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                         )}>
                           <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-3.5 py-2.5">
                             <div className="flex min-w-0 items-center gap-2.5">
-                              {Icon && <Icon size={15} className={cn("shrink-0", isPrimary ? "text-gold-strong" : isPriority && "text-primary-strong")} />}
+                              {Icon && <Icon size={15} className={cn("shrink-0", tone.text)} />}
                               <div className="min-w-0">
                                 <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px] font-semibold text-foreground">
                                   <span>{item.name}</span>

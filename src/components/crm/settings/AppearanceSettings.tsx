@@ -2,8 +2,10 @@
 import { useState } from "react";
 import { useTheme } from "next-themes";
 import { START_PAGES, getStartPage, setStartPage, type StartPage } from "@/lib/start-page";
+import { getReportSortPriority, setReportSortPriority } from "@/lib/report-settings";
 import { Sun, Moon, Monitor, Palette } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
 const THEMES = [
@@ -15,9 +17,14 @@ const THEMES = [
 const AppearanceSettings = () => {
   const { theme, setTheme } = useTheme();
   const [startPage, setStartPageState] = useState<StartPage>(getStartPage);
+  const [sortPriority, setSortPriorityState] = useState(getReportSortPriority);
   const chooseStartPage = (path: StartPage) => {
     setStartPage(path);
     setStartPageState(path);
+  };
+  const toggleSortPriority = (on: boolean) => {
+    setReportSortPriority(on);
+    setSortPriorityState(on);
   };
 
   return (
@@ -76,6 +83,14 @@ const AppearanceSettings = () => {
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="flex items-start justify-between gap-4 rounded-xl border border-border/60 bg-muted/20 p-4">
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-foreground">Sort session report by priority</p>
+            <p className="text-xs text-muted-foreground">When on, Preliminary Findings automatically sort Primary priority first, then Priority, then other findings.</p>
+          </div>
+          <Switch checked={sortPriority} onCheckedChange={toggleSortPriority} aria-label="Sort session report by priority" />
         </div>
 
         {/* Preview swatch */}

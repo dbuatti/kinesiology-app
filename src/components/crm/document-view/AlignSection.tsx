@@ -3,6 +3,8 @@ import { useState, useMemo } from 'react';
 import { Baby, Zap, Dumbbell, Brain, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { normalizeFindingPriority, type FindingPriority } from '@/components/crm/v2/v2-utils';
+import { categoryTone } from '@/components/crm/v2/categoryConstants';
+import { splitCranialNervePattern } from '@/lib/cranial-stim-findings';
 import PriorityTierControl from '@/components/crm/PriorityTierControl';
 
 interface AlignSectionProps {
@@ -39,8 +41,11 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
     const items: Finding[] = [];
 
     Object.entries(CATEGORY_CONFIG).forEach(([catKey, config]) => {
-      const catItems = pattern?.[catKey];
-      if (!catItems || typeof catItems !== 'object') return;
+      const rawItems = pattern?.[catKey];
+      if (!rawItems || typeof rawItems !== 'object') return;
+      const catItems = catKey === 'cranialNerves'
+        ? splitCranialNervePattern(rawItems).findings
+        : rawItems;
 
       Object.entries(catItems).forEach(([rawName, rawStatus]) => {
         const strStatus = rawStatus as string;
@@ -175,11 +180,12 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
           const config = CATEGORY_CONFIG[catKey];
           if (!config) return null;
           const Icon = config.icon;
+          const tone = categoryTone(catKey);
 
           return (
             <div key={catKey} className="space-y-2">
               <div className="flex items-center gap-2 mb-3">
-                <Icon size={13} className="text-muted-foreground" />
+                <Icon size={13} className={cn(tone.text)} />
                 <h4 className="text-xs font-medium text-muted-foreground">{config.label}</h4>
                 <div className="flex-1 h-px bg-border" />
                 <span className="text-[10px] font-medium text-muted-foreground">{findings.length}</span>
@@ -205,9 +211,7 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className={cn(
                           "w-5 h-5 rounded flex items-center justify-center shrink-0",
-                          isPrimary ? "bg-gold/15 text-gold-strong" :
-                          isPriority ? "bg-primary/10 text-primary-strong" :
-                          "bg-destructive/15 text-destructive-strong"
+                          tone.tile
                         )}>
                           <Icon size={11} />
                         </div>

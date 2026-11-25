@@ -219,6 +219,7 @@ const ReflexRow = ({
             } else corr.togglePriority(category, itemName, side);
           },
           onAddCorrection: (c: any) => corr.addCorrection(category, itemName, c, lateral ? "L" : side),
+          onUpdateCorrection: (c: any) => { const s = lateral ? (corr.getCorrections(category, itemName, "L").some((x:any)=>x.id===c.id) ? "L" : corr.getCorrections(category, itemName, "R").some((x:any)=>x.id===c.id) ? "R" : "L") : side; corr.updateCorrection(category, itemName, c, s); },
           onToggleHolding: (id: string) => {
             if (lateral) {
               if (corr.getCorrections(category, itemName, "L").some((c:any)=>c.id===id)) corr.toggleHolding(category, itemName, id, "L");

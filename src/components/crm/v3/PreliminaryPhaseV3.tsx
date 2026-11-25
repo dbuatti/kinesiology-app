@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { Fragment, useState, useMemo, useEffect } from "react";
 import { ArrowDown, ArrowRight, ArrowUp, AlertTriangle, Check, CheckCircle2, ChevronDown, ChevronRight, Dumbbell, Baby, Zap, Brain, Activity, Compass, RotateCcw, ClipboardList, Eye, FileText, Search, ExternalLink } from "lucide-react";
 import { differenceInDays } from "date-fns";
 import EditableField from "@/components/shared/EditableField";
@@ -22,11 +22,18 @@ import {
 import { safeParse } from "@/utils/safe-json";
 import { cn } from "@/lib/utils";
 import type { FindingPriority } from "@/components/crm/v2/v2-utils";
+import { categoryTone } from "@/components/crm/v2/categoryConstants";
+import { REFLEX_TRACKS } from "@/lib/reflex-order";
 import { getMuscleInfo } from "@/data/muscle-info-data";
 import MuscleInfoModal from "@/components/crm/MuscleInfoModal";
 import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from "@/data/muscle-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
+import {
+  cranialStimPatternFindings,
+  markedCranialStims,
+  splitCranialNervePattern,
+} from "@/lib/cranial-stim-findings";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";
 
 import {
@@ -93,6 +100,7 @@ const CranialNerveRow = ({
   getPriorityTier,
   setPriorityTier,
   addCorrection,
+  updateCorrection,
   toggleHolding,
   removeCorrection,
   togglePriority,
@@ -105,6 +113,7 @@ const CranialNerveRow = ({
   getPriorityTier: (category: string, name: string, side?: "L" | "R") => FindingPriority | null;
   setPriorityTier: (category: string, name: string, side: "L" | "R" | undefined, tier: FindingPriority | null) => void;
   addCorrection: (category: string, name: string, correction: ReflexCorrection, side?: "L" | "R") => void | Promise<void>;
+  updateCorrection: (category: string, name: string, correction: ReflexCorrection, side?: "L" | "R") => void | Promise<void>;
   toggleHolding: (category: string, name: string, id: string, side?: "L" | "R") => void;
   removeCorrection: (category: string, name: string, id: string, side?: "L" | "R") => void;
   togglePriority: (category: string, name: string, side?: "L" | "R") => void;
@@ -162,13 +171,13 @@ const CranialNerveRow = ({
         </button>
         {!nerve.isLateralized && (
           <div className="flex items-center gap-2 shrink-0 justify-end">
-            <ReflexQuickRow category="cranialNerves" name={nerveName} pattern={pattern} onToggle={(cat, name, status, side) => onToggle(name, status, side)} corrections={getCorrections("cranialNerves", nerveName)} isPriority={isPriority("cranialNerves", nerveName)} onTogglePriority={() => togglePriority("cranialNerves", nerveName)} priorityTier={getPriorityTier("cranialNerves", nerveName)} onSetPriorityTier={(tier) => setPriorityTier("cranialNerves", nerveName, undefined, tier)} onAddCorrection={(c) => addCorrection("cranialNerves", nerveName, c)} onToggleHolding={(id) => toggleHolding("cranialNerves", nerveName, id)} onRemoveCorrection={(id) => removeCorrection("cranialNerves", nerveName, id)} />
+            <ReflexQuickRow category="cranialNerves" name={nerveName} pattern={pattern} onToggle={(cat, name, status, side) => onToggle(name, status, side)} corrections={getCorrections("cranialNerves", nerveName)} isPriority={isPriority("cranialNerves", nerveName)} onTogglePriority={() => togglePriority("cranialNerves", nerveName)} priorityTier={getPriorityTier("cranialNerves", nerveName)} onSetPriorityTier={(tier) => setPriorityTier("cranialNerves", nerveName, undefined, tier)} onAddCorrection={(c) => addCorrection("cranialNerves", nerveName, c)} onUpdateCorrection={(c)=>updateCorrection("cranialNerves", nerveName, c)} onToggleHolding={(id) => toggleHolding("cranialNerves", nerveName, id)} onRemoveCorrection={(id) => removeCorrection("cranialNerves", nerveName, id)} />
           </div>
         )}
         {nerve.isLateralized && (
           <div className="grid shrink-0 grid-cols-2 gap-1.5">
-            <ReflexQuickRow category="cranialNerves" name={nerveName} side="L" compact pattern={pattern} onToggle={(cat, name, status, side) => onToggle(name, status, side)} corrections={getCorrections("cranialNerves", nerveName, "L")} isPriority={isPriority("cranialNerves", nerveName, "L")} onTogglePriority={() => togglePriority("cranialNerves", nerveName, "L")} priorityTier={getPriorityTier("cranialNerves", nerveName, "L")} onSetPriorityTier={(tier) => setPriorityTier("cranialNerves", nerveName, "L", tier)} onAddCorrection={(c) => addCorrection("cranialNerves", nerveName, c, "L")} onToggleHolding={(id) => toggleHolding("cranialNerves", nerveName, id, "L")} onRemoveCorrection={(id) => removeCorrection("cranialNerves", nerveName, id, "L")} />
-            <ReflexQuickRow category="cranialNerves" name={nerveName} side="R" compact pattern={pattern} onToggle={(cat, name, status, side) => onToggle(name, status, side)} corrections={getCorrections("cranialNerves", nerveName, "R")} isPriority={isPriority("cranialNerves", nerveName, "R")} onTogglePriority={() => togglePriority("cranialNerves", nerveName, "R")} priorityTier={getPriorityTier("cranialNerves", nerveName, "R")} onSetPriorityTier={(tier) => setPriorityTier("cranialNerves", nerveName, "R", tier)} onAddCorrection={(c) => addCorrection("cranialNerves", nerveName, c, "R")} onToggleHolding={(id) => toggleHolding("cranialNerves", nerveName, id, "R")} onRemoveCorrection={(id) => removeCorrection("cranialNerves", nerveName, id, "R")} />
+            <ReflexQuickRow category="cranialNerves" name={nerveName} side="L" compact pattern={pattern} onToggle={(cat, name, status, side) => onToggle(name, status, side)} corrections={getCorrections("cranialNerves", nerveName, "L")} isPriority={isPriority("cranialNerves", nerveName, "L")} onTogglePriority={() => togglePriority("cranialNerves", nerveName, "L")} priorityTier={getPriorityTier("cranialNerves", nerveName, "L")} onSetPriorityTier={(tier) => setPriorityTier("cranialNerves", nerveName, "L", tier)} onAddCorrection={(c) => addCorrection("cranialNerves", nerveName, c, "L")} onUpdateCorrection={(c)=>updateCorrection("cranialNerves", nerveName, c, "L")} onToggleHolding={(id) => toggleHolding("cranialNerves", nerveName, id, "L")} onRemoveCorrection={(id) => removeCorrection("cranialNerves", nerveName, id, "L")} />
+            <ReflexQuickRow category="cranialNerves" name={nerveName} side="R" compact pattern={pattern} onToggle={(cat, name, status, side) => onToggle(name, status, side)} corrections={getCorrections("cranialNerves", nerveName, "R")} isPriority={isPriority("cranialNerves", nerveName, "R")} onTogglePriority={() => togglePriority("cranialNerves", nerveName, "R")} priorityTier={getPriorityTier("cranialNerves", nerveName, "R")} onSetPriorityTier={(tier) => setPriorityTier("cranialNerves", nerveName, "R", tier)} onAddCorrection={(c) => addCorrection("cranialNerves", nerveName, c, "R")} onUpdateCorrection={(c)=>updateCorrection("cranialNerves", nerveName, c, "R")} onToggleHolding={(id) => toggleHolding("cranialNerves", nerveName, id, "R")} onRemoveCorrection={(id) => removeCorrection("cranialNerves", nerveName, id, "R")} />
           </div>
         )}
       </div>
@@ -177,31 +186,9 @@ const CranialNerveRow = ({
           {stimLines.map((line, i) => {
             const lateral = isLatStim(i);
             const compositeName = `${nerveName} — ${line}`;
-            const rowPri = lateral ? (isPriority("cranialNerves", compositeName, "L") || isPriority("cranialNerves", compositeName, "R")) : isPriority("cranialNerves", compositeName);
-            const rowCorrections = lateral ? [...getCorrections("cranialNerves", compositeName, "L"), ...getCorrections("cranialNerves", compositeName, "R")] : getCorrections("cranialNerves", compositeName);
-            const addRowCorrection = (c: ReflexCorrection) => addCorrection("cranialNerves", compositeName, c, lateral ? "L" : undefined);
-            const toggleRowHolding = (id: string) => {
-              if (lateral) {
-                if (getCorrections("cranialNerves", compositeName, "L").some((c) => c.id === id)) toggleHolding("cranialNerves", compositeName, id, "L");
-                else toggleHolding("cranialNerves", compositeName, id, "R");
-              } else toggleHolding("cranialNerves", compositeName, id);
-            };
-            const removeRowCorrection = (id: string) => {
-              if (lateral) {
-                if (getCorrections("cranialNerves", compositeName, "L").some((c) => c.id === id)) removeCorrection("cranialNerves", compositeName, id, "L");
-                else removeCorrection("cranialNerves", compositeName, id, "R");
-              } else removeCorrection("cranialNerves", compositeName, id);
-            };
-            const toggleRowPriority = () => {
-              if (lateral) {
-                const next = !rowPri;
-                setPriorityTier("cranialNerves", compositeName, "L", next ? "priority" : null);
-                setPriorityTier("cranialNerves", compositeName, "R", next ? "priority" : null);
-              } else togglePriority("cranialNerves", compositeName);
-            };
+            // A stim is information on the nerve, not a pathway to correct.
             return (
-              <PathwayRow key={i} itemName={compositeName} corrections={rowCorrections} isPriority={rowPri} onTogglePriority={toggleRowPriority} onAddCorrection={addRowCorrection} onToggleHolding={toggleRowHolding} onRemoveCorrection={removeRowCorrection} className="rounded-md">
-                <div className={cn("grid grid-cols-[1fr_auto] items-center gap-3 py-0.5 px-1 -mx-1 rounded-md", rowPri && "bg-primary/[0.03]")}>
+              <div key={i} className="grid grid-cols-[1fr_auto] items-center gap-3 py-0.5 px-1 -mx-1 rounded-md">
                   <p className="text-[12px] text-foreground/80 break-words">{line}</p>
                   <div className="flex items-center gap-1.5 justify-end">
                     {lateral ? (
@@ -242,8 +229,7 @@ const CranialNerveRow = ({
                       </button>
                     )}
                   </div>
-                </div>
-              </PathwayRow>
+              </div>
             );
           })}
         </div>
@@ -252,7 +238,7 @@ const CranialNerveRow = ({
   );
 };
 
-const MuscleGroupGrid = ({ muscles, pattern, onToggle, onSelectMuscle, getCorrections, isPriority, getPriorityTier, setPriorityTier, setPriorityTierForSides, addCorrection, toggleHolding, removeCorrection, togglePriority }: {
+const MuscleGroupGrid = ({ muscles, pattern, onToggle, onSelectMuscle, getCorrections, isPriority, getPriorityTier, setPriorityTier, setPriorityTierForSides, addCorrection, updateCorrection, toggleHolding, removeCorrection, togglePriority }: {
   muscles: string[];
   pattern: QuickPattern;
   onToggle: (cat: string, name: string, nextStatus: string, side?: 'L' | 'R') => void;
@@ -263,6 +249,7 @@ const MuscleGroupGrid = ({ muscles, pattern, onToggle, onSelectMuscle, getCorrec
   setPriorityTier: (category: string, name: string, side: "L" | "R" | undefined, tier: FindingPriority | null) => void;
   setPriorityTierForSides: (category: string, name: string, sides: Array<"L" | "R">, tier: FindingPriority | null) => void;
   addCorrection: (category: string, name: string, correction: ReflexCorrection, side?: "L" | "R") => void | Promise<void>;
+  updateCorrection: (category: string, name: string, correction: ReflexCorrection, side?: "L" | "R") => void | Promise<void>;
   toggleHolding: (category: string, name: string, id: string, side?: "L" | "R") => void;
   removeCorrection: (category: string, name: string, id: string, side?: "L" | "R") => void;
   togglePriority: (category: string, name: string, side?: "L" | "R") => void;
@@ -311,7 +298,7 @@ const MuscleGroupGrid = ({ muscles, pattern, onToggle, onSelectMuscle, getCorrec
           return 'bg-card text-muted-foreground border-border hover:bg-muted/50';
         };
         return (
-          <PathwayRow key={m} itemName={m} corrections={getCorrections("muscles", m)} isPriority={isPriority("muscles", m)} onTogglePriority={() => togglePriority("muscles", m)} priorityTier={getPriorityTier("muscles", m)} onSetPriorityTier={(tier) => setPriorityTier("muscles", m, undefined, tier)} onAddCorrection={(c) => addCorrection("muscles", m, c)} onToggleHolding={(id) => toggleHolding("muscles", m, id)} onRemoveCorrection={(id) => removeCorrection("muscles", m, id)}>
+          <PathwayRow key={m} itemName={m} corrections={getCorrections("muscles", m)} isPriority={isPriority("muscles", m)} onTogglePriority={() => togglePriority("muscles", m)} priorityTier={getPriorityTier("muscles", m)} onSetPriorityTier={(tier) => setPriorityTier("muscles", m, undefined, tier)} onAddCorrection={(c) => addCorrection("muscles", m, c)} onUpdateCorrection={(c)=>updateCorrection("muscles", m, c)} onToggleHolding={(id) => toggleHolding("muscles", m, id)} onRemoveCorrection={(id) => removeCorrection("muscles", m, id)}>
             <div className={cn("group py-3 px-3 -mx-3 rounded-lg flex items-start justify-between gap-6 hover:bg-muted/40 transition-all", isPriority("muscles", m) && "bg-primary/[0.04]")}>
               <div className="flex-1 min-w-0">
                 <button onClick={() => onSelectMuscle?.(m)} className="text-sm font-semibold text-foreground hover:text-primary transition-colors text-left">{m}</button>
@@ -368,7 +355,7 @@ const MuscleGroupGrid = ({ muscles, pattern, onToggle, onSelectMuscle, getCorrec
 
       const pri = isPriority("muscles", m, "L") || isPriority("muscles", m, "R");
       return (
-        <PathwayRow key={m} itemName={m} corrections={[...getCorrections("muscles", m, "L"), ...getCorrections("muscles", m, "R")]} isPriority={pri} onTogglePriority={() => { togglePriority("muscles", m, "L"); if (isPriority("muscles", m, "L") !== isPriority("muscles", m, "R")) togglePriority("muscles", m, "R"); }} priorityTier={getPriorityTier("muscles", m, "L") ?? getPriorityTier("muscles", m, "R")} onSetPriorityTier={(tier) => setPriorityTierForSides("muscles", m, ["L", "R"], tier)} onAddCorrection={(c) => addCorrection("muscles", m, c, "L")} onToggleHolding={(id) => { if (getCorrections("muscles", m, "L").some(c=>c.id===id)) toggleHolding("muscles", m, id, "L"); else toggleHolding("muscles", m, id, "R"); }} onRemoveCorrection={(id) => { if (getCorrections("muscles", m, "L").some(c=>c.id===id)) removeCorrection("muscles", m, id, "L"); else removeCorrection("muscles", m, id, "R"); }}>
+        <PathwayRow key={m} itemName={m} corrections={[...getCorrections("muscles", m, "L"), ...getCorrections("muscles", m, "R")]} isPriority={pri} onTogglePriority={() => { togglePriority("muscles", m, "L"); if (isPriority("muscles", m, "L") !== isPriority("muscles", m, "R")) togglePriority("muscles", m, "R"); }} priorityTier={getPriorityTier("muscles", m, "L") ?? getPriorityTier("muscles", m, "R")} onSetPriorityTier={(tier) => setPriorityTierForSides("muscles", m, ["L", "R"], tier)} onAddCorrection={(c) => addCorrection("muscles", m, c, "L")} onUpdateCorrection={(c)=>{ const side = getCorrections("muscles", m, "L").some(x=>x.id===c.id) ? "L" : getCorrections("muscles", m, "R").some(x=>x.id===c.id) ? "R" : "L"; updateCorrection("muscles", m, c, side); }} onToggleHolding={(id) => { if (getCorrections("muscles", m, "L").some(c=>c.id===id)) toggleHolding("muscles", m, id, "L"); else toggleHolding("muscles", m, id, "R"); }} onRemoveCorrection={(id) => { if (getCorrections("muscles", m, "L").some(c=>c.id===id)) removeCorrection("muscles", m, id, "L"); else removeCorrection("muscles", m, id, "R"); }}>
           <div className={cn("group py-3 px-3 -mx-3 rounded-lg flex items-start justify-between gap-6 hover:bg-muted/40 transition-all", pri && "bg-amber-500/[0.04]")}>
             <div className="flex-1 min-w-0">
               <button onClick={() => onSelectMuscle?.(m)} className="text-sm font-semibold text-foreground hover:text-primary transition-colors text-left">{m}</button>
@@ -407,6 +394,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
     setPriorityTier,
     setPriorityTierForSides,
     addCorrection,
+    updateCorrection,
     toggleHolding,
     removeCorrection,
     togglePriority,
@@ -611,16 +599,33 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
             const priorities = (pattern.priorities ?? {}) as Record<string, string | undefined>;
             // Cranial nerve toggle: when a stim line is marked inhibited, also mark the parent nerve.
             // When a stim line is cleared, un-inhibit the parent if no other stim lines remain inhibited.
+            const clearStimPattern = (nerveId: number, side?: 'L' | 'R') => {
+              cranialStimPatternFindings(pattern.cranialNerves)
+                .filter(p => p.nerve.id === nerveId && (!side || !p.side || p.side === side))
+                .forEach(p => updatePriorityPattern('cranialNerves', p.nerveName, null, p.side));
+            };
+            const nerveForName = (name: string) =>
+              CRANIAL_NERVES.find(n => `${n.name}: ${n.latinName}` === name);
+
             const cnToggle = (name: string, nextStatus: string, side?: 'L' | 'R', parentName?: string) => {
               quickToggle('cranialNerves', name, nextStatus, side);
-              if (!parentName) return;
+
+              if (!parentName) {
+                // Correcting the nerve also corrects its stims — the stim is
+                // information on the nerve, not its own finding.
+                if (nextStatus === 'Clear' || nextStatus === 'Normotonic') {
+                  const nerve = nerveForName(name);
+                  if (nerve) clearStimPattern(nerve.id, side);
+                }
+                return;
+              }
 
               if (nextStatus !== 'Clear') {
                 // Marking as inhibited → ensure parent is also inhibited
                 quickToggle('cranialNerves', parentName, 'Inhibited', side);
               } else {
                 // Clearing → check if any other stim lines for this nerve are still inhibited
-                const nerve = CRANIAL_NERVES.find(n => `${n.name}: ${n.latinName}` === parentName);
+                const nerve = nerveForName(parentName);
                 if (!nerve) return;
                 const allStimLines = nerveStimLines(nerve);
                 const otherStimLines = allStimLines.filter(l => l !== name);
@@ -631,6 +636,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                 });
                 if (!anyStillInhibited) {
                   quickToggle('cranialNerves', parentName, 'Clear', side);
+                  clearStimPattern(nerve.id, side);
                 }
               }
             };
@@ -638,15 +644,13 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                 {/* Primitive Reflexes — column 1 */}
                 <Card className="space-y-3" padding="comfortable">
-                  <SectionHeader icon={Baby} title="Primitive reflexes">
+                  <SectionHeader icon={Baby} title="Primitive reflexes" iconTone={categoryTone('primitiveReflexes').tile}>
                     <ResourceLink href={FNH_LINKS.primitiveReflexes} title="Primitive reflexes" />
                   </SectionHeader>
                   <div className="grid grid-cols-1 gap-4">
-                    {[
-                      { num: 1, label: 'Track 1 — Sagittal / Brainstem', desc: 'Moro → Startle → TLR → STNR → FPR', reflexes: ['moro', 'startle', 'tlr-flexion', 'tlr-extension', 'stnr-flexion', 'stnr-extension', 'fear-paralysis'] },
-                      { num: 2, label: 'Track 2 — Unilateral / Gait', desc: 'ATNR → Spinal Galant → Rooting → Palmar → Babinski → Sucking', reflexes: ['atnr', 'spinal-galant', 'rooting', 'palmar', 'babinski', 'sucking'] },
-                      { num: 3, label: 'Track 3 — Global Override', desc: 'Tendon Guard', reflexes: ['tendon-guard'] },
-                    ].map(group => {
+                    {REFLEX_TRACKS.map(({ num, label, desc, ids }) => ({
+                      num, label, desc, reflexes: ids,
+                    })).map(group => {
                       const groupReflexes = PRIMITIVE_REFLEXES.flatMap(r => {
                         if (r.id === 'tlr') {
                           return [
@@ -744,6 +748,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                                     priorityTier={getPriorityTier("primitiveReflexes", r.name, side)}
                                     onSetPriorityTier={(tier) => setPriorityTier("primitiveReflexes", r.name, side, tier)}
                                     onAddCorrection={(correction) => addCorrection("primitiveReflexes", r.name, correction, side)}
+                                    onUpdateCorrection={(correction) => updateCorrection("primitiveReflexes", r.name, correction, side)}
                                     onToggleHolding={(id) => toggleHolding("primitiveReflexes", r.name, id, side)}
                                     onRemoveCorrection={(id) => removeCorrection("primitiveReflexes", r.name, id, side)}
                                   />
@@ -781,19 +786,19 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                 {/* Cranial Nerves + Intrinsic — column 2 */}
                 <div className="space-y-4">
                 <Card className="space-y-2" padding="comfortable">
-                  <SectionHeader icon={Zap} title="Cranial nerves">
+                  <SectionHeader icon={Zap} title="Cranial nerves" iconTone={categoryTone('cranialNerves').tile}>
                     <ResourceLink href={FNH_LINKS.cranialNerves} title="Cranial nerves" />
                   </SectionHeader>
                   <div>
                     {CRANIAL_NERVES.map(n => (
-                      <CranialNerveRow key={n.name} nerve={n} pattern={pattern} onToggle={cnToggle} getCorrections={getCorrections} isPriority={isPriority} getPriorityTier={getPriorityTier} setPriorityTier={setPriorityTier} addCorrection={addCorrection} toggleHolding={toggleHolding} removeCorrection={removeCorrection} togglePriority={togglePriority} />
+                      <CranialNerveRow key={n.name} nerve={n} pattern={pattern} onToggle={cnToggle} getCorrections={getCorrections} isPriority={isPriority} getPriorityTier={getPriorityTier} setPriorityTier={setPriorityTier} addCorrection={addCorrection} updateCorrection={updateCorrection} toggleHolding={toggleHolding} removeCorrection={removeCorrection} togglePriority={togglePriority} />
                     ))}
                   </div>
                 </Card>
 
                 {/* Muscles — Intrinsic Stabilisation */}
                 <Card className="space-y-3" padding="comfortable">
-                  <SectionHeader icon={Dumbbell} title="Intrinsic stabilisation">
+                  <SectionHeader icon={Dumbbell} title="Intrinsic stabilisation" iconTone={categoryTone('muscles').tile}>
                     <div className="flex items-center gap-3 text-[11px] text-muted-foreground/60">
                       <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-rose-500/15 text-rose-600 dark:text-rose-400 text-[11px] font-bold">↓</span> Inhibited</span>
                       <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 text-[11px] font-bold">↑</span> Hypertonic</span>
@@ -801,7 +806,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                     </div>
                     <ResourceLink href={FNH_LINKS.ligaments} title="Ligament reference" />
                   </SectionHeader>
-                  <MuscleGroupGrid muscles={MUSCLE_GROUPS['Intrinsic Stabilisation'] || []} pattern={pattern} onToggle={quickToggle} onSelectMuscle={setSelectedMuscle} getCorrections={getCorrections} isPriority={isPriority} getPriorityTier={getPriorityTier} setPriorityTier={setPriorityTier} setPriorityTierForSides={setPriorityTierForSides} addCorrection={addCorrection} toggleHolding={toggleHolding} removeCorrection={removeCorrection} togglePriority={togglePriority} />
+                  <MuscleGroupGrid muscles={MUSCLE_GROUPS['Intrinsic Stabilisation'] || []} pattern={pattern} onToggle={quickToggle} onSelectMuscle={setSelectedMuscle} getCorrections={getCorrections} isPriority={isPriority} getPriorityTier={getPriorityTier} setPriorityTier={setPriorityTier} setPriorityTierForSides={setPriorityTierForSides} addCorrection={addCorrection} updateCorrection={updateCorrection} toggleHolding={toggleHolding} removeCorrection={removeCorrection} togglePriority={togglePriority} />
                 </Card>
                 </div>
               </div>
@@ -831,7 +836,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                 </div>
                 {filtered ? (
                   <Card className="space-y-3" padding="comfortable">
-                    <SectionHeader icon={Dumbbell} title="Search Results" subtitle={`${filtered.length} found`} />
+                    <SectionHeader icon={Dumbbell} title="Search Results" subtitle={`${filtered.length} found`} iconTone={categoryTone('muscles').tile} />
                     <div className="divide-y divide-border/30">
                       {filtered.map(({ m, group }) => {
                         const info = getMuscleInfo(m);
@@ -933,14 +938,14 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                 ) : (
                   Object.entries(MUSCLE_GROUPS).map(([groupName, muscles]) => (
                     <Card key={groupName} className="space-y-3" padding="comfortable">
-                      <SectionHeader icon={Dumbbell} title={groupName}>
+                      <SectionHeader icon={Dumbbell} title={groupName} iconTone={categoryTone('muscles').tile}>
                         <div className="flex items-center gap-3 text-[11px] text-muted-foreground/60">
                           <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-rose-500/15 text-rose-600 dark:text-rose-400 text-[11px] font-bold">↓</span> Inhibited</span>
                           <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 text-[11px] font-bold">↑</span> Hypertonic</span>
                           <span className="flex items-center gap-1"><span className="inline-flex h-4 w-4 items-center justify-center rounded bg-primary/10 text-primary-strong dark:text-primary text-[11px] font-bold">✓</span> Clear</span>
                         </div>
                       </SectionHeader>
-                      <MuscleGroupGrid muscles={muscles} pattern={pattern} onToggle={toggle} onSelectMuscle={setSelectedMuscle} getCorrections={getCorrections} isPriority={isPriority} getPriorityTier={getPriorityTier} setPriorityTier={setPriorityTier} setPriorityTierForSides={setPriorityTierForSides} addCorrection={addCorrection} toggleHolding={toggleHolding} removeCorrection={removeCorrection} togglePriority={togglePriority} />
+                      <MuscleGroupGrid muscles={muscles} pattern={pattern} onToggle={toggle} onSelectMuscle={setSelectedMuscle} getCorrections={getCorrections} isPriority={isPriority} getPriorityTier={getPriorityTier} setPriorityTier={setPriorityTier} setPriorityTierForSides={setPriorityTierForSides} addCorrection={addCorrection} updateCorrection={updateCorrection} toggleHolding={toggleHolding} removeCorrection={removeCorrection} togglePriority={togglePriority} />
                     </Card>
                   ))
                 )}
@@ -950,7 +955,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
 
           {subTab === 'reflexes' && (
             <Section className="space-y-3">
-              <SectionHeader icon={Baby} title="Primitive reflexes" subtitle="Tap a test to record its status">
+              <SectionHeader icon={Baby} title="Primitive reflexes" subtitle="Tap a test to record its status" iconTone={categoryTone('primitiveReflexes').tile}>
                 <ResourceLink href={FNH_LINKS.primitiveReflexes} title="Primitive reflexes" />
               </SectionHeader>
               <PrimitiveReflexAssessment
@@ -965,7 +970,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
 
           {subTab === 'nerves' && (
             <Section className="space-y-3">
-              <SectionHeader icon={Zap} title="Cranial nerves" subtitle="Laterality, stimulation and priority">
+              <SectionHeader icon={Zap} title="Cranial nerves" subtitle="Laterality, stimulation and priority" iconTone={categoryTone('cranialNerves').tile}>
                 <ResourceLink href={FNH_LINKS.cranialNerves} title="Cranial nerves" />
               </SectionHeader>
               <CranialNerveAssessment
@@ -981,7 +986,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
 
           {subTab === 'zones' && (
             <Section className="space-y-3">
-              <SectionHeader icon={Brain} title="Brain zones" subtitle="Cortical and subcortical points">
+              <SectionHeader icon={Brain} title="Brain zones" subtitle="Cortical and subcortical points" iconTone={categoryTone('brainZones').tile}>
                 <ResourceLink href={FNH_LINKS.brainZones} title="Brain zones" />
               </SectionHeader>
               <BrainZoneAssessment
@@ -1077,7 +1082,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                           const hasSubs = eye.subs && eye.subs.length > 0;
                           const pri = isPriority("eyeSystems", eye.name);
                           return (
-                            <PathwayRow key={eye.name} itemName={eye.name} corrections={getCorrections("eyeSystems", eye.name)} isPriority={pri} onTogglePriority={() => togglePriority("eyeSystems", eye.name)} onAddCorrection={(c) => addCorrection("eyeSystems", eye.name, c)} onToggleHolding={(id) => toggleHolding("eyeSystems", eye.name, id)} onRemoveCorrection={(id) => removeCorrection("eyeSystems", eye.name, id)}>
+                            <PathwayRow key={eye.name} itemName={eye.name} corrections={getCorrections("eyeSystems", eye.name)} isPriority={pri} onTogglePriority={() => togglePriority("eyeSystems", eye.name)} onAddCorrection={(c) => addCorrection("eyeSystems", eye.name, c)} onUpdateCorrection={(c)=>updateCorrection("eyeSystems", eye.name, c)} onToggleHolding={(id) => toggleHolding("eyeSystems", eye.name, id)} onRemoveCorrection={(id) => removeCorrection("eyeSystems", eye.name, id)}>
                               <div
                                 className={cn(
                                   "rounded-xl border p-3 space-y-2 transition-all",
@@ -1102,7 +1107,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                                       const subClear = subStatus === 'Clear';
                                       const subPri = isPriority("eyeSystems", sub.name);
                                       return (
-                                        <PathwayRow key={sub.name} itemName={sub.name} corrections={getCorrections("eyeSystems", sub.name)} isPriority={subPri} onTogglePriority={() => togglePriority("eyeSystems", sub.name)} onAddCorrection={(c) => addCorrection("eyeSystems", sub.name, c)} onToggleHolding={(id) => toggleHolding("eyeSystems", sub.name, id)} onRemoveCorrection={(id) => removeCorrection("eyeSystems", sub.name, id)} glow={false}>
+                                        <PathwayRow key={sub.name} itemName={sub.name} corrections={getCorrections("eyeSystems", sub.name)} isPriority={subPri} onTogglePriority={() => togglePriority("eyeSystems", sub.name)} onAddCorrection={(c) => addCorrection("eyeSystems", sub.name, c)} onUpdateCorrection={(c)=>updateCorrection("eyeSystems", sub.name, c)} onToggleHolding={(id) => toggleHolding("eyeSystems", sub.name, id)} onRemoveCorrection={(id) => removeCorrection("eyeSystems", sub.name, id)} glow={false}>
                                           <div className={cn("flex items-center justify-between gap-2 py-1 rounded-md px-1 -mx-1", subPri && "bg-primary/[0.04] ring-1 ring-primary/20")}>
                                             <div className="min-w-0">
                                               <p className="text-[11px] font-medium text-foreground/90">{sub.name.replace(eye.name + " ", "").replace(eye.name, "")}</p>
@@ -1130,7 +1135,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
 
         {subTab === 'report' && (() => {
           const pattern = safeParse<QuickPattern>(appointment.priority_pattern, {});
-          const findings: Array<{category: string, name: string, status: string, side?: string}> = [];
+          const findings: Array<{category: string, name: string, status: string, side?: string, stims?: string[]}> = [];
           
           Object.entries(pattern.muscles || {}).forEach(([key, val]) => {
             if (val === 'Inhibited' || val === 'Inhibition' || val === 'Hypertonic' || val === 'Clear' || val === 'Normotonic') {
@@ -1152,13 +1157,21 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
             }
           });
           
-          Object.entries(pattern.cranialNerves || {}).forEach(([key, val]) => {
+          Object.entries(splitCranialNervePattern(pattern.cranialNerves).findings).forEach(([key, val]) => {
             if (val === 'Inhibited' || val === 'Inhibition' || val === 'Hypertonic' || val === 'Clear' || val === 'Normotonic') {
               let name = key;
               let side: string | undefined;
               if (key.includes(' (L)')) { name = key.replace(' (L)', ''); side = 'L'; }
               else if (key.includes(' (R)')) { name = key.replace(' (R)', ''); side = 'R'; }
-              findings.push({ category: 'Cranial Nerve', name, status: val as string, side });
+              const nerve = CRANIAL_NERVES.find(n => `${n.name}: ${n.latinName}` === name || n.name === name);
+              const stims = nerve
+                ? markedCranialStims({
+                    nerve,
+                    patternNerves: pattern.cranialNerves,
+                    side: side as 'L' | 'R' | undefined,
+                  }).map(s => `${s.label}${s.side ? ` (${s.side})` : ''}`)
+                : [];
+              findings.push({ category: 'Cranial Nerve', name, status: val as string, side, stims: stims.length ? stims : undefined });
             }
           });
           
@@ -1225,15 +1238,31 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                           </thead>
                           <tbody className="divide-y divide-border">
                             {items.map((item, idx) => (
-                              <tr key={idx} className="hover:bg-muted/30 transition-colors">
-                                <td className="px-3 py-2 text-sm text-foreground">{item.name}</td>
-                                <td className="px-3 py-2 text-sm text-muted-foreground">{item.side || '—'}</td>
-                                <td className="px-3 py-2">
-                                  <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", getStatusColor(item.status))}>
-                                    {item.status === 'Inhibition' ? 'Inhibited' : item.status === 'Normotonic' ? 'Normotonic' : item.status}
-                                  </span>
-                                </td>
-                              </tr>
+                              <Fragment key={idx}>
+                                <tr className="hover:bg-muted/30 transition-colors">
+                                  <td className="px-3 py-2 text-sm text-foreground">{item.name}</td>
+                                  <td className="px-3 py-2 text-sm text-muted-foreground">{item.side || '—'}</td>
+                                  <td className="px-3 py-2">
+                                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", getStatusColor(item.status))}>
+                                      {item.status === 'Inhibition' ? 'Inhibited' : item.status === 'Normotonic' ? 'Normotonic' : item.status}
+                                    </span>
+                                  </td>
+                                </tr>
+                                {item.stims && item.stims.length > 0 && (
+                                  <tr className="bg-muted/20">
+                                    <td colSpan={3} className="px-3 py-1.5">
+                                      <div className="space-y-0.5">
+                                        {item.stims.map((label, stimIdx) => (
+                                          <div key={stimIdx} className="flex items-baseline gap-1.5 text-[12px] leading-relaxed">
+                                            <span className="font-semibold text-destructive">↓</span>
+                                            <span className="min-w-0 break-words text-muted-foreground">{label}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                              </Fragment>
                             ))}
                           </tbody>
                         </table>

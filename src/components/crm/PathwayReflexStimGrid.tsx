@@ -10,6 +10,7 @@ import PathwayReflexStimGridSummary from "./PathwayReflexStimGridSummary";
 import { buildCheckedMap } from "./grid-checked";
 import { StimXMark } from "./StimXMark";
 import { useItemCorrections } from "@/components/crm/reflex-corrections/useItemCorrections";
+import { cranialStimPatternFindings } from "@/lib/cranial-stim-findings";
 import {
   INTRINSIC_GRID_MUSCLES,
   seedMuscleState,
@@ -139,6 +140,16 @@ export function PathwayReflexStimGrid({
         const sideMatch = key.match(/-(L|R)$/);
         const side = (sideMatch ? sideMatch[1] : undefined) as "L" | "R" | undefined;
         await updatePriorityPattern("cranialNerves", nerveName, nextValue ? "Inhibited" : null, side);
+        if (!nextValue) {
+          // Clearing the nerve clears its stim information too — a stim is
+          // never a pathway of its own.
+          const pattern = safeParse<Record<string, Record<string, unknown>>>(priorityPattern, {});
+          const stims = cranialStimPatternFindings(pattern.cranialNerves)
+            .filter((p) => p.nerve.id === nerve.id && (!side || !p.side || p.side === side));
+          for (const stim of stims) {
+            await updatePriorityPattern("cranialNerves", stim.nerveName, null, stim.side);
+          }
+        }
         return;
       }
       if (key.startsWith("prim-")) {

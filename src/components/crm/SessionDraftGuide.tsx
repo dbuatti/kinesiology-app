@@ -24,13 +24,13 @@ const STEPS = [
     icon: Sparkles,
     step: "Step 2",
     title: "Draft with Claude",
-    body: "Paste it into your Claude Project together with the session transcript. Claude replies with a SESSION DRAFT block. One-time setup: paste the Project instructions — the button below copies them.",
+    body: "Paste it into your Claude Project together with the session transcript. Claude replies with a SESSION DRAFT block — it should not touch Notion itself. One-time setup: paste the Project instructions — the button below copies them.",
   },
   {
     icon: ClipboardPaste,
     step: "Step 3",
     title: "Import and review",
-    body: "Back on the session page: More (⋯) → Import session draft → paste the block. Fields that fill a gap are pre-checked; anything already recorded needs your tick. Apply — Notion mirrors it automatically.",
+    body: "Back on the session page: More (⋯) → Import session draft → paste the block. Fields that fill a gap are pre-checked; anything already recorded needs your tick. Applying fills empty Notion properties without touching notes already there.",
   },
 ] as const;
 
@@ -89,7 +89,8 @@ const SessionDraftGuide = ({ open, onOpenChange }: SessionDraftGuideProps) => {
           <div className="rounded-xl border border-border bg-muted/50 p-3 text-[11px] leading-relaxed text-muted-foreground">
             The record always wins: values already saved are only replaced when you tick them,
             and anything Claude drafted from the transcript stays a draft until you apply it.
-            Notion is updated through the existing sync — never hand-written.
+            Applying fills empty Notion properties through the existing sync — notes already
+            written in Notion are left alone.
           </div>
 
           <div className="flex items-center gap-2">

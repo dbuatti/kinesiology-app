@@ -1,5 +1,6 @@
 import { CATEGORY_LABELS } from "./categoryConstants";
 import { safeParse } from "@/utils/safe-json";
+import { splitCranialNervePattern } from "@/lib/cranial-stim-findings";
 
 export const INHIBITED_STATUSES = ["Inhibited", "Inhibition", "Hypertonic", "Hypotonic"] as const;
 
@@ -68,7 +69,12 @@ export const getInhibitedFindings = (raw: string | object | null | undefined): P
     // Only standard assessment categories contain findings to correct.
     // "mechanoreceptor" and similar keys are correction processes, not findings.
     if (!isFindingCategory(catKey)) return;
-    Object.entries(categoryItems || {}).forEach(([fullName, status]) => {
+    // A checked stim implies its nerve is dysfunctional, but the stim is not a
+    // pathway. Split first so the parent nerve is the only finding/route shown.
+    const nerveEntries = catKey === "cranialNerves"
+      ? Object.entries(splitCranialNervePattern(categoryItems).findings)
+      : Object.entries(categoryItems || {});
+    nerveEntries.forEach(([fullName, status]) => {
       if (!isInhibitedStatus(String(status))) return;
       const { baseName, side } = parseSideFromName(fullName);
       const priorityLevel = normalizeFindingPriority(priorities[priorityKey(catKey, fullName)]);

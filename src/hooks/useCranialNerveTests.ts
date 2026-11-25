@@ -6,6 +6,8 @@ import { showError } from "@/utils/toast";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { isLateralStim, cranialSideKey, nerveStimLines } from "@/components/crm/pathway-reflex-stim-data";
 import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
+import { safeParse } from "@/utils/safe-json";
+import { cranialStimPatternFindings } from "@/lib/cranial-stim-findings";
 
 export function useCranialNerveTests(
   appointmentId: string | undefined,
@@ -49,6 +51,17 @@ export function useCranialNerveTests(
       if (!userData.user) throw new Error("User not authenticated");
 
       let latestPattern = null;
+
+      // Grid stim marks are authoritative: retire any legacy stim rows for
+      // this nerve so a checked stim can never outlive the nerve that owns it.
+      if (updates.stim_results !== undefined && updatePriorityPattern) {
+        const pattern = safeParse<Record<string, Record<string, unknown>>>(priorityPattern, {});
+        const legacyStims = cranialStimPatternFindings(pattern.cranialNerves)
+          .filter((p) => p.nerve.id.toString() === nerveId && (side ? !p.side || p.side === side : true));
+        for (const stim of legacyStims) {
+          await updatePriorityPattern('cranialNerves', stim.nerveName, null, stim.side);
+        }
+      }
 
       // Handle inhibition sync to priority_pattern
       if (updates.is_inhibited !== undefined && updatePriorityPattern) {

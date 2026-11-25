@@ -509,6 +509,7 @@ export function PrimitiveReflexAssessment({
                         ? corrections.setPriorityTierForSides("primitiveReflexes", reflex.name, ["L", "R"], tier)
                         : corrections.setPriorityTier("primitiveReflexes", reflex.name, undefined, tier),
                       onAddCorrection: (c: any) => corrections.addCorrection("primitiveReflexes", reflex.name, c, reflex.isLateralized ? "L" : undefined),
+                    onUpdateCorrection: (c: any) => { const side = reflex.isLateralized ? (corrections.getCorrections("primitiveReflexes", reflex.name, "L").some(x=>x.id===c.id) ? "L" : corrections.getCorrections("primitiveReflexes", reflex.name, "R").some(x=>x.id===c.id) ? "R" : "L") : undefined; corrections.updateCorrection("primitiveReflexes", reflex.name, c, side); },
                       onToggleHolding: (id: string) => {
                         if (reflex.isLateralized) {
                           if (corrections.getCorrections("primitiveReflexes", reflex.name, "L").some(x => x.id === id)) corrections.toggleHolding("primitiveReflexes", reflex.name, id, "L");
@@ -558,6 +559,7 @@ export function PrimitiveReflexAssessment({
                     priorityTier: reflex.isLateralized ? corrections.getPriorityTier("primitiveReflexes", reflex.name, "L") ?? corrections.getPriorityTier("primitiveReflexes", reflex.name, "R") : corrections.getPriorityTier("primitiveReflexes", reflex.name),
                     onSetPriorityTier: (tier: any) => reflex.isLateralized ? corrections.setPriorityTierForSides("primitiveReflexes", reflex.name, ["L", "R"], tier) : corrections.setPriorityTier("primitiveReflexes", reflex.name, undefined, tier),
                     onAddCorrection: (c: any) => corrections.addCorrection("primitiveReflexes", reflex.name, c, reflex.isLateralized ? "L" : undefined),
+                    onUpdateCorrection: (c: any) => { const side = reflex.isLateralized ? (corrections.getCorrections("primitiveReflexes", reflex.name, "L").some(x=>x.id===c.id) ? "L" : corrections.getCorrections("primitiveReflexes", reflex.name, "R").some(x=>x.id===c.id) ? "R" : "L") : undefined; corrections.updateCorrection("primitiveReflexes", reflex.name, c, side); },
                     onToggleHolding: (id: string) => { if (reflex.isLateralized) { if (corrections.getCorrections("primitiveReflexes", reflex.name, "L").some(x=>x.id===id)) corrections.toggleHolding("primitiveReflexes", reflex.name, id, "L"); else corrections.toggleHolding("primitiveReflexes", reflex.name, id, "R"); } else corrections.toggleHolding("primitiveReflexes", reflex.name, id); },
                     onRemoveCorrection: (id: string) => { if (reflex.isLateralized) { if (corrections.getCorrections("primitiveReflexes", reflex.name, "L").some(x=>x.id===id)) corrections.removeCorrection("primitiveReflexes", reflex.name, id, "L"); else corrections.removeCorrection("primitiveReflexes", reflex.name, id, "R"); } else corrections.removeCorrection("primitiveReflexes", reflex.name, id); },
                   };

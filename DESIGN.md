@@ -87,6 +87,24 @@ mechanoreceptor, nociceptive and physiological read as afferent, while
 cortical, subcortical, emotional, heart wall and limiting-belief processes read
 as efferent. Unknown processes stay neutral.
 
+### Category identity (assessment icons and chips)
+
+These hues identify *what kind of finding* it is. They are not clinical status:
+status stays rose/amber/indigo on the badge and row, never on the category
+icon. Use the tint pairs below for icon tiles, category chips and category
+labels in appointment views.
+
+| Category | Treatment |
+|---|---|
+| Muscle | `bg-primary/10 text-primary-strong border-primary/20` |
+| Primitive reflex | `bg-chart-amber/10 text-warning-strong border-chart-amber/20` |
+| Cranial nerve | `bg-chart-purple/10 text-efferent-strong border-chart-purple/20` |
+| Brain zone | `bg-muted/60 text-muted-foreground border-border` |
+
+Shared source: `CATEGORY_TONES` / `categoryTone()` in
+`src/components/crm/v2/categoryConstants.ts`. `categoryTone()` accepts either
+pattern keys (`cranialNerves`) or labels (`Cranial Nerve`).
+
 ### Priority tiers
 
 Priority is a single three-state control: **None → Priority → Primary priority**.

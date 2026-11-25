@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 import type { ProtocolLog, ProtocolLogPatch } from "@/data/protocol-log";
 import { normalizeFindingPriority, priorityKey } from "@/components/crm/v2/v2-utils";
+import { splitCranialNervePattern } from "@/lib/cranial-stim-findings";
 
 export type CorrectionTab = "afferent" | "efferent";
 
@@ -28,6 +29,10 @@ export interface InhibitionPathwayState {
   priorityStep?: number;
   /** When an inhibited pathway resolves (clear). */
   clearedAt?: string;
+  /** Linked correction/protocol entry for traceability. */
+  correctionId?: string;
+  entryId?: string;
+  updatedAt?: string;
 }
 
 const PHASE_LABELS: Record<string, string> = {
@@ -103,6 +108,7 @@ interface CorrectionDockContextValue {
     pathway: InhibitionPathway,
     status: InhibitionPathwayStatus,
     priorityStep?: number,
+    link?: { correctionId?: string; entryId?: string },
   ) => void;
   /** Clear the inhibition pathway record for a processId. */
   clearInhibitionStatus: (processId: string) => void;
@@ -264,7 +270,7 @@ export const CorrectionDockProvider = ({
     }
 
     // cranialNerves: { "CN II": "Inhibited" }
-    const nerves = priorityPattern.cranialNerves;
+    const nerves = splitCranialNervePattern(priorityPattern.cranialNerves).findings;
     if (nerves && typeof nerves === "object") {
       for (const [key, val] of Object.entries(nerves)) {
         if (!isInhibited(String(val))) continue;
@@ -339,51 +345,60 @@ export const CorrectionDockProvider = ({
 
   /** Record a pathway status (inhibited / clear / etc.) for a given processId. */
   const setInhibitionStatus = useCallback<CorrectionDockContextValue["setInhibitionStatus"]>(
-    (processId, pathway, status, priorityStep) => {
+    (processId, pathway, status, priorityStep, link) => {
+      const prev = inhibitionStateRef.current[processId];
+      const ts = new Date().toISOString();
+      const nextState: InhibitionPathwayState = {
+        pathway,
+        status,
+        priorityStep: priorityStep ?? undefined,
+        correctionId: link?.correctionId ?? prev?.correctionId,
+        entryId: link?.entryId ?? prev?.entryId ?? `${processId}:${ts}`,
+        updatedAt: ts,
+        ...(status === "clear" ? { clearedAt: ts } : {}),
+      };
       const next: Record<string, InhibitionPathwayState> = {
         ...inhibitionStateRef.current,
-        [processId]: {
-          pathway,
-          status,
-          priorityStep: priorityStep ?? undefined,
-          ...(status === "clear" ? { clearedAt: new Date().toISOString() } : {}),
-        },
+        [processId]: nextState,
       };
       inhibitionStateRef.current = next;
       setInhibitionPathwayState(next);
-      // Persist to appointment metadata.
-      onInhibitionPathwayChange?.(inhibitionPathway, next);
-      // Keep the active pathway in step so "cleared" shows immediately.
-      setInhibitionPathway((prev) =>
-        prev && prev.pathway.processId === processId ? { ...prev, status, priorityStep } : prev
-      );
+      const nextActive = pathwayRef.current?.pathway.processId === processId ? nextState : pathwayRef.current;
+      if (nextActive?.pathway.processId === processId) setInhibitionPathway(nextState);
+      // Persist to appointment metadata using fresh state.
+      onInhibitionPathwayChange?.(nextActive, next);
     },
-    [onInhibitionPathwayChange, inhibitionPathway]
+    [onInhibitionPathwayChange]
   );
 
   /** Clear the inhibition pathway record for a processId. */
   const clearInhibitionStatus = useCallback<CorrectionDockContextValue["clearInhibitionStatus"]>(
     (processId) => {
-      setInhibitionPathwayState((prev) => {
-        const { [processId]: removed, ...rest } = prev;
-        return rest;
-      });
+      const prev = inhibitionStateRef.current;
+      if (!prev[processId]) return;
+      const { [processId]: removed, ...rest } = prev;
+      inhibitionStateRef.current = rest;
+      setInhibitionPathwayState(rest);
+      const nextActive = pathwayRef.current?.pathway.processId === processId ? null : pathwayRef.current;
+      if (!nextActive) setInhibitionPathway(null);
+      onInhibitionPathwayChange?.(nextActive, rest);
     },
-    []
+    [onInhibitionPathwayChange]
   );
 
   /** Set the currently-active inhibition pathway (corrections save to this). */
   const selectInhibitionPathway = useCallback<CorrectionDockContextValue["selectInhibitionPathway"]>(
     (state) => {
       setInhibitionPathway(state);
-      // Persist to appointment metadata
-      onInhibitionPathwayChange?.(state, inhibitionPathwayState);
+      onInhibitionPathwayChange?.(state, inhibitionStateRef.current);
     },
-    [onInhibitionPathwayChange, inhibitionPathwayState]
+    [onInhibitionPathwayChange]
   );
 
   const logProtocol = useCallback<CorrectionDockContextValue["logProtocol"]>(
-    (processId, patch) => onLogProtocol?.(processId, patch),
+    (processId, patch) => {
+      onLogProtocol?.(processId, patch);
+    },
     [onLogProtocol]
   );
 

@@ -64,28 +64,50 @@ export const demoAppointment = (): AppointmentWithClient => ({
   vagus_nerve_notes: "Vagus reset — 3 rounds, HRV up.",
 
   // Align / Correct
-  priority_pattern: JSON.stringify({
+    priority_pattern: JSON.stringify({
     muscles: {
       "Psoas (R)": "Inhibited",
-      "Diaphragm": "Inhibited",
-      "Transverse abdominis (L)": "Inhibited",
-      "Glute Max (L)": "Hypertonic",
+      "Glute Max (L)": "Inhibited",
       "Upper Trapezius (R)": "Hypertonic",
+      "Sartorius (R)": "Hypertonic",
+      "Diaphragm": "Inhibited",
     },
     primitiveReflexes: {
       "Fear Paralysis Reflex": "Inhibited",
-      "Babinski Reflex (L)": "Inhibited",
-      "Babinski Reflex (R)": "Inhibited",
+      "Moro Reflex": "Inhibited",
     },
     cranialNerves: {
-      "CN III (R)": "Inhibited",
+      "CN III: Oculomotor (R)": "Inhibited",
     },
     brainZones: {
       "Cerebellum (R)": "Inhibited",
     },
     priorities: {
-      "muscles|Psoas (R)": "primary",
-      "muscles|Glute Max (L)": "priority",
+      "priority:muscles:Psoas (R)": "primary",
+      "priority:muscles:Glute Max (L)": "priority",
+      "priority:primitiveReflexes:Moro Reflex": "priority",
+    },
+    itemCorrections: {
+      "muscles:Psoas (R)": [
+        { id: "demo-corr-aff-mech", pathway: "mechanoreceptor", direction: "afferent", holding: true, note: "GV16 hold + stretch", details: { finding: "Psoas (R)", direction: "afferent", method: "Hold + intention", retest: "Clears", correctionTimerMinutes: 3, correctionTimerRemainingSeconds: 0, correctionTimerCompleted: true }, createdAt: iso(18), updatedAt: iso(18) },
+        { id: "demo-corr-aff-nocio", pathway: "nociceptive", direction: "afferent", holding: true, note: "Mechanical pressure on PSIS", details: { finding: "Psoas (R)", direction: "afferent", method: "Tap 3–5s", retest: "No longer inhibits" }, createdAt: iso(17), updatedAt: iso(17) },
+        { id: "demo-corr-aff-phys", pathway: "physiological", direction: "afferent", holding: false, note: "Spindle cell activation", details: { finding: "Psoas (R)", direction: "afferent", method: "TL + tuning fork", retest: "Still inhibits" }, createdAt: iso(16), updatedAt: iso(16) },
+        { id: "demo-corr-eff-cort", pathway: "cortical", direction: "efferent", holding: true, details: { finding: "Psoas (R)", direction: "efferent", zone1: { category: "Cortical", name: "Pre-Frontal Cortex", side: "R" }, zone2: { category: "Subcortical", name: "Cerebellum", side: "" }, method: "Tap 3–5s", pathway: "Muscle → zone 1 → zone 2", retest: "Clears" }, createdAt: iso(15), updatedAt: iso(15) },
+        { id: "demo-corr-eff-sub", pathway: "subcortical", direction: "efferent", holding: true, details: { finding: "Psoas (R)", direction: "efferent", zone1: { category: "Subcortical", name: "Cerebellum", side: "" }, zone2: { category: "Cortical", name: "Motor Cortex M1", side: "R" }, method: "Hold + intention", retest: "Clears", correctionTimerMinutes: 6, correctionTimerRemainingSeconds: 0, correctionTimerCompleted: true }, createdAt: iso(14), updatedAt: iso(14) },
+        { id: "demo-corr-eff-emo", pathway: "emotional", direction: "efferent", holding: true, details: { finding: "Psoas (R)", direction: "efferent", emotion: "Fear", organ: "Kidney", method: "3 min", correctionTimerMinutes: 3, correctionTimerRemainingSeconds: 0, correctionTimerCompleted: true, retest: "Clears" }, createdAt: iso(13), updatedAt: iso(13) },
+      ],
+      "muscles:Glute Max (L)": [
+        { id: "demo-corr-glute-nocio", pathway: "nociceptive", direction: "afferent", holding: true, note: "Cleared on retest", details: { finding: "Glute Max (L)", direction: "afferent", method: "Tap 3–5s", retest: "No longer inhibits" }, createdAt: iso(11), updatedAt: iso(11) }
+      ],
+      "cranialNerves:CN III: Oculomotor (R)": [
+        { id: "demo-corr-cn3-mech", pathway: "mechanoreceptor", direction: "afferent", holding: true, details: { finding: "CN III: Oculomotor (R)", direction: "afferent", method: "Hold + intention", retest: "Clears" }, createdAt: iso(10), updatedAt: iso(10) }
+      ],
+      "brainZones:Cerebellum (R)": [
+        { id: "demo-corr-cereb-sub", pathway: "subcortical", direction: "efferent", holding: false, details: { finding: "Cerebellum (R)", direction: "efferent", zone1: { category: "Subcortical", name: "Cerebellum", side: "R" }, zone2: { category: "Cortical", name: "Motor Cortex M1", side: "R" }, method: "TL + tuning fork", retest: "Still inhibits" }, createdAt: iso(9), updatedAt: iso(9) }
+      ],
+      "primitiveReflexes:Moro Reflex": [
+        { id: "demo-corr-moro-cort", pathway: "cortical", direction: "efferent", holding: true, details: { finding: "Moro Reflex", direction: "efferent", zone1: { category: "Cortical", name: "Pre-Frontal Cortex", side: "R" }, zone2: { category: "Subcortical", name: "Cerebellum", side: "" }, method: "Tap 3–5s", retest: "Clears" }, createdAt: iso(12), updatedAt: iso(12) }
+      ]
     },
   }),
   modes_balances: "Psoas (R) — GV16 hold + stretch + fork, re-test strong.\nGlute Max (L) — Neurolymphatic + spindle, re-test strong.\nFear Paralysis — ESR + temporal tap, re-test clear.",
@@ -120,37 +142,11 @@ export const demoAppointment = (): AppointmentWithClient => ({
     },
     priority_pathway: "Mechanoreceptor (Unconscious)",
     corrections: [
-      {
-        pathway: "Mechanoreceptor (Unconscious)",
-        summary: "Psoas (R) — GV16 hold + stretch + fork, re-test strong.",
-        timestamp: iso(18),
-      },
-      {
-        pathway: "Mechanoreceptor (Unconscious)",
-        summary: "Glute Max (L) — Neurolymphatic + spindle, re-test strong.",
-        timestamp: iso(14),
-      },
-      {
-        pathway: "Mechanoreceptor (Unconscious)",
-        summary: "Upper Trapezius (R) — Spindle assist, re-test strong.",
-        timestamp: iso(10),
-      },
-      {
-        pathway: "Nociceptive (Physiological)",
-        summary: "Fear Paralysis — ESR + temporal tap, re-test clear.",
-        timestamp: iso(7),
-      },
-      {
-        pathway: "Mechanoreceptor (Unconscious)",
-        summary: "Diaphragm — NL + vibration, re-test strong.",
-        timestamp: iso(4),
-      },
+      { pathway: "Mechanoreceptor (Unconscious)", summary: "Psoas (R) — GV16 hold + stretch + fork, re-test strong.", timestamp: iso(18) },
+      { pathway: "Mechanoreceptor (Unconscious)", summary: "Glute Max (L) — Neurolymphatic + spindle, re-test strong.", timestamp: iso(14) },
+      { pathway: "Nociceptive (Physiological)", summary: "Fear Paralysis — ESR + temporal tap, re-test clear.", timestamp: iso(7) },
     ],
-    cleared_findings: [
-      "muscles-Glute Max (L)",
-      "muscles-Upper Trapezius (R)",
-      "reflexes-Fear Paralysis Reflex",
-    ],
+    cleared_findings: ["muscles-Glute Max (L)", "reflexes-Fear Paralysis Reflex"],
     protocol_logs: {
       mechanoreceptor: {
         steps: [1, 2, 3, 4, 5],

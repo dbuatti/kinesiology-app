@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { safeParse } from '@/utils/safe-json';
+import { collectCorrectionRecords } from '@/lib/corrections';
 import type { AppointmentWithClient } from '@/types/crm';
 
 interface RecheckItem {
@@ -58,13 +59,12 @@ export const RecheckSection = ({
       });
     });
 
-    // Check metadata for corrections
-    const metadata = safeParse(previousSession.metadata, {} as any);
-    const corrections = metadata.corrections || [];
-    corrections.forEach((c: any) => {
-      const existing = items.find(i => i.name === c.finding || c.pathway?.includes(i.name));
-      if (existing && c.summary) {
-        existing.correctionSummary = c.summary;
+    // Check corrections across stores (itemCorrections + metadata/protocol mirrors)
+    const corrections = collectCorrectionRecords({ priority_pattern: previousSession.priority_pattern, metadata: previousSession.metadata });
+    corrections.forEach((c) => {
+      const existing = items.find(i => i.name === c.finding || c.name === i.name || c.pathway?.includes(i.name));
+      if (existing && !existing.correctionSummary) {
+        existing.correctionSummary = c.summary || c.pathway;
       }
     });
 

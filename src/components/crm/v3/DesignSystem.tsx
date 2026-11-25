@@ -337,7 +337,8 @@ export const SectionHeader = ({
   subtitle,
   badge,
   children,
-  className 
+  className,
+  iconTone
 }: { 
   icon?: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
   title: string;
@@ -345,11 +346,12 @@ export const SectionHeader = ({
   badge?: string;
   children?: React.ReactNode;
   className?: string;
+  iconTone?: string;
 }) => (
   <div className={cn("flex flex-wrap items-center justify-between gap-3", className)}>
     <div className="flex items-center gap-2">
       {Icon && (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-muted/50 text-muted-foreground">
+        <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-muted/50 text-muted-foreground", iconTone)}>
           <Icon size={14} strokeWidth={1.75} />
         </div>
       )}

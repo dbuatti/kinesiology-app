@@ -34,6 +34,7 @@ interface Props {
   priorityTier?: FindingPriority | null;
   onSetPriorityTier?: (tier: FindingPriority | null) => void;
   onAddCorrection: (correction: ItemCorrection) => void | Promise<void>;
+  onUpdateCorrection?: (correction: ItemCorrection) => void | Promise<void>;
   onToggleHolding: (id: string) => void;
   onRemoveCorrection: (id: string) => void;
   children: ReactNode;
@@ -51,13 +52,14 @@ export function PathwayRow({
   priorityTier = isPriority ? "priority" : null,
   onSetPriorityTier,
   onAddCorrection,
+  onUpdateCorrection,
   onToggleHolding,
   onRemoveCorrection,
   children,
   className,
   glow = true,
 }: Props) {
-  const [modal, setModal] = useState<{ direction: CorrectionDirection; pathway: CorrectionPathway } | null>(null);
+  const [modal, setModal] = useState<{ direction: CorrectionDirection; pathway: CorrectionPathway; correction?: ItemCorrection } | null>(null);
 
   const applyTier = (tier: FindingPriority | null) => {
     if (onSetPriorityTier) onSetPriorityTier(tier);
@@ -84,6 +86,7 @@ export function PathwayRow({
                   priorityTier={priorityTier}
                   onToggleHolding={onToggleHolding}
                   onRemove={onRemoveCorrection}
+                  onEdit={(c) => setModal({ direction: c.direction, pathway: c.pathway, correction: c })}
                 />
               )}
             </div>
@@ -141,7 +144,12 @@ export function PathwayRow({
           pathway={modal.pathway}
           isPriority={isPriority}
           priorityTier={priorityTier}
-          onApply={onAddCorrection}
+          correction={modal.correction}
+          onApply={async (correction) => {
+            if (modal.correction && onUpdateCorrection) await onUpdateCorrection(correction);
+            else await onAddCorrection(correction);
+            setModal(null);
+          }}
         />
       )}
     </>

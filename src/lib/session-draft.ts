@@ -69,7 +69,9 @@ export const buildSessionContext = (
   const parts: string[] = ["=== SESSION RECORD (exported from the CRM) ==="];
 
   parts.push(`Client: ${appointment.clients?.name || "—"}`);
-  parts.push(`Session: ${format(appointment.date, "EEE d MMM yyyy · h:mm a")}`);
+  parts.push(
+    `Session: ${format(appointment.date, "EEE d MMM yyyy · h:mm a")} (authoritative — do not reinterpret dates heard in the transcript)`,
+  );
 
   const recorded: string[] = [
     labelled("Goal", appointment.goal),
@@ -114,6 +116,16 @@ export const buildSessionContext = (
     }
   }
 
+  // The reply contract travels with the paste: Claude's Project instructions
+  // may not have been installed (or may have an older template in them), so the
+  // export itself states the format and the "no direct Notion writes" rule.
+  parts.push(
+    "",
+    "=== HOW TO REPLY ===",
+    "Return only a SESSION DRAFT block. Do not update Notion or any other system — your reply is imported into the app, and the app syncs Notion.",
+    "Use only this record and the transcript below as sources. Ignore Project knowledge files, uploads, memory and earlier sessions — even for the same client. Leave out anything not actually present in the two blocks.",
+    "Headings, in order: GOAL · KEY FINDINGS · NOTES · HOMEWORK · NEXT SESSION · ACTION ITEMS. Omit anything already recorded above and never re-draft the recorded BOLT. If a date or number in the transcript disagrees with the record, put it in ACTION ITEMS instead of changing the session.",
+  );
   parts.push("", "=== TRANSCRIPT ===", "(Paste the session transcript below this line.)");
   return parts.join("\n");
 };
@@ -122,68 +134,122 @@ export const buildSessionContext = (
 /* The draft parser                                                    */
 /* ------------------------------------------------------------------ */
 
-const LABELS = {
+/**
+ * Canonical headings from the Project prompt, plus aliases for the clinical
+ * catalog shape Claude falls back to when the Project prompt isn't installed.
+ * Several headings can map to one field — their text is appended, not replaced.
+ */
+const HEADINGS = {
   GOAL: "goal",
+  PRESENTING: "goal",
+  "PRESENTING ISSUE": "goal",
   "KEY FINDINGS": "keyFindings",
+  FINDINGS: "keyFindings",
+  "CLINICAL FINDINGS": "keyFindings",
+  "STRUCTURED FINDINGS": "keyFindings",
+  BOLT: "BOLT",
+  "BOLT SCORE": "BOLT",
   NOTES: "notes",
+  "CLINICAL NOTES": "notes",
+  "SESSION SUMMARY": "notes",
+  SUMMARY: "notes",
+  NARRATIVE: "notes",
+  "PATTERN ANALYSIS": "notes",
   HOMEWORK: "homework",
+  "CLIENT HOMEWORK": "homework",
+  "HOMEWORK PLAN": "homework",
   "NEXT SESSION": "nextSession",
+  "NEXT SESSION PRIORITIES": "nextSession",
+  "PRIORITY FOCUS": "nextSession",
+  "NEXT STEPS": "nextSession",
+  "ACTION ITEMS": "ACTION ITEMS",
+  ACTIONS: "ACTION ITEMS",
+  "FOLLOW-UPS": "ACTION ITEMS",
 } as const;
 
-const labelPattern =
-  /^[>\s#*_~`-]*(GOAL|KEY FINDINGS|BOLT|NOTES|HOMEWORK|NEXT SESSION|ACTION ITEMS)[\s:—–*_`-]*(.*)$/i;
+type Heading = keyof typeof HEADINGS;
+
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const headingPattern = new RegExp(
+  "^[>\\s#*_~]*(" +
+    Object.keys(HEADINGS)
+      .sort((a, b) => b.length - a.length)
+      .map(escapeRegExp)
+      .join("|") +
+    ")[\\s:—–|*_-]*(.*)$",
+  "i",
+);
 
 const itemPattern = /^\s*(?:[-*•]|\d+[.)])\s+/;
 
+/** Drop heading decorations left on the line after the matched label, e.g.
+ *  "SUMMARY (Clinical Notes)" or "PRIORITY FOCUS — Next Session (1 July)". */
+const cleanHeadingTail = (value: string): string => {
+  const text = value.trim().replace(/^[\s:—–|*_\-&]+/, "");
+  if (/^\([^)]*\)$/.test(text)) return "";
+  if (/^(?:next session|clinical notes)\b/i.test(text) && text.length < 40) return "";
+  return text;
+};
+
 /**
- * Parse the SESSION DRAFT block Claude returns. Tolerates markdown
- * decoration (`**GOAL:**`, `### Notes`, trailing colons) and multi-line
- * values. Returns null when no recognisable heading is found, so the UI can
- * say "paste the whole draft".
+ * Parse a SESSION DRAFT block. Tolerates markdown decoration (`**GOAL:**`,
+ * `### Notes`), the catalog-style headings Claude already produces, and
+ * multi-line values. When a `SESSION DRAFT` marker is present, only text after
+ * it is parsed, so an echoed context block can't be mistaken for the draft.
+ * Returns null when no recognisable heading is found.
  */
 export const parseSessionDraft = (text: string): ParsedSessionDraft | null => {
   const values: Partial<Record<DraftFieldId, string>> = {};
   const actionItems: string[] = [];
   let bolt: number | null = null;
 
-  let current: "GOAL" | "KEY FINDINGS" | "BOLT" | "NOTES" | "HOMEWORK" | "NEXT SESSION" | "ACTION ITEMS" | null = null;
+  const lines = text.replace(/\r/g, "").split("\n");
+  const marker = lines.findIndex((line) => /^\s*SESSION DRAFT\b/i.test(line));
+  const source = marker >= 0 ? lines.slice(marker + 1) : lines;
+
+  let current: Heading | null = null;
   let buffer: string[] = [];
   let sawLabel = false;
 
   const flush = () => {
     if (!current) return;
-    const value = buffer.join("\n").trim().replace(/^FOCUS:?\s*/i, "");
+    const target = HEADINGS[current];
+    const value = buffer.join("\n").trim();
     buffer = [];
     if (value) {
-      if (current === "ACTION ITEMS") {
+      if (target === "ACTION ITEMS") {
         // handled per line below; nothing to do
-      } else if (current === "BOLT") {
+      } else if (target === "BOLT") {
         const match = value.match(/\d+(?:\.\d+)?/);
         if (match) bolt = Math.round(parseFloat(match[0]));
       } else {
-        values[(LABELS as Record<string, DraftFieldId>)[current]] = value;
+        const existing = values[target];
+        values[target] = existing ? `${existing}\n\n${value}` : value;
       }
     }
     current = null;
   };
 
-  for (const rawLine of text.replace(/\r/g, "").split("\n")) {
-    const match = rawLine.match(labelPattern);
+  for (const rawLine of source) {
+    // A bullet that happens to start with a heading word ("- BOLT daily") is
+    // content, not a new section — only undecorated lines can open a heading.
+    const match = itemPattern.test(rawLine) ? null : rawLine.match(headingPattern);
     if (match) {
       flush();
       sawLabel = true;
-      current = match[1].toUpperCase() as typeof current;
-      if (current === "ACTION ITEMS") {
-        const rest = match[2].trim();
-        if (rest && itemPattern.test(rest)) actionItems.push(rest.replace(itemPattern, "").trim());
-        else if (rest) actionItems.push(rest);
-        continue;
+      current = match[1].toUpperCase() as Heading;
+      const target = HEADINGS[current];
+      const tail = cleanHeadingTail(match[2]);
+      if (target === "ACTION ITEMS") {
+        if (tail) actionItems.push(tail);
+      } else {
+        buffer = tail ? [tail] : [];
       }
-      buffer = [match[2].trim()].filter(Boolean);
       continue;
     }
 
-    if (current === "ACTION ITEMS") {
+    if (current && HEADINGS[current] === "ACTION ITEMS") {
       const trimmed = rawLine.trim();
       if (!trimmed) continue;
       if (itemPattern.test(trimmed)) actionItems.push(trimmed.replace(itemPattern, "").trim());
@@ -211,18 +277,20 @@ export const parseSessionDraft = (text: string): ParsedSessionDraft | null => {
  */
 export const CLAUDE_PROJECT_INSTRUCTIONS = `You are the session scribe for a kinesiology practice (functional neuro health). Each session, the practitioner pastes two things: a SESSION RECORD (structured context exported from the practice CRM) and a raw session TRANSCRIPT (auto-transcribed, noisy).
 
-Reply with a SESSION DRAFT that updates the practice record. Output ONLY the draft — no preamble, no commentary.
+Reply with a SESSION DRAFT that updates the practice record. Output the draft text itself — no preamble, no commentary, no tool calls. Never edit Notion, the CRM or any other system: your reply is pasted back into the app, and the app's sync writes Notion. Notion is already populated for past sessions and must not be written directly.
+
+Sources: use ONLY the pasted SESSION RECORD and TRANSCRIPT. Ignore Project knowledge files, uploads, memory and every earlier session — even when the client is the same. If a detail is not in those two blocks, leave it out; mark anything genuinely ambiguous [UNCERTAIN]. Do not fill gaps from what you remember about the client.
 
 Rules:
-1. The SESSION RECORD is authoritative. If a field already has a value there, do not draft a new one — unless the transcript clearly contradicts it, in which case include the field with "CONFLICT:" and what the transcript said.
-2. Fill gaps. The most useful drafts are for the fields that are empty in the record.
-3. Spoken numbers are drafts, not facts. "you got fifty one seconds" can be a reference to a previous session — if BOLT is already recorded, never emit a BOLT line.
-4. Fix obvious transcription mis-hearings (e.g. "hypermobile Alice Dennis syndrome" → hypermobile Ehlers-Danlos syndrome (hEDS); "crew" → croup; "Fakuda" → Fukuda stepping test; "cacao" → cat-cow) but never invent findings that the transcript or record does not support.
+1. The SESSION RECORD is authoritative. Its "Session:" line is the appointment date — never reinterpret it from dates heard in the transcript (transcripts mangle dates, e.g. "11-06-26"). If the transcript appears to refer to a different date, put that in ACTION ITEMS; don't change the session.
+2. Fill gaps only. If a field already has a value in the record, omit it — unless the transcript genuinely contradicts it, in which case emit that field starting with "CONFLICT:" followed by what was said. Findings and corrections already listed in the record are not re-listed in KEY FINDINGS; only new items go there.
+3. Spoken numbers are drafts, not facts. "you got fifty one seconds" can refer to a previous session. If BOLT is already recorded, never emit a BOLT line — and never present a new BOLT score in KEY FINDINGS or NOTES. Earlier scores may be mentioned only as history ("previously 17s").
+4. Fix obvious transcription mis-hearings (e.g. "hypermobile Alice Dennis syndrome" → hypermobile Ehlers-Danlos syndrome (hEDS); "crew" → croup; "Fakuda"/"Fukuda" → Fukuda stepping test; "cacao" → cat-cow; "capital tunnel" → carpal tunnel; "mechano" → mechanoreceptor; "SDNR" → sympathetic down-regulation; "COG" → centre of gravity) but never invent findings the transcript or record does not support. Mark genuinely ambiguous items [UNCERTAIN] in the text rather than presenting them as findings.
 5. NOTES is the session narrative: what was worked on, what the client reported (life context, new diagnoses, significant events), and connections to previous sessions. Warm, clinical, concise — 5 to 10 sentences.
 6. NEXT SESSION gives grounded, specific suggestions from the history plus this session: what to re-test first, unresolved leads, follow-ups to chase.
 7. ACTION ITEMS are operational reminders for the practitioner (resend a payment link, add a new diagnosis to the client record, follow up a referral). Include "add to client record:" items for new diagnoses, medications or significant events the client mentioned.
 
-Output format — exactly these headings, in this order. Omit any field you are not drafting:
+Output format — exactly these headings, in this order. Omit any field you are not drafting. Do not produce a clinical catalog, findings table, PEACE mapping or other structure:
 
 SESSION DRAFT
 

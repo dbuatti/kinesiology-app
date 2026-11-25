@@ -43,6 +43,8 @@ export interface ProtocolEntry {
    * *what* was corrected, not just which process was used.
    */
   pathway?: string;
+  source?: string;
+  correctionId?: string;
 }
 
 /** A write is either a plain patch or a function of the freshest log. */
@@ -305,7 +307,7 @@ export const EYE_POSITIONS: EyePosition[] = [
   },
 ];
 
-const METHOD = ["Tap 3–5s", "Hold + intention", "TL + tuning fork"];
+const METHOD = ["Tap 3–5s", "Hold + intention", "TL + tuning fork", "3 min", "6 min", "9 min"];
 
 export const BRAIN_ZONES: Record<BrainCategory, string[]> = {
   Cortical: [

@@ -11,6 +11,7 @@ import {
   reflexPriorityKey,
   type ItemCorrection,
 } from "./types";
+import { removeQuickCorrectionRecord, upsertQuickCorrectionRecord } from "@/lib/corrections";
 
 type Pattern = Record<string, any>;
 
@@ -120,71 +121,32 @@ export function useItemCorrections(
   }, [appointment.priority_pattern, patch]);
 
   const addCorrection = useCallback(async (category: string, name: string, correction: ItemCorrection, side?: "L" | "R") => {
-    const current = getCorrections(category, name, side);
-    const key = itemCorrectionKey(category, name, side);
-    const nextItemCorrections = { ...itemCorrections, [key]: [...current, correction] };
-    const currentMeta = safeParse<Record<string, any>>(appointment.metadata, {});
-    const corrections = Array.isArray(currentMeta.corrections) ? currentMeta.corrections : [];
-    const protocolLogs = { ...((currentMeta.protocol_logs as Record<string, any>) ?? {}) };
-    const detailSummary = correction.details
-      ? Object.entries(correction.details)
-          .filter(([, v]) => v !== undefined && v !== null && v !== '')
-          .map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`)
-          .join('; ')
-      : '';
-    const processId = `quick:${correction.id}`;
-    protocolLogs[processId] = {
-      ...(protocolLogs[processId] ?? {}),
-      processId,
-      process: correction.pathway,
-      finding: side ? `${name} (${side})` : name,
-      category,
-      direction: correction.direction,
-      details: correction.details ?? {},
-      status: correction.holding ? 'holding' : 'pending',
-      updatedAt: correction.createdAt,
-      source: 'quick-correction',
-    };
-    const metaEntry = {
-      id: correction.id,
-      processId,
-      finding: side ? `${name} (${side})` : name,
-      pathway: correction.pathway,
-      direction: correction.direction,
-      summary: detailSummary || correction.pathway,
-      timestamp: correction.createdAt,
-      status: correction.holding ? 'holding' : 'pending',
-      source: 'quick-correction',
-      category,
-      details: correction.details,
-    };
-    await patch({ itemCorrections: nextItemCorrections }, { corrections: [...corrections, metaEntry], protocol_logs: protocolLogs });
-  }, [getCorrections, itemCorrections, patch, appointment.metadata]);
+    const next = upsertQuickCorrectionRecord({ appointment: { priority_pattern: appointment.priority_pattern, metadata: appointment.metadata }, category, name, side, correction });
+    await saveField("priority_pattern", JSON.stringify(next.pattern));
+    await saveField("metadata", JSON.stringify(next.metadata));
+    onUpdate();
+  }, [appointment.metadata, appointment.priority_pattern, onUpdate, saveField]);
+
+  const updateCorrection = useCallback(async (category: string, name: string, correction: ItemCorrection, side?: "L" | "R") => {
+    const previous = getCorrections(category, name, side).find(c => c.id === correction.id);
+    const next = upsertQuickCorrectionRecord({ appointment: { priority_pattern: appointment.priority_pattern, metadata: appointment.metadata }, category, name, side, correction: { ...correction, updatedAt: new Date().toISOString() }, previousPathway: previous?.pathway });
+    await saveField("priority_pattern", JSON.stringify(next.pattern));
+    await saveField("metadata", JSON.stringify(next.metadata));
+    onUpdate();
+  }, [appointment.metadata, appointment.priority_pattern, getCorrections, onUpdate, saveField]);
 
   const toggleHolding = useCallback(async (category: string, name: string, correctionId: string, side?: "L" | "R") => {
-    const current = getCorrections(category, name, side);
-    const next = current.map(c => c.id === correctionId ? { ...c, holding: !c.holding, updatedAt: new Date().toISOString() } : c);
-    const key = itemCorrectionKey(category, name, side);
-    const currentMeta = safeParse<Record<string, any>>(appointment.metadata, {});
-    const corrections = Array.isArray(currentMeta.corrections) ? currentMeta.corrections : [];
-    const holding = next.find(n => n.id === correctionId)?.holding;
-    const updatedMetaCorrections = corrections.map((c: any) => c?.id === correctionId ? { ...c, status: holding ? 'holding' : 'pending' } : c);
-    const protocolLogs = { ...((currentMeta.protocol_logs as Record<string, any>) ?? {}) };
-    const pid = `quick:${correctionId}`;
-    if (protocolLogs[pid]) protocolLogs[pid] = { ...protocolLogs[pid], status: holding ? 'holding' : 'pending', updatedAt: new Date().toISOString() };
-    await patch({ itemCorrections: { ...itemCorrections, [key]: next } }, { corrections: updatedMetaCorrections, protocol_logs: protocolLogs });
-  }, [getCorrections, itemCorrections, patch, appointment.metadata]);
+    const current = getCorrections(category, name, side).find(c => c.id === correctionId);
+    if (!current) return;
+    await updateCorrection(category, name, { ...current, holding: !current.holding }, side);
+  }, [getCorrections, updateCorrection]);
 
   const removeCorrection = useCallback(async (category: string, name: string, correctionId: string, side?: "L" | "R") => {
-    const current = getCorrections(category, name, side);
-    const next = current.filter(c => c.id !== correctionId);
-    const key = itemCorrectionKey(category, name, side);
-    const currentMeta = safeParse<Record<string, any>>(appointment.metadata, {});
-    const corrections = Array.isArray(currentMeta.corrections) ? currentMeta.corrections : [];
-    const protocolLogs = { ...((currentMeta.protocol_logs as Record<string, any>) ?? {}) };
-    delete protocolLogs[`quick:${correctionId}`];
-    await patch({ itemCorrections: { ...itemCorrections, [key]: next } }, { corrections: corrections.filter((c: any) => c?.id !== correctionId), protocol_logs: protocolLogs });
-  }, [getCorrections, itemCorrections, patch, appointment.metadata]);
+    const next = removeQuickCorrectionRecord({ appointment: { priority_pattern: appointment.priority_pattern, metadata: appointment.metadata }, category, name, side, correctionId });
+    await saveField("priority_pattern", JSON.stringify(next.pattern));
+    await saveField("metadata", JSON.stringify(next.metadata));
+    onUpdate();
+  }, [appointment.metadata, appointment.priority_pattern, onUpdate, saveField]);
 
   /** One patch for lateralised pairs so both sides stay in sync. */
   const setPriorityTierForSides = useCallback(async (
@@ -234,6 +196,7 @@ export function useItemCorrections(
     setPriorityTier,
     setPriorityTierForSides,
     addCorrection,
+    updateCorrection,
     toggleHolding,
     removeCorrection,
     togglePriority,

@@ -32,6 +32,12 @@ import { useCranialNerveTests } from "@/hooks/useCranialNerveTests";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { getInhibitedFindings } from "@/components/crm/v2/v2-utils";
+import { categoryTone } from "@/components/crm/v2/categoryConstants";
+import {
+  cranialStimPatternFindings,
+  markedCranialStims,
+  parseCranialStimFinding,
+} from "@/lib/cranial-stim-findings";
 import {
   findGridReflex,
   primitiveSideKey,
@@ -88,6 +94,11 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
     if (typeof appointment.metadata === 'string') return safeParse(appointment.metadata, {});
     return appointment.metadata;
   }, [appointment.metadata]);
+
+  const patternNerves = useMemo(
+    () => safeParse<Record<string, Record<string, unknown>>>(appointment.priority_pattern, {}).cranialNerves,
+    [appointment.priority_pattern],
+  );
 
   const nextSession = useMemo(() => {
     const now = new Date();
@@ -154,21 +165,20 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
   const itemStims = (item: InhibitedItem) => {
     if (item.category === 'cranialNerves') {
       const nerve = CRANIAL_NERVES.find(n => `${n.name}: ${n.latinName}` === item.name || n.name === item.name);
-      const test = nerve && nerveTests.find(t => t.nerve_id === nerve.id.toString());
-      if (!nerve || !test?.stim_results) return null;
-      const stims: { key: string; label: string; side?: 'L' | 'R' }[] = [];
-      nerveStimLines(nerve).forEach((line, i) => {
-        if (isLateralStim(nerve.id, i)) {
-          (['L', 'R'] as const).forEach((side) => {
-            const key = cranialSideKey(nerve.id, i, side);
-            if (test.stim_results![key]) stims.push({ key, label: line, side });
-          });
-        } else {
-          const key = cranialStimKey(nerve.id, i);
-          if (test.stim_results![key]) stims.push({ key, label: line });
-        }
-      });
-      return { stims: item.side ? stims.filter(s => s.side === item.side) : stims };
+      if (!nerve) return null;
+      const test = nerveTests.find(t => t.nerve_id === nerve.id.toString());
+      const stims = markedCranialStims({
+        nerve,
+        patternNerves,
+        stimResults: test?.stim_results,
+        side: item.side,
+      }).map(s => ({
+        key: s.stimKey ?? s.patternKey ?? `${s.label}-${s.side ?? ''}`,
+        label: s.label,
+        side: s.side,
+        patternKey: s.patternKey,
+      }));
+      return { stims };
     }
     if (item.category === 'primitiveReflexes') {
       const reflex = PRIMITIVE_REFLEXES.find(r => r.name === item.name);
@@ -198,6 +208,11 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
   const clearStim = async (item: InhibitedItem, stimKey: string) => {
     setClearingStimId(stimKey);
     try {
+      const legacyStim = parseCranialStimFinding(stimKey);
+      if (legacyStim) {
+        await updatePriorityPattern('cranialNerves', legacyStim.nerveName, null, legacyStim.side);
+        return;
+      }
       if (item.category === 'cranialNerves') {
         const nerve = CRANIAL_NERVES.find(n => `${n.name}: ${n.latinName}` === item.name || n.name === item.name);
         if (!nerve) return;
@@ -285,7 +300,12 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
         if (error) throw error;
       }
       if (nerve) {
-        await updatePriorityPattern('cranialNerves', `${nerve.name}: ${nerve.latinName}`, null, item.side);
+        const legacyStims = cranialStimPatternFindings(patternNerves)
+          .filter(p => p.nerve.id === nerve.id && (!item.side || p.side === item.side));
+        for (const stim of legacyStims) {
+          await updatePriorityPattern('cranialNerves', stim.nerveName, null, stim.side);
+        }
+        await updatePriorityPattern('cranialNerves', `${nerve.name}: ${nerve.latinName}`, 'Clear', item.side);
       }
     } else if (item.category === 'primitiveReflexes') {
       const reflex = PRIMITIVE_REFLEXES.find(r => r.name === item.name);
@@ -308,7 +328,7 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
         if (error) throw error;
       }
       if (reflex) {
-        await updatePriorityPattern('primitiveReflexes', reflex.name, null, item.side);
+        await updatePriorityPattern('primitiveReflexes', reflex.name, 'Clear', item.side);
       }
     }
   };
@@ -431,11 +451,12 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
             <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
               {pendingItems.map((item) => {
                 const Icon = getIcon(item.category);
+                const tone = categoryTone(item.category);
                 const isClearing = clearingId === item.id;
                 return (
                   <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-border">
                     <div className="flex min-w-0 flex-1 items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground">
+                      <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl", tone.tile)}>
                         <Icon size={17} strokeWidth={1.75} />
                       </div>
                       <div className="min-w-0">
@@ -495,11 +516,12 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
               <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
                 {clearedItems.map((item) => {
                   const Icon = getIcon(item.category);
+                  const tone = categoryTone(item.category);
                   const isClearing = clearingId === item.id;
                   return (
                     <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl border border-success/20 bg-success/[0.04] p-2">
                       <div className="flex min-w-0 flex-1 items-center gap-2">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-success/10 text-success-strong">
+                        <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-xl", tone.tile)}>
                           <Icon size={14} />
                         </div>
                         <div className="min-w-0">
@@ -569,6 +591,7 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
               <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">Findings</p>
               <PathwayFindingsList
                 priorityPattern={appointment.priority_pattern}
+                metadata={appointment.metadata}
                 showOnlyInhibited={false}
               />
             </div>
@@ -593,7 +616,51 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
           </div>
         </Card>
 
-        {/* Rebook — the one deliberate saturated CTA */}
+        {/* Payment + rebook */}
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,320px)_1fr]">
+          <Card padding="comfortable" className="space-y-3">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">Payment</p>
+              <p className="text-sm font-medium text-foreground">
+                {!appointment.is_paid ? "Free / not charged" : appointment.payment_received ? "Payment received" : "Payment due"}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant={appointment.payment_received ? "default" : "outline"}
+                className={cn("h-9 rounded-md text-xs font-medium", appointment.payment_received && "bg-success text-success-foreground hover:bg-success/90")}
+                onClick={async () => {
+                  if (isDemo) return;
+                  if (appointment.payment_received) {
+                    await saveField("payment_received", false);
+                  } else {
+                    if (!appointment.is_paid) await saveField("is_paid", true);
+                    await saveField("payment_received", true);
+                  }
+                  onUpdate();
+                }}
+                disabled={isDemo}
+                title={isDemo ? "Demo session" : appointment.payment_received ? "Mark as unpaid" : "Mark as paid"}
+              >
+                <CheckCircle2 size={14} className="mr-2" />
+                {appointment.payment_received ? "Paid" : "Mark as paid"}
+              </Button>
+              {appointment.is_paid && !appointment.payment_received && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-9 rounded-md text-xs font-medium"
+                  onClick={async () => { if (isDemo) return; await saveField("is_paid", false); await saveField("payment_received", false); onUpdate(); }}
+                  disabled={isDemo}
+                >
+                  Mark free
+                </Button>
+              )}
+            </div>
+            {isDemo && <p className="text-[11px] text-muted-foreground">Payment status is read-only in demo.</p>}
+          </Card>
+
         <div className="relative overflow-hidden rounded-xl bg-primary p-6 text-primary-foreground">
           <div className="pointer-events-none absolute right-0 top-0 p-8 opacity-[0.07]"><CalendarPlus size={150} /></div>
           <div className="relative z-10 flex flex-col items-center justify-between gap-4 md:flex-row">
@@ -675,6 +742,7 @@ const EmbedPhaseV3 = ({ appointment, history, onUpdate, saveField, updatePriorit
               </Dialog>
             )}
           </div>
+        </div>
         </div>
 
         {/* Notes */}

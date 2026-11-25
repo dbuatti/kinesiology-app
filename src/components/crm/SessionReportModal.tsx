@@ -1,22 +1,37 @@
-import { useState, useMemo } from "react";
+import { Fragment, useState, useMemo, useCallback, useEffect } from "react";
+import { getReportSortPriority } from "@/lib/report-settings";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { FileText, CheckCircle2, ChevronDown, Search, BookOpen } from "lucide-react";
+import { FileText, CheckCircle2, ChevronDown, Search, BookOpen, Flag, Star, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { safeParse } from "@/utils/safe-json";
 import { Button } from "@/components/ui/button";
 import { useCorrectionDock, type InhibitionPathwayStatus } from "@/components/crm/corrections/CorrectionDockContext";
 import { PATHWAY_DIRECTION, directionForProcess, directionFromText } from "@/lib/pathway-direction";
 import { clickableProps } from "@/lib/a11y";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuLabel, ContextMenuRadioGroup, ContextMenuRadioItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { ReflexCorrectionModal } from "@/components/crm/reflex-corrections/ReflexCorrectionModal";
+import { itemCorrectionKey, itemPriorityKey, type ItemCorrection, type ReflexCorrectionDirection, type ReflexCorrectionPathway } from "@/components/crm/reflex-corrections/types";
+import { normalizeFindingPriority, type FindingPriority } from "@/components/crm/v2/v2-utils";
+import { categoryTone } from "@/components/crm/v2/categoryConstants";
+import { collectCorrectionRecords, correctionSummary, removeQuickCorrectionRecord, upsertQuickCorrectionRecord } from "@/lib/corrections";
+import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
+import {
+  cranialNerveFullName,
+  markedCranialStims,
+  splitCranialNervePattern,
+} from "@/lib/cranial-stim-findings";
 
 interface Finding {
   type: string;
   key: string;
   name: string;
   status: string;
-  side?: string;
+  side?: "L" | "R";
   category: string;
   correction?: string;
   cleared?: boolean;
+  patternCategory: string;
+  priorityTier: FindingPriority | null;
 }
 
 interface SessionMetadata {
@@ -30,7 +45,24 @@ interface SessionReportModalProps {
   onClose: () => void;
   appointment: any;
   updateMetadata: (metadata: any) => Promise<void>;
+  saveField: (field: string, value: any) => Promise<void>;
+  onUpdate: () => void;
 }
+
+type CorrectionTarget = {
+  finding: Finding;
+  direction: ReflexCorrectionDirection;
+  pathway: ReflexCorrectionPathway;
+  correction?: ItemCorrection | null;
+};
+
+const CATEGORY_MAP: Record<string, string> = {
+  Muscles: "muscles",
+  Reflexes: "primitiveReflexes",
+  "Cranial Nerves": "cranialNerves",
+  "Brain Zones": "brainZones",
+  "Eye Systems": "eyeSystems",
+};
 
 const CORRECTION_PROCESS_MAP: Record<string, { tab: 'afferent' | 'efferent'; item: string }> = {
   'Mechanoreceptor (Unconscious)': { tab: 'afferent', item: 'mechanoreceptor' },
@@ -43,85 +75,177 @@ const CORRECTION_PROCESS_MAP: Record<string, { tab: 'afferent' | 'efferent'; ite
   'Limiting Beliefs': { tab: 'efferent', item: 'lb-process' },
 };
 
-export default function SessionReportModal({ open, onClose, appointment, updateMetadata }: SessionReportModalProps) {
+export default function SessionReportModal({ open, onClose, appointment, updateMetadata, saveField, onUpdate }: SessionReportModalProps) {
   const { openDock, selectInhibitionPathway, availableInhibitionPathways } = useCorrectionDock();
   const [activeTab, setActiveTab] = useState<'all' | 'findings' | 'pathways'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [correctionTarget, setCorrectionTarget] = useState<CorrectionTarget | null>(null);
+  const [sortPriority, setSortPriorityState] = useState(() => getReportSortPriority());
 
   const pattern = useMemo(() => safeParse(appointment?.priority_pattern, {}) as Record<string, any>, [appointment?.priority_pattern]);
   const metadata = useMemo(() => safeParse(appointment?.metadata, {}) as SessionMetadata, [appointment?.metadata]);
+  const correctionRecords = useMemo(() => collectCorrectionRecords({ priority_pattern: appointment?.priority_pattern, metadata: appointment?.metadata }), [appointment?.priority_pattern, appointment?.metadata]);
+
+  useEffect(() => { if (open) setSortPriorityState(getReportSortPriority()); }, [open]);
+
+  const patchPattern = useCallback(async (patchObj: Record<string, unknown>) => {
+    const current = safeParse<Record<string, any>>(appointment?.priority_pattern, {});
+    await saveField("priority_pattern", JSON.stringify({ ...current, ...patchObj }));
+    onUpdate();
+  }, [appointment?.priority_pattern, onUpdate, saveField]);
+
+  const getPriorityTier = useCallback((finding: Finding): FindingPriority | null => {
+    const priorities = (pattern?.priorities ?? {}) as Record<string, string | undefined>;
+    const key = itemPriorityKey(finding.patternCategory, finding.name, finding.side);
+    return normalizeFindingPriority(priorities[key]);
+  }, [pattern]);
+
+  const setPriorityTier = useCallback(async (finding: Finding, tier: FindingPriority | null) => {
+    const priorities = { ...((pattern?.priorities ?? {}) as Record<string, string | undefined>) };
+    const key = itemPriorityKey(finding.patternCategory, finding.name, finding.side);
+    if (tier === "primary") {
+      for (const k of Object.keys(priorities)) if (priorities[k] === "primary") priorities[k] = "priority";
+    }
+    if (tier) priorities[key] = tier; else delete priorities[key];
+    await patchPattern({ priorities });
+  }, [patchPattern, pattern]);
+
+  const cyclePriority = useCallback(async (finding: Finding) => {
+    const tier = getPriorityTier(finding);
+    const next: FindingPriority | null = tier === null ? "priority" : tier === "priority" ? "primary" : null;
+    await setPriorityTier(finding, next);
+  }, [getPriorityTier, setPriorityTier]);
+
+  const getCorrectionsFor = useCallback((finding: Finding): ItemCorrection[] => {
+    const key = itemCorrectionKey(finding.patternCategory, finding.name, finding.side);
+    const map = (pattern?.itemCorrections ?? {}) as Record<string, ItemCorrection[]>;
+    if (Array.isArray(map[key]) && map[key].length) return map[key];
+    // Fallback to normalized records from mirrored stores for legacy/incomplete data.
+    return correctionRecords
+      .filter((c) => (c.category === finding.patternCategory || !c.category) && (c.finding === finding.key || c.finding === `${finding.name}${finding.side ? ` (${finding.side})` : ""}` || c.name === finding.name))
+      .map((c) => ({ id: c.id, pathway: (c.pathway as any) || 'mechanoreceptor', direction: (c.direction as any) || 'afferent', holding: c.status === 'clear' || !!c.holding, note: c.note, details: c.details, createdAt: c.createdAt || c.timestamp || new Date().toISOString(), updatedAt: c.updatedAt || c.timestamp || new Date().toISOString() } as ItemCorrection));
+  }, [pattern, correctionRecords]);
 
   const findings = useMemo(() => {
     const items: Finding[] = [];
     const clearedSet = new Set<string>(metadata.cleared_findings || []);
-    const corrections = metadata.corrections || [];
+    const priorities = (pattern?.priorities ?? {}) as Record<string, string | undefined>;
+
+    const mk = (type: string, category: string, patternCategory: string, key: string, val: string) => {
+      let name = key;
+      let side: "L" | "R" | undefined;
+      if (key.includes(' (L)')) { name = key.replace(' (L)', ''); side = 'L'; }
+      else if (key.includes(' (R)')) { name = key.replace(' (R)', ''); side = 'R'; }
+      const findingLabel = side ? `${name} (${side})` : name;
+      const correctionEntry = correctionRecords.find((c) => c?.finding === findingLabel || c?.finding === key || c?.name === name);
+      const priorityTier = normalizeFindingPriority(priorities[itemPriorityKey(patternCategory, name, side)]);
+      items.push({ type, key, name, status: val, side, category, correction: correctionEntry ? correctionSummary(correctionEntry) : undefined, cleared: clearedSet.has(`${patternCategory}-${key}`), patternCategory, priorityTier });
+    };
 
     Object.entries(pattern.muscles || {}).forEach(([key, val]) => {
-      if (val === 'Inhibited' || val === 'Inhibition' || val === 'Hypertonic' || val === 'Clear' || val === 'Normotonic') {
-        let name = key;
-        let side: string | undefined;
-        if (key.includes(' (L)')) { name = key.replace(' (L)', ''); side = 'L'; }
-        else if (key.includes(' (R)')) { name = key.replace(' (R)', ''); side = 'R'; }
-        const correctionEntry = corrections.find((c: any) => c.summary?.toLowerCase().includes(name.toLowerCase().split(' (')[0]) || c.pathway?.toLowerCase().includes(name.toLowerCase().split(' (')[0]));
-        items.push({ type: 'muscle', key, name, status: val as string, side, category: 'Muscles', correction: correctionEntry?.summary, cleared: clearedSet.has(`muscles-${key}`) });
-      }
+      if (['Inhibited','Inhibition','Hypertonic','Clear','Normotonic'].includes(String(val))) mk('muscle','Muscles','muscles',key,String(val));
     });
-
     Object.entries(pattern.primitiveReflexes || {}).forEach(([key, val]) => {
-      if (val === 'Inhibited' || val === 'Inhibition') {
-        let name = key;
-        let side: string | undefined;
-        if (key.includes(' (L)')) { name = key.replace(' (L)', ''); side = 'L'; }
-        else if (key.includes(' (R)')) { name = key.replace(' (R)', ''); side = 'R'; }
-        items.push({ type: 'reflex', key, name, status: 'Inhibited', side, category: 'Reflexes' });
-      }
+      if (['Inhibited','Inhibition'].includes(String(val))) mk('reflex','Reflexes','primitiveReflexes',key,'Inhibited');
     });
-
-    Object.entries(pattern.cranialNerves || {}).forEach(([key, val]) => {
-      if (val === 'Inhibited' || val === 'Inhibition' || val === 'Hypertonic') {
-        let name = key;
-        let side: string | undefined;
-        if (key.includes(' (L)')) { name = key.replace(' (L)', ''); side = 'L'; }
-        else if (key.includes(' (R)')) { name = key.replace(' (R)', ''); side = 'R'; }
-        items.push({ type: 'nerve', key, name, status: val as string, side, category: 'Cranial Nerves' });
-      }
+    // A checked stim implies its nerve is dysfunctional; split the pattern so
+    // only the nerve is a finding and the stim stays as its information.
+    Object.entries(splitCranialNervePattern(pattern.cranialNerves).findings).forEach(([key, val]) => {
+      if (['Inhibited','Inhibition','Hypertonic'].includes(String(val))) mk('nerve','Cranial Nerves','cranialNerves',key,String(val));
     });
-
     Object.entries(pattern.brainZones || {}).forEach(([key, val]) => {
-      if (val === 'Inhibited' || val === 'Inhibition' || val === 'Hypertonic') {
-        items.push({ type: 'brain', key, name: key, status: val as string, category: 'Brain Zones' });
-      }
+      if (['Inhibited','Inhibition','Hypertonic'].includes(String(val))) mk('brain','Brain Zones','brainZones',key,String(val));
     });
-
     Object.entries(pattern.eyeSystems || {}).forEach(([key, val]) => {
-      if (val === 'Inhibited' || val === 'Inhibition' || val === 'Hypertonic') {
-        items.push({ type: 'eye', key, name: key, status: val as string, category: 'Eye Systems' });
-      }
+      if (['Inhibited','Inhibition','Hypertonic'].includes(String(val))) mk('eye','Eye Systems','eyeSystems',key,String(val));
     });
 
+    const rank = (t: FindingPriority | null) => t === 'primary' ? 0 : t === 'priority' ? 1 : 2;
+    if (sortPriority) items.sort((a,b) => rank(a.priorityTier) - rank(b.priorityTier) || a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
     return items;
-  }, [pattern, metadata]);
+  }, [pattern, metadata, sortPriority]);
+
+  const stimsForNerveFinding = useCallback((finding: Finding): string[] => {
+    if (finding.category !== 'Cranial Nerves') return [];
+    const nerve = CRANIAL_NERVES.find(
+      n => cranialNerveFullName(n) === finding.name || n.name === finding.name,
+    );
+    if (!nerve) return [];
+    return markedCranialStims({
+      nerve,
+      patternNerves: (pattern?.cranialNerves ?? {}) as Record<string, unknown>,
+      side: finding.side,
+    }).map(stim => `${stim.label}${stim.side ? ` (${stim.side})` : ''}`);
+  }, [pattern]);
 
   const pathways = useMemo(() => {
-    const corrections = metadata.corrections || [];
-    const pathwayNames = [...new Set(corrections.map((c: any) => c.pathway))];
-    return pathwayNames.map(name => {
-      const entries = corrections.filter((c: any) => c.pathway === name);
-      const cleared = metadata.cleared_findings?.some((k: string) => k.includes(name)) || false;
-      return { id: name, name, entries, cleared, clearedAt: metadata.cleared_findings?.find((k: string) => k.includes(name)) ? metadata.cleared_findings : null };
-    });
-  }, [metadata]);
+    const groups = new Map<string, any[]>();
+    for (const c of correctionRecords) {
+      const name = String(c.pathway || c.processId || "Correction");
+      if (!groups.has(name)) groups.set(name, []);
+      groups.get(name)!.push({
+        ...c,
+        summary: correctionSummary(c),
+        timestamp: c.timestamp || c.updatedAt || c.createdAt,
+        values: c.details ?? {},
+      });
+    }
+    return [...groups.entries()].map(([name, entries]) => ({
+      id: name,
+      name,
+      entries: entries.sort((a,b) => String(a.timestamp||'').localeCompare(String(b.timestamp||''))),
+      cleared: (metadata.cleared_findings || []).some((k: string) => k.includes(name)),
+    }));
+  }, [correctionRecords, metadata]);
 
   const getStatusColor = (s: string) => {
-    if (s === 'Inhibited' || s === 'Inhibition') return 'bg-rose-100 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400';
-    if (s === 'Hypertonic') return 'bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400';
-    if (s === 'Clear' || s === 'Normotonic') return 'bg-primary/15 text-primary-strong dark:bg-primary/15 dark:text-primary';
+    if (s === 'Inhibited' || s === 'Inhibition') return 'bg-rose-500/[0.08] border border-rose-500/25 text-rose-700 dark:text-rose-300';
+    if (s === 'Hypertonic') return 'bg-amber-500/[0.08] border border-amber-500/25 text-amber-700 dark:text-amber-300';
+    if (s === 'Clear' || s === 'Normotonic') return 'bg-primary/10 border border-primary/30 text-primary-strong dark:text-primary';
     return 'bg-muted text-muted-foreground';
   };
 
+  const applyCorrection = useCallback(async (target: CorrectionTarget, correction: ItemCorrection) => {
+    const finding = target.finding;
+    const previous = (getCorrectionsFor(finding) as any[]).find((c) => c.id === correction.id);
+    const next = upsertQuickCorrectionRecord({
+      appointment: { priority_pattern: appointment?.priority_pattern, metadata: appointment?.metadata },
+      category: finding.patternCategory,
+      name: finding.name,
+      side: finding.side,
+      correction: { ...correction, updatedAt: new Date().toISOString() },
+      previousPathway: previous?.pathway,
+    });
+    await saveField('priority_pattern', JSON.stringify(next.pattern));
+    await saveField('metadata', JSON.stringify(next.metadata));
+    onUpdate();
+  }, [appointment?.metadata, appointment?.priority_pattern, getCorrectionsFor, onUpdate, saveField]);
+
+  const removeCorrection = useCallback(async (finding: Finding, correctionId: string) => {
+    if (!window.confirm("Remove this correction?")) return;
+    const next = removeQuickCorrectionRecord({
+      appointment: { priority_pattern: appointment?.priority_pattern, metadata: appointment?.metadata },
+      category: finding.patternCategory,
+      name: finding.name,
+      side: finding.side,
+      correctionId,
+    });
+    await saveField('priority_pattern', JSON.stringify(next.pattern));
+    await saveField('metadata', JSON.stringify(next.metadata));
+    onUpdate();
+  }, [appointment?.metadata, appointment?.priority_pattern, onUpdate, saveField]);
+
   const markPathwayCleared = async (pathwayId: string) => {
     const existing = metadata.cleared_findings || [];
-    const newCleared = existing.includes(`pathway-${pathwayId}`) ? existing.filter(k => k !== `pathway-${pathwayId}`) : [...existing, `pathway-${pathwayId}`];
+    const key = `pathway-${pathwayId}`;
+    const newCleared = existing.includes(key) ? existing.filter((k: string) => k !== key) : [...existing, key];
+    await updateMetadata({ ...metadata, cleared_findings: newCleared });
+  };
+
+  const markFindingCleared = async (finding: Finding) => {
+    const existing = metadata.cleared_findings || [];
+    const key = `${finding.patternCategory}-${finding.key}`;
+    const newCleared = existing.includes(key) ? existing.filter((k: string) => k !== key) : [...existing, key];
     await updateMetadata({ ...metadata, cleared_findings: newCleared });
   };
 
@@ -304,38 +428,141 @@ export default function SessionReportModal({ open, onClose, appointment, updateM
                         <th className="text-left text-xs font-medium text-muted-foreground px-3 py-2">Item</th>
                         <th className="text-left text-xs font-medium text-muted-foreground px-3 py-2">Side</th>
                         <th className="text-left text-xs font-medium text-muted-foreground px-3 py-2">Status</th>
+                        <th className="text-left text-xs font-medium text-muted-foreground px-3 py-2">Priority</th>
                         <th className="text-left text-xs font-medium text-muted-foreground px-3 py-2">Correction</th>
                         <th className="text-left text-xs font-medium text-muted-foreground px-3 py-2">Cleared?</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                      {filteredFindings.map((item) => (
-                        <tr key={item.key} className="hover:bg-muted/30 cursor-pointer" onClick={() => handleOpenFindingInManual(item)}>
-                          <td className="px-3 py-2 text-xs text-muted-foreground">{item.category}</td>
-                          <td className="px-3 py-2 text-sm font-medium text-foreground">{item.name}</td>
-                          <td className="px-3 py-2 text-sm text-muted-foreground">{item.side || '—'}</td>
-                          <td className="px-3 py-2">
-                            <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", getStatusColor(item.status))}>
-                              {item.status === 'Inhibition' ? 'Inhibited' : item.status === 'Normotonic' ? 'Normotonic' : item.status}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2 text-xs text-muted-foreground/80">
-                            {item.correction || <span className="text-muted-400">No correction applied</span>}
-                          </td>
-                          <td className="px-3 py-2">
-                            <button
-                              onClick={(e) => { e.stopPropagation(); markPathwayCleared(item.key); }}
-                              className={cn(
-                                "px-2 py-0.5 rounded text-xs font-medium transition-colors",
-                                item.cleared ? "bg-primary text-primary-foreground border border-primary/50" : "bg-muted hover:bg-primary/10 border border-border text-muted-foreground hover:text-primary-strong"
+                      {filteredFindings.map((item) => {
+                        const corr = getCorrectionsFor(item);
+                        const tier = item.priorityTier;
+                        const stims = stimsForNerveFinding(item);
+                        return (
+                          <Fragment key={`${item.patternCategory}:${item.key}`}>
+                          <ContextMenu>
+                            <ContextMenuTrigger asChild>
+                              <tr className="hover:bg-muted/30 cursor-pointer" onClick={() => handleOpenFindingInManual(item)}>
+                                <td className={cn("px-3 py-2 text-xs font-medium", categoryTone(item.patternCategory).text)}>{item.category}</td>
+                                <td className="px-3 py-2 text-sm font-medium text-foreground">{item.name}</td>
+                                <td className="px-3 py-2 text-sm text-muted-foreground">{item.side || '—'}</td>
+                                <td className="px-3 py-2">
+                                  <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", getStatusColor(item.status))}>
+                                    {item.status === 'Inhibition' ? 'Inhibited' : item.status === 'Normotonic' ? 'Normotonic' : item.status}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2">
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); cyclePriority(item); }}
+                                    className={cn("inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium transition-colors",
+                                      tier === 'primary' ? 'border-gold/40 bg-gold/15 text-gold-strong' : tier === 'priority' ? 'border-primary/30 bg-primary/10 text-primary-strong' : 'border-border/60 text-muted-foreground hover:bg-muted/50')}
+                                    title={tier === 'primary' ? 'Primary priority (click to clear)' : tier === 'priority' ? 'Priority (click for primary)' : 'Mark as priority'}
+                                  >
+                                    {tier === 'primary' ? <><Star size={11} fill="currentColor" /> Primary</> : tier === 'priority' ? <><Flag size={11} /> Priority</> : '—'}
+                                  </button>
+                                </td>
+                                <td className="px-3 py-2 text-xs text-muted-foreground/80">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="min-w-0">
+                                      {corr.length > 0 ? (
+                                        <div className="space-y-1">
+                                          <p className="text-[11px] font-medium text-foreground">{corr.length} correction{corr.length !== 1 ? 's' : ''}</p>
+                                          <p className="truncate text-[11px] text-muted-foreground/80" title={correctionSummary(corr[corr.length - 1])}>{correctionSummary(corr[corr.length - 1])}</p>
+                                        </div>
+                                      ) : item.correction || <span className="text-muted-foreground/60">No correction applied</span>}
+                                    </div>
+                                    {corr.length > 0 && (
+                                      <button
+                                        type="button"
+                                        className="shrink-0 rounded-md border border-border/60 px-2 py-1 text-[10px] font-medium text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                                        onClick={(e) => { e.stopPropagation(); const c = corr[corr.length - 1]; setCorrectionTarget({ finding: item, direction: c.direction, pathway: c.pathway, correction: c }); }}
+                                      >
+                                        Edit
+                                      </button>
+                                    )}
+                                  </div>
+                                  <div className="mt-1 text-[11px] text-muted-foreground/60">Right-click to add/edit</div>
+                                </td>
+                                <td className="px-3 py-2">
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); markFindingCleared(item); }}
+                                    className={cn(
+                                      "px-2 py-0.5 rounded text-xs font-medium transition-colors",
+                                      item.cleared ? "bg-primary text-primary-foreground border border-primary/50" : "bg-muted hover:bg-primary/10 border border-border text-muted-foreground hover:text-primary-strong"
+                                    )}
+                                    title={item.cleared ? "Unmark as cleared" : "Mark as cleared"}
+                                  >
+                                    {item.cleared ? "Cleared" : "Mark cleared"}
+                                  </button>
+                                </td>
+                              </tr>
+                            </ContextMenuTrigger>
+                            <ContextMenuContent className="w-56">
+                              {corr.length > 0 && (
+                                <>
+                                  <ContextMenuLabel className="px-2 text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70">Corrections</ContextMenuLabel>
+                                  {corr.slice(0, 6).map((c) => (
+                                    <ContextMenuItem key={c.id} onSelect={() => setCorrectionTarget({ finding: item, direction: c.direction, pathway: c.pathway, correction: c })}>
+                                      Edit: {c.pathway}{c.holding ? " (Clear)" : " (Not holding)"}
+                                    </ContextMenuItem>
+                                  ))}
+                                  {corr.slice(0, 6).map((c) => (
+                                    <ContextMenuItem key={`rm-${c.id}`} className="text-destructive focus:text-destructive" onSelect={() => void removeCorrection(item, c.id)}>
+                                      Remove: {c.pathway}
+                                    </ContextMenuItem>
+                                  ))}
+                                  <ContextMenuSeparator />
+                                </>
                               )}
-                              title={item.cleared ? "Unmark as cleared" : "Mark as cleared"}
-                            >
-                              {item.cleared ? "✓ Cleared" : "Clear"}
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
+                              <ContextMenuSub>
+                                <ContextMenuSubTrigger><PATHWAY_DIRECTION.afferent.Icon size={14} className={cn("mr-2", PATHWAY_DIRECTION.afferent.text)} /> Afferent</ContextMenuSubTrigger>
+                                <ContextMenuSubContent className="w-48">
+                                  {(["mechanoreceptor","nociceptive","physiological"] as const).map((p) => (
+                                    <ContextMenuItem key={p} onSelect={() => setCorrectionTarget({ finding: item, direction: 'afferent', pathway: p })}>{p === 'mechanoreceptor' ? 'Mechano' : p === 'nociceptive' ? 'Nociception' : 'Physiology'}</ContextMenuItem>
+                                  ))}
+                                </ContextMenuSubContent>
+                              </ContextMenuSub>
+                              <ContextMenuSub>
+                                <ContextMenuSubTrigger><PATHWAY_DIRECTION.efferent.Icon size={14} className={cn("mr-2", PATHWAY_DIRECTION.efferent.text)} /> Efferent</ContextMenuSubTrigger>
+                                <ContextMenuSubContent className="w-48">
+                                  {(["cortical","subcortical","emotional"] as const).map((p) => (
+                                    <ContextMenuItem key={p} onSelect={() => setCorrectionTarget({ finding: item, direction: 'efferent', pathway: p })}>{p.charAt(0).toUpperCase()+p.slice(1)}</ContextMenuItem>
+                                  ))}
+                                </ContextMenuSubContent>
+                              </ContextMenuSub>
+                              <ContextMenuSeparator />
+                              <ContextMenuLabel className="px-2 text-[10px] uppercase tracking-[0.12em] text-muted-foreground/70">Priority</ContextMenuLabel>
+                              <ContextMenuItem onSelect={() => setPriorityTier(item, null)} className="gap-2">
+                                <span className={cn("flex h-3.5 w-3.5 items-center justify-center", !tier ? "opacity-100" : "opacity-0")}><span className="h-2 w-2 rounded-full bg-current" /></span>
+                                None
+                              </ContextMenuItem>
+                              <ContextMenuItem onSelect={() => setPriorityTier(item, tier === "priority" ? null : "priority")} className="gap-2 text-primary-strong">
+                                <span className={cn("flex h-3.5 w-3.5 items-center justify-center", tier === "priority" ? "opacity-100" : "opacity-0")}><span className="h-2 w-2 rounded-full bg-current" /></span>
+                                <Target size={12} /> Priority
+                              </ContextMenuItem>
+                              <ContextMenuItem onSelect={() => setPriorityTier(item, tier === "primary" ? null : "primary")} className="gap-2 text-gold-strong">
+                                <span className={cn("flex h-3.5 w-3.5 items-center justify-center", tier === "primary" ? "opacity-100" : "opacity-0")}><span className="h-2 w-2 rounded-full bg-current" /></span>
+                                <Star size={12} fill="currentColor" /> Primary priority
+                              </ContextMenuItem>
+                            </ContextMenuContent>
+                          </ContextMenu>
+                          {stims.length > 0 && (
+                            <tr className="bg-muted/20">
+                              <td colSpan={7} className="px-3 py-1.5">
+                                <div className="space-y-0.5">
+                                  {stims.map((label, idx) => (
+                                    <div key={idx} className="flex items-baseline gap-1.5 text-[12px] leading-relaxed">
+                                      <span className="font-semibold text-destructive">↓</span>
+                                      <span className="min-w-0 break-words text-muted-foreground">{label}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                          </Fragment>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -388,13 +615,30 @@ export default function SessionReportModal({ open, onClose, appointment, updateM
                         </div>
                         {pathway.entries?.length > 0 && (
                           <div className="p-3 space-y-2">
-                            {pathway.entries.map((entry: any, idx: number) => (
-                              <div key={idx} className={cn("border-l-2 pl-3", dirStyle ? dirStyle.border : "border-primary")}>
-                                <p className="text-xs text-muted-foreground mb-1">{new Date(entry.timestamp || entry.savedAt).toLocaleString()}</p>
-                                <p className="text-sm">{entry.summary}</p>
-                                {entry.values && <div className="grid grid-cols-2 gap-1 mt-1 text-xs">{Object.entries(entry.values).map(([k, v]) => <div key={k} className="flex justify-between"><span className="text-muted-foreground">{k}:</span><span>{String(v)}</span></div>)}</div>}
-                              </div>
-                            ))}
+                            {pathway.entries.map((entry: any, idx: number) => {
+                              const values = (entry?.values ?? entry?.details ?? {}) as Record<string, any>;
+                              const zone1 = values.zone1?.name ? values.zone1 : null;
+                              const zone2 = values.zone2?.name ? values.zone2 : null;
+                              const summary = String(entry.summary || "");
+                              const raw = summary.includes('zone1:') || summary.includes('{');
+                              const bits = [!raw ? summary : null, values.method, values.retest, values.emotion, values.organ, values.correctionTimerMinutes ? `${values.correctionTimerMinutes} min${values.correctionTimerCompleted ? " done" : ""}` : null].filter(Boolean) as string[];
+                              return (
+                                <div key={idx} className={cn("border-l-2 pl-3 space-y-1.5", dirStyle ? dirStyle.border : "border-primary")}>
+                                  <p className="text-[11px] text-muted-foreground">{new Date(entry.timestamp || entry.savedAt).toLocaleString()}</p>
+                                  {(zone1 || zone2) && (
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {[{k:'Zone 1',z:zone1},{k:'Zone 2',z:zone2}].filter(x=>x.z).map(({k,z}) => {
+                                        const cat = z.category === 'Subcortical' ? 'Subcortical' : 'Cortical';
+                                        const tone = cat === 'Cortical' ? 'bg-efferent/10 border-efferent/25 text-efferent-strong' : 'bg-efferent/[0.07] border-efferent/20 text-efferent';
+                                        return <span key={k} className={cn('inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11px] font-medium', tone)}><span className="uppercase tracking-[0.08em] opacity-70">{k}</span><span>{z.name}{z.side ? ` (${z.side})` : ''}</span><span className="opacity-70">· {cat}</span></span>;
+                                      })}
+                                    </div>
+                                  )}
+                                  {bits.length > 0 && <p className="text-[13px] leading-relaxed text-foreground/85">{bits.join(' · ')}</p>}
+                                  {!bits.length && !zone1 && !zone2 && <p className="text-[13px] leading-relaxed text-foreground/85">{summary || 'Logged correction'}</p>}
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
@@ -406,6 +650,20 @@ export default function SessionReportModal({ open, onClose, appointment, updateM
           )}
         </div>
       </DialogContent>
+      {correctionTarget && (
+        <ReflexCorrectionModal
+          open={!!correctionTarget}
+          onOpenChange={(open) => { if (!open) setCorrectionTarget(null); }}
+          itemName={correctionTarget.finding.name}
+          side={correctionTarget.finding.side}
+          direction={correctionTarget.direction}
+          pathway={correctionTarget.pathway}
+          isPriority={!!correctionTarget.finding.priorityTier}
+          priorityTier={correctionTarget.finding.priorityTier}
+          correction={correctionTarget.correction ?? undefined}
+          onApply={async (c) => { await applyCorrection(correctionTarget, c); setCorrectionTarget(null); }}
+        />
+      )}
     </Dialog>
   );
 }

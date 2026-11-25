@@ -18,11 +18,22 @@ import {
   Baby,
   ClipboardCheck,
   ChevronDown,
+  Flag,
+  Plus,
+  Star,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PATHWAY_DIRECTION } from '@/lib/pathway-direction';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -46,8 +57,16 @@ import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
 import { EYE_POSITIONS } from '@/data/emotion-data';
 import { safeParse } from '@/utils/safe-json';
 import { format } from 'date-fns';
-import { isFindingCategory, isInhibitedStatus } from '@/components/crm/v2/v2-utils';
+import {
+  isFindingCategory,
+  isInhibitedStatus,
+  normalizeFindingPriority,
+  priorityKey,
+  type FindingPriority,
+} from '@/components/crm/v2/v2-utils';
+import PriorityTierControl from '@/components/crm/PriorityTierControl';
 import { findingNameFromPathway, isCorrectionProcessName } from '@/lib/pathway-finding';
+import { splitCranialNervePattern } from '@/lib/cranial-stim-findings';
 
 type Step = 
   | 'SELECT_START'
@@ -67,6 +86,10 @@ interface PathwayLogicWizardProps {
   priorityPattern?: string | null;
   initialFinding?: string | null;
   appointmentId?: string;
+  /** Called when the dropdown picks a different correction target. */
+  onChangeFinding?: (findingName: string) => void;
+  /** Persists the priority tier chosen inside the finding dropdown. */
+  updatePriorityPattern?: (category: string, itemName: string, status: string | null, side?: 'L' | 'R') => Promise<void>;
 }
 
 const DYSFUNCTIONAL_STATUSES = ['Inhibited', 'Hypertonic', 'Switching', 'Inhibition'];
@@ -80,7 +103,7 @@ const STAGE_DEFS = [
 const stageIndexFor = (s: Step): number =>
   s === 'SELECT_START' ? 0 : (s === 'AFFERENT_SELECT' || s === 'EFFERENT_SELECT') ? 1 : 2;
 
-const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, initialFinding, appointmentId }: PathwayLogicWizardProps) => {
+const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, initialFinding, appointmentId, onChangeFinding, updatePriorityPattern }: PathwayLogicWizardProps) => {
   const [step, setStep] = useState<Step>('SELECT_START');
   const [history, setHistory] = useState<Step[]>([]);
   const [selectedFinding, setSelectedFinding] = useState<string>(findingNameFromPathway(initialFinding) || "");
@@ -101,12 +124,14 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
   const initialFindingName = useMemo(() => findingNameFromPathway(initialFinding), [initialFinding]);
 
   useEffect(() => {
-    if (initialFindingName) {
+    if (initialFinding === 'CUSTOM') {
+      setSelectedFinding('CUSTOM');
+    } else if (initialFindingName) {
       setSelectedFinding(initialFindingName);
     } else if (isSandbox) {
       setSelectedFinding('CUSTOM');
     }
-  }, [initialFindingName, isSandbox]);
+  }, [initialFinding, initialFindingName, isSandbox]);
 
   useEffect(() => {
     const fetchMuscles = async () => {
@@ -136,53 +161,65 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
   const effectiveItem = selectedFinding === 'CUSTOM' ? customText : selectedFinding;
 
   const { inhibitedItems, hasAnyTested } = useMemo(() => {
-    const items = new Map<string, string>(); // name -> status
-    const baseNames = new Map<string, Set<'L' | 'R'>>();
-    let hasAnyTested = false;
-    
-    if (priorityPattern) {
-      try {
-        const parsed = safeParse(priorityPattern, {});
-        Object.entries(parsed).forEach(([catKey, category]) => {
-          if (catKey === "priorities") return;
-          // Skip correction processes (e.g. mechanoreceptor) — only include
-          // standard assessment findings that actually need correcting.
-          if (!isFindingCategory(catKey)) return;
-          if (Object.keys(category).length > 0) hasAnyTested = true;
-          Object.entries(category).forEach(([name, status]) => {
-            if (isInhibitedStatus(String(status))) {
-              items.set(name, String(status));
-              const match = name.match(/(.+) \(([LR])\)$/);
-              if (match) {
-                const base = match[1];
-                const side = match[2] as 'L' | 'R';
-                if (!baseNames.has(base)) baseNames.set(base, new Set());
-                baseNames.get(base)!.add(side);
-              }
-            }
-          });
-        });
-      } catch {
-        // priority_pattern can be malformed JSON; treat it as "nothing
-        // recorded" instead of crashing the wizard.
-      }
+    interface WizardFinding {
+      status: string | null;
+      catKey: string;
+      priorityLevel: FindingPriority | null;
     }
+    const items = new Map<string, WizardFinding>();
+    const baseNames = new Map<string, { sides: Set<'L' | 'R'>; catKey: string }>();
+    let hasAnyTested = false;
+
+    // safeParse keeps a malformed priority_pattern out of the wizard.
+    const parsed = safeParse<Record<string, Record<string, string>>>(priorityPattern ?? '', {});
+    const priorities = (parsed.priorities ?? {}) as Record<string, string>;
+    const levelFor = (catKey: string, name: string) =>
+      normalizeFindingPriority(priorities[priorityKey(catKey, name)]);
+
+    const registerSide = (name: string, catKey: string) => {
+      const match = name.match(/(.+) \(([LR])\)$/);
+      if (!match) return;
+      const base = match[1];
+      const side = match[2] as 'L' | 'R';
+      const entry = baseNames.get(base) ?? { sides: new Set<'L' | 'R'>(), catKey };
+      entry.sides.add(side);
+      baseNames.set(base, entry);
+    };
+
+    Object.entries(parsed).forEach(([catKey, category]) => {
+      if (catKey === 'priorities') return;
+      // Skip correction processes (e.g. mechanoreceptor) — only include
+      // standard assessment findings that actually need correcting.
+      if (!isFindingCategory(catKey)) return;
+      // Marked stims are information on a cranial nerve, never pathways.
+      const entries = catKey === 'cranialNerves'
+        ? Object.entries(splitCranialNervePattern(category).findings)
+        : Object.entries(category);
+      if (entries.length > 0) hasAnyTested = true;
+      entries.forEach(([name, status]) => {
+        if (isInhibitedStatus(String(status))) {
+          items.set(name, {
+            status: String(status),
+            catKey,
+            priorityLevel: levelFor(catKey, name),
+          });
+          registerSide(name, catKey);
+        }
+      });
+    });
 
     muscleFindings.forEach(name => {
       hasAnyTested = true;
-      if (!items.has(name)) items.set(name, null);
-      const match = name.match(/(.+) \(([LR])\)$/);
-      if (match) {
-        const base = match[1];
-        const side = match[2] as 'L' | 'R';
-        if (!baseNames.has(base)) baseNames.set(base, new Set());
-        baseNames.get(base)!.add(side);
+      if (!items.has(name)) {
+        items.set(name, { status: null, catKey: 'muscles', priorityLevel: levelFor('muscles', name) });
       }
+      registerSide(name, 'muscles');
     });
 
-    baseNames.forEach((sides, base) => {
+    baseNames.forEach(({ sides, catKey }, base) => {
       if (sides.has('L') && sides.has('R')) {
-        items.set(`${base} (Bilateral)`, null);
+        const name = `${base} (Bilateral)`;
+        items.set(name, { status: null, catKey, priorityLevel: levelFor(catKey, name) });
       }
     });
 
@@ -195,14 +232,55 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
       !isCorrectionProcessName(initialFindingName) &&
       !items.has(initialFindingName)
     ) {
-      items.set(initialFindingName, null);
+      const priorityKeyMatch = Object.keys(priorities)
+        .find(key => key.slice(key.indexOf('|') + 1) === initialFindingName);
+      const priorityCategory = priorityKeyMatch?.split('|')[0];
+      const patternCategory = priorityCategory ?? Object.entries(parsed).find(([catKey, category]) =>
+        catKey !== 'priorities' && isFindingCategory(catKey) &&
+        Object.prototype.hasOwnProperty.call(category, initialFindingName)
+      )?.[0] ?? 'muscles';
+      items.set(initialFindingName, {
+        status: null,
+        catKey: patternCategory,
+        priorityLevel: levelFor(patternCategory, initialFindingName),
+      });
     }
 
     return {
-      inhibitedItems: Array.from(items.entries()).map(([name, status]) => ({ name, status })).sort((a, b) => a.name.localeCompare(b.name)),
-      hasAnyTested
+      inhibitedItems: Array.from(items.entries())
+        .map(([name, meta]) => ({ name, ...meta }))
+        .sort((a, b) => {
+          const tierRank = (level: FindingPriority | null) => level === 'primary' ? 0 : level === 'priority' ? 1 : 2;
+          return tierRank(a.priorityLevel) - tierRank(b.priorityLevel) || a.name.localeCompare(b.name);
+        }),
+      hasAnyTested,
     };
   }, [priorityPattern, initialFindingName, muscleFindings]);
+
+  const selectedFindingMeta = inhibitedItems.find(item => item.name === selectedFinding);
+  const selectedPriority = selectedFindingMeta?.priorityLevel ?? null;
+
+  const selectFinding = (name: string) => {
+    setSelectedFinding(name);
+    if (name !== 'CUSTOM') onChangeFinding?.(name);
+  };
+
+  /** Priority lives with the pathway: one primary per session, as in Align. */
+  const setSelectedPriority = async (next: FindingPriority | null) => {
+    if (!selectedFindingMeta || !updatePriorityPattern) return;
+    if (next === 'primary') {
+      for (const item of inhibitedItems) {
+        if (item.name !== selectedFindingMeta.name && item.priorityLevel === 'primary') {
+          await updatePriorityPattern('priorities', priorityKey(item.catKey, item.name), 'priority');
+        }
+      }
+    }
+    await updatePriorityPattern(
+      'priorities',
+      priorityKey(selectedFindingMeta.catKey, selectedFindingMeta.name),
+      next,
+    );
+  };
 
   useEffect(() => {
     const fetchLigamentImages = async () => {
@@ -347,7 +425,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => setSelectedFinding('CUSTOM')}
+                onClick={() => selectFinding('CUSTOM')}
                 className="text-[11px] font-medium text-muted-foreground hover:text-foreground"
               >
                 + Manual Entry
@@ -359,41 +437,15 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
         return (
           <div className="space-y-6 animate-in fade-in duration-300">
             <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground">Finding to Correct</label>
-              <Select value={selectedFinding} onValueChange={(v) => setSelectedFinding(v)}>
-                <SelectTrigger className="h-10 rounded-md border-border bg-card text-sm font-medium">
-                  <SelectValue placeholder={loadingMuscles ? "Loading..." : "Select finding..."} />
-                </SelectTrigger>
-                <SelectContent className="rounded-lg border-border bg-card">
-                  {inhibitedItems.map(({ name, status }) => (
-                    <SelectItem key={name} value={name} className={cn(
-                      "py-2 text-sm font-medium",
-                      name.includes('(Bilateral)') && "text-primary"
-                    )}>
-                      {name}
-                      {status && <span className="ml-2 text-[10px] text-muted-foreground/60">({status})</span>}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="CUSTOM" className="py-2 text-sm font-medium text-primary">+ Custom Entry</SelectItem>
-                </SelectContent>
-              </Select>
-              {selectedFinding === 'CUSTOM' && (
-                <Input 
-                  placeholder="Enter custom entry point..." 
-                  className="h-10 rounded-md text-sm font-medium border-border animate-in slide-in-from-top-1 duration-200"
-                  value={customText}
-                  onChange={(e) => setCustomText(e.target.value)}
-                  autoFocus
-                />
-              )}
-            </div>
-
-            <div className="space-y-2">
               <label className="text-[13px] font-medium text-muted-foreground">Correction Direction</label>
+              {!effectiveItem && (
+                <p className="text-[12px] text-muted-foreground">Select a finding before choosing a correction direction.</p>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <button
+                  disabled={!effectiveItem}
                   onClick={() => goToStep('AFFERENT_SELECT')}
-                  className={cn("min-h-[128px] rounded-xl border border-border bg-card p-4 text-left transition-all hover:shadow-sm", PATHWAY_DIRECTION.afferent.hover)}
+                  className={cn("min-h-[128px] rounded-xl border border-border bg-card p-4 text-left transition-all hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50", PATHWAY_DIRECTION.afferent.hover)}
                 >
                   <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl", PATHWAY_DIRECTION.afferent.soft, PATHWAY_DIRECTION.afferent.strong)}>
                     <PATHWAY_DIRECTION.afferent.Icon size={17} strokeWidth={1.75} />
@@ -404,8 +456,9 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                 </button>
 
                 <button
+                  disabled={!effectiveItem}
                   onClick={() => goToStep('EFFERENT_SELECT')}
-                  className={cn("min-h-[128px] rounded-xl border border-border bg-card p-4 text-left transition-all hover:shadow-sm", PATHWAY_DIRECTION.efferent.hover)}
+                  className={cn("min-h-[128px] rounded-xl border border-border bg-card p-4 text-left transition-all hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50", PATHWAY_DIRECTION.efferent.hover)}
                 >
                   <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl", PATHWAY_DIRECTION.efferent.soft, PATHWAY_DIRECTION.efferent.strong)}>
                     <PATHWAY_DIRECTION.efferent.Icon size={17} strokeWidth={1.75} />
@@ -614,6 +667,23 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
 
   const isProcessStep = ['MECHANO_PROCESS', 'NOCICEPTIVE_PROCESS', 'EFFERENT_PROCESS', 'EMOTIONS_PROCESS', 'VESTIBULAR_PROCESS'].includes(step);
 
+  const priorityBadge = (level: FindingPriority | null) => {
+    if (!level) return null;
+    const primary = level === 'primary';
+    return (
+      <span
+        className={cn(
+          'inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium',
+          primary ? 'bg-gold/15 text-gold-strong' : 'bg-primary/10 text-primary-strong',
+        )}
+        title={primary ? 'Primary priority' : 'Priority'}
+      >
+        {primary ? <Star size={9} fill="currentColor" /> : <Flag size={9} />}
+        {primary ? 'Primary' : 'Priority'}
+      </span>
+    );
+  };
+
   return (
     <div className="max-w-[640px] mx-auto">
       <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
@@ -674,6 +744,94 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                 <RefreshCw size={11} className="sm:mr-1" />
                 <span className="hidden sm:inline">Reset</span>
               </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Finding picker — the pathway and its priority live in one dropdown. */}
+        <div className="border-b border-border/60 px-4 py-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
+                      Finding to correct
+                    </span>
+                    <span className="mt-0.5 flex min-w-0 items-center gap-2">
+                      <span className="truncate text-[13px] font-medium text-foreground">
+                        {effectiveItem || (loadingMuscles ? 'Loading…' : 'Choose a finding')}
+                      </span>
+                      {priorityBadge(selectedPriority)}
+                    </span>
+                  </span>
+                  <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="start"
+                className="max-h-[320px] min-w-[260px] w-[var(--radix-dropdown-menu-trigger-width)] overflow-y-auto"
+              >
+                <DropdownMenuLabel>Finding to correct</DropdownMenuLabel>
+                <DropdownMenuRadioGroup value={selectedFinding || ''} onValueChange={selectFinding}>
+                  {inhibitedItems.map(item => (
+                    <DropdownMenuRadioItem key={item.name} value={item.name} className="gap-2 py-2 text-[12px]">
+                      <span className="min-w-0 flex-1 truncate">{item.name}</span>
+                      {priorityBadge(item.priorityLevel)}
+                    </DropdownMenuRadioItem>
+                  ))}
+                  {selectedFinding &&
+                    selectedFinding !== 'CUSTOM' &&
+                    !inhibitedItems.some(item => item.name === selectedFinding) && (
+                      <DropdownMenuRadioItem value={selectedFinding} className="gap-2 py-2 text-[12px]">
+                        <span className="min-w-0 flex-1 truncate">{selectedFinding}</span>
+                        {priorityBadge(selectedPriority)}
+                      </DropdownMenuRadioItem>
+                    )}
+                  <DropdownMenuRadioItem value="CUSTOM" className="gap-2 py-2 text-[12px] text-primary">
+                    <Plus size={12} className="shrink-0" />
+                    <span>Manual entry</span>
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+                {selectedFindingMeta && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <div className="px-2 py-1.5">
+                      <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
+                        Priority for this pathway
+                      </p>
+                      <PriorityTierControl
+                        compact
+                        value={selectedPriority}
+                        onChange={(next) => void setSelectedPriority(next)}
+                        label={`Priority level for ${selectedFindingMeta.name}`}
+                      />
+                    </div>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {selectedFinding === 'CUSTOM' && (
+              <div className="flex w-full flex-wrap items-center gap-2 pt-1">
+                <Input
+                  placeholder="Enter custom entry point..."
+                  className="h-9 min-w-[200px] flex-1 text-[12px]"
+                  value={customText}
+                  onChange={(e) => setCustomText(e.target.value)}
+                  autoFocus
+                />
+                <Button
+                  size="sm"
+                  disabled={!customText.trim()}
+                  onClick={() => onChangeFinding?.(customText.trim())}
+                  className="h-9 shrink-0 px-3 text-[12px]"
+                >
+                  Save pathway
+                </Button>
+              </div>
             )}
           </div>
         </div>

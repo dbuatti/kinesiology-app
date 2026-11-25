@@ -106,6 +106,18 @@ const ProtocolLogSheet = ({
   if (visibleFields.length === 0) return null;
 
   const inline = variant === "inline";
+  const savedCount = log?.entries?.length ?? 0;
+  const live = hasLogData(log);
+  const [showLive, setShowLive] = useState(() => live || savedCount === 0);
+
+  useEffect(() => {
+    if (hasLogData(log)) setShowLive(true);
+  }, [log]);
+
+  useEffect(() => {
+    // After "Save & new" or clear, collapse the empty form back to the saved log.
+    if (!hasLogData(log) && (log?.entries?.length ?? 0) > 0) setShowLive(false);
+  }, [log]);
 
   const setField = (fieldId: string, value: unknown) => {
     // Functional so two controls edited in the same tick don't clobber
@@ -317,10 +329,36 @@ const ProtocolLogSheet = ({
         processId={processId}
         entries={log?.entries}
         onChange={onChange}
-        className="border-b border-border/60"
+        className={cn(showLive && "border-b border-border/60")}
       />
 
-      <div className="divide-y divide-border/60">{visibleFields.map(renderField)}</div>
+      {showLive ? (
+        <>
+          {savedCount > 0 && (
+            <div className="flex items-center justify-between border-b border-border/60 px-3 py-1.5">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Current correction</p>
+              <button
+                type="button"
+                onClick={() => setShowLive(false)}
+                className="text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Hide form
+              </button>
+            </div>
+          )}
+          <div className="divide-y divide-border/60">{visibleFields.map(renderField)}</div>
+        </>
+      ) : (
+        <div className="px-3 py-2.5">
+          <button
+            type="button"
+            onClick={() => setShowLive(true)}
+            className="flex h-8 items-center gap-1.5 rounded-md border border-border bg-background px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+          >
+            <Plus size={12} /> Add correction
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -357,14 +395,17 @@ const ProtocolLogActions = ({
       const values = previous.values ?? {};
       const steps = previous.steps ?? [];
       if (!Object.values(values).some(hasValue) && steps.length === 0) return {};
+      const id = `entry-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
       return {
         entries: [
           ...(previous.entries ?? []),
           {
-            id: `entry-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            id,
+            correctionId: id,
             values,
             steps,
             savedAt: new Date().toISOString(),
+            source: "protocol-log",
             ...(pathwayLabel ? { pathway: pathwayLabel } : {}),
           },
         ],
@@ -412,10 +453,12 @@ const ProtocolEntryList = ({
 }) => {
   if (!entries?.length) return null;
 
-  const remove = (id: string) =>
+  const remove = (id: string) => {
+    if (!window.confirm("Delete this saved correction entry?")) return;
     onChange((previous) => ({
       entries: (previous.entries ?? []).filter((entry) => entry.id !== id),
     }));
+  };
 
   return (
     <div className={cn("px-1.5 py-1", className)}>

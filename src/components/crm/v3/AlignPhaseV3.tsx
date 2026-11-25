@@ -1,24 +1,20 @@
 import { useState, useMemo } from "react";
+import { getReportSortPriority } from "@/lib/report-settings";
 import { Target, Route, BookMarked, ArrowRight, SearchX, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { safeParse } from "@/utils/safe-json";
-import { CATEGORY_LABELS, CATEGORY_ICONS } from "@/components/crm/v2/categoryConstants";
+import { CATEGORY_LABELS, CATEGORY_ICONS, CATEGORY_ORDER, categoryTone } from "@/components/crm/v2/categoryConstants";
+import { REFLEX_TRACKS, reflexSortRank } from "@/lib/reflex-order";
 import {
   getInhibitedFindings,
   priorityKey,
   findingLabel,
-  stimPriorityKey,
   normalizeFindingPriority,
   type FindingPriority,
 } from "@/components/crm/v2/v2-utils";
 import { useCranialNerveTests } from "@/hooks/useCranialNerveTests";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
-import {
-  nerveStimLines,
-  isLateralStim,
-  cranialStimKey,
-  cranialSideKey,
-} from "@/components/crm/pathway-reflex-stim-data";
+import { markedCranialStims, type MarkedCranialStim } from "@/lib/cranial-stim-findings";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";
 import PriorityTierControl from "@/components/crm/PriorityTierControl";
 import { useCorrectionDock, type CorrectionTab } from "@/components/crm/corrections/CorrectionDockContext";
@@ -41,11 +37,7 @@ interface Finding {
   priorityLevel: FindingPriority | null;
 }
 
-interface MarkedStimEntry {
-  stimKey: string;
-  label: string;
-  side?: 'L' | 'R';
-}
+type MarkedStimEntry = MarkedCranialStim;
 
 type Filter = 'all' | 'priority' | string;
 
@@ -74,21 +66,41 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
       side: f.side,
       priorityLevel: f.priorityLevel,
     }));
-    const rank = (level: FindingPriority | null) => level === 'primary' ? 2 : level === 'priority' ? 1 : 0;
+    const sortByPriority = getReportSortPriority();
+    const categoryRank = (category: string) => {
+      const index = CATEGORY_ORDER.indexOf(category);
+      return index === -1 ? CATEGORY_ORDER.length : index;
+    };
+    const priorityRank = (level: FindingPriority | null) => level === 'primary' ? 2 : level === 'priority' ? 1 : 0;
+    const sideRank = (side?: 'L' | 'R') => side === 'L' ? 0 : side === 'R' ? 1 : 2;
     items.sort((a, b) => {
-      const scoreA = rank(a.priorityLevel);
-      const scoreB = rank(b.priorityLevel);
-      if (scoreA !== scoreB) return scoreB - scoreA;
-      return a.name.localeCompare(b.name);
+      const categoryDiff = categoryRank(a.category) - categoryRank(b.category);
+      if (categoryDiff !== 0) return categoryDiff;
+
+      // Reflexes follow the clinical severity order, never the alphabet.
+      if (a.category === 'primitiveReflexes') {
+        const orderA = reflexSortRank(a.name);
+        const orderB = reflexSortRank(b.name);
+        if (orderA.track !== orderB.track) return orderA.track - orderB.track;
+        if (orderA.index !== orderB.index) return orderA.index - orderB.index;
+        return sideRank(a.side) - sideRank(b.side);
+      }
+
+      if (sortByPriority) {
+        const scoreA = priorityRank(a.priorityLevel);
+        const scoreB = priorityRank(b.priorityLevel);
+        if (scoreA !== scoreB) return scoreB - scoreA;
+      }
+      const byName = a.name.localeCompare(b.name);
+      return byName !== 0 ? byName : sideRank(a.side) - sideRank(b.side);
     });
     return items;
   }, [appointment.priority_pattern]);
 
-  const categoriesPresent = useMemo(() => {
-    const order: string[] = [];
-    allFindings.forEach(f => { if (!order.includes(f.category)) order.push(f.category); });
-    return order;
-  }, [allFindings]);
+  const categoriesPresent = useMemo(
+    () => CATEGORY_ORDER.filter(category => allFindings.some(f => f.category === category)),
+    [allFindings],
+  );
 
   const filteredFindings = useMemo(() => {
     return allFindings.filter(f => {
@@ -97,6 +109,13 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
       return true;
     });
   }, [allFindings, filter]);
+
+  const findingGroups = useMemo(
+    () => CATEGORY_ORDER
+      .map(category => ({ category, items: filteredFindings.filter(f => f.category === category) }))
+      .filter(group => group.items.length > 0),
+    [filteredFindings],
+  );
 
   const priorityPathway = (meta as Record<string, unknown>)?.priority_pathway as string || '';
   const priorityCount = allFindings.filter(f => f.priorityLevel !== null).length;
@@ -107,45 +126,26 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
     return (pattern.priorities || {}) as Record<string, string | undefined>;
   }, [appointment.priority_pattern]);
 
-  const stimStatus = (stimKey: string): FindingPriority | null =>
-    normalizeFindingPriority(allPriorities[stimPriorityKey(stimKey)]);
+  const patternNerves = useMemo(
+    () => safeParse<Record<string, Record<string, string | undefined>>>(appointment.priority_pattern, {}).cranialNerves,
+    [appointment.priority_pattern],
+  );
 
+  /** Stims are information on the nerve — never separate findings or pathways. */
   const nerveStimsFor = (name: string, side?: 'L' | 'R'): MarkedStimEntry[] => {
-    const nerve = CRANIAL_NERVES.find(n => `${n.name}: ${n.latinName}` === name);
+    const nerve = CRANIAL_NERVES.find(n => `${n.name}: ${n.latinName}` === name || n.name === name);
     if (!nerve) return [];
     const test = nerveTests.find(t => t.nerve_id === nerve.id.toString());
-    const stimResults = test?.stim_results;
-    const out: MarkedStimEntry[] = [];
-    nerveStimLines(nerve).forEach((line, i) => {
-      if (isLateralStim(nerve.id, i)) {
-        (['L', 'R'] as const).forEach(s => {
-          if (!side || s === side) {
-            const key = cranialSideKey(nerve.id, i, s);
-            if (stimResults?.[key]) out.push({ stimKey: key, label: line, side: s });
-          }
-        });
-      } else if (!side) {
-        const key = cranialStimKey(nerve.id, i);
-        if (stimResults?.[key]) out.push({ stimKey: key, label: line });
-      }
-    });
-    return out;
+    return markedCranialStims({ nerve, patternNerves, stimResults: test?.stim_results, side });
   };
 
-  /** There is one primary priority per session, whether finding or stim. */
+  /** There is one primary priority per session. */
   const clearOtherPrimaries = async (exceptKey: string) => {
     for (const [key, value] of Object.entries(allPriorities)) {
       if (key !== exceptKey && normalizeFindingPriority(value) === 'primary') {
         await updatePriorityPattern('priorities', key, 'priority');
       }
     }
-  };
-
-  const setStimTier = async (stimKey: string, nextLevel: FindingPriority | null) => {
-    const key = stimPriorityKey(stimKey);
-    if (nextLevel === 'primary') await clearOtherPrimaries(key);
-    await updatePriorityPattern('priorities', key, nextLevel);
-    onUpdate();
   };
 
   const setFindingPriority = async (finding: Finding, nextLevel: FindingPriority | null) => {
@@ -172,6 +172,99 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
     f === 'all' ? allFindings.length
     : f === 'priority' ? priorityCount
     : allFindings.filter(x => x.category === f).length;
+
+  const renderFinding = (item: Finding) => {
+    const Icon = CATEGORY_ICONS[item.category];
+    const isPrimary = item.priorityLevel === 'primary';
+    const isPriority = item.priorityLevel !== null;
+    const itemPathway = findingLabel(item.category, item.name, item.side);
+    const isPathway = priorityPathway === itemPathway;
+    const stims = item.category === 'cranialNerves' ? nerveStimsFor(item.name, item.side) : [];
+    const tone = categoryTone(item.category);
+    return (
+      <div
+        key={`${item.category}-${item.name}-${item.side || ''}`}
+        className={cn(
+          'transition-colors',
+          isPrimary
+            ? 'bg-gold/[0.08] ring-1 ring-inset ring-gold/30'
+            : isPriority || isPathway
+              ? 'bg-primary/[0.05]'
+              : 'hover:bg-muted/30'
+        )}
+      >
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-xl', tone.tile)}>
+              {Icon && <Icon size={16} />}
+            </div>
+            <div className="min-w-0">
+              <p className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-sm font-semibold text-foreground">
+                <span className="truncate">{item.name}</span>
+                {item.side && <span className="font-normal text-muted-foreground">({item.side})</span>}
+                {isPrimary && <StatusBadge variant="recorded" className="badge-gold">Primary priority</StatusBadge>}
+                {isPathway && <StatusBadge variant="recorded">Pathway</StatusBadge>}
+              </p>
+              <p className="mt-1 text-meta">
+                {CATEGORY_LABELS[item.category] || item.category} · {item.status}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <PriorityTierControl
+              value={item.priorityLevel}
+              onChange={(next) => setFindingPriority(item, next)}
+              label={`Priority level for ${item.name}${item.side ? ` (${item.side})` : ''}`}
+            />
+            <button
+              type="button"
+              title="Open the corrections reference for this finding"
+              aria-label="Open corrections reference"
+              onClick={() => openDock(correctionTargetFor(item.category))}
+              className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <BookMarked size={15} />
+            </button>
+            <SecondaryButton
+              onClick={() => setPriorityPathway(itemPathway)}
+              title="Choose this finding as the correction pathway and open Correct"
+              className="h-10 text-[12px]"
+            >
+              <Route size={13} /> Set pathway
+            </SecondaryButton>
+          </div>
+        </div>
+        {stims.length > 0 && (
+          <div className="border-t border-border/50 bg-muted/20 px-4 py-2.5">
+            <div className="space-y-0.5">
+              {stims.map(entry => (
+                <div
+                  key={entry.patternKey ?? entry.stimKey ?? `${entry.label}-${entry.side ?? ''}`}
+                  className="flex items-baseline gap-1.5 text-[12px] leading-relaxed"
+                >
+                  <span className="font-semibold text-destructive">↓</span>
+                  <span className="min-w-0 break-words text-foreground/80">
+                    {entry.label}
+                    {entry.side && <span className="text-muted-foreground"> ({entry.side})</span>}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const reflexTrackGroups = (items: Finding[]) => {
+    const groups = REFLEX_TRACKS.map(track => ({
+      label: track.shortLabel,
+      items: items.filter(item => reflexSortRank(item.name).track === track.num),
+    })).filter(group => group.items.length > 0);
+    const other = items.filter(item => reflexSortRank(item.name).track > REFLEX_TRACKS.length);
+    if (other.length > 0) groups.push({ label: 'Other reflexes', items: other });
+    return groups;
+  };
 
   return (
     <Section className="space-y-5">
@@ -256,101 +349,46 @@ const AlignPhaseV3 = ({ appointment, onUpdate, saveField, updatePriorityPattern,
         )}
 
         {/* Findings list */}
-        {filteredFindings.length > 0 ? (
-          <Card padding="none" className="divide-y divide-border/60 overflow-hidden">
-            {filteredFindings.map((item, i) => {
-              const Icon = CATEGORY_ICONS[item.category];
-              const isPrimary = item.priorityLevel === 'primary';
-              const isPriority = item.priorityLevel !== null;
-              const itemPathway = findingLabel(item.category, item.name, item.side);
-              const isPathway = priorityPathway === itemPathway;
-              const stims = item.category === 'cranialNerves' ? nerveStimsFor(item.name, item.side) : [];
+        {findingGroups.length > 0 ? (
+          <div className="space-y-4">
+            {findingGroups.map(({ category, items }) => {
+              const Icon = CATEGORY_ICONS[category];
+              const tone = categoryTone(category);
               return (
-                <div
-                  key={`${item.category}-${item.name}-${item.side || ''}-${i}`}
-                  className={cn(
-                    'transition-colors',
-                    isPrimary
-                      ? 'bg-gold/[0.08] ring-1 ring-inset ring-gold/30'
-                      : isPriority || isPathway
-                        ? 'bg-primary/[0.05]'
-                        : 'hover:bg-muted/30'
-                  )}
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className={cn(
-                        'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl',
-                        isPrimary
-                          ? 'bg-gold/15 text-gold-strong'
-                          : isPriority ? 'bg-primary/10 text-primary-strong' : 'bg-muted/60 text-muted-foreground'
-                      )}>
-                        {Icon && <Icon size={16} />}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1 text-sm font-semibold text-foreground">
-                          <span className="truncate">{item.name}</span>
-                          {item.side && <span className="font-normal text-muted-foreground">({item.side})</span>}
-                          {isPrimary && <StatusBadge variant="recorded" className="badge-gold">Primary priority</StatusBadge>}
-                          {isPathway && <StatusBadge variant="recorded">Pathway</StatusBadge>}
-                        </p>
-                        <p className="mt-1 text-meta">
-                          {CATEGORY_LABELS[item.category] || item.category} · {item.status}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <PriorityTierControl
-                        value={item.priorityLevel}
-                        onChange={(next) => setFindingPriority(item, next)}
-                        label={`Priority level for ${item.name}${item.side ? ` (${item.side})` : ''}`}
-                      />
-                      <button
-                        type="button"
-                        title="Open the corrections reference for this finding"
-                        aria-label="Open corrections reference"
-                        onClick={() => openDock(correctionTargetFor(item.category))}
-                        className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                      >
-                        <BookMarked size={15} />
-                      </button>
-                      <SecondaryButton
-                        onClick={() => setPriorityPathway(itemPathway)}
-                        title="Choose this finding as the correction pathway and open Correct"
-                        className="h-10 text-[12px]"
-                      >
-                        <Route size={13} /> Set pathway
-                      </SecondaryButton>
-                    </div>
+                <section key={category} className="space-y-2">
+                  <div className="flex items-center gap-2 px-1">
+                    {Icon && <Icon size={12} className={cn("shrink-0", tone.text)} />}
+                    <h3 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+                      {CATEGORY_LABELS[category] || category}
+                    </h3>
+                    <span className="text-[10px] tabular-nums text-muted-foreground/50">{items.length}</span>
+                    <div className="h-px flex-1 bg-border/60" />
                   </div>
-                  {stims.length > 0 && (
-                    <div className="border-t border-border/50 bg-muted/20 px-4 py-2">
-                      <div className="mb-2 flex items-center gap-2">
-                        <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">Stims</span>
-                        <span className="text-[10px] tabular-nums text-muted-foreground/60">{stims.length}</span>
-                      </div>
-                      <div className="space-y-2">
-                        {stims.map(entry => (
-                          <div key={entry.stimKey} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/60 bg-card py-2 pl-3 pr-2">
-                            <span className="min-w-0 truncate text-[13px] text-foreground/80">
-                              {entry.side && <span className="mr-2 font-semibold text-destructive">{entry.side}</span>}
-                              {entry.label}
+                  {category === 'primitiveReflexes' ? (
+                    <div className="space-y-2">
+                      {reflexTrackGroups(items).map(group => (
+                        <div key={group.label} className="space-y-1.5">
+                          <div className="flex items-center gap-2 px-1">
+                            <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/50">
+                              {group.label}
                             </span>
-                            <PriorityTierControl
-                              compact
-                              value={stimStatus(entry.stimKey)}
-                              onChange={(next) => setStimTier(entry.stimKey, next)}
-                              label={`Priority level for stim ${entry.label}`}
-                            />
+                            <div className="h-px flex-1 bg-border/40" />
                           </div>
-                        ))}
-                      </div>
+                          <Card padding="none" className="divide-y divide-border/60 overflow-hidden">
+                            {group.items.map(renderFinding)}
+                          </Card>
+                        </div>
+                      ))}
                     </div>
+                  ) : (
+                    <Card padding="none" className="divide-y divide-border/60 overflow-hidden">
+                      {items.map(renderFinding)}
+                    </Card>
                   )}
-                </div>
+                </section>
               );
             })}
-          </Card>
+          </div>
         ) : (
           <Card padding="none">
             {allFindings.length === 0 ? (

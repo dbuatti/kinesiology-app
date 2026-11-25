@@ -52,6 +52,7 @@ import { CTMModal } from "@/components/ctm/CTMModal";
 import { safeParse } from "@/utils/safe-json";
 import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
 import type { ProtocolLog, ProtocolLogPatch } from "@/data/protocol-log";
+import { applyProtocolLogPatch, enrichInhibitionLinks } from "@/lib/corrections";
 import ClientIntakeSummary from "@/components/crm/ClientIntakeSummary";
 import ClientIntakeEditModal from "@/components/crm/ClientIntakeEditModal";
 import ClientSideSheet, { SessionClientRail } from "@/components/crm/ClientSideSheet";
@@ -199,15 +200,26 @@ const AppointmentV2Page = () => {
   const handleLogProtocol = useCallback(
     (processId: string, patch: ProtocolLogPatch) => {
       updateMetadata((current) => {
-        const logs = { ...((current.protocol_logs as Record<string, ProtocolLog>) ?? {}) };
-        const previous = logs[processId] ?? {};
-        const resolved = typeof patch === "function" ? patch(previous) : patch;
-        logs[processId] = {
-          ...previous,
-          ...resolved,
-          updatedAt: new Date().toISOString(),
-        };
-        return { ...current, protocol_logs: logs };
+        const next = applyProtocolLogPatch({
+          metadata: current as any,
+          processId,
+          patch,
+          activeInhibitionPathway: (current as any).inhibition_pathway ?? null,
+        });
+        const md = next.metadata as any;
+        const linkId = next.linkId;
+        if (linkId) {
+          const inhState = { ...((md.inhibition_pathway_state as Record<string, any>) ?? {}) };
+          let active = md.inhibition_pathway;
+          if (inhState[processId]) {
+            inhState[processId] = { ...inhState[processId], correctionId: inhState[processId].correctionId || linkId, entryId: linkId, updatedAt: md.updatedAt || new Date().toISOString() };
+          }
+          if (active?.pathway?.processId === processId) {
+            active = { ...active, correctionId: active.correctionId || linkId, entryId: linkId, updatedAt: md.updatedAt || new Date().toISOString() };
+          }
+          return { ...md, inhibition_pathway_state: inhState, inhibition_pathway: active };
+        }
+        return md;
       });
     },
     [updateMetadata]
@@ -215,11 +227,12 @@ const AppointmentV2Page = () => {
 
   const handleInhibitionPathwayChange = useCallback(
     (pathway: unknown, state: Record<string, unknown>) => {
-      updateMetadata((current) => ({
+      updateMetadata((current) => enrichInhibitionLinks({
         ...current,
         inhibition_pathway: pathway,
         inhibition_pathway_state: state,
-      }));
+        correction_model_version: 2,
+      } as any));
     },
     [updateMetadata]
   );
@@ -253,16 +266,19 @@ const AppointmentV2Page = () => {
     };
   }, [appointment]);
 
-  /** How many high-priority corrections have been logged this session. */
+  /** How many corrections have been logged this session (deduped across stores). */
   const correctionCount = useMemo(() => {
-    let n = 0;
+    const ids = new Set<string>();
     for (const log of Object.values(protocolLogs)) {
-      if (Array.isArray(log.entries)) n += log.entries.length;
-      else if (log.values && Object.keys(log.values).length > 0) n += 1;
+      if (Array.isArray(log.entries)) log.entries.forEach((e: any) => e?.id && ids.add(String(e.id)));
+      else if (log.values && Object.keys(log.values).length > 0) ids.add(String((log as any).processId || (log as any).id || "live"));
     }
-    if (Array.isArray(metadata.corrections)) n += metadata.corrections.length;
-    return n;
-  }, [protocolLogs, metadata]);
+    const pattern = safeParse<Record<string, any>>(appointment?.priority_pattern, {});
+    const itemCorrections = (pattern.itemCorrections ?? {}) as Record<string, any[]>;
+    for (const list of Object.values(itemCorrections)) if (Array.isArray(list)) list.forEach((c: any) => c?.id && ids.add(String(c.id)));
+    if (Array.isArray(metadata.corrections)) metadata.corrections.forEach((c: any) => c?.id && ids.add(String(c.id)));
+    return ids.size;
+  }, [protocolLogs, metadata, appointment?.priority_pattern]);
 
   /** PEACE phase navigation — moved up from PeaceWizard/PeaceWizardV3 into the unified header. */
   const goNext = useCallback(() => {
@@ -597,6 +613,9 @@ const AppointmentV2Page = () => {
                 <DropdownMenuItem onClick={() => setGuideOpen(true)} className="flex items-center gap-2">
                   <BookOpen size={14} /> Session draft guide
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setReportOpen(true)} className="flex items-center gap-2">
+                  <FileText size={14} /> Session report
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to={`/appointments/${id}/archive`} className="flex items-center gap-2">
                     <Archive size={14} /> Archived (legacy) view
@@ -893,6 +912,8 @@ const AppointmentV2Page = () => {
         onClose={() => setReportOpen(false)}
         appointment={appointment}
         updateMetadata={async (metadata) => { await updateMetadata(metadata); }}
+        saveField={saveField}
+        onUpdate={refresh}
       />
       <SessionSummaryEmailDialog
         open={sessionSummaryOpen}

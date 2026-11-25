@@ -21,6 +21,7 @@ import {
   Stethoscope,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { categoryTone } from "@/components/crm/v2/categoryConstants";
 import { supabase } from "@/integrations/supabase/client";
 import { safeParse } from "@/utils/safe-json";
 import { CranialNerveTest } from "@/types/crm";
@@ -479,13 +480,14 @@ export function CranialNerveAssessment({
 
       <div className="space-y-6">
         {NERVE_CLUSTERS.map(cluster => {
+          const nerveTone = categoryTone('cranialNerves');
           const clusterNerves = filteredNerves.filter(n => cluster.ids.includes(n.id));
           if (clusterNerves.length === 0) return null;
 
           return (
             <div key={cluster.id} className="space-y-4">
               <div className="flex items-center gap-3 px-2">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground">
+                <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-xl", nerveTone.tile)}>
                   <Activity size={16} />
                 </div>
                 <h3 className="text-sm font-medium text-foreground uppercase tracking-wider">{cluster.label}</h3>
@@ -502,6 +504,7 @@ export function CranialNerveAssessment({
                     priorityTier: nerve.isLateralized ? corrections.getPriorityTier("cranialNerves", nerveName, "L") ?? corrections.getPriorityTier("cranialNerves", nerveName, "R") : corrections.getPriorityTier("cranialNerves", nerveName),
                     onSetPriorityTier: (tier: any) => nerve.isLateralized ? corrections.setPriorityTierForSides("cranialNerves", nerveName, ["L", "R"], tier) : corrections.setPriorityTier("cranialNerves", nerveName, undefined, tier),
                     onAddCorrection: (c: any) => corrections.addCorrection("cranialNerves", nerveName, c, nerve.isLateralized ? "L" : undefined),
+                    onUpdateCorrection: (c: any) => { const side = nerve.isLateralized ? (corrections.getCorrections("cranialNerves", nerveName, "L").some(x=>x.id===c.id) ? "L" : corrections.getCorrections("cranialNerves", nerveName, "R").some(x=>x.id===c.id) ? "R" : "L") : undefined; corrections.updateCorrection("cranialNerves", nerveName, c, side); },
                     onToggleHolding: (id: string) => { if (nerve.isLateralized) { if (corrections.getCorrections("cranialNerves", nerveName, "L").some(x=>x.id===id)) corrections.toggleHolding("cranialNerves", nerveName, id, "L"); else corrections.toggleHolding("cranialNerves", nerveName, id, "R"); } else corrections.toggleHolding("cranialNerves", nerveName, id); },
                     onRemoveCorrection: (id: string) => { if (nerve.isLateralized) { if (corrections.getCorrections("cranialNerves", nerveName, "L").some(x=>x.id===id)) corrections.removeCorrection("cranialNerves", nerveName, id, "L"); else corrections.removeCorrection("cranialNerves", nerveName, id, "R"); } else corrections.removeCorrection("cranialNerves", nerveName, id); },
                   };

@@ -80,6 +80,8 @@ const SOURCE_FIELDS = [
   "emotion_primary_selection", "emotion_notes", "luscher_color_1",
 ];
 
+import { collectCorrectionRecords } from "@/lib/corrections";
+
 function normalizeMetadata(m: any): any {
   if (!m) return {};
   if (typeof m === "string") {
@@ -108,6 +110,12 @@ function recordedProtocolIds(appointment: any): string[] {
     const hasValues = log.values && Object.keys(log.values).length > 0;
     const hasSteps = Array.isArray(log.steps) && log.steps.length > 0;
     if (hasEntries || hasValues || hasSteps) ids.add(pid);
+  }
+
+  // Normalized correction records cover quick/manual/mirrored legacy writes.
+  for (const c of collectCorrectionRecords({ priority_pattern: a.priority_pattern, metadata: a.metadata })) {
+    const pid = String(c.processId || c.pathway || "").toLowerCase();
+    if (pid) ids.add(pid);
   }
 
   // Heart wall: cleared muscle status.

@@ -14,6 +14,7 @@ interface Props {
   priorityTier?: FindingPriority | null;
   onToggleHolding: (id: string) => void;
   onRemove: (id: string) => void;
+  onEdit?: (correction: ReflexCorrection) => void;
 }
 
 const pill = "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium leading-none";
@@ -23,23 +24,33 @@ const tone = {
   overflow: "bg-muted/60 border-border/60 text-muted-foreground hover:bg-muted",
 };
 
+const timerBarColor = (correction: ReflexCorrection) => {
+  const m = correction.details?.correctionTimerMinutes;
+  if (m === 3) return "bg-amber-400";
+  if (m === 6) return "bg-amber-500";
+  if (m === 9) return "bg-primary";
+  return null;
+};
+
 const CorrectionPill = React.forwardRef<HTMLButtonElement, { correction: ReflexCorrection; onClick?: React.MouseEventHandler<HTMLButtonElement> }>(
   ({ correction, onClick, ...props }, ref) => {
     const direction = PATHWAY_DIRECTION[correction.direction];
     const Icon = direction.Icon;
+    const bar = timerBarColor(correction);
     return (
       <button
         ref={ref}
         type="button"
         {...props}
         onClick={(e) => { e.stopPropagation(); onClick?.(e); }}
-        className={cn(pill, direction.tint, "max-w-[140px]")}
-        title={`${PATHWAY_SHORT_LABEL[correction.pathway]} ${correction.holding ? "holding" : "not holding"}`}
+        className={cn(pill, "relative overflow-hidden pl-2.5 max-w-[150px]", correction.holding ? "bg-cleared/10 border-cleared/25 text-cleared" : direction.tint)}
+        title={`${PATHWAY_SHORT_LABEL[correction.pathway]}${correction.holding ? " · Clear" : ""}${bar ? ` · ${correction.details?.correctionTimerMinutes} min timer` : ""}`}
       >
+        {bar && <span aria-hidden className={cn("absolute inset-y-0 left-0 w-1 rounded-l-full", bar)} />}
         <Icon size={10} className="shrink-0" />
         <span className="truncate">
           {PATHWAY_SHORT_LABEL[correction.pathway]}
-          {correction.holding ? " · Holding" : ""}
+          {correction.holding ? " · Clear" : ""}
         </span>
       </button>
     );
@@ -60,7 +71,7 @@ function detailSummary(correction: ReflexCorrection): string[] {
   return out;
 }
 
-function CorrectionDetail({ correction, onToggleHolding, onRemove }: { correction: ReflexCorrection; onToggleHolding: () => void; onRemove: () => void }) {
+function CorrectionDetail({ correction, onToggleHolding, onRemove, onEdit }: { correction: ReflexCorrection; onToggleHolding: () => void; onRemove: () => void; onEdit?: () => void }) {
   const summary = detailSummary(correction);
   return (
     <div className="space-y-2 rounded-lg border border-border/60 bg-background p-2.5">
@@ -70,10 +81,10 @@ function CorrectionDetail({ correction, onToggleHolding, onRemove }: { correctio
             {PATHWAY_SHORT_LABEL[correction.pathway]}
             <span className="ml-1 text-muted-foreground">· {correction.direction}</span>
           </p>
-          <p className="text-[11px] text-muted-foreground">{correction.holding ? "Holding" : "Not holding"}</p>
+          <p className="text-[11px] text-muted-foreground">{correction.holding ? "Clear" : "Not clear"}</p>
         </div>
-        <span className={cn(pill, PATHWAY_DIRECTION[correction.direction].tint)}>
-          {correction.holding ? "Holding" : "Saved"}
+        <span className={cn(pill, correction.holding ? "bg-cleared/10 border-cleared/25 text-cleared" : PATHWAY_DIRECTION[correction.direction].tint)}>
+          {correction.holding ? "Clear" : "Saved"}
         </span>
       </div>
       {summary.length > 0 && (
@@ -82,11 +93,12 @@ function CorrectionDetail({ correction, onToggleHolding, onRemove }: { correctio
         </div>
       )}
       {correction.note && <p className="text-[11px] leading-relaxed text-muted-foreground">{correction.note}</p>}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        {onEdit && <Button type="button" variant="outline" size="sm" className="h-7 rounded-lg px-2 text-[11px]" onClick={onEdit}>Edit</Button>}
         <Button type="button" variant="outline" size="sm" className="h-7 rounded-lg px-2 text-[11px]" onClick={onToggleHolding}>
-          {correction.holding ? "Mark not holding" : "Mark holding"}
+          {correction.holding ? "Mark not clear" : "Mark clear"}
         </Button>
-        <Button type="button" variant="ghost" size="sm" className="h-7 rounded-lg px-2 text-[11px] text-muted-foreground hover:text-destructive" onClick={onRemove}>
+        <Button type="button" variant="ghost" size="sm" className="h-7 rounded-lg px-2 text-[11px] text-muted-foreground hover:text-destructive" onClick={() => { if (window.confirm("Remove this correction?")) onRemove(); }}>
           Remove
         </Button>
       </div>
@@ -94,7 +106,7 @@ function CorrectionDetail({ correction, onToggleHolding, onRemove }: { correctio
   );
 }
 
-export function ReflexCorrectionPills({ corrections, isPriority, priorityTier = isPriority ? "priority" : null, onToggleHolding, onRemove }: Props) {
+export function ReflexCorrectionPills({ corrections, isPriority, priorityTier = isPriority ? "priority" : null, onToggleHolding, onRemove, onEdit }: Props) {
   const sorted = [...corrections].sort((a, b) => {
     if (a.holding !== b.holding) return a.holding ? -1 : 1;
     return b.createdAt.localeCompare(a.createdAt);
@@ -126,7 +138,7 @@ export function ReflexCorrectionPills({ corrections, isPriority, priorityTier = 
               <CorrectionPill correction={item.correction} />
             </PopoverTrigger>
             <PopoverContent align="end" className="w-72 p-2">
-              <CorrectionDetail correction={item.correction} onToggleHolding={() => onToggleHolding(item.correction.id)} onRemove={() => onRemove(item.correction.id)} />
+              <CorrectionDetail correction={item.correction} onToggleHolding={() => onToggleHolding(item.correction.id)} onRemove={() => onRemove(item.correction.id)} onEdit={onEdit ? () => onEdit(item.correction) : undefined} />
             </PopoverContent>
           </Popover>
         ),
@@ -139,7 +151,7 @@ export function ReflexCorrectionPills({ corrections, isPriority, priorityTier = 
           <PopoverContent align="end" className="w-80 space-y-2 p-2">
             <p className="px-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Active corrections</p>
             {overflow.map((c) => (
-              <CorrectionDetail key={c.id} correction={c} onToggleHolding={() => onToggleHolding(c.id)} onRemove={() => onRemove(c.id)} />
+              <CorrectionDetail key={c.id} correction={c} onToggleHolding={() => onToggleHolding(c.id)} onRemove={() => onRemove(c.id)} onEdit={onEdit ? () => onEdit(c) : undefined} />
             ))}
           </PopoverContent>
         </Popover>

@@ -63,7 +63,7 @@ const SessionDraftDialog = ({ open, onOpenChange, appointment, history, saveFiel
   const handleParse = () => {
     const result = parseSessionDraft(pasted);
     if (!result) {
-      showError("Couldn't find the draft headings — paste the whole SESSION DRAFT block.");
+      showError("Couldn't find draft headings — paste Claude's whole reply, including the GOAL / KEY FINDINGS / NOTES sections.");
       return;
     }
     const nextRows: ReviewRow[] = [];

@@ -1,4 +1,5 @@
 import { safeParse } from "@/utils/safe-json";
+import { splitCranialNervePattern } from "@/lib/cranial-stim-findings";
 import {
   PRIMITIVE_TRACKS,
   NERVE_GROUPS,
@@ -77,7 +78,11 @@ export const buildCheckedMap = (args: {
     return "";
   };
 
-  const nervePattern = (pattern.cranialNerves as Record<string, unknown>) || {};
+  // A marked stim implies the nerve is inhibited; legacy stim rows are not
+  // separate findings, so infer the parent before seeding the INHIB boxes.
+  const nervePattern = splitCranialNervePattern(
+    pattern.cranialNerves as Record<string, unknown> | undefined,
+  ).findings;
   NERVE_GROUPS.forEach((group) =>
     group.items.forEach((nerve) => {
       const nerveName = `${nerve.name}: ${nerve.latinName}`;

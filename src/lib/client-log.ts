@@ -2,6 +2,7 @@ import type { Appointment } from "@/types/crm";
 import { parsePattern, parseSideFromName } from "@/components/crm/v2/v2-utils";
 import { processLabel } from "@/data/correction-process-list";
 import { summariseValues, PROTOCOL_FIELDS, formatZone, isZoneValue, type ProtocolLog } from "@/data/protocol-log";
+import { collectCorrectionRecords, correctionSummary } from "@/lib/corrections";
 import { safeParse } from "@/utils/safe-json";
 
 /**
@@ -228,7 +229,6 @@ const normalizeProcessName = (name: string): string => name.replace(/\s*\([^)]*\
  * describe the same correction), so near-identical lines are collapsed.
  */
 export const correctionsForAppointment = (appointment: Appointment): LogCorrection[] => {
-  const metadata = metadataOf(appointment);
   const collected: Array<LogCorrection & { ts: number }> = [];
   const signatures = new Set<string>();
 
@@ -236,116 +236,45 @@ export const correctionsForAppointment = (appointment: Appointment): LogCorrecti
     const detail = (entry.detail || "").trim();
     const pathway = (entry.pathway || "").trim();
     if (!detail && !pathway) return;
-    const signature = `${pathway.toLowerCase()}|${detail.toLowerCase()}`;
+    const signature = `${pathway.toLowerCase()}|${detail.toLowerCase()}|${String(entry.processId || entry.process).toLowerCase()}`;
     if (signatures.has(signature)) return;
     signatures.add(signature);
-    collected.push({
-      ...entry,
-      detail: detail || undefined,
-      pathway: pathway || undefined,
-      ts: entry.ts ?? 0,
-    });
+    collected.push({ ...entry, detail: detail || undefined, pathway: pathway || undefined, ts: entry.ts ?? 0 });
   };
 
-  // 1. Structured corrections from the dock (entries are stored oldest last).
-  const logs = (metadata.protocol_logs || {}) as Record<string, ProtocolLog>;
-  for (const [processId, log] of Object.entries(logs)) {
-    if (!log || typeof log !== "object") continue;
-    const label = processLabel(processId);
-    const entries = Array.isArray(log.entries) ? [...log.entries].reverse() : [];
-    for (const entry of entries) {
-      const pathway = entry.pathway || extractProtocolPathway(processId, entry.values);
-      const valuesForDetail = pathway && entry.values ? { ...entry.values } : entry.values;
-      if (pathway && valuesForDetail) {
-        for (const key of PATHWAY_VALUE_KEYS[processId] || []) delete valuesForDetail[key];
-      }
-      add({
-        key: `protocol::${processId}::${entry.id || entry.savedAt || Math.random()}`,
-        processId,
-        process: normalizeProcessName(label),
-        pathway,
-        detail: describeValues(processId, valuesForDetail),
-        timestamp: entry.savedAt,
-        source: "protocol",
-        ts: entry.savedAt ? new Date(entry.savedAt).getTime() || 0 : 0,
-      });
-    }
-
-    // The live, not-yet-filed entry is still part of what happened.
-    if (log.values && Object.keys(log.values).length > 0) {
-      const pathway = extractProtocolPathway(processId, log.values);
-      const valuesForDetail = pathway && log.values ? { ...log.values } : log.values;
-      if (pathway && valuesForDetail) {
-        for (const key of PATHWAY_VALUE_KEYS[processId] || []) delete valuesForDetail[key];
-      }
-      const detail = describeValues(processId, valuesForDetail);
-      if (detail) {
-        add({
-          key: `protocol-live::${processId}`,
-          processId,
-          process: normalizeProcessName(label),
-          pathway,
-          detail,
-          timestamp: log.updatedAt,
-          source: "protocol",
-          ts: log.updatedAt ? new Date(log.updatedAt).getTime() || 0 : Number.MAX_SAFE_INTEGER,
-        });
-      }
-    }
+  const normalized = collectCorrectionRecords({ priority_pattern: appointment.priority_pattern, metadata: appointment.metadata });
+  for (const c of normalized) {
+    const processId = c.processId || c.pathway;
+    const process = normalizeProcessName(processLabel(String(processId || c.pathway || "Correction")));
+    const pathway = c.finding || (c.category && c.name ? `${c.name}${c.side ? ` (${c.side})` : ""}` : undefined);
+    const detail = correctionSummary(c);
+    const ts = c.timestamp || c.updatedAt || c.createdAt;
+    add({
+      key: `corr::${c.id}`,
+      processId,
+      process,
+      pathway,
+      detail,
+      timestamp: ts,
+      source: c.source === "protocol" ? "protocol" : c.source === "item" ? "wizard" : c.source === "metadata" ? "wizard" : "note",
+      ts: ts ? new Date(ts).getTime() || 0 : 0,
+    });
   }
 
-  // 2. Wizard / calibration log (also appended over time).
-  type WizardCorrection = {
-    pathway?: string;
-    process?: string;
-    finding?: string;
-    summary?: string;
-    detail?: string;
-    timestamp?: string;
-    savedAt?: string;
-  };
-  const wizard = (Array.isArray(metadata.corrections) ? [...metadata.corrections] : []) as WizardCorrection[];
-  wizard.reverse();
-  wizard.forEach((entry, index) => {
-    const timestamp = entry?.timestamp || entry?.savedAt;
-    const rawSummary = (entry?.summary || entry?.detail || "").trim();
-    let pathway = entry?.finding ? String(entry.finding) : undefined;
-    let detail = rawSummary;
-    // Wizard summaries are written as "Finding — correction details", so split
-    // them so the finding can lead the line.
-    if (!pathway && rawSummary) {
-      const match = rawSummary.match(/^(.+?)\s*[—–]\s*(.+)$/);
-      if (match) {
-        pathway = match[1].trim();
-        detail = match[2].trim();
-      }
-    }
-    add({
-      key: `wizard::${index}`,
-      process: normalizeProcessName(entry?.pathway || entry?.process || "Correction"),
-      pathway,
-      detail: detail || entry?.summary || entry?.detail,
-      timestamp,
-      source: "wizard",
-      ts: timestamp ? new Date(timestamp).getTime() || 0 : 0,
-    });
-  });
-
-  // 3. Legacy free-text correction lines.
-  const inferProcessName = (text: string): string => {
-    const lower = text.toLowerCase();
-    if (/mechanoreceptor|mechano|gv16|stretch|fork|ligament|spindle|gto/.test(lower)) return "Mechanoreceptor";
-    if (/esr|temporal tap|polarity|eye position|\beye\b|permission/.test(lower)) return "Emotional";
-    if (/nociceptive|nociception|thalamus|bl9|threat site|\bscar\b/.test(lower)) return "Nociceptive";
-    if (/cortical|\bpfc\b|hemisphere|brain zone/.test(lower)) return "Cortical";
-    if (/subcortical|limbic|cerebellum|\bpons\b|medulla/.test(lower)) return "Subcortical";
-    if (/physiological|neurolymphatic|meridian|hydration/.test(lower)) return "Physiological";
-    if (/heart wall|\blayer\b/.test(lower)) return "Heart Wall";
-    if (/belief|limiting/.test(lower)) return "Belief Process";
-    return "Correction";
-  };
-
+  // Legacy free-text correction lines not represented in normalized records.
   if (typeof appointment.modes_balances === "string") {
+    const inferProcessName = (text: string): string => {
+      const lower = text.toLowerCase();
+      if (/mechanoreceptor|mechano|gv16|stretch|fork|ligament|spindle|gto/.test(lower)) return "Mechanoreceptor";
+      if (/esr|temporal tap|polarity|eye position|\beye\b|permission/.test(lower)) return "Emotional";
+      if (/nociceptive|nociception|thalamus|bl9|threat site|\bscar\b/.test(lower)) return "Nociceptive";
+      if (/cortical|\bpfc\b|hemisphere|brain zone/.test(lower)) return "Cortical";
+      if (/subcortical|limbic|cerebellum|\bpons\b|medulla/.test(lower)) return "Subcortical";
+      if (/physiological|neurolymphatic|meridian|hydration/.test(lower)) return "Physiological";
+      if (/heart wall|\blayer\b/.test(lower)) return "Heart Wall";
+      if (/belief|limiting/.test(lower)) return "Belief Process";
+      return "Correction";
+    };
     const lines = appointment.modes_balances
       .split("\n")
       .map((line) => line.replace(/^\s*[-*•]\s*/, "").trim())
@@ -359,14 +288,7 @@ export const correctionsForAppointment = (appointment: Appointment): LogCorrecti
         pathway = separatorMatch[1].trim();
         detail = separatorMatch[2].trim();
       }
-      add({
-        key: `note::${index}`,
-        process: inferProcessName(line),
-        pathway,
-        detail,
-        source: "note",
-        ts: 0,
-      });
+      add({ key: `note::${index}`, process: inferProcessName(line), pathway, detail, source: "note", ts: 0 });
     });
   }
 

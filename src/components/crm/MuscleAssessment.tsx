@@ -205,6 +205,7 @@ export function MuscleAssessment({
                   priorityTier: corrections.getPriorityTier("muscles", muscle, "L") ?? corrections.getPriorityTier("muscles", muscle, "R"),
                   onSetPriorityTier: (tier: any) => corrections.setPriorityTierForSides("muscles", muscle, ["L", "R"], tier),
                   onAddCorrection: (c: any) => corrections.addCorrection("muscles", muscle, c, "L"),
+                    onUpdateCorrection: (c: any) => { const side = corrections.getCorrections("muscles", muscle, "L").some(x=>x.id===c.id) ? "L" : corrections.getCorrections("muscles", muscle, "R").some(x=>x.id===c.id) ? "R" : "L"; corrections.updateCorrection("muscles", muscle, c, side); },
                   onToggleHolding: (id: string) => { if (corrections.getCorrections("muscles", muscle, "L").some(x=>x.id===id)) corrections.toggleHolding("muscles", muscle, id, "L"); else corrections.toggleHolding("muscles", muscle, id, "R"); },
                   onRemoveCorrection: (id: string) => { if (corrections.getCorrections("muscles", muscle, "L").some(x=>x.id===id)) corrections.removeCorrection("muscles", muscle, id, "L"); else corrections.removeCorrection("muscles", muscle, id, "R"); },
                 } : {
@@ -214,6 +215,7 @@ export function MuscleAssessment({
                   priorityTier: corrections.getPriorityTier("muscles", muscle),
                   onSetPriorityTier: (tier: any) => corrections.setPriorityTier("muscles", muscle, undefined, tier),
                   onAddCorrection: (c: any) => corrections.addCorrection("muscles", muscle, c),
+                    onUpdateCorrection: (c: any) => corrections.updateCorrection("muscles", muscle, c),
                   onToggleHolding: (id: string) => corrections.toggleHolding("muscles", muscle, id),
                   onRemoveCorrection: (id: string) => corrections.removeCorrection("muscles", muscle, id),
                 };

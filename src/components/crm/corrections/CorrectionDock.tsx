@@ -246,7 +246,7 @@ const CorrectionDock = () => {
                               return (
                                 <DropdownMenuItem key={idx} onSelect={(e) => { e.preventDefault(); selectInhibitionPathway({ ...pathway, status: displayStatus }); }} className={cn("flex items-center gap-3.5 px-5 py-3 mx-2 rounded-xl cursor-pointer border-l-[3px]", isSelected ? "bg-primary/8 border-l-primary" : "border-l-transparent hover:bg-muted/40")}>
                                   {/* Side indicator pill */}
-                                  <span className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold", isR ? "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300" : isL ? "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300" : "bg-muted text-muted-foreground")}>
+                                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted text-[11px] font-bold text-foreground">
                                     {isR ? "R" : isL ? "L" : "–"}
                                   </span>
                                   {/* Pathway name */}
@@ -254,9 +254,12 @@ const CorrectionDock = () => {
                                     <p className={cn("text-[13px] font-medium truncate tracking-tight leading-snug", isSelected ? "text-primary-strong" : "text-foreground")}>
                                       {pathway.pathway?.notes}
                                     </p>
+                                    {inhibitionPathwayState?.[pid]?.correctionId && (
+                                      <p className="truncate text-[10px] text-muted-foreground/70">Linked correction {String(inhibitionPathwayState[pid].correctionId).slice(0, 8)}</p>
+                                    )}
                                   </span>
                                   {/* Status arrow indicator */}
-                                  <span className={cn("shrink-0 flex h-9 w-9 items-center justify-center rounded-full text-[14px] font-black shadow-sm", displayStatus === "clear" ? "bg-success text-white" : displayStatus === "hypertonic" ? "bg-amber-500 text-white" : displayStatus === "inhibited" ? "bg-rose-500 text-white" : displayStatus === "priority" ? "bg-primary text-primary-foreground" : displayStatus === "primary_priority" ? "bg-gold text-foreground dark:text-background" : "bg-muted text-muted-foreground")}>
+                                  <span className={cn("shrink-0 flex h-9 w-9 items-center justify-center rounded-full text-[14px] font-black shadow-sm", displayStatus === "clear" ? "bg-cleared text-white" : displayStatus === "hypertonic" ? "bg-warning text-white" : displayStatus === "inhibited" ? "bg-destructive text-white" : displayStatus === "priority" ? "bg-primary text-primary-foreground" : displayStatus === "primary_priority" ? "bg-gold text-foreground dark:text-background" : "bg-muted text-muted-foreground")}>
                                     {displayStatus === "hypertonic" ? "↑" : displayStatus === "inhibited" ? "↓" : displayStatus === "clear" ? "✓" : displayStatus === "priority" ? <Target size={14} /> : displayStatus === "primary_priority" ? <Star size={14} fill="currentColor" /> : "–"}
                                   </span>
                                   {/* Priority toggle buttons */}
@@ -352,11 +355,14 @@ const CorrectionDock = () => {
                     inhibitionPathway.pathway.processId,
                     inhibitionPathway.pathway,
                     "clear",
-                    inhibitionPathway.priorityStep
+                    inhibitionPathway.priorityStep,
+                    inhibitionPathway.correctionId || inhibitionPathway.entryId
+                      ? { correctionId: inhibitionPathway.correctionId, entryId: inhibitionPathway.entryId }
+                      : undefined
                   )
                 }
                 title="Stipulate that the correction cleared this pathway"
-                className="flex h-7 shrink-0 items-center gap-1 rounded-md border border-success/30 bg-success/10 px-2 text-[10px] font-semibold text-success transition-colors hover:bg-success/20"
+                className="flex h-7 shrink-0 items-center gap-1 rounded-md border border-cleared/30 bg-cleared/10 px-2 text-[10px] font-semibold text-cleared transition-colors hover:bg-cleared/20"
               >
                 <Check size={11} strokeWidth={3} />
                 <span className="hidden sm:inline">Pathway clear</span>

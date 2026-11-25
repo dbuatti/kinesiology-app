@@ -5,6 +5,7 @@ import { AppointmentWithClient } from "@/types/crm";
 import { showError } from "@/utils/toast";
 import { safeParse, safeStringify } from "@/utils/safe-json";
 import { DEMO_APPOINTMENT_ID, demoAppointment, demoHistory } from "@/data/demo-session";
+import { backfillCorrectionModel } from "@/lib/corrections";
 
 /** Metadata arrives as jsonb (object) or, from older rows, a JSON string. */
 const normalizeMetadata = (value: unknown): Record<string, unknown> => {
@@ -61,10 +62,20 @@ export function useAppointment(id: string | undefined) {
 
       if (error) throw error;
 
-      const app = {
+      let app = {
         ...data,
         date: new Date(data.date),
       } as unknown as AppointmentWithClient;
+
+      const backfill = backfillCorrectionModel({ priority_pattern: app.priority_pattern, metadata: app.metadata as any });
+      if (backfill) {
+        app = { ...app, ...backfill } as AppointmentWithClient;
+        try {
+          await supabase.from('appointments').update(backfill).eq('id', id);
+        } catch (e) {
+          console.warn('Correction model backfill failed to persist', e);
+        }
+      }
 
       setAppointment(app);
       latestPatternRef.current = safeParse(app.priority_pattern, {});

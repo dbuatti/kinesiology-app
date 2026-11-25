@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Check, Flag, Star } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Check, Flag, Pause, Play, RotateCcw, Star, Timer } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,6 +41,7 @@ interface Props {
   pathway: ReflexCorrectionPathway;
   isPriority: boolean;
   priorityTier?: FindingPriority | null;
+  correction?: ReflexCorrection | null;
   onApply: (correction: ReflexCorrection) => void | Promise<void>;
   reflexName?: string;
 }
@@ -331,16 +332,65 @@ export function ReflexCorrectionModal({
   pathway,
   isPriority,
   priorityTier = isPriority ? "priority" : null,
+  correction,
   onApply,
 }: Props) {
   const displayName = itemName ?? reflexName ?? "";
   const [values, setValues] = useState<Record<string, unknown>>({});
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
+  const [timerMinutes, setTimerMinutes] = useState<number | null>(null);
+  const [timerRemaining, setTimerRemaining] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const timerRef = useRef<number | null>(null);
+  const timerEndRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (open) { setValues({}); setNote(""); }
-  }, [open, pathway, direction, displayName, side]);
+    if (open) {
+      const details = (correction?.details ?? {}) as Record<string, unknown>;
+      setValues(details);
+      setNote(correction?.note ?? "");
+      const mins = typeof details.correctionTimerMinutes === "number" ? details.correctionTimerMinutes : null;
+      const rem = typeof details.correctionTimerRemainingSeconds === "number" ? details.correctionTimerRemainingSeconds : mins ? mins * 60 : 0;
+      setTimerMinutes(mins);
+      setTimerRemaining(rem);
+      setTimerRunning(false);
+      if (timerRef.current) window.clearInterval(timerRef.current);
+      timerRef.current = null;
+      timerEndRef.current = null;
+    }
+  }, [open, pathway, direction, displayName, side, correction]);
+
+  useEffect(() => () => { if (timerRef.current) window.clearInterval(timerRef.current); }, []);
+
+  useEffect(() => {
+    if (!timerRunning || timerRemaining <= 0) return;
+    timerEndRef.current = Date.now() + timerRemaining * 1000;
+    timerRef.current = window.setInterval(() => {
+      const end = timerEndRef.current;
+      if (!end) return;
+      const left = Math.max(0, Math.round((end - Date.now()) / 1000));
+      setTimerRemaining(left);
+      if (left <= 0) {
+        if (timerRef.current) window.clearInterval(timerRef.current);
+        timerRef.current = null;
+        timerEndRef.current = null;
+        setTimerRunning(false);
+      }
+    }, 250);
+    return () => { if (timerRef.current) window.clearInterval(timerRef.current); timerRef.current = null; };
+  }, [timerRunning]);
+
+  const startTimer = (mins: number) => {
+    if (timerRef.current) window.clearInterval(timerRef.current);
+    setTimerMinutes(mins);
+    setTimerRemaining(mins * 60);
+    setTimerRunning(true);
+  };
+  const pauseTimer = () => { setTimerRunning(false); if (timerRef.current) window.clearInterval(timerRef.current); timerRef.current = null; };
+  const resumeTimer = () => { if (timerRemaining > 0) setTimerRunning(true); };
+  const resetTimer = () => { pauseTimer(); setTimerRemaining(timerMinutes ? timerMinutes * 60 : 0); };
+  const fmtTimer = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   const pathwayMeta = useMemo(() => getPathwayById(pathway as never), [pathway]);
   const fields = PROTOCOL_FIELDS[pathway] ?? [];
@@ -348,7 +398,16 @@ export function ReflexCorrectionModal({
   const setField = (id: string, v: unknown) => {
     setValues((prev) => {
       const next = { ...prev, [id]: v };
-      // clear dependent fields when parent changes
+      if (id === "method" && typeof v === "string") {
+        const m = v.match(/^(\d+) min$/);
+        if (m) {
+          startTimer(Number(m[1]));
+        } else if (v && timerMinutes) {
+          pauseTimer();
+          setTimerMinutes(null);
+          setTimerRemaining(0);
+        }
+      }
       for (const f of fields) {
         if ("dependsOn" in f && f.dependsOn === id) next[f.id] = f.kind === "chips" && f.multiple ? [] : "";
       }
@@ -364,14 +423,19 @@ export function ReflexCorrectionModal({
         const v = values[f.id];
         if (hasValue(v)) details[f.id] = v;
       }
+      if (timerMinutes) {
+        details.correctionTimerMinutes = timerMinutes;
+        details.correctionTimerRemainingSeconds = timerRemaining;
+        details.correctionTimerCompleted = timerRemaining === 0;
+      }
       await onApply({
-        id: crypto.randomUUID(),
+        id: correction?.id ?? crypto.randomUUID(),
         pathway,
         direction,
-        holding: true,
+        holding: correction?.holding ?? true,
         note: note.trim() || undefined,
         details: Object.keys(details).length ? details : undefined,
-        createdAt: new Date().toISOString(),
+        createdAt: correction?.createdAt ?? new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
       onOpenChange(false);
@@ -424,6 +488,28 @@ export function ReflexCorrectionModal({
             </ol>
           ) : null}
 
+          {timerMinutes && (
+            <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Timer size={14} className="text-muted-foreground" />
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Timer</span>
+                </div>
+                <span className={cn("text-[12px] font-semibold tabular-nums", timerRemaining === 0 ? "text-primary-strong" : "text-foreground")}>{timerRemaining === 0 ? "Done" : fmtTimer(timerRemaining)}</span>
+              </div>
+              <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                {timerRemaining > 0 && (
+                  <button type="button" onClick={timerRunning ? pauseTimer : resumeTimer} className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted/50">
+                    {timerRunning ? <Pause size={11} /> : <Play size={11} />} {timerRunning ? "Pause" : "Resume"}
+                  </button>
+                )}
+                <button type="button" onClick={resetTimer} className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted/50">
+                  <RotateCcw size={11} /> Reset
+                </button>
+              </div>
+            </div>
+          )}
+
           <label className="block">
             <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Note</span>
             <Textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className="mt-2 rounded-lg text-[13px]" placeholder="Optional clinical note..." />
@@ -432,7 +518,7 @@ export function ReflexCorrectionModal({
 
         <div className="flex items-center justify-end gap-2 border-t border-border/60 px-5 py-4">
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
-          <Button onClick={apply} disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary-hover">{saving ? "Applying..." : "Apply & Hold"}</Button>
+          <Button onClick={apply} disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary-hover">{saving ? "Saving..." : correction ? "Save correction" : "Apply correction"}</Button>
         </div>
       </DialogContent>
     </Dialog>

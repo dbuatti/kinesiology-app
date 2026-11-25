@@ -10,7 +10,7 @@ import { PRIMITIVE_REFLEXES, PrimitiveReflex } from "@/data/primitive-reflex-dat
 import { MUSCLE_INFO_DETAILS, type MuscleInfo } from "@/data/muscle-info-data";
 import { BRAIN_REFLEX_POINTS, type BrainReflexPoint } from "@/data/brain-reflex-data";
 import { AppointmentWithClient } from "@/types/crm";
-import { CATEGORY_LABELS } from "@/components/crm/v2/categoryConstants";
+import { CATEGORY_LABELS, categoryTone } from "@/components/crm/v2/categoryConstants";
 import { getInhibitedFindings } from "@/components/crm/v2/v2-utils";
 import { Search, HelpCircle, Route, CheckCircle2 } from "lucide-react";
 
@@ -36,13 +36,6 @@ interface RecheckTabV2Props {
 }
 
 type Action = 'carry_forward' | 'resolved' | 'unsure';
-
-const CATEGORY_COLORS: Record<string, string> = {
-  primitiveReflexes: 'bg-primary/10 text-primary-strong border-primary/20',
-  cranialNerves: 'bg-muted text-muted-foreground border-border',
-  muscles: 'bg-destructive/10 text-destructive-strong border-destructive/20',
-  brainZones: 'bg-success/10 text-success-strong border-success/20',
-};
 
 const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, saveField, onJumpToPhase }: RecheckTabV2Props) => {
   const [actions, setActions] = useState<Record<string, Action>>(() => {
@@ -189,7 +182,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
           const key = itemKey(item);
           const act = actions[key];
           const isSaving = saving === key;
-          const catColor = CATEGORY_COLORS[item.rawCategory] || 'bg-muted text-muted-foreground border-border';
+          const catColor = categoryTone(item.rawCategory).chip;
 
           return (
             <div

@@ -142,13 +142,18 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
           onSave={async (summary) => {
             await saveField('modes_balances', summary);
             if (priorityPathway && summary) {
+              const ts = new Date().toISOString();
               const corrections = [...((meta as any)?.corrections || [])];
               corrections.push({
+                id: `manual:${Date.now()}`,
                 pathway: priorityPathway,
                 summary,
-                timestamp: new Date().toISOString(),
+                timestamp: ts,
+                status: "clear",
+                source: "manual",
+                details: { note: summary },
               });
-              await saveField('metadata', { ...meta, corrections });
+              await saveField('metadata', { ...meta, corrections, correction_model_version: 2 });
               onUpdate();
             }
           }}

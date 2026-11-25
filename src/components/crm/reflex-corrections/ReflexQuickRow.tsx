@@ -38,6 +38,7 @@ interface Props {
   priorityTier?: FindingPriority | null;
   onSetPriorityTier?: (tier: FindingPriority | null) => void;
   onAddCorrection: (correction: ItemCorrection) => void | Promise<void>;
+  onUpdateCorrection?: (correction: ItemCorrection) => void | Promise<void>;
   onToggleHolding: (id: string) => void;
   onRemoveCorrection: (id: string) => void;
   className?: string;
@@ -56,12 +57,13 @@ export function ReflexQuickRow({
   priorityTier = isPriority ? "priority" : null,
   onSetPriorityTier,
   onAddCorrection,
+  onUpdateCorrection,
   onToggleHolding,
   onRemoveCorrection,
   className,
   compact = false,
 }: Props) {
-  const [modal, setModal] = useState<{ direction: CorrectionDirection; pathway: CorrectionPathway } | null>(null);
+  const [modal, setModal] = useState<{ direction: CorrectionDirection; pathway: CorrectionPathway; correction?: ItemCorrection } | null>(null);
 
   const applyTier = (tier: FindingPriority | null) => {
     if (onSetPriorityTier) onSetPriorityTier(tier);
@@ -89,6 +91,7 @@ export function ReflexQuickRow({
                     priorityTier={priorityTier}
                     onToggleHolding={onToggleHolding}
                     onRemove={onRemoveCorrection}
+                    onEdit={(c) => setModal({ direction: c.direction, pathway: c.pathway, correction: c })}
                   />
                 ) : undefined
               }
@@ -147,7 +150,12 @@ export function ReflexQuickRow({
           pathway={modal.pathway}
           isPriority={isPriority}
           priorityTier={priorityTier}
-          onApply={onAddCorrection}
+          correction={modal.correction}
+          onApply={async (correction) => {
+            if (modal.correction && onUpdateCorrection) await onUpdateCorrection(correction);
+            else await onAddCorrection(correction);
+            setModal(null);
+          }}
         />
       )}
     </>

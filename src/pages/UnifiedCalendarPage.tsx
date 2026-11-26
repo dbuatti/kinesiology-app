@@ -130,7 +130,7 @@ const SLOT_SERVICES = [
   { key: "voice45", group: "Voice", label: "Voice & Piano — 45 min", kind: "voice", duration: "45" },
   { key: "voice30", group: "Voice", label: "Voice & Piano — 30 min", kind: "voice", duration: "30" },
   { key: "fnhCurrent", group: "FNH", label: "Current rate", kind: "fnh", eventTypeId: "4279898" as const, price: undefined as number | undefined },
-  { key: "fnhNew", group: "FNH", label: "New client · $70", kind: "fnh", eventTypeId: "4279898" as const, price: 70 },
+  { key: "fnhNew", group: "FNH", label: "New client · $95", kind: "fnh", eventTypeId: "8072389" as const, price: 95 },
   { key: "fnhFree", group: "FNH", label: "FNH Community · Free", kind: "fnh", eventTypeId: "5927215" as const, price: 0 },
 ] as const;
 
@@ -148,7 +148,7 @@ const UnifiedCalendarPage = () => {
   const [voicePrefillTime, setVoicePrefillTime] = useState<string | undefined>(undefined);
   const [fnhPickOpen, setFnhPickOpen] = useState(false);
   const [fnhClientId, setFnhClientId] = useState<string | null>(null);
-  const [fnhPrefillPrice, setFnhPrefillPrice] = useState<number>(70);
+  const [fnhPrefillPrice, setFnhPrefillPrice] = useState<number>(95);
   const [fnhClientSearch, setFnhClientSearch] = useState("");
   const [rebookFrom, setRebookFrom] = useState<string | null>(null);
   const [remindersOpen, setRemindersOpen] = useState(false);
@@ -167,7 +167,8 @@ const UnifiedCalendarPage = () => {
     if (service === "voice60") openVoiceBooking("60");
     else if (service === "voice45") openVoiceBooking("45");
     else if (service === "voice30") openVoiceBooking("30");
-    else if (service === "fnhStandard" || service === "fnhFull") { setFnhPrefillPrice(70); setFnhPickOpen(true); }
+    else if (service === "fnhStandard") { setFnhPrefillPrice(95); setFnhPickOpen(true); }
+    else if (service === "fnhFull") { setFnhPrefillPrice(100); setFnhPickOpen(true); }
     else if (service === "fnhFree") { setFnhPrefillPrice(0); setFnhPickOpen(true); }
   };
 
@@ -175,7 +176,7 @@ const UnifiedCalendarPage = () => {
     if (item.source === "voice") {
       openVoiceBooking("60");
     } else if (item.clientId) {
-      setFnhPrefillPrice(70);
+      setFnhPrefillPrice(95);
       setFnhClientId(item.clientId);
       setRebookFrom(item.datetime || null);
     }

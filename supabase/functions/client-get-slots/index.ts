@@ -12,7 +12,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const ALLOWED_EVENT_TYPE_IDS = new Set([4279898, 1945081, 5925021, 6488157]);
+const ALLOWED_EVENT_TYPE_IDS = new Set([8072389, 4279898, 1945081, 5925021, 6488157]);
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -26,7 +26,7 @@ serve(async (req) => {
 
     const { start, end, eventTypeId, timeZone } = await req.json();
     if (!start || !end) throw new Error("Missing start/end.");
-    const resolvedEventTypeId = parseInt(eventTypeId, 10) || 4279898;
+    const resolvedEventTypeId = parseInt(eventTypeId, 10) || 8072389;
     if (!ALLOWED_EVENT_TYPE_IDS.has(resolvedEventTypeId)) throw new Error("Unrecognised event type.");
 
     const slotsUrl = new URL("https://api.cal.com/v2/slots");

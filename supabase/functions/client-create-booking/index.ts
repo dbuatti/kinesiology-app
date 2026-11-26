@@ -16,7 +16,7 @@ const corsHeaders = {
 
 // Only these event types may be booked from the portal — prevents a client
 // from passing an arbitrary/unintended eventTypeId.
-const ALLOWED_EVENT_TYPE_IDS = new Set([4279898, 1945081, 5925021, 6488157]);
+const ALLOWED_EVENT_TYPE_IDS = new Set([8072389, 4279898, 1945081, 5925021, 6488157]);
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -30,7 +30,7 @@ serve(async (req) => {
 
     const { startTime, eventTypeId, notes } = await req.json();
     if (!startTime) throw new Error("Missing startTime.");
-    const resolvedEventTypeId = parseInt(eventTypeId, 10) || 4279898;
+    const resolvedEventTypeId = parseInt(eventTypeId, 10) || 8072389;
     if (!ALLOWED_EVENT_TYPE_IDS.has(resolvedEventTypeId)) throw new Error("Unrecognised event type.");
 
     const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");

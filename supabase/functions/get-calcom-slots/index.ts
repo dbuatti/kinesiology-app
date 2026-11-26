@@ -43,7 +43,7 @@ serve(async (req) => {
     };
 
     // 1. Fetch Available Slots
-    const targetEventTypeId = eventTypeId || "4279898";
+    const targetEventTypeId = eventTypeId || "8072389";
     // The 2024-09-04 slots endpoint (GET /v2/slots) is the only one that honours
     // bookingUidToReschedule. It uses start/end params and returns the date→slots
     // map directly under `data` (the older /v2/slots/available route nested it

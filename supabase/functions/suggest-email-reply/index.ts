@@ -159,7 +159,7 @@ async function generateDraft(prompt: string): Promise<any> {
 const SLOT_WINDOW_DAYS = 70;
 const MAX_TIMES_PER_DAY = 12;
 
-async function fetchSlotsLabels(eventTypeId = "4279898"): Promise<string[]> {
+async function fetchSlotsLabels(eventTypeId = "8072389"): Promise<string[]> {
   const CALCOM_KEY = Deno.env.get("CALCOM_API_KEY");
   if (!CALCOM_KEY) return [];
   const start = new Date();

@@ -246,7 +246,7 @@ const functionDeclarations = [
         voice_student_email: { type: "STRING", description: "Voice student email. Provide this OR client_id." },
         client_name: { type: "STRING", description: "The client or voice student's display name." },
         start_iso: { type: "STRING", description: "Exact ISO datetime of the slot, taken verbatim from a prior get_available_slots result." },
-        event_type_id: { type: "NUMBER", description: "Cal.com event type id. For a voice student, omit it to auto-default to THEIR session length (preferred_event_type_id from search_voice_client) — never let a voice student fall back to the 60-minute default without checking. For kinesiology, omit it to book the client's own service (Timetable setting, else their last session's rate); pass 5302336 (client rate $100), 4279898 (new client $70) or 5927215 (community, free) only when Daniele names one." },
+        event_type_id: { type: "NUMBER", description: "Cal.com event type id. For a voice student, omit it to auto-default to THEIR session length (preferred_event_type_id from search_voice_client) — never let a voice student fall back to the 60-minute default without checking. For kinesiology, omit it to book the client's own service (Timetable setting, else their last session's rate); pass 8072389 (new client $95), 4279898 (existing client $70), 5302336 (full price $100) or 5927215 (community, free) only when Daniele names one." },
         notes: { type: "STRING", description: "Optional short note about why this slot / session." },
         discipline: { type: "STRING", description: "Lesson students only: \"voice\" or \"piano\". Pass lesson_discipline from search_voice_client, or what Daniele asked for if he named one (\"book her a piano lesson\"). If omitted, it is worked out from their lesson history. Never guess piano from the words \"Voice Studio\"." },
       },
@@ -997,11 +997,12 @@ async function runUpdateClientAvailability(supabase: any, userId: string, client
 // DRAFT_SERVICES and calcom-webhook's pricing). All are 60-minute sessions;
 // what differs is the rate, so booking the wrong one charges the wrong price.
 const FNH_SERVICES: Record<string, { label: string; price: number }> = {
-  "5302336": { label: "FNH session · client rate ($100)", price: 100 },
-  "4279898": { label: "FNH session · new client ($70)", price: 70 },
+  "8072389": { label: "FNH session · new client ($95)", price: 95 },
+  "4279898": { label: "FNH session · existing client ($70)", price: 70 },
+  "5302336": { label: "FNH session · full price ($100)", price: 100 },
   "5927215": { label: "FNH community session (free)", price: 0 },
 };
-const FNH_DEFAULT_EVENT_TYPE = "4279898";
+const FNH_DEFAULT_EVENT_TYPE = "8072389";
 
 // Which kinesiology service to book for this client. A proposal used to leave
 // it blank, so confirm always fell back to the $70 new-client type — even for
@@ -1291,7 +1292,7 @@ async function fetchCalcomSlots(calcomKey: string, start: string, endISO: string
   const url = new URL("https://api.cal.com/v2/slots");
   url.searchParams.set("start", start);
   url.searchParams.set("end", endISO);
-  url.searchParams.set("eventTypeId", String(eventTypeId || "4279898"));
+  url.searchParams.set("eventTypeId", String(eventTypeId || "8072389"));
   url.searchParams.set("timeZone", "Australia/Melbourne");
 
   const res = await fetch(url.toString(), { method: "GET", headers });

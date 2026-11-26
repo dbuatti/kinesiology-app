@@ -269,7 +269,8 @@ serve(async (req) => {
     }
 
     let priceAmount = 0;
-    if (String(eventTypeId) === "4279898") priceAmount = 70;
+    if (String(eventTypeId) === "8072389") priceAmount = 95;
+    else if (String(eventTypeId) === "4279898") priceAmount = 70;
     else if (String(eventTypeId) === "5927215") priceAmount = 0;
     else if (String(eventTypeId) === "5302336") priceAmount = 100;
     else if (eventTypeId) priceAmount = (await resolveEventType(supabase, payload)).price; // a new FNH event type

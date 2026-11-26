@@ -82,6 +82,7 @@ const RATE_OPTIONS = [
   { label: "$70", value: 70 },
   { label: "$80", value: 80 },
   { label: "$90", value: 90 },
+  { label: "$95", value: 95 },
   { label: "$100", value: 100 },
   { label: "$120", value: 120 },
   { label: "$150", value: 150 },
@@ -680,7 +681,7 @@ export function ClientAuditTool({
       if (filterRate === "free") {
         matchesRate = client.standard_rate === 0;
       } else if (filterRate === "custom") {
-        const standardValues = [0, 30, 50, 70, 80, 90, 100, 120, 150];
+        const standardValues = [0, 30, 50, 70, 80, 90, 95, 100, 120, 150];
         matchesRate = client.standard_rate !== null && client.standard_rate !== undefined && !standardValues.includes(client.standard_rate);
       } else {
         matchesRate = client.standard_rate === parseInt(filterRate);

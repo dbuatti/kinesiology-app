@@ -35,7 +35,7 @@ export interface PlanningSettings {
 export const DEFAULT_PLANNING: PlanningSettings = {
   livingCosts: 3370,
   addTax: true,
-  rates: { fnh: 70, lesson30: 50, lesson45: 75, lesson60: 95 },
+  rates: { fnh: 95, lesson30: 50, lesson45: 75, lesson60: 95 },
 };
 
 const LOCAL_KEY = "rk_planning_settings";

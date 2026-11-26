@@ -155,7 +155,7 @@ serve(async (req) => {
       headers,
       body: JSON.stringify({
         start: cleanStartTime,
-        eventTypeId: parseInt(eventTypeId, 10) || 4279898,
+        eventTypeId: parseInt(eventTypeId, 10) || 8072389,
         attendee: { 
           name: client.name, 
           email: client.email, 

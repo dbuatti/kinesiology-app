@@ -10,7 +10,7 @@ import NoIndex from "@/components/shared/NoIndex";
 import { trackEvent, trackConversion } from "@/lib/analytics";import { Loader2, CalendarPlus, LogOut, Send, X, Mail, ExternalLink, Activity } from "lucide-react";
 
 type Service = "fnh" | "voice";
-const SERVICE_EVENT_TYPE_ID: Record<Service, number> = { fnh: 4279898, voice: 1945081 };
+const SERVICE_EVENT_TYPE_ID: Record<Service, number> = { fnh: 8072389, voice: 1945081 };
 const SERVICE_LABEL: Record<Service, string> = { fnh: "FNH session", voice: "voice/piano lesson" };
 
 interface MyAppointment {

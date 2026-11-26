@@ -14,7 +14,7 @@ export interface UpcomingBooking {
   appointmentId: string | null;
 }
 
-const FNH_EVENT_TYPES = new Set(["5302336", "4279898", "5927215"]);
+const FNH_EVENT_TYPES = new Set(["8072389", "5302336", "4279898", "5927215"]);
 
 function kindFrom(title: string, eventTypeId: string | null): UpcomingBooking["kind"] {
   if (eventTypeId && FNH_EVENT_TYPES.has(eventTypeId)) return "kinesiology";

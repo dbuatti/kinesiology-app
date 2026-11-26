@@ -98,7 +98,7 @@ const WORKFLOWS: Workflow[] = [
     triggerDetail: "Available on: Month view (UnifiedCalendarPage), Week view (WeeklyTimeGrid), Overview view (WeekByWeekOverview). The slot click opens a service chooser → client chooser flow.",
     steps: [
       { type: "ui", label: "Slot click", desc: "Practitioner clicks empty time slot on week/overview/month view", badge: "UI", badgeColor: "indigo", fileRef: "src/pages/UnifiedCalendarPage.tsx, src/components/crm/WeeklyTimeGrid.tsx" },
-      { type: "ui", label: "Service chooser", desc: "Select: Current rate (uses client.standard_rate) / New client $70 / FNH Community Free ($0)", badge: "UI", badgeColor: "indigo", fileRef: "src/pages/UnifiedCalendarPage.tsx SLOT_SERVICES, src/components/crm/CalcomSlotsView.tsx" },
+      { type: "ui", label: "Service chooser", desc: "Select: Current rate (uses client.standard_rate) / New client $95 / FNH Community Free ($0)", badge: "UI", badgeColor: "indigo", fileRef: "src/pages/UnifiedCalendarPage.tsx SLOT_SERVICES, src/components/crm/CalcomSlotsView.tsx" },
       { type: "ui", label: "Client chooser", desc: "Searchable client list from the clients table. Filters by name/email.", badge: "UI", badgeColor: "indigo" },
       { type: "edge-function", label: "create-calcom-booking", desc: "POST /v2/bookings to Cal.com. Sets attendee email/name, event type ID, metadata.", badge: "EdgeFn", badgeColor: "amber", fileRef: "supabase/functions/create-calcom-booking/index.ts" },
       { type: "decision", label: "Paid session?", desc: "If calculated rate > 0: proceed to payment email. If rate === 0 (Free): skip email entirely.", badge: "Decision", badgeColor: "slate" },
@@ -108,7 +108,7 @@ const WORKFLOWS: Workflow[] = [
     emailSubject: "Your FNH Session is Confirmed",
     emailPreview: "Hi [name], your Functional Neuro Health session has been booked. [appointment time] [Stripe Pay button] [Intake form CTA if <50% filled]",
     errorStates: ["Cal.com API down — booking creation fails", "Stripe API down — payment link not generated but email still sent", "Gmail API auth failure — email not sent, but booking still created"],
-    notes: "This is the primary booking path. The rate is determined by: (1) SLOT_SERVICES price if set, (2) client.standard_rate, (3) falls back to $70. The 'Current rate' option in SLOT_SERVICES has price: undefined so it uses client.standard_rate.",
+    notes: "This is the primary booking path. The rate is determined by: (1) SLOT_SERVICES price if set, (2) client.standard_rate, (3) falls back to $70 for existing clients. New clients are created at $95 (event 8072389). The 'Current rate' option in SLOT_SERVICES has price: undefined so it uses client.standard_rate.",
   },
   {
     id: "fnh-quickbook",
@@ -130,15 +130,15 @@ const WORKFLOWS: Workflow[] = [
     title: "FNH — AppointmentForm",
     category: "fnh",
     trigger: "Practitioner uses the 'Book Client' modal (standalone or from slot chooser)",
-    triggerDetail: "AppointmentForm is the full-featured booking modal. Accessed from: slot chooser 'Book client' button, or standalone via the schedule page. Default type: Kinesiology. Price buttons: Free ($0), Standard ($70), Custom input.",
+    triggerDetail: "AppointmentForm is the full-featured booking modal. Accessed from: slot chooser 'Book client' button, or standalone via the schedule page. Default type: Kinesiology. Price buttons: Free ($0), Standard ($70), $95 (new clients), Custom input.",
     steps: [
-      { type: "ui", label: "AppointmentForm", desc: "Modal with client selector, date, time, type (default Kinesiology), price (Free / $70 / Custom), 'Send onboarding' checkbox.", badge: "UI", badgeColor: "indigo", fileRef: "src/components/crm/AppointmentForm.tsx" },
-      { type: "edge-function", label: "create-calcom-booking", desc: "Creates Cal.com booking with event type 4279898 (Kinesiology) or selected type.", badge: "EdgeFn", badgeColor: "amber" },
+      { type: "ui", label: "AppointmentForm", desc: "Modal with client selector, date, time, type (default Kinesiology), price (Free / $70 / $95 / Custom), 'Send onboarding' checkbox.", badge: "UI", badgeColor: "indigo", fileRef: "src/components/crm/AppointmentForm.tsx" },
+      { type: "edge-function", label: "create-calcom-booking", desc: "Creates Cal.com booking with event type 8072389 (new client $95), 4279898 (existing client $70) or selected type.", badge: "EdgeFn", badgeColor: "amber" },
       { type: "decision", label: "Send onboarding checkbox?", desc: "Checked → sends email. Unchecked → appointment created silently.", badge: "Decision", badgeColor: "slate" },
       { type: "edge-function", label: "send-manual-onboarding", desc: "Conditional on checkbox state.", badge: "EdgeFn", badgeColor: "amber" },
     ],
     emailSubject: "Your FNH Session is Confirmed",
-    notes: "Price fallback changed from $50 to $70. Free option always available. The 'Send onboarding' checkbox is independent of price — free sessions can also send the confirmation email (without payment link).",
+    notes: "Existing clients use $70 (event 4279898); new clients use $95 (event 8072389). Free option always available. The 'Send onboarding' checkbox is independent of price — free sessions can also send the confirmation email (without payment link).",
   },
   {
     id: "fnh-send-payment-link",
@@ -229,13 +229,13 @@ const WORKFLOWS: Workflow[] = [
     title: "FNH — Cal.com Booking Lifecycle",
     category: "fnh",
     trigger: "Cal.com sends booking lifecycle event (created/cancelled/rescheduled)",
-    triggerDetail: "Cal.com POSTs to {supabase_url}/functions/v1/calcom-webhook. Only processes event type IDs [4279898, 5302336, 5927215].",
+    triggerDetail: "Cal.com POSTs to {supabase_url}/functions/v1/calcom-webhook. Only processes event type IDs [8072389, 4279898, 5302336, 5927215].",
     steps: [
       { type: "webhook", label: "Cal.com webhook fires", desc: "Events: BOOKING_CREATED, BOOKING_CANCELLED, BOOKING_RESCHEDULED. Only handles FNH event types.", badge: "Webhook", badgeColor: "rose", fileRef: "supabase/functions/calcom-webhook/index.ts" },
       { type: "edge-function", label: "calcom-webhook processes event", desc: "BOOKING_CANCELLED → deletes appointment by calcom_booking_id (or time-window email fallback). BOOKING_CREATED → creates/upserts appointment + client. BOOKING_RESCHEDULED → updates status.", badge: "EdgeFn", badgeColor: "amber" },
       { type: "db-write", label: "Upsert/DELETE appointments", desc: "Maintains parity between Cal.com and local Supabase appointments table.", badge: "DB", badgeColor: "slate" },
     ],
-    notes: "Allowed event types: 4279898 (Kinesiology $70), 5302336 (Full Price Session $100), 5927215 (Free $0). Pricing is determined by event type ID with Cal.com payment amount override if present.",
+    notes: "Allowed event types: 8072389 (new client $95), 4279898 (existing client $70), 5302336 (Full Price Session $100), 5927215 (Free $0). Pricing is determined by event type ID with Cal.com payment amount override if present.",
   },
   {
     id: "fnh-sync-calcom",
@@ -409,7 +409,7 @@ const EDGE_FUNCTIONS: EdgeFunction[] = [
     dbTables: ["profiles", "clients", "appointments"],
     authGuard: "verify_jwt = false (webhook — Cal.com signature not verified in code, relies on URL secrecy)",
     errorHandling: "Event type not in ALLOWED_EVENT_IDS → silently skip. Cancellation with no matching calcom_booking_id → time-window fallback (10 min window by email).",
-    notes: "ALLOWED_EVENT_IDS = [4279898, 5302336, 5927215]. Pricing hardcoded by event type ID with Cal.com payment amount override. Time-window matching: ±60 seconds of startTime for creation events.",
+    notes: "ALLOWED_EVENT_IDS = [8072389, 4279898, 5302336, 5927215]. Pricing hardcoded by event type ID with Cal.com payment amount override. Time-window matching: ±60 seconds of startTime for creation events.",
   },
   {
     name: "calcom-voice-webhook",
@@ -754,7 +754,8 @@ const NOTION_DB_IDS = [
 ];
 
 const EVENT_TYPE_IDS = [
-  { id: 4279898, name: "Kinesiology Session", price: "$70", system: "FNH" },
+  { id: 8072389, name: "New Client Session", price: "$95", system: "FNH" },
+  { id: 4279898, name: "Existing Client Session", price: "$70", system: "FNH" },
   { id: 5302336, name: "Full Price Session", price: "$100", system: "FNH" },
   { id: 5927215, name: "Free Session", price: "$0", system: "FNH" },
   { id: 1945081, name: "Voice Lesson (Default)", price: "Varies", system: "Voice" },

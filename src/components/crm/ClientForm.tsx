@@ -151,7 +151,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
       } else {
         const { data: newClient, error } = await supabase
           .from("clients")
-          .insert(payload)
+          .insert({ ...payload, standard_rate: 95, target_rate: 95 })
           .select('id')
           .single();
         if (error) throw error;

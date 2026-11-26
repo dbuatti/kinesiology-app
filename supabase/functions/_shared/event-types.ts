@@ -13,7 +13,8 @@
 // adding e.g. a 90-min coaching type on Cal.com works without a code change.
 
 export const FNH_EVENT_TYPES: Record<number, { label: string; price: number; durationMin: number }> = {
-  4279898: { label: "FNH Neuro-Health Assessment", price: 70, durationMin: 60 },
+  8072389: { label: "FNH Neuro-Health Assessment (new client $95)", price: 95, durationMin: 60 },
+  4279898: { label: "FNH Neuro-Health Assessment (existing client $70)", price: 70, durationMin: 60 },
   5302336: { label: "FNH Neuro-Health Session", price: 100, durationMin: 60 },
   5927215: { label: "FNH Community Session", price: 0, durationMin: 60 },
 };

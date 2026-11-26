@@ -5,11 +5,11 @@
 
 export const CALCOM_CONFIG = {
   // The default event type for Kinesiology sessions
-  DEFAULT_EVENT_TYPE_ID: "4279898",
+  DEFAULT_EVENT_TYPE_ID: "8072389",
   // Your primary availability schedule
   DEFAULT_SCHEDULE_ID: "1387833",
   // The public booking URL
-  BOOKING_URL: "https://cal.com/danielebuatti/fnh-neuro",
+  BOOKING_URL: "https://cal.com/danielebuatti/fnh-neuro-new-client-95",
   COMMUNITY_FREE_URL: "https://cal.com/danielebuatti/fnh-neuro-health-assessment-community-free",
   
   // Voice Studio coaching URLs
@@ -24,15 +24,22 @@ export const CALCOM_CONFIG = {
   VOICE_EVENT_TYPE_IDS: [1945081, 5925021, 6488157] as const,
   
   // Only these IDs will be processed by the CRM webhooks and sync functions
-  CLINICAL_EVENT_IDS: [4279898, 5302336, 5927215],
+  CLINICAL_EVENT_IDS: [8072389, 4279898, 5302336, 5927215],
 
   EVENT_TYPES: [
     {
-      id: "4279898",
+      id: "8072389",
       name: "Standard Session",
-      price: 70,
+      price: 95,
       currency: "AUD",
       description: "75-minute neurological kinesiology session"
+    },
+    {
+      id: "4279898",
+      name: "Existing Client Session",
+      price: 70,
+      currency: "AUD",
+      description: "Neurological kinesiology session for existing clients at their current rate"
     },
     {
       id: "5302336",
@@ -65,8 +72,9 @@ export interface DraftService {
 }
 
 export const DRAFT_SERVICES: DraftService[] = [
-  { id: "5302336", kind: "fnh", label: "FNH · client rate", durationMin: 60, price: 100 },
-  { id: "4279898", kind: "fnh", label: "FNH · new client $70", durationMin: 60, price: 70 },
+  { id: "8072389", kind: "fnh", label: "FNH · new client $95", durationMin: 60, price: 95 },
+  { id: "4279898", kind: "fnh", label: "FNH · existing client $70", durationMin: 60, price: 70 },
+  { id: "5302336", kind: "fnh", label: "FNH · full price $100", durationMin: 60, price: 100 },
   { id: "5927215", kind: "fnh", label: "FNH · community (free)", durationMin: 60, price: 0 },
   { id: "1945081", kind: "voice", label: "Voice · 60 min", durationMin: 60, price: 95 },
   { id: "5925021", kind: "voice", label: "Voice · 45 min", durationMin: 45, price: 75 },
@@ -88,7 +96,7 @@ export function defaultServiceId(kind: "fnh" | "voice", sessionLengthMin?: numbe
     if (sessionLengthMin === 45) return "5925021";
     return "1945081"; // default voice = 60
   }
-  return "5302336"; // default fnh = existing client rate
+  return "8072389"; // default fnh = new client rate
 }
 
 export function serviceLabel(id: string | null | undefined): string | null {

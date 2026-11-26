@@ -65,7 +65,7 @@ const SLOT_SERVICES = [
   { key: "voice45", group: "Voice", label: "Voice & Piano — 45 min", kind: "voice", duration: "45" },
   { key: "voice30", group: "Voice", label: "Voice & Piano — 30 min", kind: "voice", duration: "30" },
   { key: "fnhCurrent", group: "FNH", label: "Current rate", kind: "fnh", eventTypeId: undefined as string | undefined },
-  { key: "fnhNew", group: "FNH", label: "New client · $70", kind: "fnh", eventTypeId: "4279898" },
+  { key: "fnhNew", group: "FNH", label: "New client · $95", kind: "fnh", eventTypeId: "8072389" },
   { key: "fnhFree", group: "FNH", label: "FNH Community · Free", kind: "fnh", eventTypeId: "5927215" },
 ] as const;
 

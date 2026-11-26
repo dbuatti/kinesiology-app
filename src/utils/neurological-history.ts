@@ -5,6 +5,7 @@ import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from "@/data/muscle-data";
 import { safeParse } from "./safe-json";
+import { correctionDisplayLines } from "@/lib/corrections";
 
 export interface FindingHistory {
   name: string;
@@ -110,17 +111,18 @@ const isNameLateralized = (name: string): boolean => {
 };
 
 /**
- * Extracts the specific correction line for a given finding name from the appointment's modes_balances or notes.
+ * Extracts the specific correction line for a given finding name from normalized
+ * correction records, with the legacy free-text list as fallback.
  */
-const findSpecificCorrection = (findingName: string, modesBalances: string | null, notes: string | null): string | null => {
+const findSpecificCorrection = (findingName: string, correctionText: string, notes: string | null): string | null => {
   const cleanFinding = findingName.toLowerCase().trim();
   
   // Also try matching without the Roman numeral prefix if it's a CN, e.g., "olfactory (l)"
   const parts = cleanFinding.split(':');
   const altFinding = parts.length > 1 ? parts[1].trim() : null;
 
-  if (modesBalances) {
-    const lines = modesBalances.split('\n').map(l => l.trim()).filter(Boolean);
+  if (correctionText) {
+    const lines = correctionText.split('\n').map(l => l.trim()).filter(Boolean);
     const match = lines.find(line => {
       const cleanLine = line.toLowerCase();
       return cleanLine.includes(cleanFinding) || (altFinding && cleanLine.includes(altFinding));
@@ -207,7 +209,7 @@ export function processNeurologicalHistory(appointments: any[]): FindingHistory[
           date: dateStr,
           appointmentId: app.id,
           status: item.status,
-          correction: findSpecificCorrection(displayName, app.modes_balances, app.notes)
+          correction: findSpecificCorrection(displayName, correctionDisplayLines(app).join("\n"), app.notes)
         });
       });
     });

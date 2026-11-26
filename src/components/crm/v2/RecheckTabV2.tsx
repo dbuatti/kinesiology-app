@@ -12,6 +12,7 @@ import { BRAIN_REFLEX_POINTS, type BrainReflexPoint } from "@/data/brain-reflex-
 import { AppointmentWithClient } from "@/types/crm";
 import { CATEGORY_LABELS, categoryTone } from "@/components/crm/v2/categoryConstants";
 import { getInhibitedFindings } from "@/components/crm/v2/v2-utils";
+import { correctionDisplayText } from "@/lib/corrections";
 import { Search, HelpCircle, Route, CheckCircle2 } from "lucide-react";
 
 interface RecheckItemData {
@@ -60,7 +61,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
     return history.find((h) => new Date(h.date).getTime() < currentTs) || null;
   }, [history, appointment]);
 
-  const prevModesBalances = previousSession?.modes_balances || "";
+  const prevCorrectionText = previousSession ? correctionDisplayText(previousSession) : "";
 
   const rawItems = useMemo(() => {
     if (!previousSession) return [];
@@ -72,7 +73,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
       const muscleInfo = muscleKey ? MUSCLE_INFO_DETAILS[muscleKey] : undefined;
       const brainPoint = BRAIN_REFLEX_POINTS.find(p => p.name === f.baseName || p.id === f.baseName);
       const isLateralized = reflex?.isLateralized ?? true;
-      const wasPriority = prevModesBalances.toLowerCase().includes(f.baseName.toLowerCase());
+      const wasPriority = prevCorrectionText.toLowerCase().includes(f.baseName.toLowerCase());
 
       return {
         name: f.baseName,
@@ -91,7 +92,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
       if (a.wasPriority !== b.wasPriority) return a.wasPriority ? -1 : 1;
       return a.name.localeCompare(b.name);
     });
-  }, [previousSession, prevModesBalances]);
+  }, [previousSession, prevCorrectionText]);
 
   const items = useMemo(() => {
     if (!search && !onlyInhibited) return rawItems;

@@ -190,9 +190,10 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
     return info.testingPosition || undefined;
   };
   const correctionsHistory = metadata?.corrections || [];
+  const correctionText = correctionDisplayText(appointment);
 
   const hasAnyAlign = inhibitedCount > 0 || clearedCount > 0 || !!priorityPathway || !!appointment.emotion_primary_selection;
-  const hasAnyCorrect = !!appointment.modes_balances || !!appointment.acupoints || correctionsHistory.length > 0;
+  const hasAnyCorrect = !!correctionText || !!appointment.acupoints || correctionsHistory.length > 0;
   const hasAnyEmbed = !!appointment.session_north_star || !!appointment.next_session_note || (metadata?.cleared_findings?.length > 0);
 
   const sb = useCallback((field: string, value: any) => saveField?.(field, value), [saveField]);
@@ -596,7 +597,7 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground">Corrections</p>
-                <p className="text-[13px] font-bold text-foreground mt-0.5">{correctionsHistory.length || (appointment.modes_balances ? 1 : 0)} applied</p>
+                <p className="text-[13px] font-bold text-foreground mt-0.5">{correctionsHistory.length || (correctionText ? 1 : 0)} applied</p>
               </div>
               <div>
                 <p className="text-xs font-medium text-muted-foreground">Status</p>

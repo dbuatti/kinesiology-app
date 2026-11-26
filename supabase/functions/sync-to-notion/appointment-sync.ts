@@ -8,6 +8,7 @@ import {
   extractNotionPropertyValue
 } from "./notion-api.ts";
 import { syncClientToNotion } from "./client-sync.ts";
+import { correctionDisplayText } from "./correction-display.ts";
 
 const MAIN_DB_ID = "171f7156cdc645e8b689af13d217bc7c";
 const PLANNER_DB_ID = "11caad21cd0980d8a3eeeffb27fc43c0";
@@ -197,7 +198,7 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
   const clinicalMappings: Array<[string[], string | number | null, 'rich_text' | 'number']> = isVoiceLesson ? [] : [
     [['BOLT Score (s)', 'BOLT Score', 'BOLT'], appointment.bolt_score, 'number'],
     [['Key Findings', 'Findings'], appointment.issue, 'rich_text'],
-    [['Corrections Made', 'Corrections'], appointment.modes_balances, 'rich_text'],
+    [['Corrections Made', 'Corrections'], correctionDisplayText(appointment), 'rich_text'],
     [['Next Priority', 'Next Focus'], appointment.next_session_note, 'rich_text'],
     [['Homework Given', 'Homework'], appointment.homework_given, 'rich_text'],
     [['What Held From Last Session', 'What Held', 'Carry Over'], appointment.what_held_from_last_session, 'rich_text'],
@@ -497,8 +498,8 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
         type: "bulleted_list_item",
         bulleted_list_item: {
           rich_text: [
-            { text: { content: "Modes & Balances: " }, annotations: { bold: true } },
-            { text: { content: appointment.modes_balances || "None recorded yet" } }
+            { text: { content: "Corrections: " }, annotations: { bold: true } },
+            { text: { content: correctionDisplayText(appointment) || "None recorded yet" } }
           ]
         }
       },

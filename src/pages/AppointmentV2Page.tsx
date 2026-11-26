@@ -52,7 +52,7 @@ import { CTMModal } from "@/components/ctm/CTMModal";
 import { safeParse } from "@/utils/safe-json";
 import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
 import type { ProtocolLog, ProtocolLogPatch } from "@/data/protocol-log";
-import { applyProtocolLogPatch, enrichInhibitionLinks } from "@/lib/corrections";
+import { applyProtocolLogPatch, correctionDisplayLines, enrichInhibitionLinks } from "@/lib/corrections";
 import ClientIntakeSummary from "@/components/crm/ClientIntakeSummary";
 import ClientIntakeEditModal from "@/components/crm/ClientIntakeEditModal";
 import ClientSideSheet, { SessionClientRail } from "@/components/crm/ClientSideSheet";
@@ -261,7 +261,7 @@ const AppointmentV2Page = () => {
       e1: !!(appointment.lymphatic_notes || appointment.harmonic_rocking_notes ||
              appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes),
       a: !!(appointment.priority_pattern && appointment.priority_pattern !== "{}"),
-      c: !!(appointment.modes_balances),
+      c: correctionDisplayLines(appointment).length > 0,
       e2: !!(appointment.session_north_star),
     };
   }, [appointment]);

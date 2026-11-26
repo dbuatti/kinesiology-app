@@ -9,6 +9,7 @@ import PathwayLogicWizard from "@/components/crm/PathwayLogicWizard";
 import { PhaseHeader, PhasePanel, SectionHeading, PathwayBanner } from "@/components/crm/v2/PhaseComponents";
 import { getInhibitedFindings, findingLabel } from "@/components/crm/v2/v2-utils";
 import { safeParse } from "@/utils/safe-json";
+import { correctionDisplayText } from "@/lib/corrections";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";
 
 const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
@@ -256,10 +257,11 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
                   const pathwayCorrections = ((meta as any)?.corrections || []).filter(
                     (c: any) => c.pathway === priorityPathway
                   );
-                  if (pathwayCorrections.length === 0 && appointment.modes_balances) {
+                  const correctionText = correctionDisplayText(appointment);
+                  if (pathwayCorrections.length === 0 && correctionText) {
                     pathwayCorrections.push({
                       pathway: priorityPathway,
-                      summary: appointment.modes_balances,
+                      summary: correctionText,
                     });
                   }
                   return pathwayCorrections.length > 0 ? (

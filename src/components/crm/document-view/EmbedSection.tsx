@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { showSuccess, showError } from '@/utils/toast';
+import { correctionDisplayText } from '@/lib/corrections';
 import { Button } from '@/components/ui/button';
 import DocInput from './DocInput';
 
@@ -435,7 +436,7 @@ const EmbedSection = ({
           <div className="space-y-2">
             <label className="text-xs font-medium text-muted-foreground">Balances Applied</label>
             <div className="p-4 bg-muted/50 border border-border min-h-[90px] text-xs font-mono leading-relaxed text-foreground/80 whitespace-pre-wrap">
-              {appointment.modes_balances || <span className="italic text-muted-foreground/50">No corrections logged.</span>}
+              {correctionDisplayText(appointment) || <span className="italic text-muted-foreground/50">No corrections logged.</span>}
             </div>
           </div>
           <div className="space-y-2">

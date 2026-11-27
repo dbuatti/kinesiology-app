@@ -32,6 +32,27 @@ serve(async (req) => {
       throw new Error("Missing required fields: studentId, date, time");
     }
 
+    // Idempotency: the Cal.com webhook and the booking app could both call this
+    // function for the same UID, creating duplicate Notion lesson pages. If the
+    // booking row already carries a lesson page, return it instead of creating
+    // another one.
+    if (calcomBookingUid && !String(calcomBookingUid).startsWith("force-")) {
+      const sb = createClient(Deno.env.get("SUPABASE_URL"), Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"));
+      const { data: existing } = await sb
+        .from("voice_bookings")
+        .select("notion_lesson_id_1, notion_lesson_id_2")
+        .eq("calcom_booking_id", calcomBookingUid)
+        .maybeSingle();
+      if (existing?.notion_lesson_id_1) {
+        return new Response(JSON.stringify({
+          success: true,
+          db1: { id: existing.notion_lesson_id_1 },
+          db2: existing.notion_lesson_id_2 ? { id: existing.notion_lesson_id_2 } : null,
+          message: "Lesson already scheduled; no duplicate created.",
+        }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
     const notionHeaders = {
       Authorization: `Bearer ${NOTION_KEY}`,
       "Content-Type": "application/json",

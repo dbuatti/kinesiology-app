@@ -358,7 +358,11 @@ serve(async (req) => {
       );
     }
 
-    // Look 7 days ahead for both FNH appointments and voice lessons.
+    // Look from today through seven days ahead for both FNH appointments and
+    // voice lessons. With the daily cron this lands each session exactly once:
+    // a session seven days away is picked up on the day it enters the window,
+    // and reminder_sent stops any second send. A late booking is picked up once
+    // on the next run. No client receives a daily reminder.
     const today = new Date().toISOString().split("T")[0];
     const nextWeek = new Date();
     nextWeek.setDate(nextWeek.getDate() + 7);

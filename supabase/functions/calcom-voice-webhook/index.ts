@@ -537,6 +537,22 @@ serve(async (req) => {
       }
     }
 
+    // App-owned bookings (Simple Book / assistant) always call
+    // voice-schedule-lesson themselves after Cal.com confirms. If the webhook
+    // also scheduled here, both paths raced and created duplicate Notion pages.
+    // Still write a minimal CRM row so a failed app call is recoverable, then
+    // leave the Notion lesson creation to the app.
+    const appOwned = confirmation === "app" || metadata.source === "Voice Studio CRM";
+    if (appOwned) {
+      console.log(`[${functionName}] App-owned booking ${calcomBookingUid}: logging CRM row only; app owns Notion scheduling.`);
+      await logBookingWithoutNotion();
+      await sendConfirmation();
+      return new Response(
+        JSON.stringify({ success: true, message: "App-owned booking; Notion scheduling handled by the app." }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     console.log(`[${functionName}] Resolved student ${studentId}. Invoking voice-schedule-lesson...`);
 
     // Invoke the voice-schedule-lesson edge function internally

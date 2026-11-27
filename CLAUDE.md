@@ -175,6 +175,8 @@ The day across kinesiology, voice and piano: stats (today, booked this week, ear
 
 Calendar deep links (read once, then internal state): `/calendar?show=unpaid` (Past, Unpaid filter), `/calendar?show=lessons` (voice & piano only).
 
+**Rate policy (from 27 Nov 2026):** the public FNH price is **$95** (`src/pages/public/LandingPage.tsx`, `src/content/kinesiology-guide.ts`, Cal.com `fnh-neuro-new-client-95`). Existing clients stay on **$70** (event type `4279898`) until **March 2027**, when Daniele plans to review moving them to $95. Do not send rate-increase emails without explicit approval.
+
 ### Notion Appointments DB (`supabase/functions/sync-to-notion/appointment-sync.ts`)
 
 Every appointment change fires `sync_appointment_to_notion()` → the `sync-to-notion` function (`sync-missing-appointments` on a 15-minute cron catches anything the trigger missed; `notion-appointments` / `notion-schema` are read-only health checks).

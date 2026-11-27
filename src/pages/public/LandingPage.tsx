@@ -107,7 +107,7 @@ export default function LandingPage() {
               {[
                 { icon: Clock, k: "Session", v: "60 minutes" },
                 { icon: MapPin, k: "Studio", v: "Toorak" },
-                { icon: Wind, k: "Per session", v: "$70" },
+                { icon: Wind, k: "Per session", v: "$95" },
               ].map((f) => (
                 <div key={f.k} className="px-4 py-3">
                   <dt className="flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
@@ -336,7 +336,7 @@ export default function LandingPage() {
               <h2 className="mx-auto mt-6 max-w-2xl font-serif text-[36px] font-light leading-[1.1] tracking-[-0.02em] sm:text-[48px]">
                 Some things don't respond to trying harder.
               </h2>
-              <p className="mt-4 text-[15px] text-muted-foreground">60 minutes · Toorak studio · $70</p>
+              <p className="mt-4 text-[15px] text-muted-foreground">60 minutes · Toorak studio · $95</p>
               <div className="mt-8 flex justify-center">
                 <BookButton />
               </div>

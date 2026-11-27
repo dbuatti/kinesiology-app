@@ -389,6 +389,27 @@ serve(async (req) => {
       ? `Welcome to ${studioName}! ${emoji} — Your ${hasMultiple ? `${sessions.length} Lesson Bookings` : "Lesson Booking"}`
       : `Welcome to Voice Studio! 🎵 — Your ${hasMultiple ? `${sessions.length} Lesson Bookings` : "Lesson Booking"}`;
 
+    // Safe preview: validates the batch and shows exactly what would be sent,
+    // without touching Notion, Stripe, the database or Gmail.
+    if (body?.dryRun === true) {
+      return new Response(JSON.stringify({
+        success: true,
+        dryRun: true,
+        preview: {
+          recipient: studentEmail,
+          subject: subjectLine,
+          sessionCount: sessions.length,
+          sessions: sessions.map((session) => ({
+            date: session.date,
+            time: session.time,
+            cost: session.cost,
+            calendarLink: !!googleCalendarUrl(session),
+            manageLink: !!calcomManageUrl(session.calcomBookingUid),
+          })),
+        },
+      }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
 
     // 1. Create one Notion record if not already there (deduplicate by email).

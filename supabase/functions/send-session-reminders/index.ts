@@ -1,6 +1,8 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import Stripe from "https://esm.sh/stripe@14.25.0";
+import { createPaymentLink } from "../_shared/stripe-payment.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,6 +17,8 @@ const GMAIL_CLIENT_ID = Deno.env.get("GMAIL_CLIENT_ID") || "";
 const GMAIL_CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET") || "";
 const GMAIL_REFRESH_TOKEN = Deno.env.get("GMAIL_REFRESH_TOKEN") || "";
 const GMAIL_USER_EMAIL = Deno.env.get("GMAIL_USER_EMAIL") || "";
+const STRIPE_SECRET_KEY_VOICE = Deno.env.get("STRIPE_SECRET_KEY_VOICE") || "";
+const SITE_URL = Deno.env.get("SITE_URL") || "https://kinesiology-app.vercel.app";
 // pg_cron / database triggers authenticate with this Vault-backed token
 // (mirrored into the function secret). See migrations 0215/0216.
 const RK_INTERNAL_TOKEN = Deno.env.get("RK_INTERNAL_TOKEN") || "";
@@ -153,6 +157,14 @@ async function sendEmail(
   return true;
 }
 
+const escapeHtml = (value: unknown) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;",
+}[char]));
+
 function generateTestEmail(userEmail: string): { subject: string; html: string } {
   const now = new Date();
   const formattedDate = now.toLocaleDateString("en-AU", {
@@ -272,9 +284,11 @@ serve(async (req) => {
     // Parse request body for debug/test/scheduling parameters
     let body: Record<string, any> = {};
     let isDebug = false;
+    let isDryRun = false;
     try {
       body = await req.json();
       isDebug = body.debug === true;
+      isDryRun = body.dryRun === true;
     } catch {
       // If body is not JSON, treat as normal request
       isDebug = false;
@@ -362,6 +376,10 @@ serve(async (req) => {
       dateISO: string;   // sortable date (ISO or YYYY-MM-DD)
       timeStr: string;    // display time
       typeLabel: string;
+      cost: number | null;
+      paid: boolean;
+      onboardingCompleted: boolean;
+      calcomUid: string | null;
     }
 
     // Addresses that represent the practitioner, not a client — never remind these.
@@ -395,7 +413,7 @@ serve(async (req) => {
     // --- 2. Voice lessons ----------------------------------------------------
     const { data: voiceRows, error: voiceError } = await supabase
       .from("voice_bookings")
-      .select("id, student_email, student_name, lesson_date, lesson_time, status, discipline, reminder_sent")
+      .select("id, student_email, student_name, lesson_date, lesson_time, cost, status, discipline, calcom_booking_id, reminder_sent")
       .gte("lesson_date", today)
       .lte("lesson_date", nextWeekStr)
       .eq("reminder_sent", false)
@@ -404,6 +422,26 @@ serve(async (req) => {
     if (voiceError) {
       // Voice is best-effort: log and continue with FNH rather than failing the whole run.
       console.error("[send-session-reminders] Voice query error (continuing):", voiceError.message);
+    }
+
+    // A paid student who has already completed their profile needs no reminder.
+    // Fetch only the emails in this week's voice rows so the query stays small.
+    const voiceEmails = Array.from(new Set(
+      (voiceRows || []).map((v) => String(v.student_email || "").toLowerCase().trim()).filter(Boolean),
+    ));
+    const onboardingByEmail = new Map<string, boolean>();
+    if (voiceEmails.length) {
+      const { data: onboardingRows, error: onboardingError } = await supabase
+        .from("voice_onboarding")
+        .select("email, onboarding_completed")
+        .in("email", voiceEmails);
+      if (onboardingError) {
+        console.error("[send-session-reminders] Onboarding query error (continuing):", onboardingError.message);
+      } else {
+        for (const row of onboardingRows || []) {
+          onboardingByEmail.set(String(row.email || "").toLowerCase().trim(), row.onboarding_completed === true);
+        }
+      }
     }
 
     const items: ReminderItem[] = [];
@@ -426,6 +464,10 @@ serve(async (req) => {
         dateISO: appt.date,
         timeStr,
         typeLabel: appt.tag || "FNH Session",
+        cost: null,
+        paid: false,
+        onboardingCompleted: true,
+        calcomUid: null,
       });
     }
 
@@ -433,9 +475,13 @@ serve(async (req) => {
       const email = (v.student_email || "").toLowerCase().trim();
       const name = (v.student_name || "").trim();
       const status = (v.status || "").toLowerCase();
-      // Skip practitioner self-bookings, nameless placeholders, and cancellations.
+      // Skip practitioner self-bookings, nameless placeholders, and dead bookings.
       if (!email || PRACTITIONER_EMAILS.has(email) || !name) continue;
-      if (status.includes("cancel")) continue;
+      if (["cancelled", "rescheduled"].includes(status)) continue;
+      const paid = status === "paid";
+      const onboardingCompleted = onboardingByEmail.get(email) === true;
+      // No email is needed when there is nothing left to do.
+      if (paid && onboardingCompleted) continue;
       const isPiano = String(v.discipline || "").toLowerCase() === "piano";
       items.push({
         source: "voice",
@@ -446,6 +492,10 @@ serve(async (req) => {
         dateISO: v.lesson_date,
         timeStr: v.lesson_time ? melbourneVoiceTime(v.lesson_date, v.lesson_time) : "TBA",
         typeLabel: isPiano ? "Piano Lesson" : "Voice Lesson",
+        cost: v.cost == null ? null : Number(v.cost),
+        paid,
+        onboardingCompleted,
+        calcomUid: v.calcom_booking_id || null,
       });
     }
 
@@ -459,8 +509,6 @@ serve(async (req) => {
 
     console.log(`[send-session-reminders] ${items.length} sessions (${(appointments || []).length} FNH, ${(voiceRows || []).length} voice) to remind`);
 
-    const accessToken = await getGoogleAccessToken();
-
     // Group by client email so each client gets one digest of all their sessions.
     const byEmail = new Map<string, ReminderItem[]>();
     for (const it of items) {
@@ -468,6 +516,28 @@ serve(async (req) => {
       list.push(it);
       byEmail.set(it.email, list);
     }
+
+    if (isDryRun) {
+      const preview = Array.from(byEmail.entries()).map(([email, clientItems]) => ({
+        email,
+        name: clientItems[0].name,
+        sessions: clientItems.map((it) => ({
+          date: it.dateISO,
+          time: it.timeStr,
+          type: it.typeLabel,
+          needsPayment: it.source === "voice" && !it.paid && (it.cost || 0) > 0,
+          needsProfile: it.source === "voice" && !it.onboardingCompleted,
+        })),
+      }));
+      return new Response(JSON.stringify({ message: "Dry run — no emails sent", result: { success: 0, failed: 0, errors: [] }, preview }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const accessToken = await getGoogleAccessToken();
+    const stripe = STRIPE_SECRET_KEY_VOICE
+      ? new Stripe(STRIPE_SECRET_KEY_VOICE, { apiVersion: "2023-10-16", httpClient: Stripe.createFetchHttpClient() })
+      : null;
 
     console.log(`[send-session-reminders] Processing ${byEmail.size} unique clients`);
 
@@ -478,25 +548,74 @@ serve(async (req) => {
       const firstName = clientItems[0].firstName || "there";
 
       try {
-        // Each session as a soft, warm card: type + friendly date + time.
+        // Create reusable Stripe links only for unpaid voice sessions. A paid
+        // student with an incomplete profile still gets the profile action, but
+        // never a second payment request.
+        const paymentUrls = new Map<string, string>();
+        for (const it of clientItems) {
+          if (it.source !== "voice" || it.paid || !it.cost || it.cost <= 0 || !stripe) continue;
+          try {
+            const friendlyDate = new Date(it.dateISO).toLocaleDateString("en-AU", {
+              timeZone: "Australia/Melbourne", weekday: "long", day: "numeric", month: "long",
+            });
+            const url = await createPaymentLink(stripe, {
+              amount: it.cost,
+              name: it.typeLabel,
+              description: `${it.typeLabel} on ${friendlyDate} at ${it.timeStr}`,
+              customerEmail: email,
+              statementDescriptor: "VOICE COACHING",
+              metadata: {
+                student_name: it.name,
+                student_email: email,
+                lesson_date: it.dateISO,
+                ...(it.calcomUid ? { calcom_booking_uid: it.calcomUid } : {}),
+              },
+            });
+            paymentUrls.set(it.id, url);
+          } catch (stripeErr) {
+            console.error(`[send-session-reminders] Payment link failed for ${email} (${it.id}):`, stripeErr.message);
+          }
+        }
+
+        const onboardingUrl = `${SITE_URL}/voice-onboarding/${encodeURIComponent(email)}`;
+
+        // Each session as a soft, warm card: type + friendly date + time, with
+        // only the actions that are still outstanding for that student.
         const sessionCards = clientItems
           .map((it) => {
             const d = new Date(it.dateISO);
             const friendlyDate = isNaN(d.getTime())
               ? it.dateISO
               : d.toLocaleDateString("en-AU", { timeZone: "Australia/Melbourne", weekday: "long", day: "numeric", month: "long" });
+            const paymentUrl = paymentUrls.get(it.id);
+            const actions: string[] = [];
+            if (paymentUrl) {
+              actions.push(`<a href="${escapeHtml(paymentUrl)}" style="display: inline-block; background-color: #E11D48; color: #ffffff; padding: 10px 18px; border-radius: 999px; text-decoration: none; font-size: 13px; font-weight: 700; margin: 6px 6px 0 0;">Pay AU $${it.cost}</a>`);
+            }
+            if (it.source === "voice" && !it.onboardingCompleted) {
+              actions.push(`<a href="${escapeHtml(onboardingUrl)}" style="display: inline-block; background-color: #1E3261; color: #ffffff; padding: 10px 18px; border-radius: 999px; text-decoration: none; font-size: 13px; font-weight: 700; margin: 6px 6px 0 0;">Complete student profile</a>`);
+            }
+            if (it.calcomUid && !it.calcomUid.startsWith("force-")) {
+              actions.push(`<a href="https://app.cal.com/booking/${encodeURIComponent(it.calcomUid)}" style="display: inline-block; color: #1E3261; padding: 10px 12px; text-decoration: underline; font-size: 13px; margin: 6px 0 0;">Manage booking</a>`);
+            }
             return `
               <div style="background-color: #F8FAFC; border-radius: 20px; padding: 22px 24px; margin: 14px 0; border: 1px solid #EEF2F7;">
-                <div style="font-size: 10px; font-weight: 800; color: #D46A9B; text-transform: uppercase; letter-spacing: 0.14em;">${it.typeLabel}</div>
-                <div style="font-size: 20px; font-weight: 700; color: #1E293B; margin-top: 6px;">${friendlyDate}</div>
-                <div style="font-size: 15px; color: #64748B; margin-top: 4px;">${it.timeStr}</div>
+                <div style="font-size: 10px; font-weight: 800; color: #D46A9B; text-transform: uppercase; letter-spacing: 0.14em;">${escapeHtml(it.typeLabel)}</div>
+                <div style="font-size: 20px; font-weight: 700; color: #1E293B; margin-top: 6px;">${escapeHtml(friendlyDate)}</div>
+                <div style="font-size: 15px; color: #64748B; margin-top: 4px;">${escapeHtml(it.timeStr)}</div>
+                ${actions.length ? `<div style="margin-top: 10px;">${actions.join("")}</div>` : ""}
               </div>`;
           })
           .join("");
 
-        const subject = clientItems.length > 1
-          ? `Looking forward to seeing you this week, ${firstName}`
-          : `A reminder about your session this week, ${firstName}`;
+        const needsAction = clientItems.some((it) =>
+          it.source === "voice" && (!it.paid || !it.onboardingCompleted),
+        );
+        const subject = needsAction
+          ? `Your session this week — a quick action, ${firstName}`
+          : clientItems.length > 1
+            ? `Looking forward to seeing you this week, ${firstName}`
+            : `A reminder about your session this week, ${firstName}`;
 
         const html = `
           <!DOCTYPE html>
@@ -513,8 +632,8 @@ serve(async (req) => {
                     </div>
 
                     <div style="text-align: left; margin-top: 44px; line-height: 1.8; font-size: 17px; color: #334155;">
-                      <p style="margin: 0 0 18px;">Hi ${firstName},</p>
-                      <p style="margin: 0 0 8px;">Just a friendly reminder about your ${clientItems.length > 1 ? "upcoming sessions" : "next appointment"} this week:</p>
+                      <p style="margin: 0 0 18px;">Hi ${escapeHtml(firstName)},</p>
+                      <p style="margin: 0 0 8px;">${needsAction ? "Your session is coming up this week. Everything you need is below:" : `Just a friendly reminder about your ${clientItems.length > 1 ? "upcoming sessions" : "next appointment"} this week:`}</p>
 
                       ${sessionCards}
 

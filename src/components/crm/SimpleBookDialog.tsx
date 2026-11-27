@@ -39,6 +39,25 @@ interface VoiceStudent {
   _source?: "notion" | "kinesiology";
 }
 
+interface OnboardingSession {
+  studentName: string;
+  studentEmail: string;
+  date: string;
+  time: string;
+  startTime: string;
+  duration: number;
+  cost: number;
+  calcomBookingUid?: string;
+  discipline: "voice" | "piano";
+  sessionName?: string;
+}
+
+interface BookLessonResult {
+  uid?: string;
+  seriesId?: string;
+  sessions: OnboardingSession[];
+}
+
 interface SimpleBookDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -207,14 +226,16 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
     }
   };
 
-  const bookLesson = async (forceBooking: boolean) => {
+  const bookLesson = async (forceBooking: boolean): Promise<BookLessonResult> => {
     if (!selectedStudent || !date || !time) throw new Error("Missing booking details");
+    if (!studentEmail) throw new Error("Missing student email");
 
     const startTimeIso = new Date(date + "T" + time).toISOString();
     const dateStr = format(new Date(date + "T" + time), "yyyy-MM-dd");
     const timeStr = format(new Date(date + "T" + time), "h:mm a");
 
     const lessonType = discipline === "piano" ? "Piano Lesson" : "Voice Lesson";
+    const bookingStudentName = selectedStudent.name || lessonType;
     const notionStudentId = await ensureNotionStudent();
     const seriesId = repeat !== "none" ? crypto.randomUUID() : undefined;
 
@@ -232,11 +253,12 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
       : [{ dateStr, timeStr, startIso: startTimeIso, occurrence: 1 }];
 
     let lastUid: string | undefined;
+    const bookedSessions: OnboardingSession[] = [];
     for (const occ of occurrences) {
       const { data: bookingData, error: bookingError } = await supabase.functions.invoke("voice-create-booking", {
         body: {
-          studentName: selectedStudent.name || lessonType,
-          studentEmail: studentEmail || "",
+          studentName: bookingStudentName,
+          studentEmail,
           startTime: occ.startIso,
           eventTypeId: eventType.eventTypeId,
           title: `${lessonType} — ${occ.dateStr}`,
@@ -259,7 +281,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
           time: occ.timeStr,
           cost: costVal,
           studentName: selectedStudent.name,
-          studentEmail: studentEmail || selectedStudent.email,
+          studentEmail,
           calcomBookingUid: bookingData?.uid,
           discipline,
           seriesId,
@@ -269,20 +291,32 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
         },
       });
       if (lessonError) throw lessonError;
+
+      // Collect only fully created occurrences. The onboarding call happens once,
+      // after the whole loop succeeds, with each date/time and its own booking UID.
+      bookedSessions.push({
+        studentName: bookingStudentName,
+        studentEmail,
+        date: occ.dateStr,
+        time: occ.timeStr,
+        startTime: occ.startIso,
+        duration: Number(duration),
+        cost: costVal,
+        calcomBookingUid: bookingData?.uid,
+        discipline,
+        sessionName: lessonType,
+      });
     }
 
-    return { uid: lastUid, seriesId };
+    return { uid: lastUid, seriesId, sessions: bookedSessions };
   };
 
-  const [lastBookingUid, setLastBookingUid] = useState<string | null>(null);
-
-  const onBookingSuccess = (data: any) => {
+  const onBookingSuccess = (data: BookLessonResult) => {
     queryClient.invalidateQueries({ queryKey: ["voice-lessons"] });
     queryClient.invalidateQueries({ queryKey: ["voice-students"] });
     queryClient.invalidateQueries({ queryKey: ["voice-bookings"] });
-    setLastBookingUid(data?.uid);
     if (sendOnboarding) {
-      handleSendOnboarding(data?.uid);
+      void handleSendOnboarding(data.sessions);
     }
   };
 
@@ -299,33 +333,20 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
   const bookingDone = createBooking.isSuccess || forceBooking.isSuccess;
   const bookingPending = createBooking.isPending || forceBooking.isPending;
 
-  const handleSendOnboarding = async (uid?: string) => {
-    if (!selectedStudent || !date || !time) return;
+  const handleSendOnboarding = async (sessions: OnboardingSession[]) => {
+    if (sessions.length === 0) return;
     setSendingEmail(true);
     try {
-      const dateObj = new Date(date + "T" + time);
-      const timeStr = format(dateObj, "h:mm a");
-      const calcomBookingUid = uid || lastBookingUid;
       const { error } = await supabase.functions.invoke("voice-send-onboarding", {
-        body: {
-          studentName: selectedStudent.name,
-          studentEmail: studentEmail || selectedStudent.email,
-          // Send the raw ISO date (YYYY-MM-DD); the edge function formats it for the
-          // email and stores it as lesson_date, which must stay ISO for date queries.
-          date,
-          time: timeStr,
-          duration,
-          cost: costVal,
-          calcomBookingUid,
-          discipline,
-        },
+        body: { sessions },
       });
       if (error) throw error;
       setEmailSent(true);
     } catch (err) {
       console.error("Failed to send onboarding:", err);
+    } finally {
+      setSendingEmail(false);
     }
-    setSendingEmail(false);
   };
 
   const handleConfirm = () => {

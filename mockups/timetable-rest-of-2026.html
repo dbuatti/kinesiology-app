@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Regular clients — rest of 2026</title>
+  <style>
+    :root {
+      /* Literal copies of the app's DESIGN.md / globals.css tokens. */
+      --primary: hsl(243 58% 42%);
+      --primary-strong: hsl(243 58% 34%);
+      --primary-tint: hsl(243 58% 42% / 0.08);
+      --voice: hsl(356 72% 52%);
+      --voice-tint: hsl(356 72% 52% / 0.06);
+      --warning: hsl(32 88% 44%);
+      --warning-tint: hsl(32 88% 44% / 0.08);
+      --background: hsl(203 39% 98%);
+      --card: hsl(0 0% 100%);
+      --muted: hsl(210 20% 96%);
+      --muted-foreground: hsl(210 10% 45%);
+      --border: hsl(214 32% 89%);
+      --ink: hsl(198 76% 5%);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--ink);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page { max-width: 1180px; margin: 0 auto; padding: 32px 24px 56px; }
+
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap;
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 10px 14px; margin-bottom: 28px;
+    }
+    .nav-brand {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted-foreground);
+    }
+    .nav-links { display: flex; flex-wrap: wrap; gap: 6px; }
+    .nav-links a {
+      font-size: 11px; font-weight: 650; color: var(--muted-foreground);
+      text-decoration: none; padding: 6px 12px; border-radius: 999px;
+    }
+    .nav-links a:hover { background: var(--primary-tint); color: var(--primary-strong); }
+    .nav-links a.active { background: var(--primary-tint); color: var(--primary-strong); }
+
+    .eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted-foreground);
+      margin: 0 0 8px;
+    }
+
+    h1 {
+      font-family: Newsreader, Georgia, serif;
+      font-size: 26px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      margin: 0 0 8px;
+    }
+
+    .lede { margin: 0 0 24px; max-width: 760px; color: var(--muted-foreground); }
+
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
+
+    .metric { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+
+    .metric-value {
+      font-family: Newsreader, Georgia, serif;
+      font-size: 26px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      color: var(--primary-strong);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .metric-label { font-size: 11px; color: var(--muted-foreground); margin-top: 4px; }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+
+    .pill.k { background: var(--primary-tint); color: var(--primary-strong); border-color: hsl(243 58% 42% / 0.3); }
+    .pill.v { background: var(--voice-tint); color: var(--voice); border-color: hsl(356 72% 52% / 0.25); }
+    .pill.cadence { background: var(--muted); color: var(--muted-foreground); }
+    .pill.oneoff { background: var(--warning-tint); color: var(--warning); border-color: hsl(32 88% 44% / 0.25); }
+
+    .section-title {
+      font-family: Newsreader, Georgia, serif;
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      margin: 0 0 12px;
+    }
+
+    .rules { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 28px; overflow: hidden; }
+
+    .rule {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) 100px 100px minmax(0, 1.4fr);
+      gap: 12px;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .rule:last-child { border-bottom: 0; }
+    .rule .who { font-weight: 600; }
+    .rule .when, .rule .why { color: var(--muted-foreground); }
+    .rule .rate { font-variant-numeric: tabular-nums; font-weight: 650; color: var(--primary-strong); text-align: right; }
+    .rule .rate.voice { color: var(--voice); }
+
+    .weeks { display: grid; gap: 16px; }
+
+    .week { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .week.holiday { background: var(--primary-tint); border-color: hsl(243 58% 42% / 0.25); }
+    .week.holiday .week-head { border-bottom-color: hsl(243 58% 42% / 0.22); }
+    .holiday-banner {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--primary-strong); background: var(--card);
+      border: 1px solid hsl(243 58% 42% / 0.3); border-radius: 999px;
+      padding: 4px 10px; margin-bottom: 12px;
+    }
+    .week.holiday .empty { color: var(--primary-strong); font-weight: 550; }
+
+    .week-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .week-head h2 {
+      font-family: Newsreader, Georgia, serif;
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      margin: 0;
+    }
+    .week-head span { font-size: 11px; color: var(--muted-foreground); }
+    .week-meta { display: flex; align-items: baseline; gap: 12px; }
+    .week-total { font-size: 13px; font-weight: 650; font-variant-numeric: tabular-nums; color: var(--primary-strong); }
+    .total-label { font-size: 10px; font-weight: 500; color: var(--muted-foreground); }
+
+    .days { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+
+    .day h3 { font-size: 11px; font-weight: 700; color: var(--muted-foreground); margin: 0 0 8px; letter-spacing: 0.02em; }
+
+    .slots { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+
+    .slot {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: start;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+      font-size: 11px;
+    }
+    .slot .time { color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+    .slot .person { overflow-wrap: anywhere; font-weight: 550; }
+    .slot .meta { grid-column: 2 / -1; color: var(--muted-foreground); font-size: 10px; }
+    .slot .rate { font-variant-numeric: tabular-nums; font-weight: 650; color: var(--primary-strong); }
+    .slot.k { border-left: 3px solid var(--primary); background: hsl(243 58% 42% / 0.04); }
+    .slot.v { border-left: 3px solid var(--voice); background: var(--voice-tint); }
+    .slot.v .rate { color: var(--voice); }
+    .slot.oneoff { border-left: 3px solid var(--warning); background: var(--warning-tint); }
+    .slot.oneoff .rate { color: var(--warning); }
+
+    .empty { color: var(--muted-foreground); font-size: 11px; padding: 8px 0; }
+
+    .note {
+      margin-top: 24px;
+      padding: 16px;
+      border-radius: 12px;
+      background: var(--primary-tint);
+      color: var(--primary-strong);
+      font-size: 12px;
+    }
+
+    @media (max-width: 860px) {
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .days { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .rule { grid-template-columns: minmax(0, 1fr) 80px; }
+      .rule .why { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 560px) {
+      .page { padding: 24px 16px 40px; }
+      .metrics { grid-template-columns: 1fr; }
+      .days { grid-template-columns: 1fr; }
+      .week-head { flex-direction: column; align-items: flex-start; }
+      .rule { grid-template-columns: 1fr; gap: 4px; }
+      .rule .rate { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <nav class="nav" aria-label="Mock-up pages">
+      <span class="nav-brand">FNH · Planning</span>
+      <div class="nav-links">
+        <a href="timetable-rest-of-2026.html" class="active" aria-current="page">Timetable</a>
+        <a href="income-2026.html">Income 2026</a>
+        <a href="client-heatmap.html">Client heat map</a>
+      </div>
+    </nav>
+
+    <p class="eyebrow">Recurring timetable · 26 Nov – 31 Dec 2026</p>
+    <h1>Regular clients — rest of 2026</h1>
+    <p class="lede">
+      Only the clients currently on a regular cadence, plus Matilda’s three confirmed one-offs. Everything else in the
+      CRM is left out. Times are Australia/Melbourne (AEDT, UTC+11).
+    </p>
+
+    <section class="metrics" aria-label="Summary">
+      <div class="metric"><div class="metric-value">5</div><div class="metric-label">Recurring clients</div></div>
+      <div class="metric"><div class="metric-value">11</div><div class="metric-label">Recurring sessions</div></div>
+      <div class="metric"><div class="metric-value">3</div><div class="metric-label">Matilda one-offs</div></div>
+      <div class="metric"><div class="metric-value">$1,150</div><div class="metric-label">Total booked value</div></div>
+    </section>
+
+    <section class="legend" aria-label="Legend">
+      <span class="pill k">Kinesiology · $70</span>
+      <span class="pill v">Voice · by lesson length</span>
+      <span class="pill cadence">Weekly</span>
+      <span class="pill cadence">Fortnightly</span>
+      <span class="pill oneoff">Confirmed one-off</span>
+    </section>
+
+    <h2 class="section-title">The standing pattern</h2>
+    <section class="rules">
+      <div class="rule"><span class="who">Susan Lord</span><span class="when">Wed · 10:00</span><span class="rate">$70</span><span class="why">Weekly kinesiology · 60 min</span></div>
+      <div class="rule"><span class="who">Reuben Douglas</span><span class="when">Wed · 16:00</span><span class="rate">$70</span><span class="why">Fortnightly kinesiology · 60 min</span></div>
+      <div class="rule"><span class="who">Lesley Wiadrowski</span><span class="when">Mon · 10:00</span><span class="rate voice">$95</span><span class="why">Fortnightly voice · 60 min</span></div>
+      <div class="rule"><span class="who">Nicole Rotenstein</span><span class="when">Tue · 17:30</span><span class="rate voice">$75</span><span class="why">Weekly voice · 45 min</span></div>
+      <div class="rule"><span class="who">Daniele Bernardo</span><span class="when">Tue · 16:00</span><span class="rate voice">$95</span><span class="why">Fortnightly voice · 60 min</span></div>
+      <div class="rule"><span class="who">Matilda Joyes</span><span class="when">Wed · 18:00</span><span class="rate">$95</span><span class="why">New client, confirmed 9 &amp; 16 Dec (plus legacy $100 on 2 Dec)</span></div>
+    </section>
+
+    <h2 class="section-title">Weekly placement</h2>
+    <div class="weeks">
+      <section class="week">
+        <div class="week-head"><h2>Week of 30 November</h2><div class="week-meta"><span>Mon 30 – Fri 4 Dec</span><span class="week-total">$410 <span class="total-label">earned</span></span></div></div>
+        <div class="days">
+          <div class="day"><h3>Mon 30</h3><ul class="slots">
+            <li class="slot v"><span class="time">10:00</span><span class="person">Lesley Wiadrowski</span><span class="rate">$95</span><span class="meta">Voice · 60 min · fortnightly</span></li>
+          </ul></div>
+          <div class="day"><h3>Tue 1</h3><ul class="slots">
+            <li class="slot v"><span class="time">17:30</span><span class="person">Nicole Rotenstein</span><span class="rate">$75</span><span class="meta">Voice · 45 min · weekly</span></li>
+          </ul></div>
+          <div class="day"><h3>Wed 2</h3><ul class="slots">
+            <li class="slot k"><span class="time">10:00</span><span class="person">Susan Lord</span><span class="rate">$70</span><span class="meta">Kinesiology · 60 min · weekly</span></li>
+            <li class="slot k"><span class="time">16:00</span><span class="person">Reuben Douglas</span><span class="rate">$70</span><span class="meta">Kinesiology · 60 min · fortnightly</span></li>
+            <li class="slot oneoff"><span class="time">18:00</span><span class="person">Matilda Joyes</span><span class="rate">$100</span><span class="meta">Legacy appointment · kept at $100</span></li>
+          </ul></div>
+          <div class="day"><h3>Thu 3</h3><p class="empty">No regular sessions</p></div>
+          <div class="day"><h3>Fri 4</h3><p class="empty">No regular sessions</p></div>
+        </div>
+      </section>
+
+      <section class="week">
+        <div class="week-head"><h2>Week of 7 December</h2><div class="week-meta"><span>Mon 7 – Fri 11 Dec</span><span class="week-total">$335 <span class="total-label">earned</span></span></div></div>
+        <div class="days">
+          <div class="day"><h3>Mon 7</h3><p class="empty">No regular sessions</p></div>
+          <div class="day"><h3>Tue 8</h3><ul class="slots">
+            <li class="slot v"><span class="time">16:00</span><span class="person">Daniele Bernardo</span><span class="rate">$95</span><span class="meta">Voice · 60 min · fortnightly</span></li>
+            <li class="slot v"><span class="time">17:30</span><span class="person">Nicole Rotenstein</span><span class="rate">$75</span><span class="meta">Voice · 45 min · weekly</span></li>
+          </ul></div>
+          <div class="day"><h3>Wed 9</h3><ul class="slots">
+            <li class="slot k"><span class="time">10:00</span><span class="person">Susan Lord</span><span class="rate">$70</span><span class="meta">Kinesiology · 60 min · weekly</span></li>
+            <li class="slot oneoff"><span class="time">18:00</span><span class="person">Matilda Joyes</span><span class="rate">$95</span><span class="meta">New client · just booked</span></li>
+          </ul></div>
+          <div class="day"><h3>Thu 10</h3><p class="empty">No regular sessions</p></div>
+          <div class="day"><h3>Fri 11</h3><p class="empty">No regular sessions</p></div>
+        </div>
+      </section>
+
+      <section class="week">
+        <div class="week-head"><h2>Week of 14 December</h2><div class="week-meta"><span>Mon 14 – Fri 18 Dec</span><span class="week-total">$405 <span class="total-label">earned</span></span></div></div>
+        <div class="days">
+          <div class="day"><h3>Mon 14</h3><ul class="slots">
+            <li class="slot v"><span class="time">10:00</span><span class="person">Lesley Wiadrowski</span><span class="rate">$95</span><span class="meta">Voice · 60 min · fortnightly</span></li>
+          </ul></div>
+          <div class="day"><h3>Tue 15</h3><ul class="slots">
+            <li class="slot v"><span class="time">17:30</span><span class="person">Nicole Rotenstein</span><span class="rate">$75</span><span class="meta">Voice · 45 min · weekly</span></li>
+          </ul></div>
+          <div class="day"><h3>Wed 16</h3><ul class="slots">
+            <li class="slot k"><span class="time">10:00</span><span class="person">Susan Lord</span><span class="rate">$70</span><span class="meta">Kinesiology · 60 min · weekly</span></li>
+            <li class="slot k"><span class="time">16:00</span><span class="person">Reuben Douglas</span><span class="rate">$70</span><span class="meta">Kinesiology · 60 min · fortnightly</span></li>
+            <li class="slot oneoff"><span class="time">18:00</span><span class="person">Matilda Joyes</span><span class="rate">$95</span><span class="meta">New client · just booked</span></li>
+          </ul></div>
+          <div class="day"><h3>Thu 17</h3><p class="empty">No regular sessions</p></div>
+          <div class="day"><h3>Fri 18</h3><p class="empty">No regular sessions</p></div>
+        </div>
+      </section>
+
+      <section class="week holiday">
+        <div class="holiday-banner">Holiday break · 21 Dec 2026 – 15 Jan 2027 · blocked in Cal.com</div>
+        <div class="week-head"><h2>Week of 21 December</h2><div class="week-meta"><span>Mon 21 – Fri 25 Dec</span><span class="week-total">$0 <span class="total-label">earned</span></span></div></div>
+        <div class="days">
+          <div class="day"><h3>Mon 21</h3><p class="empty">Holiday break</p></div>
+          <div class="day"><h3>Tue 22</h3><p class="empty">Holiday break</p></div>
+          <div class="day"><h3>Wed 23</h3><p class="empty">Holiday break</p></div>
+          <div class="day"><h3>Thu 24</h3><p class="empty">Christmas Eve</p></div>
+          <div class="day"><h3>Fri 25</h3><p class="empty">Christmas Day</p></div>
+        </div>
+      </section>
+
+      <section class="week holiday">
+        <div class="holiday-banner">Holiday break · 21 Dec 2026 – 15 Jan 2027 · blocked in Cal.com</div>
+        <div class="week-head"><h2>Week of 28 December</h2><div class="week-meta"><span>Mon 28 – Thu 31 Dec</span><span class="week-total">$0 <span class="total-label">earned</span></span></div></div>
+        <div class="days">
+          <div class="day"><h3>Mon 28</h3><p class="empty">Holiday break</p></div>
+          <div class="day"><h3>Tue 29</h3><p class="empty">Holiday break</p></div>
+          <div class="day"><h3>Wed 30</h3><p class="empty">Holiday break</p></div>
+          <div class="day"><h3>Thu 31</h3><p class="empty">New Year’s Eve</p></div>
+          <div class="day"><h3>Fri 1 Jan</h3><p class="empty">Outside 2026</p></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="note">
+      Cadence starts from the confirmed bookings: Lesley Mon 30 Nov 10:00, Susan Wed 2 Dec 10:00, Reuben Wed 2 Dec 16:00,
+      Nicole Tue 1 Dec 17:30, Daniele Bernardo Tue 8 Dec 16:00. Weekly repeats every 7 days, fortnightly every 14. Voice rates follow lesson
+      length (45 min $75, 60 min $95), not the CRM’s $70 field. Recurring placements from 21 Dec through 15 Jan are
+      suppressed for the holiday break, which is blocked in Cal.com as Vacation. Sessions resume Mon 18 Jan. This is a
+      mock-up only — the recurring placements are illustrative and have not been booked.
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Client heat map — recency &amp; traction</title>
+  <style>
+    :root {
+      /* Literal copies of the app's DESIGN.md / globals.css tokens. */
+      --primary: hsl(243 58% 42%);
+      --primary-strong: hsl(243 58% 34%);
+      --primary-tint: hsl(243 58% 42% / 0.08);
+      --voice: hsl(356 72% 52%);
+      --voice-tint: hsl(356 72% 52% / 0.06);
+      --background: hsl(203 39% 98%);
+      --card: hsl(0 0% 100%);
+      --muted: hsl(210 20% 96%);
+      --muted-foreground: hsl(210 10% 45%);
+      --border: hsl(214 32% 89%);
+      --ink: hsl(198 76% 5%);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--ink);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 13px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page { max-width: 1180px; margin: 0 auto; padding: 32px 24px 56px; }
+
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap;
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 10px 14px; margin-bottom: 28px;
+    }
+    .nav-brand {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted-foreground);
+    }
+    .nav-links { display: flex; flex-wrap: wrap; gap: 6px; }
+    .nav-links a {
+      font-size: 11px; font-weight: 650; color: var(--muted-foreground);
+      text-decoration: none; padding: 6px 12px; border-radius: 999px;
+    }
+    .nav-links a:hover { background: var(--primary-tint); color: var(--primary-strong); }
+    .nav-links a.active { background: var(--primary-tint); color: var(--primary-strong); }
+
+    .eyebrow {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--muted-foreground);
+      margin: 0 0 8px;
+    }
+    h1 {
+      font-family: Newsreader, Georgia, serif;
+      font-size: 26px; font-weight: 500; letter-spacing: -0.02em;
+      margin: 0 0 8px;
+    }
+    .lede { margin: 0 0 24px; max-width: 820px; color: var(--muted-foreground); }
+    h2.section {
+      font-family: Newsreader, Georgia, serif; font-size: 18px; font-weight: 500;
+      letter-spacing: -0.01em; margin: 0 0 4px;
+    }
+    .section-intro { margin: 0 0 14px; color: var(--muted-foreground); font-size: 12px; }
+
+    .formula {
+      display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+      padding: 6px 14px; font-size: 11px; font-weight: 650; margin-bottom: 24px;
+    }
+    .formula .op { color: var(--muted-foreground); font-weight: 500; }
+
+    .quadrants { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 28px; }
+    .quad {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px 16px; border-top-width: 3px;
+    }
+    .quad.q1 { border-top-color: var(--primary); }
+    .quad.q2 { border-top-color: var(--voice); }
+    .quad.q3 { border-top-color: hsl(243 58% 42% / 0.45); }
+    .quad.q4 { border-top-color: var(--border); }
+    .quad h3 { margin: 0 0 2px; font-size: 12px; font-weight: 700; }
+    .quad .count { font-family: Newsreader, Georgia, serif; font-size: 22px; line-height: 1.1; color: var(--primary-strong); }
+    .quad .action { font-size: 11px; color: var(--muted-foreground); margin: 2px 0 8px; }
+    .quad .names { font-size: 10px; color: var(--muted-foreground); line-height: 1.5; }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 7px;
+      border-radius: 999px; padding: 5px 12px;
+      font-size: 11px; font-weight: 600;
+      background: var(--card); border: 1px solid var(--border);
+    }
+    .swatch { width: 11px; height: 11px; border-radius: 3px; border: 1px solid var(--border); }
+    .scale { display: inline-flex; align-items: center; gap: 4px; }
+    .scale i { width: 16px; height: 10px; border-radius: 2px; display: inline-block; }
+
+    .toolbar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+    .filter {
+      font: inherit; font-size: 11px; font-weight: 600;
+      padding: 6px 12px; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--card); color: var(--muted-foreground);
+      cursor: pointer;
+    }
+    .filter:hover { border-color: var(--primary); color: var(--primary-strong); }
+    .filter.active { background: var(--primary-tint); border-color: hsl(243 58% 42% / 0.3); color: var(--primary-strong); }
+
+    .band { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 14px; }
+    .band-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+    .band-head h3 { font-family: Newsreader, Georgia, serif; font-size: 17px; font-weight: 500; margin: 0; letter-spacing: -0.01em; }
+    .band-head span { font-size: 11px; color: var(--muted-foreground); }
+    .band-action { font-size: 11px; color: var(--muted-foreground); margin: 0 0 14px; }
+
+    .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 8px; }
+    .tile {
+      border-radius: 10px; padding: 10px 12px; min-height: 92px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      border: 1px solid var(--border); border-left-width: 3px;
+      color: var(--ink);
+    }
+    .tile.dashed { border-style: dashed; border-left-style: dashed; }
+    .tile-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
+    .tile-name { font-size: 12px; font-weight: 650; line-height: 1.3; }
+    .disc-mark {
+      flex: 0 0 auto; font-size: 9px; font-weight: 750; letter-spacing: 0.04em;
+      padding: 2px 6px; border-radius: 999px; background: var(--card); border: 1px solid var(--border);
+    }
+    .tile-meta { font-size: 10px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; margin-top: 3px; }
+    .tile-foot { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+    .score {
+      min-width: 22px; height: 22px; border-radius: 999px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 750; color: #fff; font-variant-numeric: tabular-nums;
+    }
+    .break { font-size: 10px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+    .free { font-size: 9px; font-weight: 650; color: var(--muted-foreground); }
+
+    .note {
+      margin-top: 24px; padding: 16px; border-radius: 12px;
+      background: var(--primary-tint); color: var(--primary-strong); font-size: 12px;
+    }
+
+    @media (max-width: 980px) { .quadrants { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 560px) {
+      .page { padding: 24px 16px 40px; }
+      .tiles { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <nav class="nav" aria-label="Mock-up pages">
+      <span class="nav-brand">FNH · Planning</span>
+      <div class="nav-links">
+        <a href="timetable-rest-of-2026.html">Timetable</a>
+        <a href="income-2026.html">Income 2026</a>
+        <a href="client-heatmap.html" class="active" aria-current="page">Client heat map</a>
+      </div>
+    </nav>
+
+    <p class="eyebrow">Client recency &amp; traction · as at 26 Nov 2026</p>
+    <h1>Client heat map</h1>
+    <p class="lede">
+      Two things matter: how recently someone booked, and how much history they actually have with you. Each client
+      gets a recency score (R) and a traction score (E) based on total sessions, added together for one priority
+      score. Colour shows discipline, and the background deepens as the score rises.
+    </p>
+
+    <div class="formula">
+      <span>Priority = Recency</span><span class="op">+</span><span>Traction</span>
+      <span class="op">·</span><span>R6 booked → R0 over 90 days</span>
+      <span class="op">·</span><span>E5 15+ sessions → E1 one session</span>
+    </div>
+
+    <h2 class="section">Where to focus</h2>
+    <p class="section-intro">Recency and traction crossed — this is the view that actually tells you who to chase.</p>
+    <section class="quadrants" id="quadrants" aria-label="Recency by traction quadrants"></section>
+
+    <h2 class="section">All clients</h2>
+    <p class="section-intro">Group tiles by priority, discipline or recency. Within each group the strongest clients come first.</p>
+
+    <div class="legend" id="legend"></div>
+    <div class="toolbar" role="group" aria-label="Group clients by">
+      <button class="filter active" data-view="priority" type="button">By priority</button>
+      <button class="filter" data-view="discipline" type="button">By discipline</button>
+      <button class="filter" data-view="recency" type="button">By recency</button>
+    </div>
+    <div id="bands"></div>
+
+    <div class="note">
+      Recency uses the latest non-cancelled appointment or non-cancelled/non-rescheduled voice booking on or before
+      today; a future booking overrides it. Traction counts <em>all</em> sessions on record, including old ones — so a
+      long-standing client who has slipped gets a higher priority than a one-off who booked recently. “$0” marks a
+      free client. K = kinesiology, V = voice, P = piano.
+    </div>
+  </main>
+
+  <script>
+    const clients = [{"n":"Susan Lord","r":6,"e":5,"s":11,"t":"On the books","l":"2026-11-25","d":6,"x":"2026-12-02","f":19,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Georg Gleeson","r":5,"e":5,"s":10,"t":"This week","l":"2026-11-23","d":3,"x":null,"f":16,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Reuben Douglas","r":6,"e":4,"s":10,"t":"On the books","l":"2026-11-18","d":6,"x":"2026-12-02","f":9,"v":0,"g":"F","r8":70,"c":"KV"},{"n":"Matilda Joyes","r":6,"e":3,"s":9,"t":"On the books","l":"2026-11-25","d":6,"x":"2026-12-02","f":5,"v":0,"g":"F","r8":95,"c":"KV"},{"n":"Nicole Rotenstein","r":6,"e":3,"s":9,"t":"On the books","l":"2026-10-27","d":5,"x":"2026-12-01","f":0,"v":4,"g":"V","r8":70,"c":"V"},{"n":"Lesley Wiadrowski","r":6,"e":2,"s":8,"t":"On the books","l":"2026-10-26","d":4,"x":"2026-11-30","f":2,"v":1,"g":"B","r8":70,"c":"KV"},{"n":"Daniele Bernardo","r":6,"e":2,"s":8,"t":"On the books","l":"2026-10-27","d":12,"x":"2026-12-08","f":0,"v":2,"g":"V","r8":70,"c":"V"},{"n":"Alice Batt","r":4,"e":2,"s":6,"t":"Within a fortnight","l":"2026-11-16","d":10,"x":null,"f":1,"v":1,"g":"B","r8":70,"c":"KV"},{"n":"Diona Hill","r":0,"e":5,"s":5,"t":"Out of window","l":"2026-06-05","d":174,"x":null,"f":18,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Brendan Jelley","r":1,"e":4,"s":5,"t":"2–3 months","l":"2026-08-31","d":87,"x":null,"f":10,"v":0,"g":"F","r8":0,"c":"K"},{"n":"Jacqui Dwyer","r":1,"e":4,"s":5,"t":"2–3 months","l":"2026-09-02","d":85,"x":null,"f":8,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Lizzy","r":3,"e":2,"s":5,"t":"Within a month","l":"2026-11-09","d":17,"x":null,"f":1,"v":1,"g":"B","r8":70,"c":"KV"},{"n":"James Griffith","r":4,"e":1,"s":5,"t":"Within a fortnight","l":"2026-11-13","d":13,"x":null,"f":0,"v":1,"g":"V","r8":70,"c":"V"},{"n":"Sage del carmen","r":4,"e":1,"s":5,"t":"Within a fortnight","l":"2026-11-13","d":13,"x":null,"f":0,"v":1,"g":"V","r8":70,"c":"V"},{"n":"Bradley Dylan","r":1,"e":3,"s":4,"t":"2–3 months","l":"2026-09-02","d":85,"x":null,"f":7,"v":0,"g":"F","r8":0,"c":"K"},{"n":"Charlie Preston","r":2,"e":2,"s":4,"t":"1–2 months","l":"2026-10-15","d":42,"x":null,"f":0,"v":2,"g":"V","r8":70,"c":"V"},{"n":"Elizabeth","r":3,"e":1,"s":4,"t":"Within a month","l":"2026-10-29","d":28,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Sonia","r":3,"e":1,"s":4,"t":"Within a month","l":"2026-11-01","d":25,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Kiana Emmett","r":0,"e":3,"s":3,"t":"Out of window","l":"2025-06-27","d":517,"x":null,"f":5,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Lauren Lee Innis-Youren","r":0,"e":3,"s":3,"t":"Out of window","l":"2025-06-13","d":531,"x":null,"f":4,"v":0,"g":"F","r8":70,"c":"KV"},{"n":"Lily Walker","r":0,"e":3,"s":3,"t":"Out of window","l":"2026-08-12","d":106,"x":null,"f":4,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Ashna","r":1,"e":2,"s":3,"t":"2–3 months","l":"2026-09-02","d":85,"x":null,"f":3,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Charlotte Mackenzie","r":2,"e":1,"s":3,"t":"1–2 months","l":"2026-10-16","d":41,"x":null,"f":0,"v":1,"g":"V","r8":70,"c":"V"},{"n":"Charlie Boscolo","r":0,"e":2,"s":2,"t":"Out of window","l":"2023-07-15","d":1230,"x":null,"f":3,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Anita La Terra","r":0,"e":2,"s":2,"t":"Out of window","l":"2026-08-11","d":107,"x":null,"f":1,"v":1,"g":"B","r8":70,"c":"KPV"},{"n":"Candice (Candy) Sweetman","r":0,"e":2,"s":2,"t":"Out of window","l":"2026-08-24","d":94,"x":null,"f":2,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Cassidy Anderson","r":0,"e":2,"s":2,"t":"Out of window","l":"2025-08-26","d":457,"x":null,"f":2,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Daimon Smith","r":0,"e":2,"s":2,"t":"Out of window","l":"2026-03-04","d":267,"x":null,"f":2,"v":0,"g":"F","r8":70,"c":"KV"},{"n":"Darcy Oliver","r":0,"e":2,"s":2,"t":"Out of window","l":"2024-10-04","d":783,"x":null,"f":0,"v":2,"g":"V","r8":70,"c":"V"},{"n":"Harry Tibballs","r":0,"e":2,"s":2,"t":"Out of window","l":"2025-04-19","d":586,"x":null,"f":2,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Keyanna Burgher","r":0,"e":2,"s":2,"t":"Out of window","l":"2023-09-30","d":1153,"x":null,"f":2,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Mary Guay","r":0,"e":2,"s":2,"t":"Out of window","l":"2024-11-25","d":731,"x":null,"f":0,"v":2,"g":"V","r8":70,"c":"V"},{"n":"Mikaela Innes","r":0,"e":2,"s":2,"t":"Out of window","l":"2023-11-13","d":1109,"x":null,"f":2,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Natalie Annette","r":0,"e":2,"s":2,"t":"Out of window","l":"2026-06-03","d":176,"x":null,"f":2,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Thomas Cucinotta","r":0,"e":2,"s":2,"t":"Out of window","l":"2024-10-30","d":757,"x":null,"f":0,"v":2,"g":"V","r8":70,"c":"V"},{"n":"Akansha Hungenahally","r":0,"e":1,"s":1,"t":"Out of window","l":"2023-10-31","d":1122,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Alex Wright","r":0,"e":1,"s":1,"t":"Out of window","l":"2025-04-23","d":582,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"KV"},{"n":"Alisha Mwangi","r":0,"e":1,"s":1,"t":"Out of window","l":"2024-10-28","d":759,"x":null,"f":0,"v":1,"g":"V","r8":70,"c":"V"},{"n":"Alyssa Campagna","r":0,"e":1,"s":1,"t":"Out of window","l":"2024-10-04","d":783,"x":null,"f":0,"v":1,"g":"V","r8":70,"c":"V"},{"n":"Ash Berry","r":0,"e":1,"s":1,"t":"Out of window","l":"2026-06-02","d":177,"x":null,"f":0,"v":1,"g":"V","r8":70,"c":"V"},{"n":"Ashley Wilsnach","r":0,"e":1,"s":1,"t":"Out of window","l":"2024-10-21","d":766,"x":null,"f":0,"v":1,"g":"V","r8":70,"c":"V"},{"n":"Ashlynn Stith","r":0,"e":1,"s":1,"t":"Out of window","l":"2025-03-05","d":631,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Aya M","r":0,"e":1,"s":1,"t":"Out of window","l":"2024-10-28","d":759,"x":null,"f":0,"v":1,"g":"V","r8":70,"c":"V"},{"n":"Becca Dawn","r":0,"e":1,"s":1,"t":"Out of window","l":"2023-06-24","d":1251,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Belinda Parini","r":0,"e":1,"s":1,"t":"Out of window","l":"2023-10-21","d":1132,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Enya Cai","r":0,"e":1,"s":1,"t":"Out of window","l":"2024-10-25","d":762,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Janine Walker","r":0,"e":1,"s":1,"t":"Out of window","l":"2023-02-25","d":1370,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Jasmine Tuvey","r":0,"e":1,"s":1,"t":"Out of window","l":"2026-02-20","d":279,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"KV"},{"n":"Jeremy Harland","r":0,"e":1,"s":1,"t":"Out of window","l":"2024-10-28","d":759,"x":null,"f":0,"v":1,"g":"V","r8":70,"c":"V"},{"n":"Josh Russell","r":0,"e":1,"s":1,"t":"Out of window","l":"2024-04-10","d":960,"x":null,"f":0,"v":1,"g":"V","r8":70,"c":"V"},{"n":"Keith Bowker","r":0,"e":1,"s":1,"t":"Out of window","l":"2024-09-10","d":807,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Lily Major","r":0,"e":1,"s":1,"t":"Out of window","l":"2024-10-14","d":773,"x":null,"f":0,"v":1,"g":"V","r8":70,"c":"V"},{"n":"Lisa Capon","r":0,"e":1,"s":1,"t":"Out of window","l":"2026-07-01","d":148,"x":null,"f":0,"v":1,"g":"V","r8":70,"c":"V"},{"n":"Metta Patterson","r":0,"e":1,"s":1,"t":"Out of window","l":"2025-05-16","d":559,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Nicole Rammesh","r":0,"e":1,"s":1,"t":"Out of window","l":"2023-06-03","d":1272,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Rachel","r":0,"e":1,"s":1,"t":"Out of window","l":"2026-04-29","d":211,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Rae Isbester","r":0,"e":1,"s":1,"t":"Out of window","l":"2023-11-04","d":1118,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Row Blackshaw","r":0,"e":1,"s":1,"t":"Out of window","l":"2025-06-13","d":531,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Ruby Gillies","r":0,"e":1,"s":1,"t":"Out of window","l":"2026-05-07","d":203,"x":null,"f":0,"v":1,"g":"V","r8":70,"c":"V"},{"n":"Sierra Pelsoczy","r":0,"e":1,"s":1,"t":"Out of window","l":"2024-05-15","d":925,"x":null,"f":0,"v":1,"g":"V","r8":70,"c":"V"},{"n":"Sophie Hoynes-Robson","r":0,"e":1,"s":1,"t":"Out of window","l":"2026-02-23","d":276,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Steve Cotterill","r":0,"e":1,"s":1,"t":"Out of window","l":"2024-11-22","d":734,"x":null,"f":1,"v":0,"g":"F","r8":70,"c":"K"},{"n":"Aaron Charles","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Aimee Halley","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Alfred Buatti","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"K"},{"n":"Amelia Westlake","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Anah","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Angelina Papoulias","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"PV"},{"n":"Ava Ypinazar","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Banjo Chiron","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Bella","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"P"},{"n":"Benji Arndt","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Blake","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"K"},{"n":"Bonnie Edwards-Tesselaar","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Caitlin Hawkins","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Charley Conway","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Chelsea Hyde","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Chloe Johnston","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Crysten Daniells","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Elia","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Emma Curtis","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Emma Uphill","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Estelle Lipovetsky","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Ethan McCartney","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Gemma Purdy","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":0,"c":"K"},{"n":"Grace Alston","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Issy Edmondson","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Izzy Buckler","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Jacob Kuek","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Laura Hutchins","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Lilli De Nardi","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Linda Webster","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"K"},{"n":"Luisa Oro","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Mae Robinson","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Maria Papoulias","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Nicole Smith","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Rebekah Head","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Serene","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Shanu Sobti","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Tane Williams Accra","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Tily Westaway","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Yvette Lipovetsky","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Zac Jones","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"},{"n":"Zoë Harlen","r":-1,"e":0,"s":-1,"t":"No bookings","l":null,"d":null,"x":null,"f":0,"v":0,"g":"N","r8":70,"c":"V"}];
+
+    const colours = {
+      F: [243, 58, 42],   // functional neuro / kinesiology — indigo (HSL)
+      V: [356, 72, 52],   // voice — rose (HSL)
+      N: [210, 10, 45]    // no bookings — neutral (HSL)
+    };
+    const hslRgb = ([h, s, l]) => {
+      s /= 100; l /= 100;
+      const k = n => (n + h / 30) % 12;
+      const a = s * Math.min(l, 1 - l);
+      const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+      return [f(0), f(8), f(4)].map(v => Math.round(v * 255));
+    };
+    const rgba = (key, a) => 'rgba(' + hslRgb(colours[key]).join(',') + ',' + a + ')';
+    const alpha = s => s >= 9 ? 0.42 : s >= 7 ? 0.34 : s >= 5 ? 0.26 : s >= 3 ? 0.18 : s >= 1 ? 0.12 : s === 0 ? 0.07 : 0.04;
+    const bg = c => c.g === 'B'
+      ? 'linear-gradient(135deg,' + rgba('F', alpha(c.s)) + ' 0 50%,' + rgba('V', alpha(c.s)) + ' 50% 100%)'
+      : rgba(c.g, alpha(c.s));
+    const edge = c => c.g === 'B' ? 'var(--primary)' : rgba(c.g, 1);
+    const chipBg = c => c.g === 'V' ? 'hsl(356 72% 40%)' : c.g === 'N' ? 'hsl(210 10% 35%)' : edge(c);
+    const shortDate = d => d ? d.slice(5).replace('-', '/') : '—';
+
+    const quadrants = [
+      { key: 'hh', title: 'Core regulars', action: 'Recently seen and well established — keep them booked.', hot: true, high: true },
+      { key: 'ch', title: 'Lapsed regulars', action: 'Highest-value follow-ups: real history, but no recent visit.', hot: false, high: true },
+      { key: 'hl', title: 'Building', action: 'Recent but early in the relationship — easy second booking.', hot: true, high: false },
+      { key: 'cl', title: 'Dormant', action: 'Little history and out of the window — lowest priority.', hot: false, high: false }
+    ];
+    document.getElementById('quadrants').innerHTML = quadrants.map(q => {
+      const group = clients.filter(c => (c.r >= 4) === q.hot && (c.e >= 3) === q.high)
+        .sort((a, b) => b.s - a.s);
+      return '<div class="quad q' + (q.key === 'hh' ? 1 : q.key === 'ch' ? 2 : q.key === 'hl' ? 3 : 4) + '">' +
+        '<h3>' + q.title + '</h3><div class="count">' + group.length + '</div>' +
+        '<p class="action">' + q.action + '</p>' +
+        '<div class="names">' + (group.slice(0, 5).map(c => c.n).join(' · ') || '—') +
+        (group.length > 5 ? ' · +' + (group.length - 5) + ' more' : '') + '</div></div>';
+    }).join('');
+
+    document.getElementById('legend').innerHTML =
+      '<span class="pill"><span class="swatch" style="background:' + rgba('F', 1) + '"></span>Functional neuro</span>' +
+      '<span class="pill"><span class="swatch" style="background:' + rgba('V', 1) + '"></span>Voice</span>' +
+      '<span class="pill"><span class="swatch" style="background:linear-gradient(135deg,' + rgba('F', 1) + ' 0 50%,' + rgba('V', 1) + ' 50% 100%)"></span>Both</span>' +
+      '<span class="pill scale">Lower <i style="background:' + rgba('F', 0.07) + '"></i><i style="background:' + rgba('F', 0.18) + '"></i><i style="background:' + rgba('F', 0.3) + '"></i><i style="background:' + rgba('F', 0.42) + '"></i> Higher</span>';
+
+    const priorityBands = [
+      { label: 'Keep close', lo: 9, action: 'Strong history and currently engaged — protect these slots.' },
+      { label: 'Rebook now', lo: 7, action: 'Good relationship: a direct offer should land.' },
+      { label: 'Light follow-up', lo: 5, action: 'Either recent or well established — worth a short nudge.' },
+      { label: 'Distant', lo: 3, action: 'Cooling off; offer a specific time rather than a generic check-in.' },
+      { label: 'Out of window', lo: 1, action: 'Low traction or long gone — re-engagement campaign only.' },
+      { label: 'No record', lo: -99, action: 'No sessions in the CRM.' }
+    ];
+    const recencyBands = [
+      { label: 'On the books', p: 6, action: 'Already have a future appointment.' },
+      { label: 'This week', p: 5, action: 'Seen in the last 7 days.' },
+      { label: 'Within a fortnight', p: 4, action: 'Seen in the last 14 days.' },
+      { label: 'Within a month', p: 3, action: 'Seen in the last 30 days.' },
+      { label: '1–2 months', p: 2, action: 'Seen 30–60 days ago.' },
+      { label: '2–3 months', p: 1, action: 'Seen 60–90 days ago.' },
+      { label: 'Out of window', p: 0, action: 'More than 90 days since the last session.' },
+      { label: 'No bookings', p: -1, action: 'No session record.' }
+    ];
+    const disciplineBands = [
+      { label: 'Functional neuro only', g: 'F' },
+      { label: 'Voice only', g: 'V' },
+      { label: 'Both disciplines', g: 'B' },
+      { label: 'No booking record', g: 'N' }
+    ];
+
+    const tile = c => {
+      const sessions = c.f + c.v;
+      const when = c.x ? 'Next ' + shortDate(c.x) : c.l ? 'Last ' + shortDate(c.l) : 'No sessions';
+      const codes = c.c ? ' · ' + c.c : '';
+      const free = c.r8 === 0 && sessions ? '<span class="free"> · $0</span>' : '';
+      return '<div class="tile' + (c.s <= 0 ? ' dashed' : '') + '" style="background:' + bg(c) + ';border-left-color:' + edge(c) + '"' +
+        ' title="' + c.n + ' — ' + sessions + ' sessions' + (c.l ? ', last ' + c.l : '') + (c.x ? ', next ' + c.x : '') + '">' +
+        '<div><div class="tile-top"><div class="tile-name">' + c.n + '</div>' +
+        '<span class="disc-mark">' + (c.g === 'B' ? 'K+V' : c.g === 'F' ? 'K' : c.g === 'V' ? 'V' : '—') + '</span></div>' +
+        '<div class="tile-meta">' + sessions + (sessions === 1 ? ' session' : ' sessions') + ' · ' + when + codes + free + '</div></div>' +
+        '<div class="tile-foot"><span class="score" style="background:' + chipBg(c) + '">' + c.s + '</span>' +
+        '<span class="break">R' + c.r + ' + E' + c.e + '</span></div></div>';
+    };
+
+    const render = view => {
+      let bands;
+      if (view === 'priority') {
+        bands = priorityBands.map((b, i) => ({ label: b.label, action: b.action,
+          group: clients.filter(c => c.s >= b.lo && (i === 0 || c.s < priorityBands[i - 1].lo)) }));
+      } else if (view === 'recency') {
+        bands = recencyBands.map(b => ({ label: b.label, action: b.action, group: clients.filter(c => c.r === b.p) }));
+      } else {
+        bands = disciplineBands.map(b => ({ label: b.label, action: '', group: clients.filter(c => c.g === b.g) }));
+      }
+      document.getElementById('bands').innerHTML = bands.map(b => {
+        const group = b.group.slice().sort((x, y) => y.s - x.s || (y.f + y.v) - (x.f + x.v) || x.n.localeCompare(y.n));
+        return '<section class="band"><div class="band-head"><h3>' + b.label + '</h3><span>' +
+          group.length + (group.length === 1 ? ' client' : ' clients') + '</span></div>' +
+          (b.action ? '<p class="band-action">' + b.action + '</p>' : '') +
+          '<div class="tiles">' + group.map(tile).join('') + '</div></section>';
+      }).join('');
+    };
+
+    render('priority');
+    document.querySelectorAll('.toolbar .filter').forEach(button => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.toolbar .filter').forEach(b => b.classList.toggle('active', b === button));
+        render(button.dataset.view);
+      });
+    });
+  </script>
+</body>
+</html>

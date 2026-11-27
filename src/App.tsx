@@ -81,6 +81,7 @@ const UnifiedCalendarPage = lazy(() => import("./pages/UnifiedCalendarPage"));
 // --- Business & System ---
 const BusinessPage = lazy(() => import("./pages/BusinessPage"));
 const MoneyPage = lazy(() => import("./pages/MoneyPage"));
+const FollowUpPage = lazy(() => import("./pages/FollowUpPage"));
 
 // Old /business?tool=<id> links → the Business zone's own destinations.
 const BusinessRedirect = () => {
@@ -216,7 +217,7 @@ const AppRoutes = () => {
           <Route path="/clients" element={<ClientsPage />} />
           <Route path="/assistant" element={<AssistantPage />} />
           <Route path="/inbox" element={<AssistantPage initialTab="inbox" />} />
-          <Route path="/follow-up" element={<AssistantPage initialTab="followup" />} />
+          <Route path="/follow-up" element={<FollowUpPage />} />
           <Route path="/clients/:id" element={<ClientDetailPage />} />
           <Route path="/clients/:id/log" element={<ClientLogPage />} />
           <Route path="/clients/:id/hub" element={<ClientHubPage />} />

@@ -8,11 +8,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import HubTabs from "@/components/shared/HubTabs";
 import PageHeader from "@/components/shared/PageHeader";
-import { Wallet, LineChart, AlertCircle, RefreshCw, ArrowUpRight, Table2, BarChart3, TrendingUp, Users } from "lucide-react";
+import { Wallet, LineChart, AlertCircle, RefreshCw, ArrowUpRight, Table2, BarChart3, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlanningTool } from "@/components/money/PlanningTool";
 import { WeeklyIncomeTool } from "@/components/money/WeeklyIncomeTool";
-import { ClientHeatmapTool } from "@/components/money/ClientHeatmapTool";
 import { loadCalendarItems, unpaidItems, sumAmount, itemStart, type CalendarItem } from "@/lib/calendarItems";
 import { practiceOf, itemName, PRACTICE_LABEL, type Practice } from "@/lib/today";
 
@@ -224,8 +223,7 @@ function MoneyOverview() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 const TABS = [
   { id: "overview", label: "Overview", icon: Wallet },
-  { id: "weekly", label: "Weekly income", icon: TrendingUp },
-  { id: "heatmap", label: "Client heat map", icon: Users },
+  { id: "income", label: "Income", icon: TrendingUp },
   { id: "planning", label: "Planning", icon: LineChart },
 ];
 
@@ -238,6 +236,12 @@ const TABS = [
 const MoneyPage = () => {
   const [tab, setTab] = useState(() => {
     const tool = new URLSearchParams(window.location.search).get("tool");
+    if (tool === "weekly") return "income";
+    if (tool === "heatmap" || tool === "heat-map" || tool === "rebook") {
+      // Heat map moved to Follow-up → "Who to rebook".
+      window.location.replace("/follow-up?tool=rebook");
+      return "overview";
+    }
     return tool && TABS.some((t) => t.id === tool) ? tool : "overview";
   });
   return (
@@ -249,16 +253,10 @@ const MoneyPage = () => {
           <MoneyOverview />
         </div>
       </TabsContent>
-      <TabsContent value="weekly" className="m-0">
+      <TabsContent value="income" className="m-0">
         <div className="w-full space-y-8 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-          <PageHeader icon={TrendingUp} title="Weekly income" subtitle="Booked value by week — kinesiology and voice & piano, with the full session ledger." />
+          <PageHeader icon={TrendingUp} title="Income" subtitle="Booked value by week — kinesiology and voice & piano, with the full session ledger." />
           <WeeklyIncomeTool />
-        </div>
-      </TabsContent>
-      <TabsContent value="heatmap" className="m-0">
-        <div className="w-full space-y-8 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-          <PageHeader icon={Users} title="Client heat map" subtitle="Recency plus traction — who to keep close, rebook or let go." />
-          <ClientHeatmapTool />
         </div>
       </TabsContent>
       <TabsContent value="planning" className="m-0">

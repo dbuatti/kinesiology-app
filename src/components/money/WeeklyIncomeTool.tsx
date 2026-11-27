@@ -131,7 +131,27 @@ export function WeeklyIncomeTool() {
           </div>
         </div>
         <p className="mb-2 text-xs text-muted-foreground">{ledger.length} sessions · {money(ledger.reduce((n, r) => n + r.amount, 0))}</p>
-        <div className="overflow-x-auto">
+        {/* Mobile: stacked cards so nothing scrolls sideways. */}
+        <ul className="space-y-2 sm:hidden">
+          {ledger.map((r) => (
+            <li key={r.id} className="rounded-lg border border-border bg-card px-3 py-2.5">
+              <div className="flex items-center justify-between gap-3">
+                <span className="min-w-0 truncate text-[13px] font-medium text-foreground blur-sensitive">{r.name}</span>
+                <span className="shrink-0 tabular-nums text-[13px] font-medium text-foreground">{money(r.amount)}</span>
+              </div>
+              <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
+                <span className="tabular-nums">{new Date(`${r.date}T00:00:00`).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}</span>
+                <span>·</span>
+                <span>{r.discipline === "voice" ? "Voice & piano" : "Kinesiology"}</span>
+                <span>·</span>
+                <span>{r.paid ? "Paid" : r.status || "Scheduled"}</span>
+              </div>
+            </li>
+          ))}
+          {ledger.length === 0 && <li className="py-6 text-center text-sm text-muted-foreground">Nothing in this view.</li>}
+        </ul>
+        {/* Desktop: full table. */}
+        <div className="hidden overflow-x-auto sm:block">
           <table className="w-full text-sm">
             <thead><tr className="text-left text-xs text-muted-foreground">
               <th className="py-2 pr-4 font-medium">Date</th>

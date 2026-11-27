@@ -117,7 +117,7 @@ const FooterLinks = () => {
               </li>
               <li>
                 <Link to="/audit" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
-                  Client audit
+                  Rates & audit
                 </Link>
               </li>
               <li>

@@ -465,7 +465,7 @@ export function PlanningTool() {
                 </label>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground">Kinesiology uses the price on the session, or the client's own rate. Backing tracks use the price recorded in The Plan. <Link to="/audit" className="underline underline-offset-2 hover:text-foreground">Per-client rates are in Client audit</Link>.</p>
+            <p className="text-xs text-muted-foreground">Kinesiology uses the price on the session, or the client's own rate. Backing tracks use the price recorded in The Plan. <Link to="/audit" className="underline underline-offset-2 hover:text-foreground">Per-client rates are in Rates & audit</Link>.</p>
           </div>
         </div>
       </section>

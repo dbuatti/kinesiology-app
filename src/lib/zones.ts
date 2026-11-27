@@ -58,8 +58,8 @@ const INBOX: NavItem = { label: "Inbox", icon: Mail, path: "/inbox" };
 const FOLLOW_UP: NavItem = { label: "Follow-up", icon: UserRoundCheck, path: "/follow-up" };
 const ASSISTANT: NavItem = { label: "Assistant", icon: Bot, path: "/assistant" };
 const MONEY: NavItem = { label: "Money", icon: Wallet, path: "/money" };
-const AUDIT: NavItem = { label: "Client audit", icon: ClipboardList, path: "/audit" };
-const TIMETABLE: NavItem = { label: "Timetable", icon: CalendarRange, path: "/timetable" };
+const AUDIT: NavItem = { label: "Rates & audit", icon: ClipboardList, path: "/audit" };
+const TIMETABLE: NavItem = { label: "Availability", icon: CalendarRange, path: "/timetable" };
 const MARKETING: NavItem = { label: "Marketing", icon: Megaphone, path: "/marketing" };
 const MORNING: NavItem = { label: "Morning Program", icon: Sunrise, path: "/morning-program" };
 const JOURNAL: NavItem = { label: "Journal", icon: MessageSquare, path: "/journal" };
@@ -165,10 +165,10 @@ export const BREADCRUMBS: Record<string, [string, string, string]> = {
   "follow-up": ["Follow-up", "Business", "/inbox"],
   assistant: ["Assistant", "Business", "/inbox"],
   money: ["Money", "Business", "/inbox"],
-  audit: ["Client audit", "Business", "/inbox"],
+  audit: ["Rates & audit", "Business", "/inbox"],
   marketing: ["Marketing", "Business", "/inbox"],
   business: ["Money", "Business", "/inbox"],
-  timetable: ["Timetable", "Business", "/inbox"],
+  timetable: ["Availability", "Business", "/inbox"],
   "morning-program": ["Morning Program", "Growth", "/morning-program"],
   journal: ["Journal", "Growth", "/morning-program"],
   practice: ["Practice Hub", "Growth", "/morning-program"],

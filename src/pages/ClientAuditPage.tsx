@@ -143,7 +143,7 @@ const AUDIT_TABS = [
 // just the salary simulator. (Its old Financials tab is now the Money overview.)
 export function ClientAuditTool({
   tabs = ["rates", "timetable", "salary", "suggestions"],
-  title = "Client audit",
+  title = "Rates & audit",
   subtitle = "Rates and recency per client, preferred times, and AI pricing suggestions.",
   showSummary = true,
 }: { tabs?: string[]; title?: string; subtitle?: string; showSummary?: boolean } = {}) {

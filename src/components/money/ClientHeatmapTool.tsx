@@ -104,7 +104,7 @@ export function ClientHeatmapTool() {
         <div className="flex items-start justify-between gap-2">
           <span className="min-w-0 truncate text-[13px] font-medium text-foreground blur-sensitive">{c.name}</span>
           <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-            {c.group === "B" ? "K+V" : c.group === "F" ? "K" : c.group === "V" ? "V" : "—"}
+            {c.group === "B" ? "B" : c.group === "F" ? "K" : c.group === "V" ? "V" : "—"}
           </span>
         </div>
         <div className="mt-0.5 truncate text-[11px] text-muted-foreground">

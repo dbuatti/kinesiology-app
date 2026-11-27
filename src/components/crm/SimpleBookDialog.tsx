@@ -135,7 +135,6 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
   useEffect(() => {
     if (!open) {
       createBooking.reset();
-      forceBooking.reset();
       setStep("details");
       setSelectedStudent(null);
       setStudentSearch("");
@@ -149,7 +148,6 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
       setEmailSent(false);
     } else {
       createBooking.reset();
-      forceBooking.reset();
       setStep("details");
       if (prefillDuration) setDuration(prefillDuration);
     }
@@ -226,7 +224,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
     }
   };
 
-  const bookLesson = async (forceBooking: boolean): Promise<BookLessonResult> => {
+  const bookLesson = async (): Promise<BookLessonResult> => {
     if (!selectedStudent || !date || !time) throw new Error("Missing booking details");
     if (!studentEmail) throw new Error("Missing student email");
 
@@ -265,7 +263,6 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
           notes: seriesId
             ? `Series ${seriesId.slice(0, 8)} · ${occ.occurrence}/${repeatCount}`
             : `Booked via Simple Book (${duration} min)`,
-          force: forceBooking,
           discipline,
           // This dialog sends its own confirmation (or none, if unticked).
           confirmation: sendOnboarding ? "app" : "none",
@@ -321,17 +318,12 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
   };
 
   const createBooking = useMutation({
-    mutationFn: () => bookLesson(false),
+    mutationFn: () => bookLesson(),
     onSuccess: onBookingSuccess,
   });
 
-  const forceBooking = useMutation({
-    mutationFn: () => bookLesson(true),
-    onSuccess: onBookingSuccess,
-  });
-
-  const bookingDone = createBooking.isSuccess || forceBooking.isSuccess;
-  const bookingPending = createBooking.isPending || forceBooking.isPending;
+  const bookingDone = createBooking.isSuccess;
+  const bookingPending = createBooking.isPending;
 
   const handleSendOnboarding = async (sessions: OnboardingSession[]) => {
     if (sessions.length === 0) return;
@@ -616,23 +608,13 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
           {/* Confirm step extras */}
           {bookingDone && (
             <div className="space-y-3">
-              {forceBooking.isSuccess ? (
-                <div className="flex items-center gap-3 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 p-4 rounded-xl">
-                  <Check size={18} />
-                  <div>
-                    <p className="font-bold text-sm">Booked (No Cal.com)</p>
-                    <p className="text-xs">Lesson created in Notion, but not visible on your Cal.com calendar.</p>
-                  </div>
+              <div className="flex items-center gap-3 bg-primary/10 dark:bg-primary/15 text-primary-strong dark:text-primary p-4 rounded-xl">
+                <Check size={18} />
+                <div>
+                  <p className="font-bold text-sm">Booked!</p>
+                  <p className="text-xs">Lesson created in Cal.com and Notion.</p>
                 </div>
-              ) : (
-                <div className="flex items-center gap-3 bg-primary/10 dark:bg-primary/15 text-primary-strong dark:text-primary p-4 rounded-xl">
-                  <Check size={18} />
-                  <div>
-                    <p className="font-bold text-sm">Booked!</p>
-                    <p className="text-xs">Lesson created in Cal.com and Notion.</p>
-                  </div>
-                </div>
-              )}
+              </div>
               {sendOnboarding && sendingEmail && (
                 <div className="flex items-center gap-3 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 p-4 rounded-xl">
                   <Loader2 size={16} className="animate-spin" />
@@ -656,16 +638,9 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
               <div className="bg-destructive/5 dark:bg-red-950/30 text-destructive-strong dark:text-red-400 p-4 rounded-xl text-xs font-bold">
                 {(createBooking.error as any)?.message || "Booking failed. The slot may already be taken."}
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => forceBooking.mutate()}
-                disabled={forceBooking.isPending}
-                className="w-full rounded-xl font-bold text-xs"
-              >
-                {forceBooking.isPending && <Loader2 size={14} className="animate-spin mr-2" />}
-                Book Anyway (Skip Cal.com)
-              </Button>
+              <p className="text-xs text-muted-foreground">
+                Cal.com is the source of truth for availability. If a time is not offered, review the availability schedule or pick a different slot.
+              </p>
             </div>
           )}
 

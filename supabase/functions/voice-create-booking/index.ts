@@ -206,13 +206,11 @@ serve(async (req) => {
     if (!studentName || !studentEmail) throw new Error("Missing studentName or studentEmail.");
     console.log(`[${functionName}] CREATE new booking`);
 
+    // Cal.com availability is the source of truth. A local "force" booking used
+    // to create Notion/CRM rows with a synthetic UID and no Cal.com event, which
+    // silently bypassed the calendar and its emails. Do not allow it.
     if (force) {
-      console.log(`[${functionName}] FORCE booking — skipping Cal.com`);
-      const syntheticUid = `force-${Date.now()}`;
-      return new Response(JSON.stringify({ success: true, uid: syntheticUid, action: "force_booked" }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      throw new Error("Forced bookings are disabled. Choose a slot offered by Cal.com or review the availability schedule.");
     }
 
     const createRes = await fetch("https://api.cal.com/v2/bookings", {

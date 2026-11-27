@@ -60,6 +60,45 @@ serve(async (req) => {
       'Content-Type': 'application/json',
     };
 
+    // Cal.com does not reliably deliver BOOKING_CREATED/RESCHEDULED for bookings
+    // made server-side with an API key — two bookings created here sat in
+    // Cal.com with no CRM row and no failure logged. Replay the event through
+    // the webhook internally so the row is always created or linked. Email is
+    // suppressed: the caller owns confirmation/onboarding, and a late duplicate
+    // is worse than none. The webhook is idempotent (UID + 1-minute time match).
+    const syncCrmBooking = async (uid: string, start: string, triggerEvent: string, oldUid?: string) => {
+      try {
+        const replay = {
+          triggerEvent,
+          suppressEmail: true,
+          payload: {
+            uid,
+            startTime: start,
+            eventTypeId: parseInt(String(eventTypeId), 10) || 8072389,
+            attendees: [{ name: client.name, email: client.email }],
+            responses: { name: client.name, email: client.email },
+            ...(oldUid ? { rescheduleUid: oldUid } : {}),
+          },
+        };
+        const syncRes = await fetch(`${SUPABASE_URL}/functions/v1/calcom-webhook`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            apikey: SUPABASE_SERVICE_ROLE_KEY,
+          },
+          body: JSON.stringify(replay),
+        });
+        if (!syncRes.ok) {
+          console.error(`[${functionName}] CRM sync failed for ${uid}: ${syncRes.status}`, (await syncRes.text()).slice(0, 200));
+        } else {
+          console.log(`[${functionName}] CRM sync ok for ${uid}`);
+        }
+      } catch (e) {
+        console.error(`[${functionName}] CRM sync error (non-fatal):`, e.message);
+      }
+    };
+
     // 2. Reschedule existing booking if UID provided (Cal.com v2 uses POST /reschedule)
     if (bookingUid && bookingUid !== "undefined" && bookingUid !== "null" && bookingUid !== "") {
       console.log(`[${functionName}] Action: RESCHEDULE booking ${bookingUid} → ${cleanStartTime}`);
@@ -80,6 +119,7 @@ serve(async (req) => {
         // Cal.com creates a new booking uid for the rescheduled slot and cancels the old one
         const newUid = result.data?.uid || bookingUid;
         console.log(`[${functionName}] Reschedule successful. New uid: ${newUid}`);
+        await syncCrmBooking(newUid, cleanStartTime, "BOOKING_RESCHEDULED", bookingUid);
         return new Response(JSON.stringify({ success: true, uid: newUid, data: result.data }), {
           status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -130,6 +170,7 @@ serve(async (req) => {
           if (retryRes.ok) {
             const newUid = retryResult.data?.uid || matched.uid;
             console.log(`[${functionName}] Reschedule successful via email lookup. New uid: ${newUid}`);
+            await syncCrmBooking(newUid, cleanStartTime, "BOOKING_RESCHEDULED", bookingUid);
             return new Response(JSON.stringify({ success: true, uid: newUid, data: retryResult.data, repaired: true }), {
               status: 200,
               headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -175,6 +216,7 @@ serve(async (req) => {
 
     if (createRes.ok) {
       console.log(`[${functionName}] Create successful: ${createResult.data.uid}`);
+      await syncCrmBooking(createResult.data.uid, cleanStartTime, "BOOKING_CREATED");
       return new Response(JSON.stringify({ success: true, uid: createResult.data.uid }), { 
         status: 200, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

@@ -54,14 +54,14 @@ const JointActionTableModal = ({ open, onOpenChange }: JointActionTableModalProp
             <table className="w-full text-sm">
               <thead className="bg-muted/50 sticky top-0 z-10">
                 <tr>
-                  <th className="p-4 text-left font-semibold text-muted-foreground text-[10px] uppercase tracking-wider">Joint</th>
-                  <th className="p-4 text-left font-semibold text-primary text-[10px] uppercase tracking-wider flex items-center gap-1.5">
+                  <th className="p-4 text-left font-semibold text-muted-foreground text-[10px] uppercase tracking-[0.14em]">Joint</th>
+                  <th className="p-4 text-left font-semibold text-primary text-[10px] uppercase tracking-[0.14em] flex items-center gap-1.5">
                     <Zap size={12} /> Sagittal
                   </th>
-                  <th className="p-4 text-left font-semibold text-primary-strong text-[10px] uppercase tracking-wider">
+                  <th className="p-4 text-left font-semibold text-primary-strong text-[10px] uppercase tracking-[0.14em]">
                     <Move size={12} className="inline mr-1.5" /> Frontal
                   </th>
-                  <th className="p-4 text-left font-semibold text-orange-500 text-[10px] uppercase tracking-wider">
+                  <th className="p-4 text-left font-semibold text-orange-500 text-[10px] uppercase tracking-[0.14em]">
                     <RefreshCw size={12} className="inline mr-1.5" /> Transverse
                   </th>
                 </tr>

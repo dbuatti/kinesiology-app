@@ -12,7 +12,7 @@ const DocumentHeader = ({ clientName, date, displayId, id }: DocumentHeaderProps
   return (
     <div className="flex justify-between items-end border-b-4 border-foreground/20 pb-10">
       <div className="space-y-1">
-        <h1 className="text-5xl font-semibold tracking-tighter uppercase leading-none">Session Notes</h1>
+        <h1 className="font-serif text-[26px] font-medium tracking-[-0.02em] leading-none">Session Notes</h1>
       </div>
       <div className="text-right space-y-1">
         <p className="text-xl font-semibold">{clientName}</p>

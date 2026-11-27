@@ -558,14 +558,14 @@ const CalcomSlotsView = () => {
           <div className="flex flex-col">
             <p className="text-xs font-medium text-muted-foreground mb-1">Upcoming Bookings</p>
             <div className="flex items-center gap-2">
-              <span className="text-3xl font-semibold text-indigo-600">{stats.totalBookings}</span>
-              <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 font-bold">Confirmed</Badge>
+              <span className="text-3xl font-semibold text-primary-strong">{stats.totalBookings}</span>
+              <Badge variant="outline" className="bg-primary/5 text-primary-strong border-primary/20 font-bold">Confirmed</Badge>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex bg-muted p-1 rounded-xl">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap bg-muted p-1 rounded-xl">
             {[2, 4, 8, 12, 24, 52].map(w => (
               <Button 
                 key={w}
@@ -573,8 +573,8 @@ const CalcomSlotsView = () => {
                 size="sm" 
                 onClick={() => setWeeks(w)}
                 className={cn(
-                  "h-8 px-4 rounded-lg text-[11px] font-semibold",
-                  weeks === w ? "bg-card text-amber-600 shadow-sm ring-1 ring-amber-200/60" : "text-muted-foreground"
+                  "h-8 px-3 sm:px-4 rounded-lg text-[11px] font-semibold",
+                  weeks === w ? "bg-card text-primary-strong shadow-sm ring-1 ring-primary/20" : "text-muted-foreground"
                 )}
               >
                 {w}W
@@ -618,14 +618,14 @@ const CalcomSlotsView = () => {
 
       {/* Row 2: Filters + Actions */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => setShowOnlyAvailable(!showOnlyAvailable)}
             className="flex items-center gap-2 group"
           >
             <div className={cn(
               "w-4 h-4 rounded border-2 flex items-center justify-center transition-all",
-              showOnlyAvailable ? "bg-indigo-600 border-indigo-600" : "border-border group-hover:border-indigo-400"
+              showOnlyAvailable ? "bg-primary border-primary" : "border-border group-hover:border-primary/40"
             )}>
               {showOnlyAvailable && <Check size={10} className="text-primary-foreground" />}
             </div>
@@ -634,16 +634,16 @@ const CalcomSlotsView = () => {
             </span>
           </button>
 
-          <div className="w-px h-4 bg-border" />
+          <div className="hidden h-4 w-px bg-border sm:block" />
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-muted-foreground">Session Type:</span>
+            <span className="text-xs font-medium text-muted-foreground">Session type:</span>
             <Select value={eventTypeId} onValueChange={(val) => {
               setEventTypeId(val);
               setTimeout(fetchSlots, 100);
             }}>
-              <SelectTrigger className="h-8 w-[180px] rounded-xl bg-card border-border font-bold text-[11px]">
-                <SelectValue placeholder="Select Type" />
+              <SelectTrigger className="h-8 w-[160px] sm:w-[180px] rounded-xl bg-card border-border font-bold text-[11px]">
+                <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent className="rounded-xl border-none shadow-2xl">
                 {CALCOM_CONFIG.EVENT_TYPES.map(type => (
@@ -674,7 +674,7 @@ const CalcomSlotsView = () => {
             size="sm"
             onClick={handleCopyBookings}
             disabled={loading}
-            className="h-8 px-3 rounded-lg border-amber-200/60 text-amber-700 hover:bg-amber-100/70 font-semibold text-[11px]"
+            className="h-8 px-3 rounded-lg border-warning/20 text-warning-strong hover:bg-warning/10 font-semibold text-[11px]"
           >
             {copied === 'bookings' ? <Check size={12} className="mr-1.5" /> : <Copy size={12} className="mr-1.5" />}
             Copy Bookings
@@ -684,7 +684,7 @@ const CalcomSlotsView = () => {
             size="sm"
             onClick={handleCopyAll}
             disabled={loading}
-            className="h-8 px-3 rounded-lg border-amber-200/60 text-amber-700 hover:bg-amber-100/70 font-semibold text-[11px]"
+            className="h-8 px-3 rounded-lg border-warning/20 text-warning-strong hover:bg-warning/10 font-semibold text-[11px]"
           >
             {copied === 'all' ? <Check size={12} className="mr-1.5" /> : <Copy size={12} className="mr-1.5" />}
             Copy All
@@ -729,7 +729,7 @@ const CalcomSlotsView = () => {
             onClick={() => handleCopyDay(day)}
             className={cn(
               "h-7 px-2.5 rounded-lg text-[11px] font-semibold transition-all",
-              copied === day ? "bg-primary text-primary-foreground hover:bg-primary" : "text-muted-foreground hover:bg-amber-100/70 dark:hover:bg-amber-950/30 hover:text-amber-700"
+              copied === day ? "bg-primary text-primary-foreground hover:bg-primary" : "text-muted-foreground hover:bg-warning/10 dark:hover:bg-warning/10 hover:text-warning-strong"
             )}
           >
             {copied === day ? <Check size={11} className="mr-1" /> : <Copy size={11} className="mr-1" />}
@@ -777,8 +777,8 @@ const CalcomSlotsView = () => {
       {loading && Object.keys(slots).length === 0 ? (
         <div className="py-32 flex flex-col items-center justify-center gap-6">
           <div className="relative">
-            <div className="w-20 h-20 rounded-2xl bg-indigo-600/10 animate-pulse" />
-            <Loader2 className="absolute inset-0 m-auto w-10 h-10 text-indigo-600 animate-spin" />
+            <div className="w-20 h-20 rounded-2xl bg-primary/10 animate-pulse" />
+            <Loader2 className="absolute inset-0 m-auto w-10 h-10 text-primary-strong animate-spin" />
           </div>
           <p className="text-xs font-medium text-muted-foreground">Syncing with Cal.com...</p>
         </div>
@@ -787,10 +787,10 @@ const CalcomSlotsView = () => {
           {groupedWeeks.map((week, weekIdx) => (
             <div key={weekIdx} className="space-y-6">
               <div className="flex items-center gap-4 px-4">
-                <div className="w-10 h-10 rounded-xl bg-amber-100/70 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-warning/10 dark:bg-warning/10 flex items-center justify-center text-warning-strong shadow-sm">
                   <CalendarDays size={20} />
                 </div>
-                <h3 className="text-xl font-serif font-bold uppercase tracking-wider text-muted-foreground">
+                <h3 className="text-xl font-serif font-bold uppercase tracking-[0.14em] text-muted-foreground">
                   Week of {format(new Date(week[0]), "MMM d")}
                 </h3>
                 <div className="flex-1 h-[2px] bg-muted rounded-full" />
@@ -802,7 +802,7 @@ const CalcomSlotsView = () => {
                     "h-8 px-3 rounded-lg text-[11px] font-semibold shrink-0 transition-all",
                     copied === `week-${week[0]}`
                       ? "bg-primary text-primary-foreground hover:bg-primary"
-                      : "text-muted-foreground hover:bg-indigo-50 hover:text-indigo-600"
+                      : "text-muted-foreground hover:bg-primary/5 hover:text-primary-strong"
                   )}
                 >
                   {copied === `week-${week[0]}`
@@ -852,13 +852,13 @@ const CalcomSlotsView = () => {
                               )}>
                                 {format(new Date(date), "EEEE")}
                               </CardTitle>
-                              <CardDescription className="font-semibold text-[10px] uppercase tracking-wider text-indigo-600 mt-0.5">
+                              <CardDescription className="font-semibold text-[10px] uppercase tracking-[0.14em] text-primary-strong mt-0.5">
                                 {format(new Date(date), "MMM d, yyyy")}
                               </CardDescription>
                             </div>
                           </div>
                           <Badge className={cn(
-                            "border-none font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full shadow-sm",
+                            "border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-2 py-0.5 rounded-full shadow-sm",
                             isBlocked ? "bg-rose-100 text-rose-600" : "bg-primary/10 text-primary-strong"
                           )}>
                             {isBlocked ? "Blocked" : `${daySlots.length} Slots`}
@@ -902,22 +902,22 @@ const CalcomSlotsView = () => {
                                   {dayBookings.map((booking) => (
                                     <div 
                                       key={booking.id} 
-                                      className="flex items-center justify-between p-3 rounded-2xl bg-indigo-900 text-primary-foreground shadow-lg border border-indigo-800 group/booking"
+                                      className="flex items-center justify-between p-3 rounded-2xl bg-primary text-primary-foreground shadow-lg border border-primary/80 group/booking"
                                     >
                                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                         <div className="w-8 h-8 rounded-lg bg-card/10 flex items-center justify-center shrink-0 border border-primary-foreground/10">
-                                          <User size={14} className="text-indigo-300" />
+                                          <User size={14} className="text-primary-foreground/70" />
                                         </div>
                                         <div className="min-w-0 flex-1">
                                           <p className="text-sm font-semibold truncate leading-tight">{booking.attendeeName}</p>
                                           <div className="flex items-center gap-1.5 mt-1">
                                             <span className={cn(
-                                              "text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0",
+                                              "text-[10px] font-semibold uppercase tracking-[0.14em] px-1.5 py-0.5 rounded-full shrink-0",
                                               isVoiceTitle(booking.title) ? "bg-rose-500/30 text-rose-200" : "bg-primary/30 text-primary"
                                             )}>
                                               {isVoiceTitle(booking.title) ? "Voice" : "FNH"}
                                             </span>
-                                            <p className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider truncate">
+                                            <p className="text-[10px] font-bold text-primary-foreground/70 uppercase tracking-[0.14em] truncate">
                                               {format(new Date(booking.start), "h:mm a")}
                                             </p>
                                           </div>
@@ -927,7 +927,7 @@ const CalcomSlotsView = () => {
                                         <Button
                                           variant="ghost"
                                           size="icon"
-                                          className="h-8 w-8 rounded-lg text-indigo-300 hover:text-amber-400 hover:bg-amber-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
+                                          className="h-8 w-8 rounded-lg text-primary-foreground/70 hover:text-warning-strong hover:bg-warning/20 opacity-0 group-hover/booking:opacity-100 transition-all"
                                           title="Reschedule"
                                           onClick={() => { setRescheduleBooking(booking); fetchSlots(booking.uid); }}
                                         >
@@ -936,7 +936,7 @@ const CalcomSlotsView = () => {
                                         <Button
                                           variant="ghost"
                                           size="icon"
-                                          className="h-8 w-8 rounded-lg text-indigo-300 hover:text-primary hover:bg-primary/100 opacity-0 group-hover/booking:opacity-100 transition-all"
+                                          className="h-8 w-8 rounded-lg text-primary-foreground/70 hover:text-primary hover:bg-primary/100 opacity-0 group-hover/booking:opacity-100 transition-all"
                                           onClick={() => handleSendOnboarding(booking)}
                                           disabled={sendingEmail === booking.uid}
                                         >
@@ -945,7 +945,7 @@ const CalcomSlotsView = () => {
                                         <Button
                                           variant="ghost"
                                           size="icon"
-                                          className="h-8 w-8 rounded-lg text-indigo-300 hover:text-rose-400 hover:bg-rose-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
+                                          className="h-8 w-8 rounded-lg text-primary-foreground/70 hover:text-rose-400 hover:bg-rose-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
                                           onClick={() => setConfirmAction({
                                             callback: () => handleCancelBooking(booking.uid, booking.attendeeName),
                                             title: "Cancel booking?",
@@ -985,7 +985,7 @@ const CalcomSlotsView = () => {
                                     variant="ghost" 
                                     size="sm" 
                                     onClick={() => toggleDayExpansion(date)}
-                                    className="w-full h-8 rounded-lg text-[11px] font-semibold text-indigo-600 hover:bg-indigo-50"
+                                    className="w-full h-8 rounded-lg text-[11px] font-semibold text-primary-strong hover:bg-primary/5"
                                   >
                                     {isExpanded ? (
                                       <><ChevronUp size={12} className="mr-1.5" /> Show Less</>
@@ -1044,7 +1044,7 @@ const CalcomSlotsView = () => {
           <div className="p-10">
             <DialogHeader className="mb-8">
               <div className="flex items-center gap-4 mb-2">
-                <div className="w-14 h-14 rounded-2xl bg-amber-500 text-primary-foreground flex items-center justify-center shadow-xl">
+                <div className="w-14 h-14 rounded-2xl bg-warning text-primary-foreground flex items-center justify-center shadow-xl">
                   <CalendarClock size={28} />
                 </div>
                 <div>
@@ -1098,7 +1098,7 @@ const CalcomSlotsView = () => {
                                   ? "bg-muted border-border text-muted-foreground cursor-not-allowed line-through"
                                   : rescheduling
                                     ? "opacity-50 cursor-wait bg-muted border-border text-foreground"
-                                    : "bg-muted/50 border-border text-foreground hover:bg-amber-500 hover:border-amber-500 hover:text-primary-foreground shadow-sm"
+                                    : "bg-muted/50 border-border text-foreground hover:bg-warning hover:border-warning hover:text-primary-foreground shadow-sm"
                               )}
                             >
                               {rescheduling ? <Loader2 size={11} className="animate-spin" /> : <Clock size={11} className="opacity-60" />}

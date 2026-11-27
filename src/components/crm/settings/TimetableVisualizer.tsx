@@ -463,7 +463,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  >
  {isOver ? (
  <div className="w-full h-full flex items-center justify-center pointer-events-none">
- <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
+ <span className="text-[10px] font-semibold text-primary uppercase tracking-[0.14em]">
  {isEmpty ? "Drop here" : "Add here"}
  </span>
  </div>
@@ -507,7 +507,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  })}
  {isEmpty && isDragging && (
  <div className="mx-0.5 h-6 rounded-lg border-2 border-dashed border-primary/20 flex items-center justify-center">
- <span className="text-[10px] font-medium text-primary/30 uppercase tracking-wider">Drop</span>
+ <span className="text-[10px] font-medium text-primary/30 uppercase tracking-[0.14em]">Drop</span>
  </div>
  )}
  {isEmpty && !isDragging && (
@@ -543,9 +543,9 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  {/* Per-day earnings pills */}
  <div className="flex gap-1.5 flex-wrap">
  {DAYS.map(day => dailyBreakdown[day] > 0 && (
- <div key={day} className="px-2 py-0.5 rounded-full bg-chart-emerald/10 border border-border text-center">
+ <div key={day} className="px-2 py-0.5 rounded-full bg-primary/10 border border-border text-center">
  <span className="text-[10px] font-medium text-muted-foreground block leading-tight">{day.substring(0, 3)}</span>
- <span className="text-[10px] font-semibold text-chart-emerald ">${dailyBreakdown[day]}</span>
+ <span className="text-[10px] font-semibold text-primary-strong ">${dailyBreakdown[day]}</span>
  </div>
  ))}
  </div>
@@ -555,9 +555,9 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  <table className="w-full border-collapse">
  <thead>
  <tr className="border-b border-border bg-muted/20">
- <th className="p-3 pl-5 font-semibold text-[10px] uppercase tracking-wider text-muted-foreground w-24 text-left">Time</th>
+ <th className="p-3 pl-5 font-semibold text-[10px] uppercase tracking-[0.14em] text-muted-foreground w-24 text-left">Time</th>
  {DAYS.map(day => (
- <th key={day} className="p-3 font-semibold text-[10px] uppercase tracking-wider text-muted-foreground text-center">
+ <th key={day} className="p-3 font-semibold text-[10px] uppercase tracking-[0.14em] text-muted-foreground text-center">
  {day.substring(0, 3)}
  <span className="hidden sm:inline">{day.substring(3)}</span>
  </th>
@@ -669,7 +669,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
   className={cn(
   "rounded-xl h-9 px-5 font-semibold text-[11px]",
   isOptimized
-  ? "bg-chart-emerald hover:bg-chart-emerald/90 text-primary-foreground "
+  ? "bg-primary hover:bg-primary/90 text-primary-foreground "
   : "bg-muted hover:bg-muted/80 text-foreground "
   )}>
  {isOptimized
@@ -702,7 +702,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  <Card className="border-none shadow-sm rounded-xl bg-primary text-primary-foreground overflow-hidden col-span-1">
  <CardContent className="p-5 space-y-2">
  <div className="flex items-center justify-between">
- <span className="text-[10px] font-semibold uppercase tracking-wider opacity-70">Fortnightly</span>
+ <span className="text-[10px] font-semibold uppercase tracking-[0.14em] opacity-70">Fortnightly</span>
  <div className="w-7 h-7 rounded-lg bg-card/10 flex items-center justify-center">
  <Sparkles size={14} />
  </div>
@@ -742,18 +742,18 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  {/* Auto-resolve proposed moves */}
  {isOptimized && optimizedData.proposedMoves.length > 0 && (
  <Card className="border border-border shadow-sm rounded-xl bg-card border border-border overflow-hidden animate-in slide-in-from-top-4 duration-500">
- <CardHeader className="p-6 pb-4 bg-chart-emerald/10 border-b border-border ">
+ <CardHeader className="p-6 pb-4 bg-primary/10 border-b border-border ">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div className="space-y-1">
  <CardTitle className="text-base font-semibold text-primary-strong flex items-center gap-2">
- <Sparkles size={18} className="text-chart-emerald" /> Auto-Resolved Conflicts
+ <Sparkles size={18} className="text-primary-strong" /> Auto-Resolved Conflicts
  </CardTitle>
- <CardDescription className="text-chart-emerald font-medium">
+ <CardDescription className="text-primary-strong font-medium">
  {optimizedData.proposedMoves.length} client{optimizedData.proposedMoves.length > 1 ? "s" : ""} moved to open slots.
  </CardDescription>
  </div>
   <Button onClick={() => setShowApplyConfirm(true)} disabled={applyingMoves}
- className="bg-chart-emerald hover:bg-chart-emerald/90 text-primary-foreground rounded-xl h-9 px-6 font-semibold text-[11px] shrink-0">
+ className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-9 px-6 font-semibold text-[11px] shrink-0">
  {applyingMoves ? <Loader2 className="mr-2 animate-spin" size={13} /> : <CheckCircle2 size={13} className="mr-2" />}
  Apply Schedule
  </Button>
@@ -767,7 +767,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  <p className="text-[10px] text-muted-foreground font-medium">
  <span className="text-destructive font-medium">{move.originalDay} {TIME_LABELS[move.originalSlot]} W{move.originalWeek}</span>
  {" → "}
- <span className="text-chart-emerald font-medium">{move.newDay} {TIME_LABELS[move.newSlot]} W{move.newWeek}</span>
+ <span className="text-primary-strong font-medium">{move.newDay} {TIME_LABELS[move.newSlot]} W{move.newWeek}</span>
  </p>
  <p className="text-[10px] text-muted-foreground italic">{move.reason}</p>
  </div>
@@ -783,7 +783,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  <Card className="border border-border shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
  <div className="absolute top-0 right-0 p-6 opacity-[0.06] pointer-events-none"><Sparkles size={96} /></div>
  <CardHeader className="pb-2">
- <CardTitle className="text-sm font-semibold uppercase tracking-wider text-primary/70 flex items-center gap-2">
+ <CardTitle className="text-sm font-semibold uppercase tracking-[0.14em] text-primary/70 flex items-center gap-2">
  <Sparkles size={15} /> Schedule Insights
  </CardTitle>
  </CardHeader>
@@ -795,7 +795,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  </div>
  )) : (
  <div className="text-center py-8 space-y-2">
- <CheckCircle2 className="mx-auto text-chart-emerald/60" size={28} />
+ <CheckCircle2 className="mx-auto text-primary-strong/60" size={28} />
  <p className="text-xs font-medium text-muted-foreground/60">Schedule looks great!</p>
  </div>
  )}

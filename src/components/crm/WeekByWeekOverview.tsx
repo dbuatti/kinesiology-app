@@ -359,7 +359,7 @@ const WeekByWeekOverview = ({
             <span className="w-2.5 h-2.5 rounded-full bg-chart-destructive" /> Voice
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full border-2 border-chart-emerald border-dashed" /> Available
+            <span className="w-2.5 h-2.5 rounded-full border-2 border-primary border-dashed" /> Available
           </span>
         </div>
       </div>
@@ -387,7 +387,7 @@ const WeekByWeekOverview = ({
                 ? "text-destructive"
                 : wkSummary.totalHours >= 20
                 ? "text-amber-500"
-                : "text-chart-emerald";
+                : "text-primary-strong";
 
             return (
               <div
@@ -408,7 +408,7 @@ const WeekByWeekOverview = ({
                   </div>
                   <div className="flex items-center gap-3 text-[10px] font-medium text-muted-foreground">
                     <span className="text-chart-primary">{bookedCount} booked</span>
-                    <span className="text-chart-emerald">{availCount} open</span>
+                    <span className="text-primary-strong">{availCount} open</span>
                     <span className="text-muted-foreground/60">·</span>
                     <span className={overworkColor}>
                       {fmtHours(wkSummary.totalHours)} load
@@ -512,7 +512,7 @@ const WeekByWeekOverview = ({
                                         timeLabel: slot.timeLabel,
                                       })
                                     }
-                                    className="w-full flex items-center gap-1.5 p-2 rounded-lg border-2 border-dashed border-chart-emerald/30 text-[10px] font-medium text-chart-emerald hover:border-chart-emerald hover:bg-chart-emerald/5 transition-all group"
+                                    className="w-full flex items-center gap-1.5 p-2 rounded-lg border-2 border-dashed border-primary/30 text-[10px] font-medium text-primary-strong hover:border-primary hover:bg-primary/5 transition-all group"
                                   >
                                     <Plus size={11} className="shrink-0 opacity-60 group-hover:opacity-100" />
                                     <span>{slot.timeLabel}</span>
@@ -573,14 +573,14 @@ const WeekByWeekOverview = ({
                                       {slot.standardRate != null ? (
                                         <div className="flex items-center justify-between text-[10px]">
                                           <span className="text-muted-foreground">Rate</span>
-                                          <span className="font-semibold text-chart-emerald">
+                                          <span className="font-semibold text-primary-strong">
                                             ${slot.standardRate}
                                           </span>
                                         </div>
                                       ) : slot.priceAmount != null ? (
                                         <div className="flex items-center justify-between text-[10px]">
                                           <span className="text-muted-foreground">Rate</span>
-                                          <span className="font-semibold text-chart-emerald">
+                                          <span className="font-semibold text-primary-strong">
                                             ${slot.priceAmount}
                                           </span>
                                         </div>
@@ -606,7 +606,7 @@ const WeekByWeekOverview = ({
         <DialogContent className="sm:max-w-[480px] rounded-2xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col bg-background">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-chart-emerald text-primary-foreground flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
                 <CalendarIcon size={20} />
               </div>
               <div>
@@ -631,8 +631,8 @@ const WeekByWeekOverview = ({
                     className={cn(
                       "w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left",
                       selectedClient === c.id
-                        ? "border-chart-emerald bg-chart-emerald/5"
-                        : "border-border hover:border-chart-emerald/30"
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/30"
                     )}
                   >
                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
@@ -652,7 +652,7 @@ const WeekByWeekOverview = ({
             <Button
               onClick={handleBook}
               disabled={!selectedClient || bookMutation.isPending}
-              className="w-full bg-chart-emerald hover:bg-chart-emerald/90 h-12 rounded-xl font-semibold text-sm"
+              className="w-full bg-primary hover:bg-primary/90 h-12 rounded-xl font-semibold text-sm"
             >
               {bookMutation.isPending ? (
                 <>

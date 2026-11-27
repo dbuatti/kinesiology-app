@@ -24,7 +24,7 @@ const CATEGORIES: {
 }[] = [
   { key: "primitiveReflexes", label: "Primitive Reflexes", dot: "bg-chart-primary", Icon: Baby },
   { key: "cranialNerves", label: "Cranial Nerves", dot: "bg-chart-destructive", Icon: Zap },
-  { key: "muscles", label: "Muscles", dot: "bg-chart-emerald", Icon: Dumbbell },
+  { key: "muscles", label: "Muscles", dot: "bg-primary", Icon: Dumbbell },
   { key: "brainZones", label: "Brain Zones", dot: "bg-foreground", Icon: Brain },
 ];
 
@@ -73,7 +73,7 @@ const StatusCell = ({ status, priority }: { status?: string; priority?: boolean 
       className={cn(
         "relative inline-flex h-7 w-7 items-center justify-center rounded-md border text-[10px] font-semibold",
         tone === "inhibited" && "border-chart-destructive/40 bg-chart-destructive/15 text-chart-destructive",
-        tone === "clear" && "border-chart-emerald/40 bg-chart-emerald/15 text-chart-emerald",
+        tone === "clear" && "border-primary/40 bg-primary/15 text-primary-strong",
         tone === "unsure" && "border-yellow-400/50 bg-yellow-100/60 text-yellow-700",
         tone === "other" && "border-border bg-muted/40 text-muted-foreground"
       )}
@@ -198,7 +198,7 @@ const ClientHistoryMatrixTab = ({ clientName, appointments }: ClientHistoryMatri
             </div>
             <div className="w-px h-8 bg-border" />
             <div className="text-center">
-              <p className="text-2xl font-semibold text-chart-emerald tabular-nums leading-none">{totals.clears}</p>
+              <p className="text-2xl font-semibold text-primary-strong tabular-nums leading-none">{totals.clears}</p>
               <p className="mt-1 text-xs font-medium text-muted-foreground">Cleared</p>
             </div>
           </div>
@@ -309,7 +309,7 @@ const ClientHistoryMatrixTab = ({ clientName, appointments }: ClientHistoryMatri
                 Inhibited / active
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded border border-chart-emerald/40 bg-chart-emerald/15 text-chart-emerald text-[10px] font-semibold">C</span>
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded border border-primary/40 bg-primary/15 text-primary-strong text-[10px] font-semibold">C</span>
                 Cleared
               </span>
               <span className="inline-flex items-center gap-1.5">

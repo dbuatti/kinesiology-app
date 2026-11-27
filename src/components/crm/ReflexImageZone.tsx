@@ -159,7 +159,7 @@ const ReflexImageZone = ({
                   <X size={14} />
                 </Button>
               </div>
-              <p className="text-[10px] font-semibold text-primary-foreground uppercase tracking-wider">Click to Change</p>
+              <p className="text-[10px] font-semibold text-primary-foreground uppercase tracking-[0.14em]">Click to Change</p>
             </div>
           </div>
         </>

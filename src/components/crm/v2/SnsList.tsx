@@ -78,15 +78,15 @@ const SnsItem = ({ title, subtitle, icon: Icon, iconColor, notes, notesField, ha
               className={cn(
                 "flex h-7 w-7 items-center justify-center rounded-full border-2 transition-all shrink-0",
                 completed
-                  ? "bg-chart-emerald border-chart-emerald text-white"
-                  : "border-border text-transparent hover:border-chart-emerald hover:bg-chart-emerald/10"
+                  ? "bg-primary border-primary text-white"
+                  : "border-border text-transparent hover:border-primary hover:bg-primary/10"
               )}
             >
               <Check size={13} strokeWidth={3} />
             </button>
           )}
           {hasNotes && (
-            <span className="text-[10px] font-medium uppercase tracking-wider text-chart-emerald">Recorded</span>
+            <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary-strong">Recorded</span>
           )}
         </div>
       </div>
@@ -231,7 +231,7 @@ const SnsList = ({ appointment, onSaveField }: SnsListProps) => {
         title="Manual Reset of the Diaphragm"
         subtitle="Phrenic Nerve integration"
         icon={Wind}
-        iconColor="text-chart-emerald"
+        iconColor="text-primary-strong"
         notes={appointment.diaphragm_reset_notes}
         notesField="diaphragm_reset_notes"
         hasTimer

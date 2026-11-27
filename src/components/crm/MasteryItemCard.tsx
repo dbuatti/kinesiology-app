@@ -62,7 +62,7 @@ const MasteryItemCard = ({ stat, onClick }: MasteryItemCardProps) => {
             </div>
           </div>
           <div className="flex flex-col items-end gap-1.5">
-            <Badge variant="outline" className={cn("border-none font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5", levelText[stat.masteryLevel], "bg-muted/50")}>
+            <Badge variant="outline" className={cn("border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-2 py-0.5", levelText[stat.masteryLevel], "bg-muted/50")}>
               {stat.masteryLevel}
             </Badge>
             {stat.videoUrl && (
@@ -81,7 +81,7 @@ const MasteryItemCard = ({ stat, onClick }: MasteryItemCardProps) => {
         </div>
 
         <div className="space-y-2">
-          <div className="flex justify-between items-center text-[10px] font-semibold uppercase tracking-wider">
+          <div className="flex justify-between items-center text-[10px] font-semibold uppercase tracking-[0.14em]">
             <span className="text-muted-foreground">Experience</span>
             <span className="text-foreground">{stat.count} Logs</span>
           </div>

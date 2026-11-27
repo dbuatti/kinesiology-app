@@ -145,7 +145,7 @@ const Login = () => {
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-border" />
               </div>
-              <div className="relative flex justify-center text-[10px] font-semibold uppercase tracking-wider">
+              <div className="relative flex justify-center text-[10px] font-semibold uppercase tracking-[0.14em]">
                 <span className="bg-background px-4 text-muted-foreground">Or use email</span>
               </div>
             </div>
@@ -226,7 +226,7 @@ const Login = () => {
         </Card>
 
         <div className="flex flex-col items-center gap-4 opacity-40">
-          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-primary">
+          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">
             <ShieldCheck size={14} /> Secure Clinical Infrastructure
           </div>
           <div className="text-[10px] font-medium tracking-wider text-muted-foreground/60">v1.0.0</div>

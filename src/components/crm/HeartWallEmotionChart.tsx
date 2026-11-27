@@ -53,7 +53,7 @@ export default function HeartWallEmotionChart({ selectedEmotion, onSelect, known
         {rows.map(({ rowNum, data, emotions }) => (
           <div key={rowNum} className="rounded-xl border border-border bg-card overflow-hidden">
             <div className="px-3 py-2 bg-muted/50 border-b border-border">
-              <p className="text-[10px] font-semibold text-chart-primary uppercase tracking-wider">
+              <p className="text-[10px] font-semibold text-chart-primary uppercase tracking-[0.14em]">
                 {data.organ}
               </p>
               <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">

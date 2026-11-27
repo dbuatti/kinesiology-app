@@ -51,7 +51,7 @@ const FollowUpTracker = ({ clients }: FollowUpTrackerProps) => {
         <div className="absolute top-0 right-0 p-8 opacity-10"><CheckCircle2 size={120} /></div>
         <CardContent className="p-10 text-center space-y-4 relative z-10">
           <div className="w-16 h-16 bg-card/10 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto border border-primary-foreground/20">
-            <CheckCircle2 size={32} className="text-chart-emerald" />
+            <CheckCircle2 size={32} className="text-primary-strong" />
           </div>
           <h3 className="text-xl font-semibold">Retention: Optimal</h3>
           <p className="text-foreground/60 font-medium">All recent clients have future sessions scheduled.</p>
@@ -70,7 +70,7 @@ const FollowUpTracker = ({ clients }: FollowUpTrackerProps) => {
             </CardTitle>
             <CardDescription className="font-medium">Recent clients (last 30 days) with no future sessions booked.</CardDescription>
           </div>
-          <Badge className="bg-destructive text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1">
+          <Badge className="bg-destructive text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-3 py-1">
             {clientsNeedingFollowUp.length} Pending
           </Badge>
         </div>
@@ -90,7 +90,7 @@ const FollowUpTracker = ({ clients }: FollowUpTrackerProps) => {
                       <History size={12} /> Last: {format(new Date(client.lastApp.date), "MMM d")}
                     </span>
                     <span className={cn(
-                      "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md",
+                      "text-[10px] font-semibold uppercase tracking-[0.14em] px-2 py-0.5 rounded-md",
                       client.daysSinceLast! > 14 ? "bg-destructive/10 text-destructive-strong" : "bg-amber-100 text-amber-600"
                     )}>
                       {client.daysSinceLast} Days Ago

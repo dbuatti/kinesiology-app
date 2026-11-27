@@ -284,7 +284,7 @@ const LymphaticAssessment = ({
                           key={zone}
                           onClick={() => setFocusedZone(zone)}
                           className={cn(
-                            "cursor-pointer transition-all px-3 py-1 border-none font-medium text-[10px] uppercase tracking-wider",
+                            "cursor-pointer transition-all px-3 py-1 border-none font-medium text-[10px] uppercase tracking-[0.14em]",
                             focusedZone === zone ? "bg-primary text-primary-foreground shadow-sm scale-105" : "bg-muted text-muted-foreground hover:bg-accent"
                           )}
                         >
@@ -300,8 +300,8 @@ const LymphaticAssessment = ({
                           <Thermometer size={14} /> 3. Tenderness Reduction (Position of Ease)
                         </label>
                         <Badge className={cn(
-                          "font-medium text-[10px] uppercase tracking-wider px-3 py-1",
-                          tenderness[0] <= 3 ? "bg-chart-emerald/10 text-chart-emerald" : "bg-muted text-muted-foreground"
+                          "font-medium text-[10px] uppercase tracking-[0.14em] px-3 py-1",
+                          tenderness[0] <= 3 ? "bg-primary/10 text-primary-strong" : "bg-muted text-muted-foreground"
                         )}>
                           {100 - (tenderness[0] * 10)}% Reduction
                         </Badge>
@@ -332,7 +332,7 @@ const LymphaticAssessment = ({
                               <Move size={24} />
                             </div>
                             <div>
-                              <p className="text-[10px] font-medium text-chart-primary uppercase tracking-wider">Release Position</p>
+                              <p className="text-[10px] font-medium text-chart-primary uppercase tracking-[0.14em]">Release Position</p>
                               <h4 className="text-xl font-semibold text-foreground">{focusedZone}</h4>
                             </div>
                           </div>
@@ -343,7 +343,7 @@ const LymphaticAssessment = ({
                             <div className="flex items-start gap-3 p-4 bg-primary text-primary-foreground rounded-xl shadow-sm">
                               <Brain size={20} className="shrink-0 mt-0.5" />
                               <div>
-                                <p className="text-[10px] font-medium uppercase tracking-wider opacity-70 mb-1">Clinical Pearl</p>
+                                <p className="text-[10px] font-medium uppercase tracking-[0.14em] opacity-70 mb-1">Clinical Pearl</p>
                                 <p className="text-xs font-medium leading-relaxed">
                                   {ZONE_INSTRUCTIONS[focusedZone].pearl}
                                 </p>
@@ -386,7 +386,7 @@ const LymphaticAssessment = ({
                       </div>
                     </div>
                     {timeLeft !== null && (
-                      <div className="text-6xl font-semibold text-chart-primary tabular-nums tracking-tighter">
+                      <div className="text-3xl font-semibold text-chart-primary tabular-nums tracking-tight">
                         {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
                       </div>
                     )}
@@ -404,13 +404,13 @@ const LymphaticAssessment = ({
                 </div>
 
                 {priorityZones.length > 0 && (
-                  <div className="p-6 bg-chart-emerald/10 rounded-2xl border-2 border-chart-emerald/20 flex items-center justify-between shadow-sm">
+                  <div className="p-6 bg-primary/10 rounded-2xl border-2 border-primary/20 flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-chart-emerald/20 flex items-center justify-center text-chart-emerald">
+                      <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary-strong">
                         <RefreshCw size={20} />
                       </div>
                       <div>
-                        <p className="text-[10px] font-medium text-chart-emerald uppercase tracking-wider">Verification</p>
+                        <p className="text-[10px] font-medium text-primary-strong uppercase tracking-[0.14em]">Verification</p>
                         <span className="text-sm font-medium text-foreground">Re-test suture for restored glide</span>
                       </div>
                     </div>
@@ -418,7 +418,7 @@ const LymphaticAssessment = ({
                       variant={isVerified ? "default" : "outline"}
                       size="sm"
                       onClick={() => setIsVerified(!isVerified)}
-                      className={cn("rounded-lg h-9 px-3.5 font-medium text-[13px] transition-all", isVerified ? "bg-chart-emerald shadow-sm" : "border-chart-emerald/20 text-chart-emerald hover:bg-chart-emerald/10")}
+                      className={cn("rounded-lg h-9 px-3.5 font-medium text-[13px] transition-all", isVerified ? "bg-primary shadow-sm" : "border-primary/20 text-primary-strong hover:bg-primary/10")}
                     >
                       {isVerified ? <CheckCircle2 size={16} className="mr-2" /> : null}
                       {isVerified ? "Verified" : "Mark Verified"}
@@ -473,7 +473,7 @@ const LymphaticAssessment = ({
                 <div className="p-6 bg-amber-500/10 rounded-2xl border-2 border-amber-500/20 space-y-4">
                   <div className="flex items-center gap-3">
                     <Sparkles size={20} className="text-amber-600 dark:text-amber-400" />
-                    <p className="text-[10px] font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wider">Re-Training</p>
+                    <p className="text-[10px] font-medium text-amber-600 dark:text-amber-400 uppercase tracking-[0.14em]">Re-Training</p>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-foreground">Prescribe Homework?</span>

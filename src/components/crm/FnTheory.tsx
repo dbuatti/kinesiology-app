@@ -30,7 +30,7 @@ const FnTheory = () => {
           <div className="flex items-center gap-5 mb-4">
             <div className="w-16 h-16 bg-card/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-primary-foreground/20"><GitBranch size={32} className="text-indigo-400" /></div>
             <div>
-              <CardTitle className="text-4xl font-semibold tracking-tight">Functional Neuro Approach</CardTitle>
+              <CardTitle className="font-serif text-[26px] font-medium tracking-[-0.02em]">Functional Neuro Approach</CardTitle>
               <CardDescription className="text-muted-foreground text-xl font-medium mt-2">
                 The Hierarchy of Clinical Integration
               </CardDescription>
@@ -59,7 +59,7 @@ const FnTheory = () => {
                 "The nervous system works in fractal patterns. If you correct the highest level reflex, you can knock out 3-4 others in one go."
               </p>
               <div className="p-4 bg-card/10 rounded-2xl border border-primary-foreground/10">
-                <p className="text-[10px] font-semibold text-indigo-300 uppercase tracking-wider mb-2">Master Chain</p>
+                <p className="text-[10px] font-semibold text-indigo-300 uppercase tracking-[0.14em] mb-2">Master Chain</p>
                 <div className="flex items-center gap-2 text-sm font-bold">
                   <span>Fear Paralysis</span>
                   <ArrowRight size={14} />
@@ -73,7 +73,7 @@ const FnTheory = () => {
 
           <Card className="lg:col-span-2 border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
             <CardHeader className="bg-muted/50 p-8">
-              <h4 className="font-semibold text-foreground uppercase tracking-wider text-xs">Clinical Significance</h4>
+              <h4 className="font-semibold text-foreground uppercase tracking-[0.14em] text-xs">Clinical Significance</h4>
             </CardHeader>
             <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">

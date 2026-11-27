@@ -196,7 +196,7 @@ const SettingsPage = () => {
             <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
               <div className="p-8">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-chart-emerald/10 text-chart-emerald flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary-strong flex items-center justify-center">
                     <Workflow size={20} />
                   </div>
                   <div>
@@ -206,21 +206,21 @@ const SettingsPage = () => {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                   <div className="p-3 bg-muted/30 rounded-xl border border-border/50 text-center">
-                    <div className="text-lg font-semibold text-chart-emerald">11</div>
+                    <div className="text-lg font-semibold text-primary-strong">11</div>
                     <div className="text-xs text-muted-foreground font-medium">Workflows</div>
                   </div>
                   <div className="p-3 bg-muted/30 rounded-xl border border-border/50 text-center">
-                    <div className="text-lg font-semibold text-chart-emerald">12</div>
+                    <div className="text-lg font-semibold text-primary-strong">12</div>
                     <div className="text-xs text-muted-foreground font-medium">Edge Functions</div>
                   </div>
                   <div className="p-3 bg-muted/30 rounded-xl border border-border/50 text-center">
-                    <div className="text-lg font-semibold text-chart-emerald">10</div>
+                    <div className="text-lg font-semibold text-primary-strong">10</div>
                     <div className="text-xs text-muted-foreground font-medium">Client States</div>
                   </div>
                 </div>
-                <button onClick={() => navigate("/settings/workflows")} className="w-full flex items-center justify-between p-4 bg-muted/40 rounded-2xl border border-border group hover:border-chart-emerald/50 transition-all text-left">
+                <button onClick={() => navigate("/settings/workflows")} className="w-full flex items-center justify-between p-4 bg-muted/40 rounded-2xl border border-border group hover:border-primary/50 transition-all text-left">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-background border border-border shadow-sm flex items-center justify-center text-chart-emerald group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 rounded-xl bg-background border border-border shadow-sm flex items-center justify-center text-primary-strong group-hover:scale-110 transition-transform">
                       <Workflow size={20} />
                     </div>
                     <div>
@@ -228,7 +228,7 @@ const SettingsPage = () => {
                       <p className="text-[10px] text-muted-foreground font-medium">Inspect, filter, and expand all workflows</p>
                     </div>
                   </div>
-                  <ExternalLink size={16} className="text-muted-foreground/40 group-hover:text-chart-emerald group-hover:translate-x-0.5 transition-all shrink-0" />
+                  <ExternalLink size={16} className="text-muted-foreground/40 group-hover:text-primary-strong group-hover:translate-x-0.5 transition-all shrink-0" />
                 </button>
               </div>
             </div>

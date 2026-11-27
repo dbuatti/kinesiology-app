@@ -79,10 +79,10 @@ const TraumaClearingProtocol = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <div className="space-y-2">
-          <Badge className="bg-chart-destructive/10 text-chart-destructive border-none font-semibold text-[10px] uppercase tracking-wider px-4 py-1 rounded-full">
+          <Badge className="bg-chart-destructive/10 text-chart-destructive border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-4 py-1 rounded-full">
             Clinical Protocol • v11.4
           </Badge>
-          <h1 className="text-4xl font-medium text-foreground tracking-tight">Trauma Clearing &amp; Somatic Processing</h1>
+          <h1 className="font-serif text-[26px] font-medium text-foreground tracking-[-0.02em]">Trauma Clearing &amp; Somatic Processing</h1>
           <p className="text-lg text-muted-foreground">Identity Shifting Trauma Clearing Process</p>
         </div>
         <Button asChild variant="outline" className="rounded-xl h-12 px-6 font-medium">
@@ -99,7 +99,7 @@ const TraumaClearingProtocol = () => {
             <Target size={20} />
           </div>
           <div className="space-y-1">
-            <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Goal</p>
+            <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.14em]">Goal</p>
             <p className="text-sm font-bold text-indigo-900 leading-relaxed">
               Neutralise a replaying traumatic memory by identifying and clearing the "stuck" negative identity (identity shifting), without over-focusing on trauma unless it's clearly driving a PNI semantic response.
             </p>
@@ -114,7 +114,7 @@ const TraumaClearingProtocol = () => {
           <div className="p-5 bg-card rounded-xl border border-border shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle2 size={14} className="text-primary-strong" />
-              <span className="text-xs font-bold text-primary-strong uppercase tracking-wider">Use When</span>
+              <span className="text-xs font-bold text-primary-strong uppercase tracking-[0.14em]">Use When</span>
             </div>
             <ul className="space-y-2 text-sm font-medium text-foreground">
               <li className="flex items-start gap-2">
@@ -130,7 +130,7 @@ const TraumaClearingProtocol = () => {
           <div className="p-5 bg-card rounded-xl border border-rose-200 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
               <AlertTriangle size={14} className="text-rose-500" />
-              <span className="text-xs font-bold text-rose-600 uppercase tracking-wider">Caution</span>
+              <span className="text-xs font-bold text-rose-600 uppercase tracking-[0.14em]">Caution</span>
             </div>
             <p className="text-sm font-medium text-foreground leading-relaxed">
               Avoid giving a traumatic event extra weight <strong>unless</strong> you have good reason it's a primary driver.
@@ -245,7 +245,7 @@ const TraumaClearingProtocol = () => {
                 <p className="font-medium text-muted-foreground">Capture the identity label(s):</p>
                 <div className="flex flex-wrap gap-2">
                   {["small person", "fearful person", "scared person", "angry person"].map(label => (
-                    <Badge key={label} className="bg-rose-100 text-rose-700 border-none font-bold text-[10px] uppercase tracking-wider">{label}</Badge>
+                    <Badge key={label} className="bg-rose-100 text-rose-700 border-none font-bold text-[10px] uppercase tracking-[0.14em]">{label}</Badge>
                   ))}
                 </div>
               </div>
@@ -264,7 +264,7 @@ const TraumaClearingProtocol = () => {
             <div className="space-y-4 text-sm">
               {/* Phase A */}
               <div className="p-4 bg-rose-50 rounded-xl border border-rose-200 space-y-3">
-                <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider">A. Fully Feel the Negative Identity</p>
+                <p className="text-[10px] font-bold text-rose-600 uppercase tracking-[0.14em]">A. Fully Feel the Negative Identity</p>
                 <p className="text-rose-800 font-medium italic pl-4 border-l-2 border-rose-400">
                   "Feel yourself being a <strong>fearful person</strong>."
                 </p>
@@ -278,7 +278,7 @@ const TraumaClearingProtocol = () => {
 
               {/* Phase B */}
               <div className="p-4 bg-primary/10 rounded-xl border border-primary/30 space-y-3">
-                <p className="text-[10px] font-bold text-primary-strong uppercase tracking-wider">B. Find the Opposite / Resource Identity</p>
+                <p className="text-[10px] font-bold text-primary-strong uppercase tracking-[0.14em]">B. Find the Opposite / Resource Identity</p>
                 <p className="text-primary-strong font-medium italic pl-4 border-l-2 border-primary/40">
                   "What are you when you are <strong>not</strong> being fearful person?"
                 </p>
@@ -287,7 +287,7 @@ const TraumaClearingProtocol = () => {
 
               {/* Phase C */}
               <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200 space-y-3">
-                <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">C. Install the Resource Identity (Embodiment Sequence)</p>
+                <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.14em]">C. Install the Resource Identity (Embodiment Sequence)</p>
                 <div className="bg-card/60 rounded-lg p-3 space-y-1.5 text-indigo-800">
                   <p className="italic">"Okay, feel <strong>calm</strong>."</p>
                   <p className="italic">"What happens in yourself when you feel calm?"</p>
@@ -299,7 +299,7 @@ const TraumaClearingProtocol = () => {
 
               {/* Phase D */}
               <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 space-y-3">
-                <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">D. Re-check the Negative Identity</p>
+                <p className="text-[10px] font-bold text-amber-600 uppercase tracking-[0.14em]">D. Re-check the Negative Identity</p>
                 <p className="text-amber-800 font-medium italic pl-4 border-l-2 border-amber-400">
                   "Can you still feel yourself being a fearful person?"
                 </p>
@@ -341,14 +341,14 @@ const TraumaClearingProtocol = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-4 bg-rose-50 rounded-xl border border-rose-200">
-                  <p className="font-bold text-xs text-rose-700 uppercase tracking-wider mb-1">If Yes</p>
+                  <p className="font-bold text-xs text-rose-700 uppercase tracking-[0.14em] mb-1">If Yes</p>
                   <p className="text-xs text-rose-800 font-medium leading-relaxed">
                     Extract the <strong>next identity layer(s)</strong> and repeat step 4 (the loop).
                     You may clear multiple identities for the same moment — sometimes 3, sometimes 1.
                   </p>
                 </div>
                 <div className="p-4 bg-primary/10 rounded-xl border border-primary/30">
-                  <p className="font-bold text-xs text-primary-strong uppercase tracking-wider mb-1">If No</p>
+                  <p className="font-bold text-xs text-primary-strong uppercase tracking-[0.14em] mb-1">If No</p>
                   <p className="text-xs text-primary-strong font-medium leading-relaxed">
                     Proceed to step 6 — confirmation.
                   </p>
@@ -450,7 +450,7 @@ const TraumaClearingProtocol = () => {
           <Lightbulb size={24} />
         </div>
         <div className="space-y-1 relative z-10">
-          <p className="text-[10px] font-semibold text-chart-primary uppercase tracking-wider">Identity Shifting</p>
+          <p className="text-[10px] font-semibold text-chart-primary uppercase tracking-[0.14em]">Identity Shifting</p>
           <p className="text-base text-muted-foreground/60 font-medium leading-relaxed">
             "The stuck identity is not who the person is — it's who they learned to be in response to the trauma. By giving it a name and clearing it, the system can return to its natural state."
           </p>

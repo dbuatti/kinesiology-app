@@ -159,7 +159,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
             <div className="p-3 rounded-lg bg-muted border border-border space-y-1">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Info size={12} />
-                <span className="font-medium text-[10px] uppercase tracking-wider">Know your scar types</span>
+                <span className="font-medium text-[10px] uppercase tracking-[0.14em]">Know your scar types</span>
               </div>
               <p className="text-xs text-muted-foreground">
                 <strong>Stretch</strong> the scar → locks = <strong>mechanoreception</strong> (Golgi distortion).{' '}

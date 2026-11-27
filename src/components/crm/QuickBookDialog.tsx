@@ -338,7 +338,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                         className={cn(
                           "px-2.5 py-1.5 rounded-lg text-[10px] font-bold tracking-wider transition-all",
                           rs.available
-                            ? "bg-chart-emerald/10 text-chart-emerald border border-chart-emerald/30 hover:bg-chart-emerald/20 cursor-pointer"
+                            ? "bg-primary/10 text-primary-strong border border-primary/30 hover:bg-primary/20 cursor-pointer"
                             : "bg-muted text-muted-foreground/40 border border-border cursor-default"
                         )}
                       >
@@ -456,7 +456,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                           )}
                         >
                           {isCurrentRate && !isSelected && (
-                            <span className="absolute -top-2 right-2 bg-chart-emerald text-primary-foreground text-[7px] font-semibold px-1.5 py-0.5 rounded-full">
+                            <span className="absolute -top-2 right-2 bg-primary text-primary-foreground text-[7px] font-semibold px-1.5 py-0.5 rounded-full">
                               Rate
                             </span>
                           )}

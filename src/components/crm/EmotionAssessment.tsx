@@ -115,7 +115,7 @@ const EmotionAssessment = ({
         case 'EARTH': return 'bg-yellow-500 hover:bg-yellow-600';
         case 'METAL': return 'bg-muted-foreground hover:bg-muted-foreground/80';
         case 'WATER': return 'bg-primary hover:bg-primary';
-        case 'WOOD': return 'bg-chart-emerald hover:bg-chart-emerald/80';
+        case 'WOOD': return 'bg-primary hover:bg-primary/80';
         default: return 'bg-muted-foreground hover:bg-muted-foreground/80';
       }
     }
@@ -239,7 +239,7 @@ const EmotionAssessment = ({
                       className={cn(
                         "h-8 text-xs font-semibold",
                         secondarySelections.includes(emotion)
-                          ? "bg-chart-emerald hover:bg-chart-emerald/80 text-primary-foreground" 
+                          ? "bg-primary hover:bg-primary/80 text-primary-foreground" 
                           : "border-border bg-muted/50 hover:bg-muted text-foreground/80"
                       )}
                       disabled={isSaving}
@@ -260,7 +260,7 @@ const EmotionAssessment = ({
             <div className="space-y-4 pt-4 border-t border-border/50">
               <Card className="border-2 border-destructive/20 bg-destructive/5 shadow-none rounded-2xl">
                 <CardContent className="pt-4 space-y-2">
-                  <h4 className="text-sm font-bold text-destructive uppercase tracking-wider">Current Emotional Focus</h4>
+                  <h4 className="text-sm font-bold text-destructive uppercase tracking-[0.14em]">Current Emotional Focus</h4>
                   <div className="flex flex-wrap gap-2">
                     {secondarySelections.length > 0 ? (
                       secondarySelections.map(emotion => (

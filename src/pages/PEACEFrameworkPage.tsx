@@ -34,10 +34,10 @@ export function PEACEFrameworkTool() {
  </div>
  
  <div className="relative z-10 flex flex-col items-start space-y-6">
- <Badge className="bg-muted0/20 text-chart-primary border-primary/30 font-semibold text-[10px] uppercase tracking-wider px-4 py-1">
+ <Badge className="bg-muted0/20 text-chart-primary border-primary/30 font-semibold text-[10px] uppercase tracking-[0.14em] px-4 py-1">
  FNH Living Manual • 2026 Gold Standard
  </Badge>
- <h1 className="text-5xl md:text-6xl font-semibold tracking-tighter">PEACE Framework</h1>
+ <h1 className="font-serif text-[26px] font-medium tracking-[-0.02em] sm:text-[34px]">PEACE Framework</h1>
  <p className="text-xl text-muted-foreground/60 font-medium max-w-2xl leading-relaxed">
  The central organising framework of Functional Neuro Health. 
  </p>
@@ -66,13 +66,13 @@ export function PEACEFrameworkTool() {
  { letter: 'P', name: 'Preliminary Assessment', desc: 'Listen before you act. Gather the story, run the baseline, and identify how the system is currently organised.', icon: Search, color: 'text-chart-primary', bg: 'bg-muted' },
  { letter: 'E', name: 'Ease the System', desc: 'Create safety before change. A nervous system in threat cannot reorganise — ease must come before correction.', icon: Heart, color: 'text-chart-destructive', bg: 'bg-muted' },
  { letter: 'A', name: 'Align the Hierarchy', desc: 'Find the keystone — the true priority that the nervous system wants to address first.', icon: Layers, color: 'text-muted-foreground', bg: 'bg-muted' },
- { letter: 'C', name: 'Correct', desc: 'Facilitate the primary change. This is where the system resets and re-organises itself.', icon: Zap, color: 'text-chart-emerald', bg: 'bg-muted' },
+ { letter: 'C', name: 'Correct', desc: 'Facilitate the primary change. This is where the system resets and re-organises itself.', icon: Zap, color: 'text-primary-strong', bg: 'bg-muted' },
  { letter: 'E', name: 'Embed', desc: 'Stabilise and integrate so change becomes lasting transformation. Vital for structural and primitive reflex work.', icon: ShieldCheck, color: 'text-chart-primary', bg: 'bg-muted' },
  ].map((step) => (
  <Card key={step.name} className="border-none shadow-sm rounded-xl bg-card overflow-hidden group hover:-translate-y-1 transition-all">
  <CardHeader className={`${step.bg} p-6 border-b border-border relative overflow-hidden`}>
  <div className="absolute -right-4 -bottom-4 opacity-10"><step.icon size={100} /></div>
- <div className={cn("text-5xl font-semibold mb-2 opacity-20 group-hover:opacity-100 transition-opacity", step.color)}>
+ <div className={cn("text-2xl font-semibold mb-2 opacity-20 group-hover:opacity-100 transition-opacity", step.color)}>
  {step.letter}
  </div>
  <CardTitle className="text-lg font-semibold text-foreground leading-tight">
@@ -104,7 +104,7 @@ export function PEACEFrameworkTool() {
  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
  <Card className="border-2 border-border shadow-sm rounded-xl bg-muted overflow-hidden">
  <CardHeader className="p-8 pb-4">
- <Badge className="bg-primary text-primary-foreground w-max mb-3 text-[10px] font-semibold uppercase tracking-wider px-3 py-1">Asterisk Tier</Badge>
+ <Badge className="bg-primary text-primary-foreground w-max mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] px-3 py-1">Asterisk Tier</Badge>
  <CardTitle className="text-2xl font-semibold text-foreground">Energetic & Emotional Gate</CardTitle>
  <CardDescription className="text-muted-foreground font-medium">Check these first. If they are off, they distort every correction below.</CardDescription>
  </CardHeader>
@@ -121,7 +121,7 @@ export function PEACEFrameworkTool() {
 
  <Card className="border-2 border-border shadow-sm rounded-xl bg-muted overflow-hidden">
  <CardHeader className="p-8 pb-4">
- <Badge className="bg-primary text-primary-foreground w-max mb-3 text-[10px] font-semibold uppercase tracking-wider px-3 py-1">1° Primary Tier</Badge>
+ <Badge className="bg-primary text-primary-foreground w-max mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] px-3 py-1">1° Primary Tier</Badge>
  <CardTitle className="text-2xl font-semibold text-foreground">Neurological Foundation</CardTitle>
  <CardDescription className="text-chart-primary font-medium">Neural core — fast, tangible change. Clear these survival loops before rechecking.</CardDescription>
  </CardHeader>
@@ -138,15 +138,15 @@ export function PEACEFrameworkTool() {
 
  <Card className="border-2 border-border shadow-sm rounded-xl bg-muted overflow-hidden">
  <CardHeader className="p-8 pb-4">
- <Badge className="bg-primary text-primary-foreground w-max mb-3 text-[10px] font-semibold uppercase tracking-wider px-3 py-1">2° Secondary Tier</Badge>
+ <Badge className="bg-primary text-primary-foreground w-max mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] px-3 py-1">2° Secondary Tier</Badge>
  <CardTitle className="text-2xl font-semibold text-foreground">Immune & Physiological Layer</CardTitle>
- <CardDescription className="text-chart-emerald font-medium">Internal regulation. The immune system is a slave system — it reacts to threat.</CardDescription>
+ <CardDescription className="text-primary-strong font-medium">Internal regulation. The immune system is a slave system — it reacts to threat.</CardDescription>
  </CardHeader>
  <CardContent className="p-8 pt-0">
  <ul className="space-y-3">
  {['Immune Vials (TH1/TH2/TH17/TH9)', 'Infections', 'Krebs Cycle', 'Organ/Gland Balance'].map(item => (
  <li key={item} className="flex items-center gap-3 text-sm font-medium text-foreground">
- <Activity size={18} className="text-chart-emerald" /> {item}
+ <Activity size={18} className="text-primary-strong" /> {item}
  </li>
  ))}
  </ul>

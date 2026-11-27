@@ -364,11 +364,11 @@ const MuscleGroupGrid = ({ muscles, pattern, onToggle, onSelectMuscle, getCorrec
             </div>
             <div className="flex items-center gap-6 shrink-0">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">L</span>
+                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.14em]">L</span>
                 <button onClick={() => cycleStatus('L')} title={getLabel(statusL)} aria-label={`Left: ${getLabel(statusL)}`} className={cn("inline-flex h-7 min-w-[52px] items-center justify-center rounded-md border transition-all shadow-sm hover:shadow", getColor(statusL))}>{renderStatusIcon(statusL)}</button>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">R</span>
+                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.14em]">R</span>
                 <button onClick={() => cycleStatus('R')} title={getLabel(statusR)} aria-label={`Right: ${getLabel(statusR)}`} className={cn("inline-flex h-7 min-w-[52px] items-center justify-center rounded-md border transition-all shadow-sm hover:shadow", getColor(statusR))}>{renderStatusIcon(statusR)}</button>
               </div>
             </div>
@@ -912,7 +912,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                             </div>
                             <div className="flex items-center gap-6 shrink-0">
                               <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">L</span>
+                                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.14em]">L</span>
                                 <button
                                   onClick={() => cycleStatus('L')}
                                   className={cn("px-3 py-1 rounded-md text-[11px] font-bold border transition-all min-w-[76px] shadow-sm hover:shadow", getColor(statusL))}
@@ -921,7 +921,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                                 </button>
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">R</span>
+                                <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.14em]">R</span>
                                 <button
                                   onClick={() => cycleStatus('R')}
                                   className={cn("px-3 py-1 rounded-md text-[11px] font-bold border transition-all min-w-[76px] shadow-sm hover:shadow", getColor(statusR))}
@@ -1071,7 +1071,7 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                 <div className="space-y-4">
                   {EYE_GROUPS.map((group) => (
                     <div key={group.label} className="space-y-2">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 px-1">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/50 px-1">
                         {group.label}
                       </p>
                       <div className="space-y-2">

@@ -61,7 +61,7 @@ const IdentityShiftingReport = ({ session, onBack }: IdentityShiftingReportProps
         <div className="lg:col-span-1 space-y-6">
           <Card className="border border-border shadow-md rounded-2xl bg-card overflow-hidden">
             <CardHeader className="bg-muted/50 border-b border-border/50">
-              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <CardTitle className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground flex items-center gap-2">
                 <Zap size={16} className="text-amber-500" /> The Challenge
               </CardTitle>
             </CardHeader>
@@ -75,13 +75,13 @@ const IdentityShiftingReport = ({ session, onBack }: IdentityShiftingReportProps
               
               <div className="grid grid-cols-1 gap-4 pt-4 border-t border-border/30">
                 <div className="space-y-1">
-                  <p className="text-[10px] font-semibold text-rose-400 uppercase tracking-wider flex items-center gap-1">
+                  <p className="text-[10px] font-semibold text-rose-400 uppercase tracking-[0.14em] flex items-center gap-1">
                     <Heart size={10} /> Primary Emotion
                   </p>
                   <p className="text-sm font-bold text-foreground/80">{session.emotion || 'Not specified'}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider flex items-center gap-1">
+                  <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-[0.14em] flex items-center gap-1">
                     <Activity size={10} /> Felt Sense
                   </p>
                   <p className="text-sm font-bold text-foreground/80">{session.felt_sense || 'Not specified'}</p>
@@ -92,7 +92,7 @@ const IdentityShiftingReport = ({ session, onBack }: IdentityShiftingReportProps
 
           <Card className="border-none shadow-lg rounded-2xl bg-indigo-900 text-primary-foreground overflow-hidden">
             <CardContent className="p-8 text-center space-y-4">
-              <p className="text-[10px] font-semibold text-indigo-300 uppercase tracking-wider">The Identity</p>
+              <p className="text-[10px] font-semibold text-indigo-300 uppercase tracking-[0.14em]">The Identity</p>
               <h3 className="text-3xl font-serif font-bold italic">"{session.identity}"</h3>
               <div className="w-12 h-1 bg-indigo-500/30 mx-auto rounded-full" />
               <p className="text-xs text-indigo-200 font-medium leading-relaxed">
@@ -143,7 +143,7 @@ const IdentityShiftingReport = ({ session, onBack }: IdentityShiftingReportProps
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="border-none shadow-md rounded-2xl bg-primary/10 border-2 border-primary/25">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-[10px] font-semibold text-primary-strong uppercase tracking-wider">New Awareness</CardTitle>
+                  <CardTitle className="text-[10px] font-semibold text-primary-strong uppercase tracking-[0.14em]">New Awareness</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm font-bold text-primary-strong leading-relaxed">
@@ -154,7 +154,7 @@ const IdentityShiftingReport = ({ session, onBack }: IdentityShiftingReportProps
 
               <Card className="border-none shadow-md rounded-2xl bg-indigo-50 border-2 border-indigo-100">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider">Integration Action</CardTitle>
+                  <CardTitle className="text-[10px] font-semibold text-indigo-600 uppercase tracking-[0.14em]">Integration Action</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm font-bold text-indigo-900 leading-relaxed">
@@ -170,7 +170,7 @@ const IdentityShiftingReport = ({ session, onBack }: IdentityShiftingReportProps
               <Quote size={24} className="text-indigo-300" />
             </div>
             <div className="space-y-1">
-              <h4 className="text-sm font-semibold text-indigo-400 uppercase tracking-wider">Clinical Reflection</h4>
+              <h4 className="text-sm font-semibold text-indigo-400 uppercase tracking-[0.14em]">Clinical Reflection</h4>
               <p className="text-muted-foreground/60 text-sm font-medium leading-relaxed italic">
                 "The shift occurs when the 'I' that has the problem is seen as a construct. By tracing the identity back to its source, we return to the neutral observer."
               </p>

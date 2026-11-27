@@ -88,20 +88,20 @@ const DailyMechanoChallenge = () => {
                 <Sparkles size={20} className="text-primary-foreground" />
               </div>
               <div>
-                <Badge className="bg-chart-primary/10 text-chart-primary border-chart-primary/20 font-semibold text-[10px] uppercase tracking-wider mb-1 rounded-full">Daily Drill</Badge>
+                <Badge className="bg-chart-primary/10 text-chart-primary border-chart-primary/20 font-semibold text-[10px] uppercase tracking-[0.14em] mb-1 rounded-full">Daily Drill</Badge>
                 <CardTitle className="text-2xl font-semibold">Clinical Case Study</CardTitle>
               </div>
             </div>
             <div className="flex items-center gap-2 bg-muted px-4 py-1.5 rounded-xl border border-border">
               <Trophy size={14} className="text-muted-foreground fill-muted-foreground" />
-              <span className="text-xs font-semibold uppercase tracking-wider">Streak: {streak}</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.14em]">Streak: {streak}</span>
             </div>
           </div>
         </CardHeader>
         <CardContent className="p-8 pt-0 space-y-8 relative z-10">
           <div className="space-y-4">
             <div className="p-6 bg-muted rounded-xl border border-border">
-              <p className="text-[10px] font-semibold text-chart-primary uppercase tracking-wider mb-2">The Presenting Symptom</p>
+              <p className="text-[10px] font-semibold text-chart-primary uppercase tracking-[0.14em] mb-2">The Presenting Symptom</p>
               <p className="text-xl font-medium leading-tight">"{currentCase.symptom}"</p>
               <p className="text-sm text-muted-foreground mt-2 font-medium italic">History: {currentCase.history}</p>
             </div>
@@ -129,7 +129,7 @@ const DailyMechanoChallenge = () => {
               {/* Step 1: Skeleton Type */}
               {challengeStep === 1 && (
                 <div className="space-y-4 animate-in fade-in duration-300">
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">1. Identify the Skeleton Type</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-[0.14em]">1. Identify the Skeleton Type</p>
                   <div className="grid grid-cols-2 gap-4">
                     <Button 
                       variant="outline" 
@@ -152,7 +152,7 @@ const DailyMechanoChallenge = () => {
               {/* Step 2: Region */}
               {challengeStep === 2 && (
                 <div className="space-y-4 animate-in fade-in duration-300">
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">2. Identify the Body Region</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-[0.14em]">2. Identify the Body Region</p>
                   <div className="grid grid-cols-2 gap-4">
                     <Button 
                       variant="outline" 
@@ -175,7 +175,7 @@ const DailyMechanoChallenge = () => {
               {/* Step 3: Joint */}
               {challengeStep === 3 && (
                 <div className="space-y-4 animate-in fade-in duration-300">
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">3. Localize the Joint</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-[0.14em]">3. Localize the Joint</p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {["Shoulder (GH Joint)", "Foot/Ankle", "Lumbar Spine", "Cervical Spine", "Hip", "Knee", "Jaw (TMJ)", "Pelvis"].map(joint => (
                       <Button 
@@ -194,7 +194,7 @@ const DailyMechanoChallenge = () => {
               {/* Step 4: Plane of Motion */}
               {challengeStep === 4 && (
                 <div className="space-y-4 animate-in fade-in duration-300">
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">4. Identify the Plane of Motion</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-[0.14em]">4. Identify the Plane of Motion</p>
                   <div className="grid grid-cols-3 gap-4">
                     {["Sagittal", "Frontal", "Transverse"].map(plane => (
                       <Button 
@@ -213,7 +213,7 @@ const DailyMechanoChallenge = () => {
               {/* Step 5: Review & Submit */}
               {challengeStep === 5 && (
                 <div className="space-y-6 animate-in fade-in duration-300">
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">5. Review Your Clinical Logic</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-[0.14em]">5. Review Your Clinical Logic</p>
                   <div className="grid grid-cols-2 gap-4 text-xs">
                     <div className="p-4 bg-muted rounded-xl border border-border">
                       <span className="text-xs font-medium text-muted-foreground">Skeleton</span>
@@ -255,10 +255,10 @@ const DailyMechanoChallenge = () => {
             <div className="space-y-6 animate-in zoom-in-95 duration-500">
               <div className={cn(
                 "p-8 rounded-xl border-4 text-center space-y-4",
-                isCorrect ? "bg-chart-emerald/10 border-chart-emerald/50" : "bg-chart-destructive/10 border-chart-destructive/50"
+                isCorrect ? "bg-primary/10 border-primary/50" : "bg-chart-destructive/10 border-chart-destructive/50"
               )}>
                 <div className="w-16 h-16 rounded-full bg-card mx-auto flex items-center justify-center shadow-sm">
-                  {isCorrect ? <CheckCircle2 size={40} className="text-chart-emerald" /> : <XCircle size={40} className="text-chart-destructive" />}
+                  {isCorrect ? <CheckCircle2 size={40} className="text-primary-strong" /> : <XCircle size={40} className="text-chart-destructive" />}
                 </div>
                 <h3 className="text-2xl font-semibold">{isCorrect ? "Clinical Mastery!" : "Logic Refinement Needed"}</h3>
                 <p className="text-muted-foreground/60 font-medium leading-relaxed">

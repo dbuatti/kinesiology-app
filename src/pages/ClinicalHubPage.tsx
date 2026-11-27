@@ -26,9 +26,8 @@ import {
   Tablet,
 } from "lucide-react";
 import { format, isToday, differenceInMinutes } from "date-fns";
-import FooterLinks from "@/components/crm/FooterLinks";
-import PageHeader from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/PageState";
+import PageHeader from "@/components/shared/PageHeader";
 
 interface RecentSession {
   id: string;
@@ -114,9 +113,9 @@ const ClinicalHubPage = () => {
       label: 'Practise a session',
       description: 'Walk the PEACE wizard — Preliminary → Ease → Align → Correct → Embed — with a practice client',
       icon: Activity,
-      color: 'border-l-primary hover:bg-primary/30 dark:hover:bg-primary/30',
+      color: 'border-l-primary hover:bg-primary/5',
       accent: 'text-primary dark:text-primary',
-      iconBg: 'bg-primary/10 dark:bg-primary/50',
+      iconBg: 'bg-primary/10',
       badge: 'Sandbox',
     },
     {
@@ -126,7 +125,7 @@ const ClinicalHubPage = () => {
       icon: FileText,
       color: 'border-l-primary/60 hover:bg-primary/10 dark:hover:bg-primary/15',
       accent: 'text-primary-strong dark:text-primary',
-      iconBg: 'bg-primary/15 dark:bg-primary/25',
+      iconBg: 'bg-primary/10',
       badge: 'Sandbox',
     },
     {
@@ -134,9 +133,9 @@ const ClinicalHubPage = () => {
       label: 'Corrections manual',
       description: 'Reference — afferent, efferent, heart wall & limiting beliefs protocols',
       icon: BookMarked,
-      color: 'border-l-amber-500 hover:bg-amber-50/30 dark:hover:bg-amber-950/30',
-      accent: 'text-amber-600 dark:text-amber-400',
-      iconBg: 'bg-amber-100 dark:bg-amber-950/50',
+      color: 'border-l-warning hover:bg-warning/5',
+      accent: 'text-warning-strong',
+      iconBg: 'bg-warning/10',
       badge: 'Reference',
     },
   ];
@@ -229,7 +228,7 @@ const ClinicalHubPage = () => {
         <div>
           <h2 className="text-xs font-medium text-muted-foreground mb-4">Recent sessions</h2>
           {loading ? (
-            <div className="flex justify-center py-6"><Loader2 className="animate-spin text-muted-foreground" size={20} /></div>
+            <div className="flex justify-center py-6"><Loader2 className="animate-spin text-muted-foreground" size={16} /></div>
           ) : recentSessions.length === 0 ? (
             <div className="text-center py-8 border border-dashed border-border rounded-xl">
               <p className="text-xs text-muted-foreground font-medium">No sessions yet — start one above.</p>
@@ -333,7 +332,6 @@ const ClinicalHubPage = () => {
       </Dialog>
 
       <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} />
-      <FooterLinks />
     </div>
   );
 };

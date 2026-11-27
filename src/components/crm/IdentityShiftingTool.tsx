@@ -418,12 +418,12 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
             <div className="w-7 h-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
               <History size={12} />
             </div>
-            <h4 className="text-xs font-semibold text-indigo-900 dark:text-indigo-100 uppercase tracking-wider">Source Context</h4>
+            <h4 className="text-xs font-semibold text-indigo-900 dark:text-indigo-100 uppercase tracking-[0.14em]">Source Context</h4>
           </div>
           <div className="space-y-3 relative z-10">
             {backlogItem.practitioner_reflections?.content && (
               <div className="space-y-1">
-                <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider">Original Journal Entry</p>
+                <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-[0.14em]">Original Journal Entry</p>
                 <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground leading-relaxed line-clamp-4 italic">
                   "{backlogItem.practitioner_reflections.content}"
                 </p>
@@ -432,7 +432,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
             
             {backlogItem.priority_reasoning && (
               <div className="space-y-1">
-                <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider">AI Reasoning</p>
+                <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-[0.14em]">AI Reasoning</p>
                 <p className="text-sm font-medium text-indigo-800 dark:text-indigo-200 leading-relaxed">
                   {backlogItem.priority_reasoning}
                 </p>
@@ -443,7 +443,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
               <div className="flex items-start gap-2 p-3 bg-card/50 dark:bg-muted/50 rounded-xl border border-indigo-200 dark:border-indigo-900/30">
                 <ArrowRightLeft size={14} className="text-indigo-500 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider mb-1">Polarity Insight</p>
+                  <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-[0.14em] mb-1">Polarity Insight</p>
                   <p className="text-xs font-medium text-indigo-900 dark:text-indigo-100">{backlogItem.polarity_insight}</p>
                 </div>
               </div>
@@ -591,7 +591,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         </div>
 
         <div className="pt-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full text-[10px] font-semibold text-indigo-400 uppercase tracking-wider">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full text-[10px] font-semibold text-indigo-400 uppercase tracking-[0.14em]">
             <Info size={12} /> Keep answers brief and intuitive
           </div>
         </div>
@@ -614,7 +614,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
           <p className="text-sm font-medium text-center leading-relaxed">"Do you think you might feel yourself being <span className="text-chart-primary">"{formData.identity}"</span> in the future?"</p>
           <div className="flex gap-3 justify-center">
             <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in the future`)} className="flex-1 h-8 rounded-lg border-destructive bg-destructive/10 text-destructive-strong font-semibold text-[11px]">Yes</Button>
-            <Button variant="outline" onClick={() => handlePhase3Check(false, '')} className="flex-1 h-8 rounded-lg border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-[11px]">No</Button>
+            <Button variant="outline" onClick={() => handlePhase3Check(false, '')} className="flex-1 h-8 rounded-lg border-primary bg-primary/10 text-primary-strong font-semibold text-[11px]">No</Button>
           </div>
         </div>
 
@@ -622,7 +622,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
           <p className="text-sm font-medium text-center leading-relaxed">"Is there any scenario in which you might still feel yourself being <span className="text-chart-primary">"{formData.identity}"</span>?"</p>
           <div className="flex gap-3 justify-center">
             <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in that scenario`)} className="flex-1 h-8 rounded-lg border-destructive bg-destructive/10 text-destructive-strong font-semibold text-[11px]">Yes</Button>
-            <Button variant="outline" onClick={() => handlePhase3Check(false, '')} className="flex-1 h-8 rounded-lg border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-[11px]">No</Button>
+            <Button variant="outline" onClick={() => handlePhase3Check(false, '')} className="flex-1 h-8 rounded-lg border-primary bg-primary/10 text-primary-strong font-semibold text-[11px]">No</Button>
           </div>
         </div>
       </div>
@@ -662,7 +662,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
   const renderPhase5 = () => (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 py-1">
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center justify-center w-7 h-7 bg-chart-emerald/10 rounded-lg text-chart-emerald">
+        <div className="inline-flex items-center justify-center w-7 h-7 bg-primary/10 rounded-lg text-primary-strong">
           <Sparkles size={14} />
         </div>
         <h3 className="text-base font-serif font-medium">Conscious Integration</h3>
@@ -804,7 +804,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         <div className="mb-6 space-y-3">
           <div className="flex justify-between items-end">
             <div className="space-y-0.5">
-              <h2 className="text-[10px] font-semibold uppercase tracking-wider text-chart-primary">Phase {phase} of 5</h2>
+              <h2 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-chart-primary">Phase {phase} of 5</h2>
               <p className="text-sm font-semibold text-foreground">
                 {phase === 1 && "Isolating the Identity"}
                 {phase === 2 && "Dissolving the Construct"}
@@ -839,35 +839,35 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
               <section id="shift-phase-1">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">1</span>
-                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-wider">Isolating the Identity</h3>
+                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-[0.14em]">Isolating the Identity</h3>
                 </div>
                 {renderPhase1()}
               </section>
               <section id="shift-phase-2">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">2</span>
-                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-wider">Dissolving the Construct</h3>
+                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-[0.14em]">Dissolving the Construct</h3>
                 </div>
                 {renderPhase2()}
               </section>
               <section id="shift-phase-3">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">3</span>
-                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-wider">Checking Stability</h3>
+                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-[0.14em]">Checking Stability</h3>
                 </div>
                 {renderPhase3()}
               </section>
               <section id="shift-phase-4">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">4</span>
-                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-wider">Re-assessing Problem</h3>
+                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-[0.14em]">Re-assessing Problem</h3>
                 </div>
                 {renderPhase4()}
               </section>
               <section id="shift-phase-5">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">5</span>
-                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-wider">Conscious Integration</h3>
+                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-[0.14em]">Conscious Integration</h3>
                 </div>
                 {renderPhase5()}
               </section>

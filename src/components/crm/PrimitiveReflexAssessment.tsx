@@ -122,12 +122,12 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
               {reflex.name}
             </h2>
             {reflex.isBoss && (
-              <Badge className="bg-primary/10 text-primary-strong border-primary/30 font-semibold text-[7px] uppercase tracking-wider px-2 py-0 rounded-full gap-1">
+              <Badge className="bg-primary/10 text-primary-strong border-primary/30 font-semibold text-[7px] uppercase tracking-[0.14em] px-2 py-0 rounded-full gap-1">
                 <Crown size={8} /> Boss
               </Badge>
             )}
             {reflex.track && (
-              <Badge variant="outline" className="border-border text-muted-foreground font-medium text-[7px] uppercase tracking-wider px-2 py-0 rounded-full">
+              <Badge variant="outline" className="border-border text-muted-foreground font-medium text-[7px] uppercase tracking-[0.14em] px-2 py-0 rounded-full">
                 Track {reflex.track}
               </Badge>
             )}
@@ -135,7 +135,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
               {reflex.category} • {reflex.developmentalWindow}
             </span>
             {!isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') && (
-              <Badge className="bg-success/10 text-success-strong border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0 rounded-full">
+              <Badge className="bg-success/10 text-success-strong border-none font-semibold text-[7px] uppercase tracking-[0.14em] px-2 py-0 rounded-full">
                 <CheckCircle2 size={8} className="mr-1" /> Clear
               </Badge>
             )}
@@ -203,7 +203,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                     onCheckedChange={(checked) => handleBilateralToggle(!!checked)}
                     className="h-3.5 w-3.5 border-primary rounded-sm data-[state=checked]:bg-primary"
                   />
-                  <label htmlFor={`inhib-both-${reflex.id}`} className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-primary">
+                  <label htmlFor={`inhib-both-${reflex.id}`} className="text-[10px] font-medium uppercase tracking-[0.14em] cursor-pointer text-primary">
                     Both
                   </label>
                 </div>
@@ -289,7 +289,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                 <div className="mt-2 space-y-2 animate-in fade-in duration-200">
                   {reflex.bossTitle && (
                     <div className="p-2 bg-primary/5 rounded-lg border border-primary/10">
-                      <span className="text-[10px] font-medium text-primary uppercase tracking-wider">{reflex.bossTitle}</span>
+                      <span className="text-[10px] font-medium text-primary uppercase tracking-[0.14em]">{reflex.bossTitle}</span>
                     </div>
                   )}
                   {reflex.relatedBrainAreas && reflex.relatedBrainAreas.length > 0 && (
@@ -304,7 +304,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                   )}
                   {reflex.dysfunctionConsequences && (
                     <div className="p-2 bg-destructive/5 rounded-lg border border-destructive/10">
-                      <span className="text-[10px] font-medium text-destructive uppercase tracking-wider block mb-1">Dysfunction Consequences</span>
+                      <span className="text-[10px] font-medium text-destructive uppercase tracking-[0.14em] block mb-1">Dysfunction Consequences</span>
                       <p className="text-[10px] text-foreground/80 leading-relaxed">{reflex.dysfunctionConsequences}</p>
                     </div>
                   )}
@@ -426,7 +426,7 @@ export function PrimitiveReflexAssessment({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-card border-border font-medium text-[7px] uppercase tracking-wider px-2 py-1 rounded-full">
+          <Badge variant="outline" className="bg-card border-border font-medium text-[7px] uppercase tracking-[0.14em] px-2 py-1 rounded-full">
             {tests.filter(t => t.is_inhibited).length} Active
           </Badge>
         </div>
@@ -486,7 +486,7 @@ export function PrimitiveReflexAssessment({
                       {group.num}
                     </div>
                     <div>
-                      <h3 className="text-[10px] font-medium text-foreground uppercase tracking-wider">{group.label}</h3>
+                      <h3 className="text-[10px] font-medium text-foreground uppercase tracking-[0.14em]">{group.label}</h3>
                       <p className="text-[10px] text-muted-foreground">{group.desc}</p>
                     </div>
                     <div className="flex-1 h-px bg-border" />

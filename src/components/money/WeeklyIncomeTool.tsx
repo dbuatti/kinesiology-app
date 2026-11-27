@@ -131,13 +131,19 @@ export function WeeklyIncomeTool() {
           </div>
         </div>
         <p className="mb-2 text-xs text-muted-foreground">{ledger.length} sessions · {money(ledger.reduce((n, r) => n + r.amount, 0))}</p>
+        <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+          Session amount is what was charged for that booking — including historical or free sessions. Current rate is the client&apos;s standing kinesiology rate today and may differ. Voice &amp; piano lessons are priced by length, so no standing rate is shown.
+        </p>
         {/* Mobile: stacked cards so nothing scrolls sideways. */}
         <ul className="space-y-2 sm:hidden">
           {ledger.map((r) => (
             <li key={r.id} className="rounded-lg border border-border bg-card px-3 py-2.5">
               <div className="flex items-center justify-between gap-3">
                 <span className="min-w-0 truncate text-[13px] font-medium text-foreground blur-sensitive">{r.name}</span>
-                <span className="shrink-0 tabular-nums text-[13px] font-medium text-foreground">{money(r.amount)}</span>
+                <span className="shrink-0 text-right">
+                  <span className="block text-[10px] text-muted-foreground">Session</span>
+                  <span className="tabular-nums text-[13px] font-medium text-foreground">{money(r.amount)}</span>
+                </span>
               </div>
               <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
                 <span className="tabular-nums">{new Date(`${r.date}T00:00:00`).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}</span>
@@ -145,6 +151,9 @@ export function WeeklyIncomeTool() {
                 <span>{r.discipline === "voice" ? "Voice & piano" : "Kinesiology"}</span>
                 <span>·</span>
                 <span>{r.paid ? "Paid" : r.status || "Scheduled"}</span>
+                {r.discipline === "fnh" && r.currentRate !== null && (
+                  <><span>·</span><span className="text-primary-strong">Current rate {money(r.currentRate)}</span></>
+                )}
               </div>
             </li>
           ))}
@@ -158,7 +167,8 @@ export function WeeklyIncomeTool() {
               <th className="py-2 pr-4 font-medium">Client</th>
               <th className="py-2 pr-4 font-medium">Discipline</th>
               <th className="py-2 pr-4 font-medium">Status</th>
-              <th className="py-2 text-right font-medium">Amount</th>
+              <th className="py-2 pr-4 text-right font-medium">Session amount</th>
+              <th className="py-2 text-right font-medium">Current rate</th>
             </tr></thead>
             <tbody className="divide-y divide-border/60">
               {ledger.map((r) => (
@@ -167,10 +177,13 @@ export function WeeklyIncomeTool() {
                   <td className="py-2 pr-4 text-foreground blur-sensitive">{r.name}</td>
                   <td className="py-2 pr-4 text-xs text-muted-foreground">{r.discipline === "voice" ? "Voice & piano" : "Kinesiology"}</td>
                   <td className="py-2 pr-4 text-xs text-muted-foreground">{r.paid ? "Paid" : r.status || "Scheduled"}</td>
-                  <td className="py-2 text-right tabular-nums text-foreground">{money(r.amount)}</td>
+                  <td className="py-2 pr-4 text-right tabular-nums text-foreground">{money(r.amount)}</td>
+                  <td className={cn("py-2 text-right tabular-nums", r.discipline === "fnh" && r.currentRate !== null ? "font-medium text-primary-strong" : "text-muted-foreground")}>
+                    {r.discipline === "fnh" && r.currentRate !== null ? money(r.currentRate) : "—"}
+                  </td>
                 </tr>
               ))}
-              {ledger.length === 0 && <tr><td colSpan={5} className="py-6 text-center text-sm text-muted-foreground">Nothing in this view.</td></tr>}
+              {ledger.length === 0 && <tr><td colSpan={6} className="py-6 text-center text-sm text-muted-foreground">Nothing in this view.</td></tr>}
             </tbody>
           </table>
         </div>

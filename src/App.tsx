@@ -71,7 +71,6 @@ const GridSheetPage = lazy(() => import("./pages/GridSheetPage"));
 
 // --- Voice Studio ---
 const VoiceNewClientPage = lazy(() => import("./pages/VoiceNewClientPage"));
-const VoiceClientsPage = lazy(() => import("./pages/VoiceClientsPage"));
 // VoiceBookLessonPage / VoiceCalendarPage retired — consolidated into /calendar.
 const VoiceOnboardingPage = lazy(() => import("./pages/public/VoiceOnboardingPage"));
 const VoicePaidPage = lazy(() => import("./pages/public/VoicePaidPage"));
@@ -88,6 +87,10 @@ const BusinessRedirect = () => {
   const tool = new URLSearchParams(window.location.search).get("tool");
   const to = tool === "client-audit" ? "/audit" : tool === "marketing" ? "/marketing" : tool === "salary" || tool === "planning" ? "/money?tool=planning" : "/money";
   return <Navigate to={to} replace />;
+};
+const ResourcesRedirect = () => {
+  const tab = new URLSearchParams(window.location.search).get("tab");
+  return <Navigate to={tab ? `/library?tab=${encodeURIComponent(tab)}` : "/library"} replace />;
 };
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const ImportPage = lazy(() => import("./pages/ImportPage"));
@@ -204,7 +207,7 @@ const AppRoutes = () => {
         {/* Reference pages now live in the Library (Phase 4). */}
         <Route path="/resources/print" element={<Navigate to="/library?tab=print" replace />} />
         <Route path="/practice/corrections-manual" element={<Navigate to="/library?tab=corrections-manual" replace />} />
-        <Route path="/practice/clinical-hub" element={practitionerOnly(<ClinicalHubPage />)} />
+        <Route path="/practice/clinical-hub" element={<Navigate to="/sessions" replace />} />
         <Route path="/practice/trial/peace" element={practitionerOnly(<SandboxV2Page />)} />
         <Route path="/practice/trial/doc" element={practitionerOnly(<SandboxV2Page />)} />
 
@@ -253,7 +256,7 @@ const AppRoutes = () => {
 
           {/* Library — consolidated reference hub */}
           <Route path="/library" element={<LibraryPage />} />
-          <Route path="/resources" element={<Navigate to="/library" replace />} />
+          <Route path="/resources" element={<ResourcesRedirect />} />
           <Route path="/resources/cogs" element={<Navigate to="/library?tab=cogs" replace />} />
           <Route path="/peace-framework" element={<Navigate to="/library?tab=peace" replace />} />
           {/* Practice tools — consolidated into Practice Hub */}
@@ -278,11 +281,11 @@ const AppRoutes = () => {
           {/* Voice Studio */}
           {/* The Lessons page folded into Today (the day) and Calendar (the list, filtered to lessons). */}
           <Route path="/voice" element={<Navigate to="/calendar?show=lessons" replace />} />
-          <Route path="/voice/clients" element={<VoiceClientsPage />} />
+          <Route path="/voice/clients" element={<Navigate to="/clients?practice=voice" replace />} />
           <Route path="/voice/clients/new" element={<VoiceNewClientPage />} />
           {/* Consolidated into the unified Calendar (book + view voice there) */}
           <Route path="/voice/book" element={<Navigate to="/calendar" replace />} />
-          <Route path="/voice/calendar" element={<Navigate to="/calendar" replace />} />
+          <Route path="/voice/calendar" element={<Navigate to="/calendar?show=lessons" replace />} />
 
           {/* Business — consolidated hub */}
           {/* Business zone. /business and its old ?tool= deep links redirect to the split destinations. */}

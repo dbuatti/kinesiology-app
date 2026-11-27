@@ -62,7 +62,7 @@ const PracticeSimulator = ({
             <CardTitle className="text-base font-bold text-foreground">Live Practice Simulator</CardTitle>
           </div>
           <Badge className={cn(
-            "font-semibold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full",
+            "font-semibold text-[10px] uppercase tracking-[0.14em] px-2.5 py-1 rounded-full",
             simImStatus === 'Normotonic' ? "bg-primary text-primary-foreground" : "bg-rose-500 text-primary-foreground"
           )}>
             IM: {simImStatus}
@@ -141,7 +141,7 @@ const PracticeSimulator = ({
             </div>
 
             <div className="bg-foreground text-primary-foreground p-6 rounded-2xl flex flex-col items-center justify-center border border-foreground/20">
-              <div className="text-4xl font-semibold text-indigo-400 mb-4 font-mono">{simTimer}s</div>
+              <div className="text-2xl font-semibold text-primary-strong mb-4 font-mono">{simTimer}s</div>
               <Button 
                 onClick={onStartCorrectionTimer} 
                 disabled={simTimerActive}

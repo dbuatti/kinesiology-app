@@ -33,7 +33,7 @@ const HeartWallBible = () => {
               <Heart size={32} className="text-primary-foreground" />
             </div>
             <div>
-              <CardTitle className="text-4xl font-semibold tracking-tight">The Heart Wall Bible</CardTitle>
+              <CardTitle className="font-serif text-[26px] font-medium tracking-[-0.02em]">The Heart Wall Bible</CardTitle>
               <CardDescription className="text-muted-foreground text-xl font-medium mt-2">
                 Understanding the subconscious architecture of emotional protection.
               </CardDescription>
@@ -67,13 +67,13 @@ const HeartWallBible = () => {
               A Heart Wall is a metaphorical barrier created by the subconscious mind using the energy of trapped emotions. Its primary purpose is to protect the heart from emotional pain, grief, or perceived threat.
             </p>
             <div className="p-4 bg-muted/50 rounded-2xl border border-border/50">
-              <h4 className="font-semibold text-foreground uppercase tracking-wider text-[10px] mb-2">The Trade-off</h4>
+              <h4 className="font-semibold text-foreground uppercase tracking-[0.14em] text-[10px] mb-2">The Trade-off</h4>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 While the wall provides safety during trauma, it also acts as a filter that numbs positive emotions, blocks connection with others, and creates a sense of isolation.
               </p>
             </div>
             <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
-              <h4 className="font-semibold text-indigo-900 uppercase tracking-wider text-[10px] mb-2">Ancient Parallel</h4>
+              <h4 className="font-semibold text-indigo-900 uppercase tracking-[0.14em] text-[10px] mb-2">Ancient Parallel</h4>
               <p className="text-xs text-indigo-700 leading-relaxed font-medium">
                 The Pericardium meridian in Chinese medicine is often seen as the "heart protector" —
                 the same concept as the Heart Wall, described thousands of years ago.
@@ -100,7 +100,7 @@ const HeartWallBible = () => {
                 { m: "Priority Primary", d: "5–10 corrections targeting the highest layers only." },
               ].map(item => (
                 <div key={item.m} className="p-3 bg-muted/50 rounded-xl border border-border/50">
-                  <p className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider mb-1">{item.m}</p>
+                  <p className="text-[10px] font-semibold text-indigo-600 uppercase tracking-[0.14em] mb-1">{item.m}</p>
                   <p className="text-xs font-medium text-muted-foreground">{item.d}</p>
                 </div>
               ))}
@@ -228,7 +228,7 @@ const HeartWallBible = () => {
                 { m: "Glass", d: "Fragile, transparent." }
               ].map(item => (
                 <div key={item.m} className="p-3 bg-muted/50 rounded-xl border border-border/50">
-                  <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-wider mb-1">{item.m}</p>
+                  <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-[0.14em] mb-1">{item.m}</p>
                   <p className="text-xs font-medium text-muted-foreground">{item.d}</p>
                 </div>
               ))}
@@ -265,7 +265,7 @@ const HeartWallBible = () => {
               ))}
             </div>
             <div className="p-3 bg-primary/10 rounded-xl border border-primary/25">
-              <p className="text-[10px] font-semibold text-primary-strong uppercase tracking-wider mb-1">It's not perfect</p>
+              <p className="text-[10px] font-semibold text-primary-strong uppercase tracking-[0.14em] mb-1">It's not perfect</p>
               <p className="text-xs text-muted-foreground font-medium leading-relaxed">
                 Clearing the Heart Wall doesn't make life perfect, but it's a great load off the system.
                 You can definitely feel it as it happens.

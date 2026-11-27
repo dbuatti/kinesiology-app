@@ -88,7 +88,7 @@ const DiaphragmReset = ({
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                  <Wind size={20} className="text-chart-emerald" />
+                  <Wind size={20} className="text-primary-strong" />
                 </div>
                 <div>
                   <CardTitle className="text-base font-semibold text-foreground">Manual Reset of the Diaphragm</CardTitle>
@@ -164,7 +164,7 @@ const DiaphragmReset = ({
                       </div>
                     </div>
                     {timeLeft !== null && (
-                      <div className="text-5xl font-semibold text-foreground tabular-nums tracking-tighter">
+                      <div className="text-3xl font-semibold text-foreground tabular-nums tracking-tight">
                         {formatTime(timeLeft)}
                       </div>
                     )}

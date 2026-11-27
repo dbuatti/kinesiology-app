@@ -48,11 +48,11 @@ const SpinalSegmentReference = () => {
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex gap-2 mb-2">
-                      <Badge className="bg-indigo-50 text-indigo-700 border-none font-semibold text-[10px] uppercase tracking-wider">
+                      <Badge className="bg-indigo-50 text-indigo-700 border-none font-semibold text-[10px] uppercase tracking-[0.14em]">
                         Spinal Segment
                       </Badge>
                       {meridian && (
-                        <Badge className="bg-primary/10 text-primary-strong border-none font-semibold text-[10px] uppercase tracking-wider">
+                        <Badge className="bg-primary/10 text-primary-strong border-none font-semibold text-[10px] uppercase tracking-[0.14em]">
                           {meridian}
                         </Badge>
                       )}
@@ -100,7 +100,7 @@ const SpinalSegmentReference = () => {
                   <div className="absolute top-0 right-0 p-4 opacity-10">
                     <RefreshCw size={40} className="text-rose-600" />
                   </div>
-                  <p className="text-[10px] font-semibold text-rose-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                  <p className="text-[10px] font-semibold text-rose-400 uppercase tracking-[0.14em] mb-2 flex items-center gap-1">
                     <RefreshCw size={12} /> Lovett-Brother Partner
                   </p>
                   <div className="flex items-baseline gap-2">

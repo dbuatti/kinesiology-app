@@ -16,6 +16,7 @@ import ClientEmailThread from "@/components/assistant/ClientEmailThread";
 import ClientSnapshotPanel from "@/components/assistant/ClientSnapshotPanel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { EmptyState, LoadingState } from "@/components/shared/PageState";
 import { User, MessageCircle, Mail, ArrowLeft, ExternalLink, Mic, Brain } from "lucide-react";
 
 interface HubClient {
@@ -140,10 +141,19 @@ export default function ClientHubPage() {
   }, []);
 
   if (loading) {
-    return <AppLayout variant="wide"><p className="text-sm text-muted-foreground py-16 text-center">Loading...</p></AppLayout>;
+    return <AppLayout variant="wide"><LoadingState label="Loading this person's hub…" /></AppLayout>;
   }
   if (!client) {
-    return <AppLayout variant="wide"><p className="text-sm text-muted-foreground py-16 text-center">Client not found.</p></AppLayout>;
+    return (
+      <AppLayout variant="wide">
+        <EmptyState
+          icon={User}
+          title="Person not found"
+          hint="This client hub may have moved or the link may be incomplete."
+          action={<Button asChild variant="outline"><RouterLink to="/clients">Back to People</RouterLink></Button>}
+        />
+      </AppLayout>
+    );
   }
 
   const selectConversationMobile = (cid: string) => { selectConversation(cid); setMobileShowList(false); };

@@ -37,7 +37,7 @@ const CranialNerveHomeworkTool = () => {
               </div>
               <div>
                 <CardTitle className="text-2xl font-semibold">Neurological Rehab Planner</CardTitle>
-                <p className="text-indigo-100 text-xs font-bold uppercase tracking-wider">3-Week Integration Protocol</p>
+                <p className="text-indigo-100 text-xs font-bold uppercase tracking-[0.14em]">3-Week Integration Protocol</p>
               </div>
             </div>
             <div className="flex bg-card/10 p-1 rounded-xl border border-primary-foreground/20">
@@ -114,7 +114,7 @@ const CranialNerveHomeworkTool = () => {
                 ].map((w) => (
                   <div key={w.week} className={cn("p-4 rounded-2xl border-2 flex items-center justify-between", w.color)}>
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider opacity-70">Week {w.week}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] opacity-70">Week {w.week}</p>
                       <p className="text-xs font-bold">{w.label}</p>
                     </div>
                     <div className="text-right">
@@ -130,7 +130,7 @@ const CranialNerveHomeworkTool = () => {
           <div className="pt-6 border-t border-border/50 grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="p-5 bg-foreground text-primary-foreground rounded-2xl space-y-3 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10"><Clock size={40} /></div>
-              <h4 className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+              <h4 className="text-[10px] font-semibold text-indigo-400 uppercase tracking-[0.14em] flex items-center gap-2">
                 <Clock size={14} /> Frequency
               </h4>
               <p className="text-lg font-bold leading-tight">Every hour on the hour.</p>
@@ -139,7 +139,7 @@ const CranialNerveHomeworkTool = () => {
 
             <div className="p-5 bg-foreground text-primary-foreground rounded-2xl space-y-3 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10"><Calendar size={40} /></div>
-              <h4 className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+              <h4 className="text-[10px] font-semibold text-indigo-400 uppercase tracking-[0.14em] flex items-center gap-2">
                 <Calendar size={14} /> Duration
               </h4>
               <p className="text-lg font-bold leading-tight">3 Full Weeks.</p>
@@ -148,7 +148,7 @@ const CranialNerveHomeworkTool = () => {
 
             <div className="p-5 bg-foreground text-primary-foreground rounded-2xl space-y-3 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10"><TrendingUp size={40} /></div>
-              <h4 className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+              <h4 className="text-[10px] font-semibold text-indigo-400 uppercase tracking-[0.14em] flex items-center gap-2">
                 <TrendingUp size={14} /> Progression
               </h4>
               <p className="text-lg font-bold leading-tight">Double every 7 days.</p>

@@ -61,7 +61,7 @@ const JournalRefresher = ({ reflectionId, className }: JournalRefresherProps) =>
         <div className="bg-indigo-600 p-4 text-primary-foreground flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageSquare size={14} className="text-indigo-200" />
-            <span className="text-[10px] font-semibold uppercase tracking-wider">Journal Refresher</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.14em]">Journal Refresher</span>
           </div>
           {reflection && (
             <span className="text-[10px] font-bold opacity-70">

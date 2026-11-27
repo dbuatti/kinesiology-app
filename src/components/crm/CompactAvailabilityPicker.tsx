@@ -138,7 +138,7 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <p className="text-xs font-medium text-muted-foreground">Available Days</p>
-          <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wider">
+          <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-[0.14em]">
             Next 30 Days
           </Badge>
         </div>

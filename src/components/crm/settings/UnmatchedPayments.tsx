@@ -87,7 +87,7 @@ const UnmatchedPayments = () => {
         ) : count === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 text-center gap-2">
             <div className="w-12 h-12 rounded-full bg-primary/10 dark:bg-primary/15 flex items-center justify-center">
-              <Inbox size={22} className="text-chart-emerald" />
+              <Inbox size={22} className="text-primary-strong" />
             </div>
             <p className="text-sm font-semibold text-foreground">All clear</p>
             <p className="text-xs text-muted-foreground">Payments matched and calendar in sync.</p>
@@ -101,7 +101,7 @@ const UnmatchedPayments = () => {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className={cn(
-                      "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full",
+                      "text-[10px] font-semibold uppercase tracking-[0.14em] px-2 py-0.5 rounded-full",
                       meta.kind === "payment"
                         ? "bg-primary/15 text-primary-strong dark:bg-primary/20 dark:text-primary"
                         : "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400"
@@ -122,7 +122,7 @@ const UnmatchedPayments = () => {
                   disabled={busyId === r.id}
                   onClick={() => resolve(r.id)}
                 >
-                  {busyId === r.id ? <Loader2 size={14} className="mr-1.5 animate-spin" /> : <CheckCircle2 size={14} className="mr-1.5 text-chart-emerald" />}
+                  {busyId === r.id ? <Loader2 size={14} className="mr-1.5 animate-spin" /> : <CheckCircle2 size={14} className="mr-1.5 text-primary-strong" />}
                   Resolve
                 </Button>
               </div>

@@ -131,11 +131,11 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
             </h2>
             <Info size={14} className="text-muted-foreground/60 group-hover/title:text-primary transition-colors" />
           </div>
-          <Badge variant="outline" className="border-border text-muted-foreground font-medium text-[7px] uppercase tracking-wider px-2 py-0 rounded-full">
+          <Badge variant="outline" className="border-border text-muted-foreground font-medium text-[7px] uppercase tracking-[0.14em] px-2 py-0 rounded-full">
             {nerve.nuclei} • {nerve.toneEffect}
           </Badge>
           {!isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') && (
-            <Badge className="bg-success/10 text-success-strong border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0 rounded-full">
+            <Badge className="bg-success/10 text-success-strong border-none font-semibold text-[7px] uppercase tracking-[0.14em] px-2 py-0 rounded-full">
               <CheckCircle2 size={8} className="mr-1" /> Clear
             </Badge>
           )}
@@ -174,7 +174,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
                     onCheckedChange={(checked) => handleBilateralToggle(!!checked)}
                     className="h-3.5 w-3.5 border-primary rounded-sm data-[state=checked]:bg-primary"
                   />
-                  <label htmlFor={`inhib-both-${nerve.id}`} className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-primary">
+                  <label htmlFor={`inhib-both-${nerve.id}`} className="text-[10px] font-medium uppercase tracking-[0.14em] cursor-pointer text-primary">
                     Both
                   </label>
                 </div>
@@ -261,7 +261,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
               <div className="p-3 bg-muted/50 rounded-xl border border-border animate-in fade-in slide-in-from-top-1 duration-300">
                 <div className="flex items-center gap-2 mb-2">
                   <ArrowRightLeft size={12} className="text-primary" />
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-primary">Delineation Guide</span>
+                  <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary">Delineation Guide</span>
                 </div>
                 <p className="text-[10px] font-medium text-foreground leading-relaxed whitespace-pre-line">
                   {nerve.delineationGuide}
@@ -472,7 +472,7 @@ export function CranialNerveAssessment({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-card border-border font-medium text-[7px] uppercase tracking-wider px-2 py-1 rounded-full">
+          <Badge variant="outline" className="bg-card border-border font-medium text-[7px] uppercase tracking-[0.14em] px-2 py-1 rounded-full">
             {tests.filter(t => t.is_inhibited).length} Active
           </Badge>
         </div>
@@ -490,7 +490,7 @@ export function CranialNerveAssessment({
                 <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-xl", nerveTone.tile)}>
                   <Activity size={16} />
                 </div>
-                <h3 className="text-sm font-medium text-foreground uppercase tracking-wider">{cluster.label}</h3>
+                <h3 className="text-sm font-medium text-foreground uppercase tracking-[0.14em]">{cluster.label}</h3>
                 <div className="flex-1 h-px bg-muted" />
               </div>
               

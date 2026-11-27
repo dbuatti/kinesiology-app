@@ -184,7 +184,7 @@ const MechanoMasteryModule = () => {
                 {/* Core Curriculum Card */}
                 <Card className="border border-border shadow-sm rounded-2xl bg-primary text-primary-foreground overflow-hidden relative">
                   <CardHeader className="p-8 relative z-10">
-                    <Badge className="bg-card/10 text-primary-foreground border-none font-bold text-[10px] uppercase tracking-wider px-3 py-0.5 mb-3 w-fit">
+                    <Badge className="bg-card/10 text-primary-foreground border-none font-bold text-[10px] uppercase tracking-[0.14em] px-3 py-0.5 mb-3 w-fit">
                       Core Curriculum
                     </Badge>
                     <CardTitle className="text-3xl font-bold tracking-tight leading-tight">
@@ -300,7 +300,7 @@ const MechanoMasteryModule = () => {
                           <div className="w-10 h-10 rounded-xl bg-muted/50 border border-border flex items-center justify-center text-foreground/80">
                             <item.icon size={18} />
                           </div>
-                          <h4 className="font-bold text-foreground text-xs uppercase tracking-wider">{item.step}</h4>
+                          <h4 className="font-bold text-foreground text-xs uppercase tracking-[0.14em]">{item.step}</h4>
                           <p className="text-[11px] text-muted-foreground font-medium leading-relaxed">{item.desc}</p>
                         </div>
                       ))}

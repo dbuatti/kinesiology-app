@@ -53,7 +53,7 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
           {showInteractive ? (
             <div className="animate-in fade-in zoom-in-95 duration-300">
               <div className="flex items-center justify-between mb-6">
-                <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Interactive Practice Mode</h4>
+                <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Interactive Practice Mode</h4>
                 <Button variant="ghost" size="sm" onClick={() => setShowInteractive(false)} className="text-muted-foreground hover:text-foreground">
                   Back to Instructions
                 </Button>
@@ -94,7 +94,7 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
                       <div className="h-full w-0.5 bg-current/10 rounded-full" />
                     </div>
                     <div className="space-y-1">
-                      <h4 className="font-semibold uppercase tracking-wider text-xs opacity-70">{item.title}</h4>
+                      <h4 className="font-semibold uppercase tracking-[0.14em] text-xs opacity-70">{item.title}</h4>
                       <p className="text-lg font-bold leading-tight">{item.text}</p>
                     </div>
                   </div>
@@ -105,7 +105,7 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
                 <div className="absolute top-0 right-0 p-4 opacity-10">
                   <Clock size={80} />
                 </div>
-                <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
+                <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground mb-4 flex items-center gap-2">
                   <Clock size={16} /> Recommended Schedule
                 </h4>
                 <p className="text-xl font-bold leading-snug relative z-10">
@@ -115,12 +115,12 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-5 bg-indigo-50 rounded-2xl border border-indigo-100">
-                  <p className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider mb-2">Minimum Target</p>
+                  <p className="text-[10px] font-semibold text-indigo-600 uppercase tracking-[0.14em] mb-2">Minimum Target</p>
                   <p className="text-2xl font-semibold text-indigo-900">25 Seconds</p>
                   <p className="text-xs text-indigo-700 mt-1 font-medium">Essential for optimizing health</p>
                 </div>
                 <div className="p-5 bg-primary/10 rounded-2xl border border-primary/25">
-                  <p className="text-[10px] font-semibold text-primary-strong uppercase tracking-wider mb-2">Optimal Goal</p>
+                  <p className="text-[10px] font-semibold text-primary-strong uppercase tracking-[0.14em] mb-2">Optimal Goal</p>
                   <p className="text-2xl font-semibold text-primary-strong">40+ Seconds</p>
                   <p className="text-xs text-primary-strong mt-1 font-medium">Peak respiratory function</p>
                 </div>

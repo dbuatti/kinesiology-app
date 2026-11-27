@@ -133,23 +133,23 @@ export function ClinicalOversightTool() {
  <AlertCircle size={80} />
  </div>
  <CardHeader className="pb-2">
- <CardTitle className="text-sm font-semibold uppercase tracking-wider opacity-80">Imperative Attention</CardTitle>
+ <CardTitle className="text-sm font-semibold uppercase tracking-[0.14em] opacity-80">Imperative Attention</CardTitle>
  </CardHeader>
  <CardContent>
- <p className="text-4xl font-semibold">{imperativeCount}</p>
+ <p className="text-2xl font-semibold tabular-nums">{imperativeCount}</p>
  <p className="text-xs font-medium text-primary-foreground/80 mt-1">Clients with BOLT score {"<"} 25s</p>
  </CardContent>
  </Card>
 
- <Card className="border-none shadow-sm rounded-xl bg-chart-emerald text-primary-foreground overflow-hidden relative">
+ <Card className="border-none shadow-sm rounded-xl bg-primary text-primary-foreground overflow-hidden relative">
  <div className="absolute top-0 right-0 p-6 opacity-20">
  <CheckCircle2 size={80} />
  </div>
  <CardHeader className="pb-2">
- <CardTitle className="text-sm font-semibold uppercase tracking-wider opacity-80">Functional Status</CardTitle>
+ <CardTitle className="text-sm font-semibold uppercase tracking-[0.14em] opacity-80">Functional Status</CardTitle>
  </CardHeader>
  <CardContent>
- <p className="text-4xl font-semibold">{functionalCount}</p>
+ <p className="text-2xl font-semibold tabular-nums">{functionalCount}</p>
  <p className="text-xs font-medium text-primary-foreground/80 mt-1">Clients with BOLT score ≥ 25s</p>
  </CardContent>
  </Card>
@@ -159,10 +159,10 @@ export function ClinicalOversightTool() {
  <Users size={80} />
  </div>
  <CardHeader className="pb-2">
- <CardTitle className="text-sm font-semibold uppercase tracking-wider opacity-80">Total Monitored</CardTitle>
+ <CardTitle className="text-sm font-semibold uppercase tracking-[0.14em] opacity-80">Total Monitored</CardTitle>
  </CardHeader>
  <CardContent>
- <p className="text-4xl font-semibold">{clients.length}</p>
+ <p className="text-2xl font-semibold tabular-nums">{clients.length}</p>
  <p className="text-xs font-medium text-primary-foreground/80 mt-1">Active clinical cases</p>
  </CardContent>
  </Card>
@@ -201,9 +201,9 @@ export function ClinicalOversightTool() {
  <div className="grid grid-cols-2 gap-4">
  <div className={cn(
  "p-4 rounded-xl border flex flex-col items-center text-center",
- bolt === null ? "bg-muted/30 border-border" : (bolt >= 25 ? "bg-chart-emerald/10 border-border " : "bg-chart-destructive/10 border-border ")
+ bolt === null ? "bg-muted/30 border-border" : (bolt >= 25 ? "bg-primary/10 border-border " : "bg-chart-destructive/10 border-border ")
  )}>
- <FlaskConical size={16} className={cn("mb-1.5", bolt === null ? "text-muted-foreground" : (bolt >= 25 ? "text-chart-emerald" : "text-chart-destructive"))} />
+ <FlaskConical size={16} className={cn("mb-1.5", bolt === null ? "text-muted-foreground" : (bolt >= 25 ? "text-primary-strong" : "text-chart-destructive"))} />
  <p className="text-[11px] font-semibold opacity-60">BOLT</p>
  <p className="text-2xl font-semibold">{bolt !== null ? `${bolt}s` : "—"}</p>
  </div>

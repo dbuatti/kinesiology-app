@@ -308,7 +308,7 @@ Correction Method: ${method}`;
         <div className="flex items-center justify-between border-b border-foreground/20 pb-3">
           <div className="flex items-center gap-2">
             <Zap size={20} className="text-foreground" />
-            <h3 className="text-sm font-semibold uppercase tracking-wider">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.14em]">
               {showLog ? "Calibration Log" : "Lofi Calibration Wizard"}
             </h3>
           </div>
@@ -364,7 +364,7 @@ Correction Method: ${method}`;
                         className="h-8 w-8 rounded-md border border-border hover:bg-muted"
                         title="Copy this correction"
                       >
-                        {copiedIndex === idx ? <Check size={12} className="text-chart-emerald" /> : <Copy size={12} />}
+                        {copiedIndex === idx ? <Check size={12} className="text-primary-strong" /> : <Copy size={12} />}
                       </Button>
                       <Button
                         variant="ghost"
@@ -662,7 +662,7 @@ Correction Method: ${method}`;
       <div id="c-afferent" className="space-y-6 scroll-mt-24 px-4 md:px-6">
         <div className="flex items-center gap-2 border-b border-foreground/20 pb-2">
           <PATHWAY_DIRECTION.afferent.Icon size={16} className={PATHWAY_DIRECTION.afferent.text} />
-          <h4 className={cn("text-sm font-semibold uppercase tracking-wider", PATHWAY_DIRECTION.afferent.text)}>Afferent (Bottom-Up) Protocols</h4>
+          <h4 className={cn("text-sm font-semibold uppercase tracking-[0.14em]", PATHWAY_DIRECTION.afferent.text)}>Afferent (Bottom-Up) Protocols</h4>
         </div>
 
         <div className="grid grid-cols-1 gap-4">
@@ -720,7 +720,7 @@ Correction Method: ${method}`;
       <div id="c-efferent" className="space-y-6 scroll-mt-24 px-4 md:px-6">
         <div className="flex items-center gap-2 border-b border-foreground/20 pb-2">
           <PATHWAY_DIRECTION.efferent.Icon size={16} className={PATHWAY_DIRECTION.efferent.text} />
-          <h4 className={cn("text-sm font-semibold uppercase tracking-wider", PATHWAY_DIRECTION.efferent.text)}>Efferent (Top-Down) Protocols</h4>
+          <h4 className={cn("text-sm font-semibold uppercase tracking-[0.14em]", PATHWAY_DIRECTION.efferent.text)}>Efferent (Top-Down) Protocols</h4>
         </div>
 
         <div className="grid grid-cols-1 gap-4">

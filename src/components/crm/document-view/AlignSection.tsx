@@ -163,7 +163,7 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
         <div className="flex items-center gap-2.5 p-2.5 bg-primary/5 border border-primary/20 rounded-lg">
           <Target size={13} className="text-primary shrink-0" />
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-bold text-primary uppercase tracking-wider">Priority Pathway</p>
+            <p className="text-[10px] font-bold text-primary uppercase tracking-[0.14em]">Priority Pathway</p>
             <p className="text-[11px] font-semibold text-foreground truncate">{currentPathway}</p>
           </div>
           <button
@@ -227,7 +227,7 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
                               <span className="text-[10px] font-bold text-muted-foreground">({finding.side})</span>
                             )}
                             {isPrimary && (
-                              <span className="rounded bg-gold/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-gold-strong ring-1 ring-gold/40">
+                              <span className="rounded bg-gold/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-gold-strong ring-1 ring-gold/40">
                                 Primary priority
                               </span>
                             )}

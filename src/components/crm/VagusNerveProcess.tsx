@@ -192,7 +192,7 @@ const VagusNerveProcess = ({ appointmentId: _appointmentId, initialNotes, onSave
                   <div>
                     <CardTitle className="text-base font-semibold text-foreground">Vagus Nerve Process</CardTitle>
                     <div className="flex gap-2 mt-1">
-                      <span className="text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-md bg-primary text-primary-foreground">Screen & Reset</span>
+                      <span className="text-[10px] font-medium uppercase tracking-[0.14em] px-2 py-0.5 rounded-md bg-primary text-primary-foreground">Screen & Reset</span>
                     </div>
                   </div>
                 </div>

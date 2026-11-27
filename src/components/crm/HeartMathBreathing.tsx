@@ -59,9 +59,9 @@ const HeartMathBreathing = ({ onComplete: _onComplete, onCancel }: HeartMathBrea
       <div className="space-y-3 relative z-10">
         <div className="flex items-center justify-center gap-3 text-rose-500">
           <Heart size={24} className={cn(isActive && "animate-pulse")} />
-          <span className="text-[10px] font-semibold uppercase tracking-wider">HeartMath 4/6 Rhythm</span>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.14em]">HeartMath 4/6 Rhythm</span>
         </div>
-        <h3 className="text-4xl font-semibold text-primary-foreground tracking-tight">Coherence Breathing</h3>
+        <h3 className="text-2xl font-semibold text-primary-foreground tracking-tight">Coherence Breathing</h3>
         <p className="text-muted-foreground text-sm font-medium max-w-xs mx-auto">Focus on the area of your heart. Imagine your breath flowing in and out of that space.</p>
       </div>
 
@@ -80,7 +80,7 @@ const HeartMathBreathing = ({ onComplete: _onComplete, onCancel }: HeartMathBrea
           isActive && phase === 'inhale' ? "scale-110 border-rose-500/50" : "scale-100"
         )}>
           <div className="text-center">
-            <p className="text-4xl font-semibold text-rose-500 uppercase tracking-wider">
+            <p className="text-2xl font-semibold text-destructive uppercase tracking-[0.14em]">
               {isActive ? phase : "Ready"}
             </p>
             {isActive && <p className="text-3xl font-semibold text-primary-foreground tabular-nums mt-2">{timeLeft}s</p>}

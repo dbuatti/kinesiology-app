@@ -486,7 +486,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                       <Badge variant="outline" className="border-border text-muted-foreground font-medium text-xs px-2 py-0 rounded-full">
                         {clinicalTip.type}
                       </Badge>
-                      <Badge className="bg-primary/10 text-primary-strong border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0 rounded-full">
+                      <Badge className="bg-primary/10 text-primary-strong border-none font-medium text-[10px] uppercase tracking-[0.14em] px-2 py-0 rounded-full">
                         {clinicalTip.logic}
                       </Badge>
                     </div>
@@ -525,7 +525,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                 <p className="text-xs font-medium text-muted-foreground">Correcting</p>
                 <p className="text-sm font-medium text-foreground">{effectiveItem || "General"}</p>
               </div>
-              <Badge className={cn("border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0 rounded-full", PATHWAY_DIRECTION.afferent.tint)}>Afferent</Badge>
+              <Badge className={cn("border-none font-medium text-[10px] uppercase tracking-[0.14em] px-2 py-0 rounded-full", PATHWAY_DIRECTION.afferent.tint)}>Afferent</Badge>
             </div>
             {[
               { type: 'Mechanoreceptive', icon: Activity, step: 'MECHANO_PROCESS', desc: 'Joint and muscle receptor calibration' },
@@ -555,7 +555,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                 <p className="text-xs font-medium text-muted-foreground">Correcting</p>
                 <p className="text-sm font-medium text-foreground">{effectiveItem || "General"}</p>
               </div>
-              <Badge className={cn("border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0 rounded-full", PATHWAY_DIRECTION.efferent.tint)}>Efferent</Badge>
+              <Badge className={cn("border-none font-medium text-[10px] uppercase tracking-[0.14em] px-2 py-0 rounded-full", PATHWAY_DIRECTION.efferent.tint)}>Efferent</Badge>
             </div>
             {[
               { type: 'Brain Integration', icon: Brain, step: 'EFFERENT_PROCESS', desc: 'Cortical and subcortical zone pairing' },

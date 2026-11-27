@@ -182,7 +182,7 @@ const ReflexImageZone = ({
                   <X size={14} />
                 </Button>
               </div>
-              <p className="text-[10px] font-medium text-primary-foreground uppercase tracking-wider">Click to Change</p>
+              <p className="text-[10px] font-medium text-primary-foreground uppercase tracking-[0.14em]">Click to Change</p>
             </div>
           </div>
         </>
@@ -304,13 +304,13 @@ const PrimitiveReflexReference = () => {
                   Primitive reflexes are the foundational OS of the nervous system. They should be inhibited by the nervous system at around <span className="text-primary-foreground font-medium">2 to 4 months of age</span>.
                 </p>
                 <div className="p-4 bg-card/5 rounded-xl border border-primary-foreground/10">
-                  <h4 className="font-medium text-chart-primary text-[10px] uppercase tracking-wider mb-2">The "Safe Mode"</h4>
+                  <h4 className="font-medium text-chart-primary text-[10px] uppercase tracking-[0.14em] mb-2">The "Safe Mode"</h4>
                   <p className="text-xs text-muted-foreground leading-relaxed">When the system is under high threat, it "grabs" these reflexes as a safe mode to deal with stress.</p>
                 </div>
               </div>
               <div className="space-y-4">
                 <div className="p-5 bg-primary/20 rounded-xl border border-chart-primary/30">
-                  <h4 className="font-medium text-chart-primary text-xs uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <h4 className="font-medium text-chart-primary text-xs uppercase tracking-[0.14em] mb-2 flex items-center gap-2">
                     <Zap size={14} /> Fractal Logic
                   </h4>
                   <p className="text-xs text-chart-primary leading-relaxed">
@@ -351,7 +351,7 @@ const PrimitiveReflexReference = () => {
             </div>
             
             <div className="pt-6 border-t border-border space-y-4">
-              <h4 className="text-[10px] font-medium text-chart-primary uppercase tracking-wider">Fractal Chains</h4>
+              <h4 className="text-[10px] font-medium text-chart-primary uppercase tracking-[0.14em]">Fractal Chains</h4>
               <div className="space-y-2">
                 <div className="p-3 bg-card rounded-xl border border-border">
                   <p className="text-xs font-medium text-muted-foreground mb-1">Master Chain</p>
@@ -436,9 +436,9 @@ const PrimitiveReflexReference = () => {
                     <div className="space-y-1">
                       <div className="flex gap-2 mb-2">
                         <Badge className={cn(
-                          "border-none font-medium text-[10px] uppercase tracking-wider",
+                          "border-none font-medium text-[10px] uppercase tracking-[0.14em]",
                           reflex.category === 'Foundational' ? "bg-chart-primary/10 text-chart-primary" :
-                          reflex.category === 'Postural' ? "bg-chart-emerald/10 text-chart-emerald" :
+                          reflex.category === 'Postural' ? "bg-primary/10 text-primary-strong" :
                           "bg-muted text-muted-foreground"
                         )}>
                           {reflex.category} Reflex
@@ -483,7 +483,7 @@ const PrimitiveReflexReference = () => {
                       <p className="text-sm font-medium text-foreground leading-relaxed line-clamp-2">{reflex.stimulus}</p>
                     </div>
                     <div className="p-4 bg-muted rounded-xl border border-border">
-                      <p className="text-[10px] font-medium text-chart-destructive uppercase tracking-wider mb-1 flex items-center gap-1">
+                      <p className="text-[10px] font-medium text-chart-destructive uppercase tracking-[0.14em] mb-1 flex items-center gap-1">
                         <ShieldAlert size={12} /> Inhibition Pattern
                       </p>
                       <p className="text-sm font-medium text-foreground leading-relaxed line-clamp-2">{reflex.inhibitionPattern}</p>

@@ -97,7 +97,9 @@ function historyStats(history: { date: string; status: string }[], manualOverrid
 
 export function ClientsTool() {
   const [search, setSearch] = useState("");
-  const [view, setView] = useState<'table' | 'grid'>('table');
+  const [view, setView] = useState<'table' | 'grid'>(() =>
+    typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches ? "grid" : "table"
+  );
   const [clients, setClients] = useState<ClientWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

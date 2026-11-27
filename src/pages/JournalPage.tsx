@@ -397,7 +397,7 @@ const JournalPage = () => {
     switch (type) {
       case 'belief': return { label: 'Limiting Beliefs', icon: ShieldAlert, color: 'text-chart-destructive', bg: 'bg-muted' };
       case 'shifting': return { label: 'Identity Shifting', icon: Fingerprint, color: 'text-chart-primary', bg: 'bg-muted' };
-      case 'alignment': return { label: 'Identity Alignment', icon: Target, color: 'text-chart-emerald', bg: 'bg-muted' };
+      case 'alignment': return { label: 'Identity Alignment', icon: Target, color: 'text-primary-strong', bg: 'bg-muted' };
       case 'felt_sense': return { label: 'Somatic Tracking', icon: Wind, color: 'text-chart-primary', bg: 'bg-muted' };
       default: return null;
     }
@@ -412,27 +412,27 @@ const JournalPage = () => {
           icon={MessageSquare}
 
           actions={
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl gap-2 text-xs">
                 <ArrowLeft size={14} /> Back
               </Button>
               <Button 
                 variant="outline" 
                 onClick={handleScanAll}
                 disabled={isScanning || reflections.length === 0}
-                className="rounded-xl h-12 px-6 font-medium text-xs text-chart-primary hover:bg-muted"
+                className="h-9 rounded-xl px-3 text-xs font-medium text-primary-strong hover:bg-muted sm:h-10 sm:px-4"
               >
-                {isScanning ? <Loader2 className="animate-spin mr-2" /> : <Wand2 size={18} className="mr-2" />}
-                Scan All
+                {isScanning ? <Loader2 className="mr-2 animate-spin" size={16} /> : <Wand2 size={16} className="mr-2" />}
+                Scan all
               </Button>
               <Button 
                 variant="outline" 
                 onClick={() => handleAddAllToBacklog()}
                 disabled={isAddingAll || reflections.length === 0}
-                className="rounded-xl h-12 px-6 font-medium text-xs border-border text-chart-emerald hover:bg-muted"
+                className="h-9 rounded-xl px-3 text-xs font-medium text-primary-strong hover:bg-muted sm:h-10 sm:px-4"
               >
-                {isAddingAll ? <Loader2 className="animate-spin mr-2" /> : <Layers size={18} className="mr-2" />}
-                Add All to Backlog
+                {isAddingAll ? <Loader2 className="mr-2 animate-spin" size={16} /> : <Layers size={16} className="mr-2" />}
+                Add all to backlog
               </Button>
             </div>
           }
@@ -448,7 +448,7 @@ const JournalPage = () => {
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
               <span className="text-2xl font-semibold text-chart-destructive">!</span>
             </div>
-            <p className="text-chart-destructive font-semibold text-xs uppercase tracking-wider text-center">Failed to load journal</p>
+            <p className="text-chart-destructive font-semibold text-xs uppercase tracking-[0.14em] text-center">Failed to load journal</p>
             <p className="text-muted-foreground text-xs text-center max-w-md">{error}</p>
             <Button onClick={fetchData} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl font-medium text-xs">
               <RotateCcw size={14} className="mr-2" /> Retry
@@ -572,7 +572,7 @@ const JournalPage = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           {isAnalyzing ? (
-                            <div className="flex items-center gap-2 px-4 py-2 bg-muted text-chart-primary rounded-xl font-semibold text-[10px] uppercase tracking-wider">
+                            <div className="flex items-center gap-2 px-4 py-2 bg-muted text-chart-primary rounded-xl font-semibold text-[10px] uppercase tracking-[0.14em]">
                               <Loader2 size={14} className="animate-spin" /> Analyzing...
                             </div>
                           ) : (
@@ -622,7 +622,7 @@ const JournalPage = () => {
                                       "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
                                       item.type === 'question' ? "bg-chart-primary/10 text-chart-primary" :
                                       item.type === 'belief' ? "bg-chart-destructive/10 text-chart-destructive" : 
-                                      item.type === 'alignment' ? "bg-muted text-chart-emerald" : 
+                                      item.type === 'alignment' ? "bg-muted text-primary-strong" : 
                                       item.type === 'felt_sense' ? "bg-muted text-chart-primary" : "bg-muted text-muted-foreground"
                                     )}>
                                       {item.type === 'question' ? <HelpCircle size={18} /> : 
@@ -639,7 +639,7 @@ const JournalPage = () => {
                                       </p>
                                       {tool && item.status !== 'added' && (
                                         <div className="flex items-center gap-1.5 mt-1">
-                                          <span className={cn("text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md", tool.bg, tool.color)}>
+                                          <span className={cn("text-[10px] font-semibold uppercase tracking-[0.14em] px-2 py-0.5 rounded-md", tool.bg, tool.color)}>
                                             For {tool.label}
                                           </span>
                                         </div>
@@ -659,7 +659,7 @@ const JournalPage = () => {
                                     </Button>
                                   )}
                                   {item.status === 'added' && (
-                                    <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
+                                    <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-3 py-1 rounded-full">
                                       <CheckCircle2 size={10} className="mr-1" /> Added
                                     </Badge>
                                   )}
@@ -730,7 +730,7 @@ const JournalPage = () => {
                     {respondingToId === q.id && (
                       <div className="pt-6 border-t border-border space-y-4 animate-in slide-in-from-top-2 duration-300">
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-semibold uppercase tracking-wider text-chart-primary ml-1">Teacher's Response</Label>
+                          <Label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-chart-primary ml-1">Teacher's Response</Label>
                           <Textarea 
                             placeholder="Type the answer or insight from the teacher here..."
                             className="min-h-[120px] rounded-xl border-2 border-border focus:border-primary bg-muted/30 p-6 text-base font-medium leading-relaxed"
@@ -758,7 +758,7 @@ const JournalPage = () => {
               {pendingQuestions.length === 0 && (
                 <div className="text-center py-32 bg-muted rounded-xl border-2 border-dashed border-border">
                   <div className="w-20 h-20 bg-card rounded-xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-                    <CheckCircle2 size={40} className="text-chart-emerald" />
+                    <CheckCircle2 size={40} className="text-primary-strong" />
                   </div>
                   <h3 className="text-xl font-semibold text-foreground">All questions answered!</h3>
                   <p className="text-muted-foreground mt-2">You're fully prepped for your next meetup.</p>

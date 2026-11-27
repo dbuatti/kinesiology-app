@@ -94,7 +94,7 @@ const BrainstemBreathingReference = () => {
       <div className="p-8 bg-primary text-primary-foreground rounded-2xl shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10"><Wind size={150} /></div>
         <div className="relative z-10 space-y-4">
-          <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-4 py-1">Neurological Input</Badge>
+          <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-4 py-1">Neurological Input</Badge>
           <h3 className="text-3xl font-semibold flex items-center gap-3">
             <Wind size={32} className="text-primary" /> Brainstem Breathing Rehab
           </h3>
@@ -110,11 +110,11 @@ const BrainstemBreathingReference = () => {
             <div className={cn("p-8 text-primary-foreground", item.color)}>
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-2xl font-semibold">{item.region}</h4>
-                <Badge className="bg-card/20 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1">
+                <Badge className="bg-card/20 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-3 py-1">
                   {item.tone} Tone
                 </Badge>
               </div>
-              <p className="text-xs font-bold opacity-90 uppercase tracking-wider mb-4">{item.nerves}</p>
+              <p className="text-xs font-bold opacity-90 uppercase tracking-[0.14em] mb-4">{item.nerves}</p>
               <p className="text-xs font-medium leading-relaxed opacity-80">{item.description}</p>
             </div>
             <CardContent className="p-8 space-y-6">
@@ -148,11 +148,11 @@ const BrainstemBreathingReference = () => {
           <CardContent className="p-8 pt-0 space-y-6">
             <div className="grid grid-cols-1 gap-4">
               <div className="p-4 bg-card/5 rounded-2xl border border-primary-foreground/10">
-                <h5 className="font-semibold text-primary text-xs uppercase tracking-wider mb-2">Flexor Dominance?</h5>
+                <h5 className="font-semibold text-primary text-xs uppercase tracking-[0.14em] mb-2">Flexor Dominance?</h5>
                 <p className="text-sm text-muted-foreground/60">If client is slumped or "curled in," prioritize <strong>Pons (Extensor)</strong> breathing like Biots or Deep Inhalation.</p>
               </div>
               <div className="p-4 bg-card/5 rounded-2xl border border-primary-foreground/10">
-                <h5 className="font-semibold text-rose-400 text-xs uppercase tracking-wider mb-2">Extensor Dominance?</h5>
+                <h5 className="font-semibold text-rose-400 text-xs uppercase tracking-[0.14em] mb-2">Extensor Dominance?</h5>
                 <p className="text-sm text-muted-foreground/60">If client is rigid or "arched back," prioritize <strong>Medulla/Midbrain (Flexor)</strong> breathing like Forced Exhalation or Breath Holds.</p>
               </div>
             </div>

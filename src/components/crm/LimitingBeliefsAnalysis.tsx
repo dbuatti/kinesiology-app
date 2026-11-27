@@ -301,7 +301,7 @@ const LimitingBeliefsAnalysis = () => {
                   <SelectItem key={s.id} value={s.id} className="text-xs">
                     <span className="truncate max-w-[280px] inline-block align-middle">{belief}</span>
                     <span className="text-[10px] text-muted-foreground ml-2">{date}</span>
-                    {s.is_complete && <span className="text-[10px] text-chart-emerald ml-1">✓</span>}
+                    {s.is_complete && <span className="text-[10px] text-primary-strong ml-1">✓</span>}
                   </SelectItem>
                 );
               })}
@@ -325,7 +325,7 @@ const LimitingBeliefsAnalysis = () => {
                   onClick={handleCopyTranscript}
                   className="h-6 text-[10px] px-2 gap-1"
                 >
-                  {copied ? <Check size={10} className="text-chart-emerald" /> : <Copy size={10} />}
+                  {copied ? <Check size={10} className="text-primary-strong" /> : <Copy size={10} />}
                   {copied ? "Copied" : "Copy"}
                 </Button>
               )}
@@ -382,7 +382,7 @@ const LimitingBeliefsAnalysis = () => {
               onClick={handleCopyResults}
               className="h-6 text-[10px] px-2 gap-1"
             >
-              {copied ? <Check size={10} className="text-chart-emerald" /> : <Copy size={10} />}
+              {copied ? <Check size={10} className="text-primary-strong" /> : <Copy size={10} />}
               {copied ? "Copied All" : "Copy All"}
             </Button>
           </div>
@@ -403,7 +403,7 @@ const LimitingBeliefsAnalysis = () => {
             icon={Shuffle}
             title="Identity Shifts"
             items={result.identities}
-            color="text-chart-emerald"
+            color="text-primary-strong"
             emptyMsg="No identity shift suggestions generated."
             onItemClick={(item) => openSuggestion("/identity-alignment", item.name)}
           />

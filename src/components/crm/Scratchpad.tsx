@@ -39,7 +39,7 @@ const Scratchpad = () => {
       description="Quick notes and research ideas — saved in this browser"
       action={
         <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-          <CheckCircle2 size={13} className="text-chart-emerald" /> {lastSaved ? `Saved ${lastSaved}` : "Auto-saves"}
+          <CheckCircle2 size={13} className="text-primary-strong" /> {lastSaved ? `Saved ${lastSaved}` : "Auto-saves"}
         </span>
       }
       bodyClassName="px-5 pb-5"

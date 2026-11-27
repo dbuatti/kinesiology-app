@@ -128,7 +128,7 @@ const JointActionExplorer = () => {
       {/* Header Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/50 p-4 rounded-2xl border border-border">
         <div className="space-y-1">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Joint Action Explorer</h3>
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-[0.14em]">Joint Action Explorer</h3>
           <p className="text-xs text-muted-foreground font-medium">Master the planes of motion and joint actions.</p>
         </div>
         <Button 
@@ -205,12 +205,12 @@ const JointActionExplorer = () => {
                   </div>
                   <div>
                     <CardTitle className="text-2xl font-semibold text-foreground">{selectedJoint.name}</CardTitle>
-                    <CardDescription className="font-bold text-[10px] uppercase tracking-wider text-indigo-600">
+                    <CardDescription className="font-bold text-[10px] uppercase tracking-[0.14em] text-indigo-600">
                       {selectedJoint.type} Skeleton • {selectedJoint.region} Body
                     </CardDescription>
                   </div>
                 </div>
-                <Badge className="bg-indigo-100 text-indigo-700 border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
+                <Badge className="bg-indigo-100 text-indigo-700 border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-3 py-1 rounded-full">
                   Clinical Reference
                 </Badge>
               </div>
@@ -233,7 +233,7 @@ const JointActionExplorer = () => {
                           action.label === '-' ? "bg-muted/50 border-border/50 opacity-50" : "bg-card border-border/30 hover:border-indigo-100 shadow-sm"
                         )}>
                           <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none font-semibold text-[10px] uppercase tracking-wider rounded-full">
+                            <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none font-semibold text-[10px] uppercase tracking-[0.14em] rounded-full">
                               {action.label}
                             </Badge>
                           </div>
@@ -252,7 +252,7 @@ const JointActionExplorer = () => {
                   <Lightbulb size={24} />
                 </div>
                 <div className="space-y-1">
-                  <h5 className="font-semibold text-indigo-900 text-xs uppercase tracking-wider">Clinical Pearl</h5>
+                  <h5 className="font-semibold text-indigo-900 text-xs uppercase tracking-[0.14em]">Clinical Pearl</h5>
                   <p className="text-sm text-indigo-700 font-medium leading-relaxed">
                     "{selectedJoint.pearl}"
                   </p>
@@ -263,7 +263,7 @@ const JointActionExplorer = () => {
                 <div className="p-5 bg-foreground text-primary-foreground rounded-2xl space-y-3">
                   <div className="flex items-center gap-2 text-primary">
                     <Brain size={16} />
-                    <span className="text-[10px] font-semibold uppercase tracking-wider">Conscious Logic</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.14em]">Conscious Logic</span>
                   </div>
                   <p className="text-xs text-muted-foreground/60 leading-relaxed">
                     Hold <span className="text-primary-foreground font-bold">Contralateral S1</span>. Perform 30-40% isometric hold in the restricted action for 60s.
@@ -272,7 +272,7 @@ const JointActionExplorer = () => {
                 <div className="p-5 bg-foreground text-primary-foreground rounded-2xl space-y-3">
                   <div className="flex items-center gap-2 text-primary">
                     <Activity size={16} />
-                    <span className="text-[10px] font-semibold uppercase tracking-wider">Unconscious Logic</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.14em]">Unconscious Logic</span>
                   </div>
                   <p className="text-xs text-muted-foreground/60 leading-relaxed">
                     Hold <span className="text-primary-foreground font-bold">Ipsilateral GV16</span>. Stretch the priority ligament and apply tuning fork to cranium.
@@ -298,7 +298,7 @@ const JointActionExplorer = () => {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-indigo-300">Score</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-indigo-300">Score</p>
                   <p className="text-2xl font-semibold">{quizScore} / {quizTotal}</p>
                 </div>
               </div>

@@ -158,7 +158,7 @@ const CranialNerveWorksheet = () => {
       {/* Footer Section */}
       <div className="mt-2 p-2 border border-foreground/20 bg-muted/50 flex justify-between items-start gap-8">
         <div className="space-y-1 flex-1">
-          <h4 className="font-semibold text-[10px] uppercase tracking-wider border-b border-foreground/10 pb-0.5">Priority Logic</h4>
+          <h4 className="font-semibold text-[10px] uppercase tracking-[0.14em] border-b border-foreground/10 pb-0.5">Priority Logic</h4>
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border border-foreground/20" />

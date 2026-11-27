@@ -102,7 +102,7 @@ const PreviousSessionInsightsBar = ({ history = [], manualData }: PreviousSessio
         >
           <div className="flex items-center gap-4 overflow-hidden">
             <div className={cn(
-              "flex items-center gap-2 px-2 py-1 rounded-lg text-[10px] font-medium uppercase tracking-wider",
+              "flex items-center gap-2 px-2 py-1 rounded-lg text-[10px] font-medium uppercase tracking-[0.14em]",
               isStale ? "bg-muted text-muted-foreground" : "bg-muted text-muted-foreground"
             )}>
               {isStale ? <AlertTriangle size={12} /> : <History size={12} />}

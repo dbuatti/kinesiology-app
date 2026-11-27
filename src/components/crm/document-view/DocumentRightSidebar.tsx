@@ -82,7 +82,7 @@ const DocumentRightSidebar = ({
       {/* Current meridian peak */}
       {currentPeakMeridian && (
         <div className="text-center p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 space-y-0.5">
-          <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center justify-center gap-1">
+          <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-[0.14em] flex items-center justify-center gap-1">
             <Zap size={9} /> Peak Meridian
           </p>
           <p className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 leading-tight">{currentPeakMeridian.name}</p>

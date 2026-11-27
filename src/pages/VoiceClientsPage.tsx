@@ -288,8 +288,8 @@ const VoiceClientsPage = () => {
  key: "active",
  label: "Active & Upcoming",
  desc: "Seen in the last 30 days OR booked in the future",
- color: "bg-chart-emerald",
- bg: "bg-chart-emerald/10 ",
+ color: "bg-primary",
+ bg: "bg-primary/10 ",
  border: "border-border ",
  count: groups.active.length,
  students: groups.active,
@@ -336,7 +336,7 @@ const VoiceClientsPage = () => {
  <div className="w-16 h-16 rounded-full bg-destructive/20 flex items-center justify-center">
  <span className="text-2xl font-semibold text-destructive">!</span>
  </div>
- <p className="text-destructive font-semibold text-xs uppercase tracking-wider text-center">Failed to load students</p>
+ <p className="text-destructive font-semibold text-xs uppercase tracking-[0.14em] text-center">Failed to load students</p>
  <p className="text-destructive/70 text-xs text-center max-w-md">{(error as any)?.message || "An unexpected error occurred"}</p>
  <Button onClick={() => refetch()} className="bg-destructive hover:bg-destructive/80 rounded-xl font-medium text-xs">
  <RotateCcw size={14} className="mr-2" /> Retry
@@ -409,7 +409,7 @@ const VoiceClientsPage = () => {
   </div>
   <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-1">
   <span className="text-xs font-medium text-muted-foreground">Active & Upcoming</span>
-  <span className="text-3xl font-semibold text-chart-emerald">{groups.active.length}</span>
+  <span className="text-3xl font-semibold text-primary-strong">{groups.active.length}</span>
   </div>
   <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-1">
   <span className="text-xs font-medium text-muted-foreground">1–3 months</span>
@@ -424,9 +424,9 @@ const VoiceClientsPage = () => {
   <span className="text-3xl font-semibold tabular-nums text-chart-destructive">${ledgerTotals.outstanding}</span>
   <span className="text-[10px] font-semibold text-muted-foreground/70">{ledgerTotals.unpaid} unpaid · {ledgerTotals.free} free</span>
   </div>
-  <div className="bg-card rounded-xl border border-chart-emerald/20 p-5 flex flex-col gap-1">
+  <div className="bg-card rounded-xl border border-primary/20 p-5 flex flex-col gap-1">
   <span className="text-xs font-medium text-muted-foreground">Collected</span>
-  <span className="text-3xl font-semibold tabular-nums text-chart-emerald">${ledgerTotals.collected}</span>
+  <span className="text-3xl font-semibold tabular-nums text-primary-strong">${ledgerTotals.collected}</span>
   </div>
   </div>
 
@@ -533,12 +533,12 @@ const VoiceClientsPage = () => {
  </span>
  <NewInfoBadge submittedAt={student.email ? onboardingByEmail.get(student.email.toLowerCase()) : undefined} />
  {student.hasUpcoming && (
- <Badge className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-chart-emerald/10 text-chart-emerald border-none shrink-0">
+ <Badge className="text-[10px] font-semibold uppercase tracking-[0.14em] px-2 py-0.5 rounded-full bg-primary/10 text-primary-strong border-none shrink-0">
  Booked
  </Badge>
  )}
                   <Badge className={cn(
-                    "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border-none shrink-0",
+                    "text-[10px] font-semibold uppercase tracking-[0.14em] px-2 py-0.5 rounded-full border-none shrink-0",
                     (student.discipline || "voice") === "piano"
                       ? "bg-chart-primary/10 text-chart-primary"
                       : "bg-chart-destructive/10 text-chart-destructive"
@@ -546,7 +546,7 @@ const VoiceClientsPage = () => {
                     {(student.discipline || "voice") === "piano" ? "Piano" : "Voice"}
                   </Badge>
                   {student.tags.length > 0 && student.tags.slice(0, 2).map((tag) => (
-                      <Badge key={tag} className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-chart-destructive/10 text-chart-destructive border-none shrink-0">
+                      <Badge key={tag} className="text-[10px] font-semibold uppercase tracking-[0.14em] px-2 py-0.5 rounded-full bg-chart-destructive/10 text-chart-destructive border-none shrink-0">
                         {tag}
                       </Badge>
                     ))}
@@ -584,7 +584,7 @@ const VoiceClientsPage = () => {
   )}
   {student.collectedAmount > 0 && (
   <span className="text-right">
-  <div className="font-bold tabular-nums text-chart-emerald">${student.collectedAmount}</div>
+  <div className="font-bold tabular-nums text-primary-strong">${student.collectedAmount}</div>
   <div className="text-[10px]">Collected</div>
   </span>
   )}

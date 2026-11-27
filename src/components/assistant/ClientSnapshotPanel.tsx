@@ -248,7 +248,7 @@ export default function ClientSnapshotPanel({ clientId, clientName, isVoice, ema
         <div className="flex items-center gap-1.5">
           <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
           {snapshot.standardRate === 0 ? (
-            <span className="font-semibold text-chart-emerald">$0 · Free</span>
+            <span className="font-semibold text-primary-strong">$0 · Free</span>
           ) : (
             <span className="font-semibold text-foreground">{snapshot.standardRate != null ? `$${snapshot.standardRate}` : "No rate set"}</span>
           )}

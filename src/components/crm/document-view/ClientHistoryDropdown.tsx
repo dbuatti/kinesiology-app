@@ -64,7 +64,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                 <History size={18} />
               </div>
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground/80">Clinical History Overview</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-foreground/80">Clinical History Overview</h3>
                 <p className="text-xs font-medium text-muted-foreground mt-0.5">
                   Quick glance across {pastSessions.length} past {pastSessions.length === 1 ? 'session' : 'sessions'}
                 </p>
@@ -95,7 +95,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                         <span className="text-xs font-medium text-muted-foreground">
                           {format(new Date(session.date), "MMM d, yyyy")}
                         </span>
-                        <Badge className="bg-chart-emerald text-primary-foreground border-none font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm">
+                        <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[7px] uppercase tracking-[0.14em] px-1.5 py-0.5 rounded-sm">
                           {session.status}
                         </Badge>
                       </div>
@@ -172,7 +172,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                             <div className="col-span-4 flex items-center gap-3 min-w-0">
                               <div className={cn(
                                 "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
-                                finding.isResolved ? "bg-chart-emerald/10 text-chart-emerald" : "bg-destructive/10 text-chart-destructive"
+                                finding.isResolved ? "bg-primary/10 text-primary-strong" : "bg-destructive/10 text-chart-destructive"
                               )}>
                                 <Icon size={14} />
                               </div>
@@ -183,7 +183,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                                   </p>
                                   {side && (
                                     <Badge className={cn(
-                                      "border-none font-semibold text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm leading-none",
+                                      "border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-1.5 py-0.5 rounded-sm leading-none",
                                        side === 'L' ? "bg-primary/10 text-primary-strong" : "bg-destructive/10 text-destructive-strong"
                                     )}>
                                       {side === 'L' ? 'Left' : 'Right'}
@@ -207,8 +207,8 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                             {/* Status */}
                             <div className="col-span-2 text-center">
                               <Badge className={cn(
-                                "border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0.5 rounded-sm",
-                                finding.isResolved ? "bg-chart-emerald text-primary-foreground" : "bg-destructive text-primary-foreground"
+                                "border-none font-semibold text-[7px] uppercase tracking-[0.14em] px-2 py-0.5 rounded-sm",
+                                finding.isResolved ? "bg-primary text-primary-foreground" : "bg-destructive text-primary-foreground"
                               )}>
                                 {finding.isResolved ? "Clear" : "Unclear"}
                               </Badge>
@@ -224,7 +224,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                                       key={i} 
                                       className={cn(
                                         "w-1.5 h-1.5 rounded-full",
-                                           isClear ? "bg-chart-emerald" : "bg-destructive"
+                                           isClear ? "bg-primary" : "bg-destructive"
                                       )} 
                                       title={`${h.date}: ${h.status}`}
                                     />
@@ -248,14 +248,14 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                                         {/* Timeline Node Dot */}
                                         <div className={cn(
                                           "absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full border-2 border-primary-foreground/20 shadow-sm",
-                                        isClear ? "bg-chart-emerald" : "bg-destructive"
+                                        isClear ? "bg-primary" : "bg-destructive"
                                         )} />
                                         
                                         <div className="flex items-center gap-3">
                                           <span className="text-xs font-medium text-muted-foreground">{h.date}</span>
                                           <Badge variant="outline" className={cn(
-                                            "text-[7px] font-semibold uppercase tracking-wider px-1.5 py-0 border-none",
-                                             isClear ? "bg-chart-emerald/10 text-chart-emerald" : "bg-destructive/10 text-destructive-strong"
+                                            "text-[7px] font-semibold uppercase tracking-[0.14em] px-1.5 py-0 border-none",
+                                             isClear ? "bg-primary/10 text-primary-strong" : "bg-destructive/10 text-destructive-strong"
                                           )}>
                                             {h.status}
                                           </Badge>
@@ -273,7 +273,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
 
                               {recentCorrection && (
                                 <div className="p-3 bg-muted border border-border rounded-xl space-y-1">
-                                  <p className="text-[10px] font-semibold text-chart-primary uppercase tracking-wider flex items-center gap-1">
+                                  <p className="text-[10px] font-semibold text-chart-primary uppercase tracking-[0.14em] flex items-center gap-1">
                                     <Sparkles size={10} /> Most Recent Correction
                                   </p>
                                   <p className="text-xs font-medium text-foreground leading-relaxed">

@@ -202,9 +202,9 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                       <div className="w-10 h-10 rounded-xl bg-card/20 flex items-center justify-center">
                         <Activity size={20} />
                       </div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wider opacity-80">Peak Meridian</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] opacity-80">Peak Meridian</p>
                     </div>
-                    <Badge className="bg-card/20 text-primary-foreground border-none font-medium text-[10px] uppercase tracking-wider px-3 py-1">TCM</Badge>
+                    <Badge className="bg-card/20 text-primary-foreground border-none font-medium text-[10px] uppercase tracking-[0.14em] px-3 py-1">TCM</Badge>
                   </div>
                   <div>
                     <h3 className="text-3xl font-semibold tracking-tight">{currentPeakMeridian.name}</h3>
@@ -238,8 +238,8 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                     <Wallet size={20} />
                   </div>
                   <CardTitle className={cn(
-                    "text-[10px] font-semibold uppercase tracking-wider",
-                    appointment.is_paid ? "text-chart-emerald" : "text-muted-foreground"
+                    "text-[10px] font-semibold uppercase tracking-[0.14em]",
+                    appointment.is_paid ? "text-primary-strong" : "text-muted-foreground"
                   )}>
                     Clinical Billing
                   </CardTitle>
@@ -253,7 +253,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
               <div className="flex items-center justify-between p-5 bg-card dark:bg-card rounded-xl border border-border dark:border-border shadow-sm">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <Label htmlFor="is-paid-toggle" className="text-sm font-semibold text-foreground/80 dark:text-muted-foreground/60 uppercase tracking-wider">Paid Session</Label>
+                    <Label htmlFor="is-paid-toggle" className="text-sm font-semibold text-foreground/80 dark:text-muted-foreground/60 uppercase tracking-[0.14em]">Paid Session</Label>
                     <Badge variant="outline" className="h-4 px-1.5 text-[6px] font-medium uppercase border-border text-muted-foreground/70">
                       Default: {billingDefault}
                     </Badge>
@@ -277,7 +277,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                           <DollarSign size={80} className="text-muted-foreground" />
                         </div>
                         <p className="text-xs font-medium text-muted-foreground mb-2 relative z-10">Amount Due</p>
-                        <p className="text-4xl font-semibold text-amber-900 dark:text-amber-400 relative z-10">${appointment.price_amount || 50}</p>
+                        <p className="text-2xl font-semibold text-warning-strong relative z-10">${appointment.price_amount || 50}</p>
                       </div>
                       <Button 
                         onClick={handleGeneratePaymentLink}
@@ -290,7 +290,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                       <Button 
                         variant="outline"
                         onClick={() => onSaveField('payment_received', true)}
-                        className="w-full h-14 border-primary/30 text-chart-emerald hover:bg-primary/10 rounded-xl font-semibold text-xs transition-all"
+                        className="w-full h-14 border-primary/30 text-primary-strong hover:bg-primary/10 rounded-xl font-semibold text-xs transition-all"
                       >
                         <CheckCircle2 size={18} className="mr-3" /> Mark as Paid Manually
                       </Button>
@@ -301,8 +301,8 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                         <CheckCircle2 size={32} />
                       </div>
                       <div className="text-center">
-                        <p className="font-semibold text-sm uppercase tracking-wider">Payment Received</p>
-                        <p className="text-[10px] font-medium opacity-60 mt-1 uppercase tracking-wider">Method: {appointment.payment_method || 'Not specified'}</p>
+                        <p className="font-semibold text-sm uppercase tracking-[0.14em]">Payment Received</p>
+                        <p className="text-[10px] font-medium opacity-60 mt-1 uppercase tracking-[0.14em]">Method: {appointment.payment_method || 'Not specified'}</p>
                       </div>
                       <Button 
                         variant="ghost" 
@@ -428,13 +428,13 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
       {/* Quick Reference */}
       <Card className="border-none shadow-sm shadow-indigo-500/5 rounded-xl bg-muted dark:bg-indigo-900/20 border-2 border-indigo-100 dark:border-indigo-800 overflow-hidden group">
         <CardHeader className="p-5 pb-3">
-          <CardTitle className="text-[10px] font-semibold uppercase tracking-wider text-chart-primary flex items-center gap-3">
+          <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.14em] text-chart-primary flex items-center gap-3">
             <Lightbulb size={16} className="group-hover:scale-110 transition-transform" /> Quick Reference
           </CardTitle>
         </CardHeader>
         <CardContent className="p-5 pt-0">
           <div className="p-5 bg-card dark:bg-card rounded-xl border border-indigo-200 dark:border-indigo-800 shadow-sm">
-            <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider mb-2">Instant Cramp Hack</p>
+            <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-[0.14em] mb-2">Instant Cramp Hack</p>
             <p className="text-xs font-medium text-foreground/80 dark:text-muted-foreground/60 leading-relaxed">
               Chop spindles <span className="text-chart-primary font-semibold">INWARDS</span>, then <span className="text-chart-primary font-semibold">OUTWARDS</span> (x2).
             </p>

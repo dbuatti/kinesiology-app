@@ -334,7 +334,7 @@ const EmbedSection = ({
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={cn(
                       "w-7 h-7 rounded-md flex items-center justify-center shrink-0",
-                      item.isCleared ? "bg-primary/10 text-chart-emerald" : "bg-rose-50 text-chart-destructive"
+                      item.isCleared ? "bg-primary/10 text-primary-strong" : "bg-rose-50 text-chart-destructive"
                     )}>
                       <Icon size={14} />
                     </div>
@@ -352,8 +352,8 @@ const EmbedSection = ({
                           </span>
                         )}
                         <span className={cn(
-                          "text-[10px] font-semibold uppercase tracking-wider",
-                          item.isCleared ? "text-chart-emerald" : "text-rose-500"
+                          "text-[10px] font-semibold uppercase tracking-[0.14em]",
+                          item.isCleared ? "text-primary-strong" : "text-rose-500"
                         )}>
                           {item.isCleared ? "✓ Cleared" : item.status}
                         </span>
@@ -415,7 +415,7 @@ const EmbedSection = ({
                 >
                   <span className="truncate">{finding.name}</span>
                   <span className={cn(
-                    "text-[7px] font-semibold uppercase tracking-wider px-1.5 py-0.5 shrink-0",
+                    "text-[7px] font-semibold uppercase tracking-[0.14em] px-1.5 py-0.5 shrink-0",
                     isClear ? "bg-primary text-primary-foreground" : "bg-rose-500 text-primary-foreground"
                   )}>
                     {finding.status.replace('_Cleared', '✓')}

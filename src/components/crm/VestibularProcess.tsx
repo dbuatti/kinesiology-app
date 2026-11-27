@@ -101,7 +101,7 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
           <StepHeader title="1. Localize Canal / Position" sub="Which head position triggers the inhibition?" />
           
           <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl text-xs text-primary-strong space-y-2 mb-4">
-            <p className="font-semibold uppercase tracking-wider flex items-center gap-2">
+            <p className="font-semibold uppercase tracking-[0.14em] flex items-center gap-2">
               <Info size={14} /> Diagnostic Note:
             </p>
             <p className="font-medium">
@@ -168,10 +168,10 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
           
           <div className="p-4 bg-primary/5 rounded-xl border border-primary/20 flex items-center justify-between mb-4">
             <div>
-              <p className="text-[10px] font-semibold text-primary uppercase tracking-wider">Selected Position</p>
+              <p className="text-[10px] font-semibold text-primary uppercase tracking-[0.14em]">Selected Position</p>
               <p className="text-lg font-semibold text-foreground">{canal.label} {direction ? `(${direction})` : ''}</p>
             </div>
-            <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider">Afferent</Badge>
+            <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em]">Afferent</Badge>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -221,7 +221,7 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
                 <div className="p-4 bg-white/10 rounded-xl border border-primary-foreground/20 flex items-start gap-3">
                   <Eye size={18} className="text-primary-foreground shrink-0 mt-1" />
                   <div>
-                    <p className="text-[10px] font-semibold text-primary-foreground/80 uppercase tracking-wider mb-1">Visual Task</p>
+                    <p className="text-[10px] font-semibold text-primary-foreground/80 uppercase tracking-[0.14em] mb-1">Visual Task</p>
                     <p className="text-sm font-medium text-primary-foreground/90 leading-relaxed italic">
                       "Maintain {eyeIntegration.label}: {eyeIntegration.desc}."
                     </p>

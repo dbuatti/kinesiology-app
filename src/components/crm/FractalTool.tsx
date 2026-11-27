@@ -352,7 +352,7 @@ const FractalTool = () => {
               <Crown size={48} className="text-muted-foreground" />
             </div>
             <div className="space-y-4 relative z-10 flex-1">
-              <Badge className="bg-muted text-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-4 py-1">AI Root Discovery</Badge>
+              <Badge className="bg-muted text-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-4 py-1">AI Root Discovery</Badge>
               <h3 className="text-3xl font-semibold tracking-tight">Proposed Primary Primary</h3>
               <p className="text-xl font-serif italic text-muted-foreground">
                 "{proposedPrimaryContent}"
@@ -385,7 +385,7 @@ const FractalTool = () => {
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
-                      <p className="text-[10px] font-semibold text-chart-destructive uppercase tracking-wider">Duplicate Cluster</p>
+                      <p className="text-[10px] font-semibold text-chart-destructive uppercase tracking-[0.14em]">Duplicate Cluster</p>
                       <h4 className="text-lg font-semibold text-foreground">"{merge.suggested_content}"</h4>
                     </div>
                     <Button 
@@ -431,7 +431,7 @@ const FractalTool = () => {
                           <Layers size={24} />
                         </div>
                         <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-primary-foreground/60">Parent Pattern</p>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-foreground/60">Parent Pattern</p>
                           <h4 className="text-2xl font-semibold tracking-tight">"{parent.content}"</h4>
                         </div>
                       </div>

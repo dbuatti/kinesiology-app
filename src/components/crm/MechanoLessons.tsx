@@ -382,7 +382,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                               {lesson.duration}
                             </Badge>
                             {isCompleted && (
-                              <Badge className="bg-foreground text-primary-foreground border-none font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">
+                              <Badge className="bg-foreground text-primary-foreground border-none font-bold text-[10px] uppercase tracking-[0.14em] flex items-center gap-1">
                                 <CheckCircle2 size={10} /> Completed
                               </Badge>
                             )}
@@ -424,7 +424,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   >
                     <ChevronLeft size={16} className="mr-1" /> Back to Lessons
                   </Button>
-                  <Badge className="bg-foreground text-primary-foreground border-none font-bold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
+                  <Badge className="bg-foreground text-primary-foreground border-none font-bold text-[10px] uppercase tracking-[0.14em] px-3 py-1 rounded-full">
                     Lesson {activeLesson?.id} of {lessons.length}
                   </Badge>
                 </div>
@@ -446,7 +446,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                 {/* Check Your Understanding Mini-Quiz */}
                 {activeLesson && (
                   <div className="mt-8 p-6 bg-muted/50 rounded-2xl border border-border space-y-4">
-                    <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground flex items-center gap-2">
                       <HelpCircle size={16} className="text-indigo-600" /> Check Your Understanding
                     </h4>
                     <p className="text-sm font-bold text-foreground">{activeLesson.quiz.question}</p>
@@ -486,7 +486,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     {quizSubmitted && (
                       <div className="p-4 bg-card rounded-xl border border-border space-y-2 animate-in fade-in duration-300">
                         <p className={cn(
-                          "text-xs font-semibold uppercase tracking-wider",
+                          "text-xs font-semibold uppercase tracking-[0.14em]",
                           quizIsCorrect ? "text-primary-strong" : "text-rose-600"
                         )}>
                           {quizIsCorrect ? "Correct!" : "Incorrect"}
@@ -582,7 +582,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                 <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden animate-in fade-in slide-in-from-right-2 duration-300">
                   <CardHeader className="p-6 pb-4">
                     <div className="flex items-center justify-between mb-2">
-                      <Badge className="bg-muted text-foreground border-none font-bold text-[10px] uppercase tracking-wider">
+                      <Badge className="bg-muted text-foreground border-none font-bold text-[10px] uppercase tracking-[0.14em]">
                         {currentStructure.type}
                       </Badge>
                       <span className="text-xs font-medium text-muted-foreground">Anatomy Guide</span>
@@ -617,7 +617,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                       {imageSourceMode === 'sourced' ? (
                         <div className="aspect-video rounded-xl overflow-hidden border border-border bg-muted/50 flex items-center justify-center relative group/img">
                           <img loading="lazy" decoding="async" src={currentStructure.defaultImageUrl} alt={currentStructure.name} className="w-full h-full object-cover" />
-                          <div className="absolute bottom-2 right-2 bg-foreground/60 backdrop-blur-md text-primary-foreground text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md">
+                          <div className="absolute bottom-2 right-2 bg-foreground/60 backdrop-blur-md text-primary-foreground text-[10px] font-semibold uppercase tracking-[0.14em] px-2 py-0.5 rounded-md">
                             Sourced Reference
                           </div>
                         </div>
@@ -653,7 +653,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                                     <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-lg"><Upload size={14} /></Button>
                                     <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}><X size={14} /></Button>
                                   </div>
-                                  <p className="text-[10px] font-semibold text-primary-foreground uppercase tracking-wider">Click to Change</p>
+                                  <p className="text-[10px] font-semibold text-primary-foreground uppercase tracking-[0.14em]">Click to Change</p>
                                 </div>
                               </div>
                             </>
@@ -681,12 +681,12 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     </div>
 
                     <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-1">
-                      <p className="text-[10px] font-bold text-foreground/80 uppercase tracking-wider">How to Test / Stimulate</p>
+                      <p className="text-[10px] font-bold text-foreground/80 uppercase tracking-[0.14em]">How to Test / Stimulate</p>
                       <p className="text-xs text-muted-foreground font-medium leading-relaxed">{currentStructure.test}</p>
                     </div>
 
                     <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-1.5">
-                      <p className="text-[10px] font-bold text-foreground uppercase tracking-wider flex items-center gap-1">
+                      <p className="text-[10px] font-bold text-foreground uppercase tracking-[0.14em] flex items-center gap-1">
                         <Zap size={12} /> Correction Protocol
                       </p>
                       <p className="text-xs text-muted-foreground font-medium leading-relaxed">{currentStructure.correction}</p>
@@ -810,7 +810,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
               <Card className="border border-border shadow-sm rounded-2xl bg-foreground text-primary-foreground overflow-hidden flex flex-col justify-between">
                 <CardHeader className="p-6 pb-3">
                   <div className="flex items-center justify-between mb-2">
-                    <Badge className="bg-card/10 text-primary-foreground border-none font-bold text-[10px] uppercase tracking-wider">
+                    <Badge className="bg-card/10 text-primary-foreground border-none font-bold text-[10px] uppercase tracking-[0.14em]">
                       {sandboxTissue} Priority
                     </Badge>
                     <span className="text-xs font-medium text-muted-foreground">Generated Protocol</span>

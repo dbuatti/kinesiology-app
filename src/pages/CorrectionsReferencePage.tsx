@@ -29,10 +29,10 @@ export function CorrectionsReferenceTool() {
             <Search size={200} />
           </div>
           <div className="relative z-10 flex flex-col items-start space-y-6">
-            <Badge className="bg-muted/20 text-chart-primary border-primary/30 font-semibold text-[10px] uppercase tracking-wider px-4 py-1">
+            <Badge className="bg-muted/20 text-chart-primary border-primary/30 font-semibold text-[10px] uppercase tracking-[0.14em] px-4 py-1">
               FNH Living Manual • 2026 Gold Standard
             </Badge>
-            <h1 className="text-5xl md:text-6xl font-semibold tracking-tighter">Corrections</h1>
+            <h1 className="font-serif text-[26px] font-medium tracking-[-0.02em] sm:text-[34px]">Corrections</h1>
             <p className="text-xl text-muted-foreground/60 font-medium max-w-2xl leading-relaxed">
               The glue of the methodology. The full reference framework with the practical in-between knowledge that bridges foundational teaching and real-world application.
             </p>
@@ -292,7 +292,7 @@ export function CorrectionsReferenceTool() {
               <CardHeader className="p-5 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center">
-                    <Activity size={18} className="text-chart-emerald" />
+                    <Activity size={18} className="text-primary-strong" />
                   </div>
                   <CardTitle className="text-sm font-semibold">Polarity</CardTitle>
                 </div>
@@ -303,7 +303,7 @@ export function CorrectionsReferenceTool() {
                 </p>
                 <ul className="space-y-1.5">
                   <li className="flex items-start gap-2 text-xs text-muted-foreground font-medium">
-                    <CheckCircle2 size={14} className="text-chart-emerald shrink-0 mt-0.5" />
+                    <CheckCircle2 size={14} className="text-primary-strong shrink-0 mt-0.5" />
                     <span><strong>IN (+):</strong> Receiving, integrating, calming</span>
                   </li>
                   <li className="flex items-start gap-2 text-xs text-muted-foreground font-medium">
@@ -350,7 +350,7 @@ export function CorrectionsReferenceTool() {
               <CardHeader className="p-5 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center">
-                    <CheckCircle2 size={18} className="text-chart-emerald" />
+                    <CheckCircle2 size={18} className="text-primary-strong" />
                   </div>
                   <CardTitle className="text-sm font-semibold">Verification Step</CardTitle>
                 </div>
@@ -458,15 +458,15 @@ export function CorrectionsReferenceTool() {
               </div>
               <ul className="space-y-1.5 text-sm text-muted-foreground font-medium">
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 size={16} className="text-chart-emerald shrink-0 mt-0.5" />
+                  <CheckCircle2 size={16} className="text-primary-strong shrink-0 mt-0.5" />
                   <span>A correction for a reflex is always instant. But just because it does not fully integrate does not mean it was the wrong correction.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 size={16} className="text-chart-emerald shrink-0 mt-0.5" />
+                  <CheckCircle2 size={16} className="text-primary-strong shrink-0 mt-0.5" />
                   <span>Clients who have had a reflex off for years may need multiple sessions to fully integrate.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 size={16} className="text-chart-emerald shrink-0 mt-0.5" />
+                  <CheckCircle2 size={16} className="text-primary-strong shrink-0 mt-0.5" />
                   <span>If it still does not clear after a proper correction, there is likely a deeper layer beneath it.</span>
                 </li>
               </ul>

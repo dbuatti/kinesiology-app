@@ -115,7 +115,7 @@ export default function BrainZonePicker({ value, onChange }: BrainZonePickerProp
 
       {selected.length > 0 && (
         <div className="p-2.5 bg-indigo-50 rounded-lg border border-indigo-100">
-          <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Selected ({selected.length})</p>
+          <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.14em] mb-1">Selected ({selected.length})</p>
           <div className="flex flex-wrap gap-1">
             {selected.map(z => (
               <span key={z.id} className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded text-[10px] font-semibold">

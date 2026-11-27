@@ -98,13 +98,13 @@ const NeurologicalHistoryTracker = ({ appointments }: NeurologicalHistoryTracker
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-muted/50 border-b border-border">
-                  <th className="p-6 text-left font-semibold text-[10px] uppercase tracking-wider text-muted-foreground sticky left-0 bg-muted/50 z-10 min-w-[200px]">Finding</th>
+                  <th className="p-6 text-left font-semibold text-[10px] uppercase tracking-[0.14em] text-muted-foreground sticky left-0 bg-muted/50 z-10 min-w-[200px]">Finding</th>
                   {sessionDates.map(date => (
-                    <th key={date} className="p-4 text-center font-semibold text-[10px] uppercase tracking-wider text-muted-foreground min-w-[100px]">
+                    <th key={date} className="p-4 text-center font-semibold text-[10px] uppercase tracking-[0.14em] text-muted-foreground min-w-[100px]">
                       {date}
                     </th>
                   ))}
-                  <th className="p-6 text-right font-semibold text-[10px] uppercase tracking-wider text-muted-foreground">Status</th>
+                  <th className="p-6 text-right font-semibold text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -147,11 +147,11 @@ const NeurologicalHistoryTracker = ({ appointments }: NeurologicalHistoryTracker
                     })}
                     <td className="p-6 text-right">
                       {finding.isResolved ? (
-                        <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5">
+                        <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-2 py-0.5">
                           Resolved
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="border-rose-200 text-rose-600 font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5">
+                        <Badge variant="outline" className="border-rose-200 text-rose-600 font-semibold text-[10px] uppercase tracking-[0.14em] px-2 py-0.5">
                           Active
                         </Badge>
                       )}

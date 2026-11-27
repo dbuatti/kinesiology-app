@@ -200,7 +200,7 @@ const MuscleImageZone = ({
                   <X size={14} />
                 </Button>
               </div>
-              <p className="text-[10px] font-medium text-primary-foreground uppercase tracking-wider">Click to Change</p>
+              <p className="text-[10px] font-medium text-primary-foreground uppercase tracking-[0.14em]">Click to Change</p>
             </div>
           </div>
         </>
@@ -216,7 +216,7 @@ const MuscleImageZone = ({
               )}>
                 {isPrimary ? <Plus size={24} /> : <Target size={18} />}
               </div>
-              <p className={cn("font-medium text-muted-foreground uppercase tracking-wider text-[10px]")}>
+              <p className={cn("font-medium text-muted-foreground uppercase tracking-[0.14em] text-[10px]")}>
                 {isPrimary ? "Add Main Image" : "Add Secondary Image"}
               </p>
             </>
@@ -235,7 +235,7 @@ const MuscleImageZone = ({
 };
 
 const SectionHeader = ({ icon: Icon, title, color }: { icon: any, title: string, color: string }) => (
-  <h4 className={cn("text-[10px] font-semibold uppercase tracking-wider flex items-center gap-2 mb-3", color)}>
+  <h4 className={cn("text-[10px] font-semibold uppercase tracking-[0.14em] flex items-center gap-2 mb-3", color)}>
     <Icon size={14} /> {title}
   </h4>
 );
@@ -313,7 +313,7 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
           <div className={cn("p-8 text-primary-foreground transition-colors relative", channel ? channel.color.split(' ')[0] : "bg-primary")}>
             {isPeak && (
               <div className="absolute top-6 right-6 animate-pulse">
-                <Badge className="bg-card text-foreground border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0.5">
+                <Badge className="bg-card text-foreground border-none font-medium text-[10px] uppercase tracking-[0.14em] px-2 py-0.5">
                   <Zap size={10} className="mr-1 fill-muted-foreground text-muted-foreground" /> Peak Now
                 </Badge>
               </div>
@@ -326,11 +326,11 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
                 <DialogTitle className="text-3xl font-semibold tracking-tight">{info.name}</DialogTitle>
                 <DialogDescription className="sr-only">Clinical details and associations for {info.name}</DialogDescription>
                 <div className="flex gap-2 mt-2">
-                  <Badge className="bg-card/20 text-primary-foreground border-none font-medium text-[10px] uppercase tracking-wider">
+                  <Badge className="bg-card/20 text-primary-foreground border-none font-medium text-[10px] uppercase tracking-[0.14em]">
                     {info.meridian || 'General'} Meridian
                   </Badge>
                   {info.myotome && (
-                    <Badge className="bg-card/20 text-primary-foreground border-none font-medium text-[10px] uppercase tracking-wider">
+                    <Badge className="bg-card/20 text-primary-foreground border-none font-medium text-[10px] uppercase tracking-[0.14em]">
                       Myotome: {info.myotome}
                     </Badge>
                   )}
@@ -430,7 +430,7 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
                   isPeak ? "bg-muted border-border shadow-inner" : "bg-muted border-border"
                 )}>
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-medium text-chart-primary uppercase tracking-wider">Peak Activity</p>
+                    <p className="text-[10px] font-medium text-chart-primary uppercase tracking-[0.14em]">Peak Activity</p>
                     <Clock size={14} className={isPeak ? "text-muted-foreground" : "text-chart-primary"} />
                   </div>
                   <p className="text-lg font-semibold text-foreground">{channel.peakTime}</p>
@@ -440,7 +440,7 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
                 </div>
                 <div className="p-5 bg-muted rounded-xl border border-border space-y-3">
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-medium text-chart-destructive uppercase tracking-wider">Emotional Context</p>
+                    <p className="text-[10px] font-medium text-chart-destructive uppercase tracking-[0.14em]">Emotional Context</p>
                     <Heart size={14} className="text-chart-destructive" />
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -529,17 +529,17 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
 
           {/* Physiological & Nutritional */}
           <section className="space-y-4">
-              <SectionHeader icon={Activity} title="Physiological & Nutritional" color="text-chart-emerald" />
+              <SectionHeader icon={Activity} title="Physiological & Nutritional" color="text-primary-strong" />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {info.organGland && (
                   <div className="p-4 bg-muted rounded-xl border border-border">
-                    <p className="text-[10px] font-medium text-chart-emerald uppercase tracking-wider mb-1">Organ / Gland</p>
+                    <p className="text-[10px] font-medium text-primary-strong uppercase tracking-[0.14em] mb-1">Organ / Gland</p>
                     <p className="text-sm font-medium text-foreground">{info.organGland}</p>
                   </div>
                 )}
                 {info.nutrition && (
                   <div className="p-4 bg-muted rounded-xl border border-border">
-                    <p className="text-[10px] font-medium text-chart-emerald uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <p className="text-[10px] font-medium text-primary-strong uppercase tracking-[0.14em] mb-1 flex items-center gap-1">
                       <Apple size={10} /> Nutritional Support
                     </p>
                     <p className="text-xs font-medium text-foreground leading-relaxed">{info.nutrition}</p>

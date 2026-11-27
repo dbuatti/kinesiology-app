@@ -413,7 +413,7 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
                   <Button
                     onClick={() => handleClearItem(item)}
                     disabled={isClearing}
-                    className="h-9 shrink-0 rounded-lg border border-chart-emerald/25 bg-chart-emerald/10 px-2.5 text-[11px] font-medium text-chart-emerald hover:bg-chart-emerald/20"
+                    className="h-9 shrink-0 rounded-lg border border-primary/25 bg-primary/10 px-2.5 text-[11px] font-medium text-primary-strong hover:bg-primary/20"
                   >
                     {isClearing ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={13} className="mr-1.5" />}
                     Mark clear
@@ -442,7 +442,7 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
               icon={CheckCircle2}
               title="Cleared findings"
               badge={
-                <span className="rounded-full bg-chart-emerald/10 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-chart-emerald">
+                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold tabular-nums text-primary-strong">
                   {clearedItems.length}
                 </span>
               }
@@ -452,21 +452,21 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
                 const Icon = getIcon(item.category);
                 const isClearing = clearingId === item.id;
                 return (
-                  <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl border border-chart-emerald/20 bg-chart-emerald/[0.04] p-2.5">
+                  <div key={item.id} className="flex items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/[0.04] p-2.5">
                     <div className="flex min-w-0 items-center gap-2.5">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-chart-emerald/10 text-chart-emerald">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-strong">
                         <Icon size={14} />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="truncate text-xs font-medium text-foreground">{item.name}</p>
                           {item.side && (
-                            <Badge variant="outline" className="border-chart-emerald/20 bg-chart-emerald/10 px-1 py-0 text-[10px] font-medium text-chart-emerald">
+                            <Badge variant="outline" className="border-primary/20 bg-primary/10 px-1 py-0 text-[10px] font-medium text-primary-strong">
                               {item.side}
                             </Badge>
                           )}
                         </div>
-                        <p className="flex items-center gap-1 text-[10px] font-medium text-chart-emerald">
+                        <p className="flex items-center gap-1 text-[10px] font-medium text-primary-strong">
                           <CheckCircle2 size={8} /> Cleared
                         </p>
                       </div>
@@ -512,7 +512,7 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
                 <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">SNS resets</p>
                 <div className="flex flex-wrap gap-1">
                   {snsDone.map(label => (
-                    <span key={label} className="inline-flex items-center gap-1 rounded-full border border-chart-emerald/20 bg-chart-emerald/[0.07] px-2 py-0.5 text-[10px] font-medium text-chart-emerald">
+                    <span key={label} className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/[0.07] px-2 py-0.5 text-[10px] font-medium text-primary-strong">
                       <CheckCircle2 size={9} /> {label}
                     </span>
                   ))}

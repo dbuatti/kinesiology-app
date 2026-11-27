@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react"; import type { MouseEvent } 
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
-import { ZONES, ZONE_ORDER, normaliseZone } from "@/lib/zones";
+import { ZONES, ZONE_ORDER, normaliseZone, zoneItems } from "@/lib/zones";
 import { useAppMode } from "@/components/ModeProvider";
 import {
   CommandDialog,
@@ -55,30 +55,40 @@ interface SearchResult {
 
 const RECENT_SEARCHES_KEY = "rk_recent_searches";
 
-// "Go to" list — section is the zone each page lives in (src/lib/zones.ts).
-const NAV_DESTINATIONS: { title: string; path: string; icon: any; section: string; keywords?: string }[] = [
-  { title: "Today", path: "/", icon: LayoutDashboard, section: "Practice", keywords: "home dashboard" },
-  { title: "Calendar", path: "/calendar", icon: CalendarDays, section: "Practice", keywords: "bookings appointments lessons" },
-  { title: "Sessions", path: "/sessions", icon: Activity, section: "Practice", keywords: "clinical hub peace" },
+// "Go to" list — primary and secondary destinations come from zones.ts so the
+// palette can never drift from the sidebar, drawer or phone bar. Only true
+// deep links and shared system pages are listed here.
+type NavDestination = { title: string; path: string; icon: any; section: string; keywords?: string };
+const NAV_KEYWORDS: Record<string, string> = {
+  "/": "home dashboard",
+  "/calendar": "bookings appointments lessons",
+  "/sessions": "clinical hub peace",
+  "/clients": "clients students database",
+  "/availability": "open hours cal.com schedule working hours",
+  "/inbox": "email reply messages portal",
+  "/follow-up": "drifting lapsed rebook",
+  "/assistant": "chat ai",
+  "/money": "revenue payments unpaid outstanding earnings",
+  "/audit": "rates reengagement triage",
+  "/timetable": "fortnight draft pencil",
+  "/marketing": "kit newsletter content",
+  "/journal": "reflections",
+  "/practice": "self practice quiz calibrate",
+  "/identity": "beliefs fractals",
+  "/library": "muscles reflexes cranial nerves tcm reference",
+};
+const NAV_DESTINATIONS: NavDestination[] = [
+  ...ZONE_ORDER.flatMap((zone) => zoneItems(ZONES[zone]).map((item) => ({
+    title: item.label,
+    path: item.path,
+    icon: item.icon,
+    section: ZONES[zone].label,
+    keywords: NAV_KEYWORDS[item.path],
+  }))),
   { title: "Lessons", path: "/calendar?show=lessons", icon: Mic, section: "Practice", keywords: "voice piano studio lessons" },
-  { title: "People", path: "/clients", icon: Users, section: "Practice", keywords: "clients students database" },
-  { title: "Students", path: "/voice/clients", icon: Users, section: "Practice", keywords: "voice piano students outstanding" },
-  { title: "Availability", path: "/availability", icon: CalendarDays, section: "Practice", keywords: "open hours cal.com schedule working hours" },
-  { title: "Inbox", path: "/inbox", icon: Mail, section: "Business", keywords: "email reply messages portal" },
-  { title: "Follow-up", path: "/follow-up", icon: Users, section: "Business", keywords: "drifting lapsed rebook" },
-  { title: "Assistant", path: "/assistant", icon: Sparkles, section: "Business", keywords: "chat ai" },
-  { title: "Money", path: "/money", icon: Target, section: "Business", keywords: "revenue payments unpaid outstanding earnings" },
-  { title: "Rates & audit", path: "/audit", icon: Target, section: "Business", keywords: "rates reengagement triage" },
-  { title: "Availability", path: "/timetable", icon: Clock, section: "Business", keywords: "fortnight draft pencil" },
-  { title: "Marketing", path: "/marketing", icon: Target, section: "Business", keywords: "kit newsletter content" },
-  { title: "Morning Program", path: "/morning-program", icon: Zap, section: "Growth" },
-  { title: "Journal", path: "/journal", icon: BookOpen, section: "Growth", keywords: "reflections" },
-  { title: "Practice Hub", path: "/practice", icon: Heart, section: "Growth", keywords: "self practice quiz calibrate" },
+  { title: "Students", path: "/clients?practice=voice", icon: Users, section: "Practice", keywords: "voice piano students outstanding" },
   { title: "Practice session (sandbox)", path: "/practice/trial/peace", icon: Activity, section: "Growth", keywords: "sandbox trial practise peace" },
-  { title: "Identity Work", path: "/identity", icon: Brain, section: "Growth", keywords: "beliefs fractals" },
-  { title: "Library", path: "/library", icon: BookOpen, section: "Growth", keywords: "muscles reflexes cranial nerves tcm reference" },
-  { title: "Worksheets", path: "/worksheets", icon: Layers, section: "Growth" },
-  { title: "PEACE framework", path: "/library?tab=peace", icon: Activity, section: "Growth", keywords: "preliminary ease align correct embed" },
+  { title: "PEACE framework", path: "/library?tab=peace", icon: ShieldCheck, section: "Growth", keywords: "preliminary ease align correct embed" },
   { title: "Print hub", path: "/library?tab=print", icon: Layers, section: "Growth", keywords: "print sheets pdf" },
   { title: "Settings", path: "/settings", icon: Settings, section: "System" },
 ];
@@ -195,13 +205,13 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
         searchResults.push({ type: "page", id: "peace-framework", title: "The PEACE Framework", subtitle: "Clinical Methodology Guide", path: "/library?tab=peace", icon: ShieldCheck, color: "text-chart-primary" });
       }
       if ("marketing engine".includes(query.toLowerCase())) {
-        searchResults.push({ type: "page", id: "marketing-engine", title: "AI Marketing Engine", subtitle: "Voice to Notion Workflow", path: "/business/marketing-engine", icon: Mic, color: "text-primary-strong" });
+        searchResults.push({ type: "page", id: "marketing-engine", title: "Marketing", subtitle: "Newsletter and content tools", path: "/marketing", icon: Mic, color: "text-primary-strong" });
       }
       if ("voice clients".includes(query.toLowerCase())) {
-        searchResults.push({ type: "page", id: "voice-clients", title: "Voice Clients", subtitle: "Student directory", path: "/voice/clients", icon: Users, color: "text-rose-500" });
+        searchResults.push({ type: "page", id: "voice-clients", title: "Students", subtitle: "Voice and piano people", path: "/clients?practice=voice", icon: Users, color: "text-destructive" });
       }
       if ("studio calendar".includes(query.toLowerCase()) || "voice calendar".includes(query.toLowerCase())) {
-        searchResults.push({ type: "page", id: "voice-calendar", title: "Studio Calendar", subtitle: "Voice lesson schedule", path: "/voice/calendar", icon: CalendarDays, color: "text-rose-500" });
+        searchResults.push({ type: "page", id: "voice-calendar", title: "Lessons", subtitle: "Voice and piano schedule", path: "/calendar?show=lessons", icon: CalendarDays, color: "text-destructive" });
       }
 
       // TCM Channels
@@ -210,7 +220,7 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
         c.code.toLowerCase().includes(query.toLowerCase())
       );
       matchingChannels.forEach(c => {
-        searchResults.push({ type: "channel", id: c.id, title: `${c.name} Meridian`, subtitle: `${c.element} Element • ${c.peakTime}`, path: `/resources?tab=channels`, icon: Layers, color: "text-chart-primary" });
+        searchResults.push({ type: "channel", id: c.id, title: `${c.name} Meridian`, subtitle: `${c.element} Element • ${c.peakTime}`, path: `/library?tab=channels`, icon: Layers, color: "text-chart-primary" });
       });
 
       if (clientsData.data) {
@@ -233,7 +243,7 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
 
       if (voiceStudentsData.data) {
         voiceStudentsData.data.forEach((student: any) => {
-          searchResults.push({ type: "client", id: `voice-${student.id}`, title: `${student.name} (Voice)`, subtitle: student.email || undefined, path: `/voice/clients`, icon: Mic, color: "text-rose-500" });
+          searchResults.push({ type: "client", id: `voice-${student.id}`, title: `${student.name} (Voice)`, subtitle: student.email || undefined, path: `/clients?practice=voice`, icon: Mic, color: "text-destructive" });
         });
       }
 

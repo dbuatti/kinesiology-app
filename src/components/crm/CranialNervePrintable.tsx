@@ -57,7 +57,7 @@ const CranialNervePrintable = () => {
             <span className={cn("text-[6px] font-semibold px-1 py-0.5 rounded-sm text-primary-foreground leading-none uppercase", nucleiColor)}>
               {nerve.nuclei}
             </span>
-            <span className="text-[6px] font-bold text-muted-foreground uppercase tracking-wider">
+            <span className="text-[6px] font-bold text-muted-foreground uppercase tracking-[0.14em]">
               {nerve.toneEffect} Tone
             </span>
           </div>
@@ -121,7 +121,7 @@ const CranialNervePrintable = () => {
             <div className="w-1.5 h-1.5 rounded-full bg-rose-600" /> Medulla (Flexors)
           </div>
         </div>
-        <p className="text-[7px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Confidential Practitioner Resource</p>
+        <p className="text-[7px] font-semibold text-muted-foreground/60 uppercase tracking-[0.14em]">Confidential Practitioner Resource</p>
       </div>
 
       <style>{`

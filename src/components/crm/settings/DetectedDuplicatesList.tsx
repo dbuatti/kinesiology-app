@@ -37,13 +37,13 @@ const DetectedDuplicatesList = ({
 
  if (detectedDuplicates.length === 0) {
  return (
- <div className="p-6 bg-chart-emerald/10 rounded-3xl border border-border flex items-center gap-4">
- <div className="w-10 h-10 rounded-xl bg-chart-emerald text-primary-foreground flex items-center justify-center shadow-sm">
+ <div className="p-6 bg-primary/10 rounded-3xl border border-border flex items-center gap-4">
+ <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
  <UserCheck size={20} />
  </div>
  <div className="space-y-0.5">
  <p className="text-sm font-semibold text-primary-strong">No Duplicates Detected</p>
- <p className="text-xs text-chart-emerald font-medium">Your client database is clean and fully consolidated.</p>
+ <p className="text-xs text-primary-strong font-medium">Your client database is clean and fully consolidated.</p>
  </div>
  </div>
  );
@@ -61,7 +61,7 @@ const DetectedDuplicatesList = ({
  <div className="space-y-2">
  <div className="flex items-center gap-2">
  <h4 className="font-semibold text-base text-muted-foreground">"{group.name}"</h4>
- <Badge className="bg-muted text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full">
+ <Badge className="bg-muted text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-2 py-0.5 rounded-full">
  {group.confidence}% Match Confidence
  </Badge>
  </div>

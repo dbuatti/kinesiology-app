@@ -123,7 +123,7 @@ const BreathingRecoveryTimer = ({ onSessionComplete }: BreathingRecoveryTimerPro
           <div className="relative z-10 text-center space-y-6 w-full">
             <div className="flex items-center justify-center gap-3 mb-2">
               {phase === 'hold' ? <Timer size={24} /> : <Wind size={24} />}
-              <span className="text-xs font-semibold uppercase tracking-wider">
+              <span className="text-xs font-semibold uppercase tracking-[0.14em]">
                 {phase === 'hold' ? 'Hold Breath' : 'Recover (Nasal)'}
               </span>
             </div>

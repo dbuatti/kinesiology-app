@@ -86,7 +86,7 @@ const PrimitiveReflexWorksheet = () => {
       {/* Footer Section */}
       <div className="mt-2 p-2 border border-foreground/20 bg-muted/50 flex justify-between items-start gap-8">
         <div className="space-y-1 flex-1">
-          <h4 className="font-semibold text-[10px] uppercase tracking-wider border-b border-foreground/10 pb-0.5">Fractal Logic</h4>
+          <h4 className="font-semibold text-[10px] uppercase tracking-[0.14em] border-b border-foreground/10 pb-0.5">Fractal Logic</h4>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px] font-bold uppercase">
             <p>• Fear Paralysis → Moro → Startle</p>
             <p>• ATNR → Babinski → Palmar</p>

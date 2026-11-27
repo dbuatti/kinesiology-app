@@ -73,10 +73,10 @@ const RandomJointCard = () => {
         <div className="flex items-center justify-between relative z-10">
           <div className="space-y-1">
             <div className="flex gap-1.5 mb-1">
-              <Badge className="bg-muted text-foreground border-none font-bold text-[7px] uppercase tracking-wider">
+              <Badge className="bg-muted text-foreground border-none font-bold text-[7px] uppercase tracking-[0.14em]">
                 {joint.type}
               </Badge>
-              <Badge className="bg-muted text-foreground border-none font-bold text-[7px] uppercase tracking-wider">
+              <Badge className="bg-muted text-foreground border-none font-bold text-[7px] uppercase tracking-[0.14em]">
                 {joint.region}
               </Badge>
             </div>

@@ -134,7 +134,7 @@ const IdentityHistoryList = () => {
                   <div className="min-w-0">
                     <h4 className="font-semibold text-base text-foreground truncate">"{session.title}"</h4>
                     <div className="flex items-center gap-3 mt-1">
-                      <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wider border-none bg-muted px-2 py-0.5">
+                      <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-[0.14em] border-none bg-muted px-2 py-0.5">
                         {session.label}
                       </Badge>
                       <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">

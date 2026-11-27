@@ -98,7 +98,7 @@ const ZoneCard = ({ point, images, isSelected, onSelect, onShowInfo, isLoading }
                   ? "opacity-100 pointer-events-auto" 
                   : "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
             )}>
-                <p className="text-[7px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Select Side</p>
+                <p className="text-[7px] font-semibold text-muted-foreground uppercase tracking-[0.14em] mb-1">Select Side</p>
                 <div className="flex flex-col w-full gap-1">
                     {!isMidline && (
                         <div className="flex gap-1 w-full">
@@ -227,7 +227,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
           )}>
             <div className="flex items-center gap-2 mb-1">
               <ShieldAlert size={14} className={PATHWAY_DIRECTION.efferent.strong} />
-              <p className={cn("text-[10px] font-semibold uppercase tracking-wider", PATHWAY_DIRECTION.efferent.strong)}>Cortical</p>
+              <p className={cn("text-[10px] font-semibold uppercase tracking-[0.14em]", PATHWAY_DIRECTION.efferent.strong)}>Cortical</p>
             </div>
             <p className="text-[10px] font-semibold text-foreground">Contralateral Logic</p>
           </div>
@@ -237,7 +237,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
           )}>
             <div className="flex items-center gap-2 mb-1">
               <ShieldAlert size={14} className={PATHWAY_DIRECTION.efferent.text} />
-              <p className={cn("text-[10px] font-semibold uppercase tracking-wider", PATHWAY_DIRECTION.efferent.text)}>Subcortical</p>
+              <p className={cn("text-[10px] font-semibold uppercase tracking-[0.14em]", PATHWAY_DIRECTION.efferent.text)}>Subcortical</p>
             </div>
             <p className="text-[10px] font-semibold text-foreground">Ipsilateral Logic</p>
           </div>
@@ -288,11 +288,11 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
   const SelectionSummary = () => (
     <div className="grid grid-cols-2 gap-2 mb-4">
       <div className={cn("p-3 rounded-xl border transition-all", coord1.point ? "bg-primary/10 border-primary/30" : "bg-muted/50 border-border")}>
-        <p className="text-[7px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Coordinate 1</p>
+        <p className="text-[7px] font-semibold text-muted-foreground uppercase tracking-[0.14em] mb-1">Coordinate 1</p>
         <p className="text-[11px] font-semibold text-foreground truncate">{formatCoordLabel(coord1)}</p>
       </div>
       <div className={cn("p-3 rounded-xl border transition-all", coord2.point ? "bg-success/10 border-success/30" : "bg-muted/50 border-border")}>
-        <p className="text-[7px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Coordinate 2</p>
+        <p className="text-[7px] font-semibold text-muted-foreground uppercase tracking-[0.14em] mb-1">Coordinate 2</p>
         <p className="text-[11px] font-semibold text-foreground truncate">{formatCoordLabel(coord2)}</p>
       </div>
     </div>
@@ -333,7 +333,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
               <p className="text-xs font-medium text-muted-foreground">Entry pathway</p>
               <p className="text-xs font-semibold truncate text-foreground max-w-[200px]">{entryPoint}</p>
             </div>
-            <Badge className="bg-primary/10 text-primary-strong border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0 rounded-full">Set</Badge>
+            <Badge className="bg-primary/10 text-primary-strong border-none font-medium text-[10px] uppercase tracking-[0.14em] px-2 py-0 rounded-full">Set</Badge>
           </div>
           {renderCoordinateSelection(coord1, setCoord1, 'COORD_2', 'COORD_1', 'Coordinate 1')}
         </div>
@@ -366,7 +366,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
             <div className="bg-muted/50 p-4 rounded-xl border border-border relative overflow-hidden">
               <div className="flex items-center justify-between mb-4 relative z-10">
                 <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20"><Zap size={20} className="text-primary" /></div><div><h3 className="text-[15px] font-semibold text-foreground tracking-tight">Calibration</h3><p className="text-muted-foreground font-medium text-xs">Integrating Pathways</p></div></div>
-                <Badge className="bg-primary/10 text-primary-strong border-primary/20 font-semibold text-[10px] uppercase tracking-wider px-3 py-1">{method}</Badge>
+                <Badge className="bg-primary/10 text-primary-strong border-primary/20 font-semibold text-[10px] uppercase tracking-[0.14em] px-3 py-1">{method}</Badge>
               </div>
               <div className="relative z-10 mb-4 p-4 bg-card rounded-xl text-foreground border border-border">
                 <div className="flex items-center gap-2 mb-2"><Info size={14} className="text-primary" /><p className="text-xs font-medium text-muted-foreground">Instructions</p></div>
@@ -379,7 +379,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
               <div className="grid grid-cols-2 gap-3 relative z-10">
                 <div className="space-y-2">
                   <div className="p-2 bg-card rounded-xl border border-border text-center">
-                    <p className="text-[7px] font-semibold text-primary uppercase tracking-wider mb-1">Coord 1</p>
+                    <p className="text-[7px] font-semibold text-primary uppercase tracking-[0.14em] mb-1">Coord 1</p>
                     <p className="text-[10px] font-semibold truncate text-foreground">{formatCoordLabel(coord1)}</p>
                   </div>
                   {coord1.point && (customizations[coord1.point.id]?.secondaryUrl || customizations[coord1.point.id]?.primaryUrl) && (
@@ -390,7 +390,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
                 </div>
                 <div className="space-y-2">
                   <div className="p-2 bg-card rounded-xl border border-border text-center">
-                    <p className="text-[7px] font-semibold text-primary uppercase tracking-wider mb-1">Coord 2</p>
+                    <p className="text-[7px] font-semibold text-primary uppercase tracking-[0.14em] mb-1">Coord 2</p>
                     <p className="text-[10px] font-semibold truncate text-foreground">{formatCoordLabel(coord2)}</p>
                   </div>
                   {coord2.point && (customizations[coord2.point.id]?.secondaryUrl || customizations[coord2.point.id]?.primaryUrl) && (

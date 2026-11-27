@@ -6,7 +6,7 @@ export const GridSessionChips = ({ grid }: { grid?: ClientGridData }) => {
   if (!grid || grid.activeCount === 0) return null;
   return (
     <div className="flex flex-wrap items-center gap-2 pt-0.5">
-      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-chart-primary">
+      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.14em] text-chart-primary">
         <LayoutGrid size={10} /> {grid.activeCount} marks
       </span>
       <span className="h-3 w-px bg-border" />

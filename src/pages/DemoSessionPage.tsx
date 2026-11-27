@@ -155,7 +155,7 @@ const DemoSessionPage = () => {
  {showSidebar ? "Hide Sidebar" : "Show Sidebar"}
  </Button>
  <Button variant="outline" size="sm" className="bg-background rounded-xl border-border text-chart-primary h-10 px-4 font-medium text-xs" onClick={handleCopySummary}>
- {copied ? <Check size={16} className="mr-2 text-chart-emerald" /> : <Copy size={16} className="mr-2" />}
+ {copied ? <Check size={16} className="mr-2 text-primary-strong" /> : <Copy size={16} className="mr-2" />}
  Copy Summary
  </Button>
  </div>
@@ -210,7 +210,7 @@ const DemoSessionPage = () => {
  <div className="space-y-4">
  <div className="flex items-center gap-2 px-2">
  <Brain size={18} className="text-chart-primary" />
- <h3 className="text-sm font-semibold text-muted-foreground/60 uppercase tracking-wider">Brainstem Tone Map</h3>
+ <h3 className="text-sm font-semibold text-muted-foreground/60 uppercase tracking-[0.14em]">Brainstem Tone Map</h3>
  </div>
  <BrainstemToneMap priorityPattern={appointment.priority_pattern} />
  </div>

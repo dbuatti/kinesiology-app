@@ -247,13 +247,13 @@ const LuscherColourAssessment = ({
                 <CardContent className="p-6 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-[0.14em] flex items-center gap-2">
                         <Zap size={16} className="text-violet-500" /> Qualities
                       </h4>
                       <p className="text-lg font-semibold text-foreground leading-relaxed">{result.qualities}</p>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-[0.14em] flex items-center gap-2">
                         <Palette size={16} className="text-violet-500" /> Pattern
                       </h4>
                       <p className="text-sm text-foreground/80 leading-relaxed">{result.pattern}</p>
@@ -262,7 +262,7 @@ const LuscherColourAssessment = ({
 
                   <div className="pt-6 border-t border-border/50 space-y-6">
                     <div className="p-5 bg-violet-50 rounded-2xl border border-violet-100">
-                      <h4 className="text-sm font-bold text-violet-600 uppercase tracking-wider flex items-center gap-2 mb-2">
+                      <h4 className="text-sm font-bold text-violet-600 uppercase tracking-[0.14em] flex items-center gap-2 mb-2">
                         <BookOpen size={16} /> The Lesson
                       </h4>
                       <p className="text-base font-medium text-foreground leading-relaxed">
@@ -271,7 +271,7 @@ const LuscherColourAssessment = ({
                     </div>
 
                     <div className="p-5 bg-primary/10 rounded-2xl border border-primary/25">
-                      <h4 className="text-sm font-bold text-primary-strong uppercase tracking-wider flex items-center gap-2 mb-2">
+                      <h4 className="text-sm font-bold text-primary-strong uppercase tracking-[0.14em] flex items-center gap-2 mb-2">
                         <Sparkles size={16} /> Affirmation
                       </h4>
                       <p className="text-lg font-bold text-primary-strong italic leading-relaxed">

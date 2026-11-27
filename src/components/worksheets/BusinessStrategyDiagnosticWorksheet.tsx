@@ -552,7 +552,7 @@ const BUSINESS_STRATEGY_DIAGNOSTIC = ({ onBack }: { onBack?: () => void }) => {
             </Card>
             <CheckGroup items={CHECKBOX_GROUPS.program} selected={formData.program_checklist || []} onToggle={k => toggleCheck('program_checklist', k)} />
             <div className="rounded-2xl border border-border/30 overflow-hidden">
-              <div className="grid grid-cols-3 gap-px bg-border/40 text-center text-xs font-bold text-foreground uppercase tracking-wider">
+              <div className="grid grid-cols-3 gap-px bg-border/40 text-center text-xs font-bold text-foreground uppercase tracking-[0.14em]">
                 <div className="bg-muted/40 py-2">Session Focus / Phase</div>
                 <div className="bg-muted/40 py-2">FNH Process</div>
                 <div className="bg-muted/40 py-2">Home Practice</div>
@@ -614,7 +614,7 @@ const BUSINESS_STRATEGY_DIAGNOSTIC = ({ onBack }: { onBack?: () => void }) => {
               <TextField single label="Learning hours/wk" value={formData.learning_hours} onChange={v => updateField('learning_hours', v)} />
             </div>
             <div className="rounded-2xl border border-border/30 overflow-hidden">
-              <div className="grid grid-cols-12 gap-px bg-border/40 text-center text-xs font-bold text-foreground uppercase tracking-wider">
+              <div className="grid grid-cols-12 gap-px bg-border/40 text-center text-xs font-bold text-foreground uppercase tracking-[0.14em]">
                 <div className="col-span-2 bg-muted/40 py-2">Day</div>
                 <div className="col-span-4 bg-muted/40 py-2">Outreach Action Taken</div>
                 <div className="col-span-2 bg-muted/40 py-2">Minutes</div>

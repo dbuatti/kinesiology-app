@@ -71,7 +71,7 @@ const PreviousSessionSummary = ({ previousSession, clientId }: PreviousSessionSu
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="border border-border shadow-sm bg-card rounded-xl">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-[0.14em] flex items-center gap-2">
               <Target size={16} className="text-chart-primary" /> Goal & Primary Issue
             </CardTitle>
           </CardHeader>
@@ -89,8 +89,8 @@ const PreviousSessionSummary = ({ previousSession, clientId }: PreviousSessionSu
 
         <Card className="border border-border shadow-sm bg-card rounded-xl">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-              <FlaskConical size={16} className="text-chart-emerald" /> Baseline Assessments
+            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-[0.14em] flex items-center gap-2">
+              <FlaskConical size={16} className="text-primary-strong" /> Baseline Assessments
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -126,7 +126,7 @@ const PreviousSessionSummary = ({ previousSession, clientId }: PreviousSessionSu
 
       <Card className="border border-border shadow-sm bg-card rounded-xl">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-[0.14em] flex items-center gap-2">
             <Zap size={16} className="text-muted-foreground" /> Session Findings & Corrections
           </CardTitle>
         </CardHeader>
@@ -134,7 +134,7 @@ const PreviousSessionSummary = ({ previousSession, clientId }: PreviousSessionSu
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <h4 className="text-xs font-medium text-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
+                <h4 className="text-xs font-medium text-foreground uppercase tracking-[0.14em] mb-2 flex items-center gap-2">
                   <Move size={14} className="text-purple-500" /> Pathway & Patterns
                 </h4>
                 <div className="bg-muted p-4 rounded-xl border border-border min-h-[100px]">
@@ -145,7 +145,7 @@ const PreviousSessionSummary = ({ previousSession, clientId }: PreviousSessionSu
                 </div>
               </div>
               <div>
-                <h4 className="text-xs font-medium text-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
+                <h4 className="text-xs font-medium text-foreground uppercase tracking-[0.14em] mb-2 flex items-center gap-2">
                   <Heart size={14} className="text-chart-destructive" /> Corrections Used
                 </h4>
                 <p className="text-sm text-muted-foreground bg-muted p-3 rounded-xl border border-border min-h-[80px] whitespace-pre-wrap">
@@ -155,7 +155,7 @@ const PreviousSessionSummary = ({ previousSession, clientId }: PreviousSessionSu
             </div>
             <div className="space-y-4">
               <div>
-                <h4 className="text-xs font-medium text-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
+                <h4 className="text-xs font-medium text-foreground uppercase tracking-[0.14em] mb-2 flex items-center gap-2">
                   <Activity size={14} className="text-chart-primary" /> Acupoints
                 </h4>
                 <p className="text-sm text-muted-foreground bg-muted p-3 rounded-xl border border-border min-h-[80px]">
@@ -163,8 +163,8 @@ const PreviousSessionSummary = ({ previousSession, clientId }: PreviousSessionSu
                 </p>
               </div>
               <div>
-                <h4 className="text-xs font-medium text-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
-                  <Brain size={14} className="text-chart-emerald" /> Re-Assessment & Homework
+                <h4 className="text-xs font-medium text-foreground uppercase tracking-[0.14em] mb-2 flex items-center gap-2">
+                  <Brain size={14} className="text-primary-strong" /> Re-Assessment & Homework
                 </h4>
                 <p className="text-sm text-muted-foreground bg-muted p-3 rounded-xl border border-border min-h-[80px]">
                   {previousSession.session_north_star || "No re-assessment notes recorded."}
@@ -174,7 +174,7 @@ const PreviousSessionSummary = ({ previousSession, clientId }: PreviousSessionSu
           </div>
 
           <div className="pt-4 border-t border-border">
-            <h4 className="text-xs font-medium text-foreground uppercase tracking-wider mb-2">General Session Notes</h4>
+            <h4 className="text-xs font-medium text-foreground uppercase tracking-[0.14em] mb-2">General Session Notes</h4>
             <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap bg-muted/30 p-4 rounded-xl border border-border">
               {previousSession.notes || "No general notes recorded for this session."}
             </p>

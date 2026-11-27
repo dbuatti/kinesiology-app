@@ -64,7 +64,7 @@ import {
 import { formatDistanceToNow, startOfWeek, endOfWeek, startOfMonth } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
 import QuickBookDialog from "@/components/crm/QuickBookDialog";
-import { ClientRow } from "@/components/crm/settings/ClientRow";
+import { ClientRow, ClientRowMobileCard } from "@/components/crm/settings/ClientRow";
 import TimetableVisualizer from "@/components/crm/settings/TimetableVisualizer";
 import RoadmapTasks from "@/components/crm/settings/RoadmapTasks";
 
@@ -1098,6 +1098,26 @@ export function ClientAuditTool({
   const activeRoadmap = aiSuggestions?.roadmap || STATIC_ROADMAP;
   const activeStrategies = aiSuggestions?.strategies || STATIC_STRATEGIES;
 
+  const renderMobileClient = (client: ClientWithAppointments) => (
+    <ClientRowMobileCard
+      key={client.id}
+      client={client}
+      calculateAge={getClientAge}
+      handleRateChange={handleRateChange}
+      handleOpenOverrideModal={handleOpenOverrideModal}
+      selectedWeeklyClients={selectedWeeklyClients}
+      onToggleWeeklyClient={handleToggleWeeklyClient}
+      onSetTargetRate={handleSetTargetRate}
+      onSetRateUpdatedDate={handleSetRateUpdatedDate}
+      onSetClosed={handleSetClosed}
+      isLapsedSection={false}
+      onQuickBook={(id) => { setBookingClientId(id); setIsBookingModalOpen(true); }}
+      onRefresh={fetchData}
+      averageSessionRate={averageSessionRate}
+      compact={compactRows}
+    />
+  );
+
   return (
       <>
       {/* pt-6 matches the top spacing the other Business Hub tools get for
@@ -1115,7 +1135,7 @@ export function ClientAuditTool({
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 space-y-4">
             <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">Loading Audit Data...</p>
+            <p className="text-sm text-muted-foreground">Loading client rates…</p>
           </div>
         ) : (
           <div className="space-y-8">
@@ -1167,13 +1187,16 @@ export function ClientAuditTool({
 
             {/* TAB 1: RATES & RECENCY */}
             <TabsContent value="rates" className="space-y-6">
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Current rate is each client&apos;s standing rate today. Historical session amounts can be lower, higher, or free — those remain the amounts charged for those sessions and appear separately in Money → Income.
+              </p>
               {/* WEEKLY BOOKING SIMULATOR CARD */}
               <Card className="border border-border shadow-sm rounded-xl bg-card border border-border text-foreground overflow-hidden relative group">
                 <div className="absolute inset-0 bg-grid-white/[0.02] pointer-events-none" />
                 <CardContent className="p-8 space-y-6 relative z-10">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="space-y-1">
-                      <Badge className="bg-primary/20 text-chart-primary border-primary/30 font-semibold text-[10px] uppercase tracking-wider px-3 py-0.5">
+                      <Badge className="bg-primary/20 text-chart-primary border-primary/30 font-semibold text-[10px] uppercase tracking-[0.14em] px-3 py-0.5">
                         Interactive Tool
                       </Badge>
                       <h3 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
@@ -1271,13 +1294,13 @@ export function ClientAuditTool({
                           <span className="text-[10px] text-muted-foreground font-medium block">at current rates</span>
                         </div>
                         <div className="space-y-1 border-t sm:border-t-0 sm:border-l border-border pt-3 sm:pt-0 sm:pl-4">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-chart-primary block">Target Earnings</span>
+                          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-chart-primary block">Target Earnings</span>
                           <h4 className="text-2xl font-semibold text-chart-primary">${weeklySimulatorMetrics.targetTotal}</h4>
                           <span className="text-[10px] text-muted-foreground font-medium block">at target rates</span>
                         </div>
                         <div className="space-y-1 border-t sm:border-t-0 sm:border-l border-border pt-3 sm:pt-0 sm:pl-4">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-chart-emerald block">Weekly Increase</span>
-                          <h4 className="text-2xl font-semibold text-chart-emerald">
+                          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-strong block">Weekly Increase</span>
+                          <h4 className="text-2xl font-semibold text-primary-strong">
                             +${weeklySimulatorMetrics.increase}
                           </h4>
                           <span className="text-[10px] text-muted-foreground font-medium block">
@@ -1366,8 +1389,8 @@ export function ClientAuditTool({
                         </SelectTrigger>
                         <SelectContent className="rounded-xl shadow-sm">
                           <SelectItem value="name">Name</SelectItem>
-                          <SelectItem value="lastSeen">Last Seen</SelectItem>
-                          <SelectItem value="rate">Standard Rate</SelectItem>
+                          <SelectItem value="lastSeen">Last seen</SelectItem>
+                          <SelectItem value="rate">Current rate</SelectItem>
                           <SelectItem value="age">Age</SelectItem>
                         </SelectContent>
                       </Select>
@@ -1377,6 +1400,8 @@ export function ClientAuditTool({
                         variant="outline"
                         size="icon"
                         onClick={() => setSortOrder(prev => prev === "asc" ? "desc" : "asc")}
+                        aria-label={sortOrder === "asc" ? "Sort descending" : "Sort ascending"}
+                        title={sortOrder === "asc" ? "Sort descending" : "Sort ascending"}
                         className="rounded-xl border-border/60 bg-muted/30 hover:bg-muted/50"
                       >
                         <ArrowUpDown size={16} />
@@ -1387,6 +1412,8 @@ export function ClientAuditTool({
                         variant="outline"
                         size="icon"
                         onClick={() => setCompactRows(prev => !prev)}
+                        aria-label={compactRows ? "Use normal row height" : "Use compact row height"}
+                        aria-pressed={compactRows}
                         className={cn(
                           "rounded-xl border-border/60 bg-muted/30 hover:bg-muted/50",
                           compactRows && "bg-primary/10 border-primary/30 text-primary-strong"
@@ -1409,14 +1436,14 @@ export function ClientAuditTool({
                       onClick={() => toggleSection("lastMonth")}
                       className="flex items-center gap-3 flex-1"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-muted text-chart-emerald flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-lg bg-muted text-primary-strong flex items-center justify-center">
                         <CheckCircle2 size={18} />
                       </div>
                       <div>
                         <h3 className="font-semibold text-foreground text-base">Active & Upcoming</h3>
                         <p className="text-xs text-muted-foreground font-medium">Seen in the last 30 days OR booked in the future</p>
                       </div>
-                      <Badge variant="secondary" className="ml-2 bg-chart-emerald/10 text-chart-emerald border-none font-medium">
+                      <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary-strong border-none font-medium">
                         {groups.lastMonth.length} {groups.lastMonth.length === 1 ? "client" : "clients"}
                       </Badge>
                     </button>
@@ -1445,16 +1472,20 @@ export function ClientAuditTool({
                           No clients in this section.
                         </div>
                       ) : (
-                        <div className="overflow-x-auto">
+                        <>
+                          <div className="space-y-3 p-3 md:hidden">
+                            {groups.lastMonth.map(renderMobileClient)}
+                          </div>
+                          <div className="hidden overflow-x-auto md:block">
                           <table className="w-full text-left border-collapse">
                             <thead>
                               <tr className="border-b border-border/40 bg-muted/10 text-xs font-medium text-muted-foreground">
                                 <th className="p-4 pl-6 w-12">Sim</th>
                                 <th className="p-4">Client</th>
-                                <th className="p-4">Last Seen / Next Booked</th>
-                                <th className="p-4">Rate Ladder (Current vs Target)</th>
+                                <th className="p-4">Last seen / next booked</th>
+                                <th className="p-4">Current rate → target rate</th>
                                 <th className="p-4">Preferred Time</th>
-                                <th className="p-4">Follow-up Status</th>
+                                <th className="p-4">Follow-up status</th>
                                 <th className="p-4 pr-6 text-right">Actions</th>
                               </tr>
                             </thead>
@@ -1480,7 +1511,8 @@ export function ClientAuditTool({
                               ))}
                             </tbody>
                           </table>
-                        </div>
+                          </div>
+                        </>
                       )}
                     </CardContent>
                   )}
@@ -1532,16 +1564,20 @@ export function ClientAuditTool({
                           <p className="text-sm font-medium text-muted-foreground">All clients are staying active — great retention!</p>
                         </div>
                       ) : (
-                        <div className="overflow-x-auto">
+                        <>
+                          <div className="space-y-3 p-3 md:hidden">
+                            {groups.oneToThreeMonths.map(renderMobileClient)}
+                          </div>
+                          <div className="hidden overflow-x-auto md:block">
                           <table className="w-full text-left border-collapse">
                             <thead>
                               <tr className="border-b border-border/40 bg-muted/10 text-xs font-medium text-muted-foreground">
                                 <th className="p-4 pl-6 w-12">Sim</th>
                                 <th className="p-4">Client</th>
-                                <th className="p-4">Last Seen / Next Booked</th>
-                                <th className="p-4">Rate Ladder (Current vs Target)</th>
+                                <th className="p-4">Last seen / next booked</th>
+                                <th className="p-4">Current rate → target rate</th>
                                 <th className="p-4">Preferred Time</th>
-                                <th className="p-4">Follow-up Status</th>
+                                <th className="p-4">Follow-up status</th>
                                 <th className="p-4 pr-6 text-right">Actions</th>
                               </tr>
                             </thead>
@@ -1567,13 +1603,14 @@ export function ClientAuditTool({
                               ))}
                             </tbody>
                           </table>
-                        </div>
+                          </div>
+                        </>
                       )}
                     </CardContent>
                   )}
                 </Card>
 
-                {/* Section 3: 3+ Months (Lapsed Clients with Re-engagement Priority) */}
+                {/* Section 3: 3+ Months (Lapsed Clients with Re-engagement priority) */}
                 <Card className="border border-border shadow-sm rounded-xl overflow-hidden bg-card">
                   <div className="w-full p-6 flex flex-col sm:flex-row sm:items-center justify-between bg-muted/20 hover:bg-muted/30 transition-colors text-left gap-4">
                     <button
@@ -1584,7 +1621,7 @@ export function ClientAuditTool({
                         <AlertCircle size={18} />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-foreground text-base">3+ Months (Re-engagement Goldmine)</h3>
+                        <h3 className="font-semibold text-foreground text-base">3+ months</h3>
                         <p className="text-xs text-muted-foreground font-medium">Seen more than 90 days ago, or never seen</p>
                       </div>
                       <Badge variant="secondary" className="ml-2 bg-chart-destructive/10 text-chart-destructive border-none font-medium">
@@ -1619,16 +1656,20 @@ export function ClientAuditTool({
                           <p className="text-sm font-medium text-muted-foreground">Every client has visited in the last 90 days — well done!</p>
                         </div>
                       ) : (
-                        <div className="overflow-x-auto">
+                        <>
+                          <div className="space-y-3 p-3 md:hidden">
+                            {groups.threePlusMonths.map(renderMobileClient)}
+                          </div>
+                          <div className="hidden overflow-x-auto md:block">
                           <table className="w-full text-left border-collapse">
                             <thead>
                               <tr className="border-b border-border/40 bg-muted/10 text-xs font-medium text-muted-foreground">
                                 <th className="p-4 pl-6 w-12">Sim</th>
                                 <th className="p-4">Client</th>
-                                <th className="p-4">Last Seen</th>
-                                <th className="p-4">Rate Ladder (Current vs Target)</th>
-                                <th className="p-4">Re-engagement Priority</th>
-                                <th className="p-4">Follow-up Status</th>
+                                <th className="p-4">Last seen</th>
+                                <th className="p-4">Current rate → target rate</th>
+                                <th className="p-4">Re-engagement priority</th>
+                                <th className="p-4">Follow-up status</th>
                                 <th className="p-4 pr-6 text-right">Actions</th>
                               </tr>
                             </thead>
@@ -1654,7 +1695,8 @@ export function ClientAuditTool({
                               ))}
                             </tbody>
                           </table>
-                        </div>
+                          </div>
+                        </>
                       )}
                     </CardContent>
                   )}
@@ -1711,7 +1753,7 @@ export function ClientAuditTool({
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-baseline gap-2">
-                        <h3 className="text-4xl font-semibold text-foreground">
+                        <h3 className="text-2xl font-semibold text-foreground">
                           ${isSandboxActive ? salaryMetrics.simulated.avgRate.toFixed(0) : salaryMetrics.current.avgRate.toFixed(0)}
                         </h3>
                         <span className="text-muted-foreground text-sm font-medium">/ $150 target</span>
@@ -1732,13 +1774,13 @@ export function ClientAuditTool({
                   <CardContent className="p-8 space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-muted-foreground">Active Client Base</span>
-                      <div className="w-8 h-8 rounded-lg bg-muted text-chart-emerald flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-lg bg-muted text-primary-strong flex items-center justify-center">
                         <Users size={16} />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-baseline gap-2">
-                        <h3 className="text-4xl font-semibold text-foreground">{salaryMetrics.clientsCount}</h3>
+                        <h3 className="text-2xl font-semibold text-foreground">{salaryMetrics.clientsCount}</h3>
                         <span className="text-muted-foreground text-sm font-medium">clients seen in last 30 days</span>
                       </div>
                       <p className="text-xs text-muted-foreground font-medium leading-relaxed">
@@ -1754,7 +1796,7 @@ export function ClientAuditTool({
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-center gap-2">
                     <Sliders className="text-chart-primary" size={18} />
-                    <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground">Preview Presets</h4>
+                    <h4 className="text-sm font-semibold text-foreground">Preview presets</h4>
                   </div>
                   <p className="text-xs text-muted-foreground font-medium">
                     Quickly apply pre-configured pricing scenarios to see their immediate impact on your practice financials.
@@ -1770,7 +1812,7 @@ export function ClientAuditTool({
                     <Button
                       variant="outline"
                       onClick={() => handleApplyPreset('moderate')}
-                      className="rounded-xl text-xs font-medium border-border hover:bg-muted text-chart-emerald"
+                      className="rounded-xl text-xs font-medium border-border hover:bg-muted text-primary-strong"
                     >
                       Moderate (+25% Rate)
                     </Button>
@@ -1921,7 +1963,7 @@ export function ClientAuditTool({
                                     <Switch 
                                       checked={isActive}
                                       onCheckedChange={(checked) => handleClientOverrideChange(client.id, 'active', checked)}
-                                      className="data-[state=checked]:bg-chart-emerald scale-75"
+                                      className="data-[state=checked]:bg-primary scale-75"
                                     />
                                     <Link 
                                       to={`/clients/${client.id}`}
@@ -2039,7 +2081,7 @@ export function ClientAuditTool({
                           <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-primary border-4 border-background" />
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                              <Badge className="bg-chart-primary/10 text-chart-primary border-none font-medium text-[10px] uppercase tracking-wider">
+                              <Badge className="bg-chart-primary/10 text-chart-primary border-none font-medium text-[10px] uppercase tracking-[0.14em]">
                                 {step.phase}
                               </Badge>
                             </div>
@@ -2087,7 +2129,7 @@ export function ClientAuditTool({
               <Card className="border border-border shadow-sm rounded-xl bg-card">
                 <CardHeader className="p-8 pb-4">
                   <CardTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
-                    <TrendingUp className="text-chart-emerald" size={22} />
+                    <TrendingUp className="text-primary-strong" size={22} />
                     Revenue Projection Simulator
                   </CardTitle>
                   <CardDescription className="text-sm text-muted-foreground font-medium">
@@ -2171,8 +2213,8 @@ export function ClientAuditTool({
                     {/* Results Card */}
                     <div className="p-6 rounded-xl bg-muted/30 border border-border/40 flex flex-col justify-between space-y-6">
                       <div className="space-y-4">
-                        <h4 className="font-semibold text-foreground text-sm uppercase tracking-wider">
-                          Projected Revenue Impact
+                        <h4 className="font-semibold text-foreground text-sm">
+                          Projected revenue impact
                         </h4>
                         
                         <div className="grid grid-cols-2 gap-4">
@@ -2194,14 +2236,14 @@ export function ClientAuditTool({
                       {/* Revenue Increase Callout */}
                       <div className="p-4 rounded-xl bg-muted border border-border flex items-center justify-between">
                         <div className="space-y-0.5">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-chart-emerald">
+                          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-strong">
                             Monthly Revenue Increase
                           </span>
-                          <h3 className="text-2xl font-semibold text-chart-emerald">
+                          <h3 className="text-2xl font-semibold text-primary-strong">
                             +${Math.round(revenueIncrease).toLocaleString()}
                           </h3>
                         </div>
-                        <Badge className="bg-chart-emerald/10 text-chart-emerald border-none font-semibold text-xs px-3 py-1 rounded-full">
+                        <Badge className="bg-primary/10 text-primary-strong border-none font-semibold text-xs px-3 py-1 rounded-full">
                           +{percentageIncrease.toFixed(0)}%
                         </Badge>
                       </div>

@@ -316,7 +316,7 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
                 </div>
               </div>
               <div className="hidden print:block text-right">
-                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">Resonance Kinesiology</p>
+                <p className="text-[8px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Resonance Kinesiology</p>
               </div>
             </div>
           </div>
@@ -518,7 +518,7 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
                           style={{ animationDelay: `${i * 60}ms` }}
                         >
                           <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Correction #{i + 1}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Correction #{i + 1}</span>
                             {dirStyle && DirectionIcon && (
                               <span className={cn("inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium", dirStyle.soft, dirStyle.strong)}>
                                 <DirectionIcon size={10} /> {dirStyle.label}
@@ -610,7 +610,7 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
 
           {/* Document footer */}
           <div className="pt-8 text-center">
-            <p className="text-[8px] font-medium text-muted-foreground/30 uppercase tracking-wider">
+            <p className="text-[8px] font-medium text-muted-foreground/30 uppercase tracking-[0.14em]">
               — End of Session Notes —
             </p>
             <p className="text-[8px] text-muted-foreground/25 mt-2">

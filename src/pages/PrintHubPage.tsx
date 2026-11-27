@@ -169,11 +169,11 @@ export function PrintHubTool() {
  </p>
  <div className="flex gap-4 pt-2">
  <div className="flex items-center gap-2">
- <CheckCircle2 size={16} className="text-chart-emerald/60" />
+ <CheckCircle2 size={16} className="text-primary-strong/60" />
  <span className="text-xs font-medium text-muted-foreground/60">Landscape Optimized</span>
  </div>
  <div className="flex items-center gap-2">
- <CheckCircle2 size={16} className="text-chart-emerald/60" />
+ <CheckCircle2 size={16} className="text-primary-strong/60" />
  <span className="text-xs font-medium text-muted-foreground/60">High-Density Data</span>
  </div>
  </div>

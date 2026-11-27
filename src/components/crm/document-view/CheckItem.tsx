@@ -136,7 +136,7 @@ const CheckItem = ({
         <div className="flex shrink-0 items-center gap-1">
           {trailing}
           {isCleared && (
-            <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[8px] font-semibold uppercase tracking-wider text-primary-strong dark:text-primary">
+            <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[8px] font-semibold uppercase tracking-[0.14em] text-primary-strong dark:text-primary">
               Cleared
             </span>
           )}

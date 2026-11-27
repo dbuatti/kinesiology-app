@@ -93,7 +93,7 @@ const MeridianClock = () => {
               <p className="text-xs font-semibold text-foreground tabular-nums">
                 {format(currentTime, "h:mm a")}
               </p>
-              <p className="text-[6px] font-semibold text-muted-foreground uppercase tracking-wider mt-0.5">
+              <p className="text-[6px] font-semibold text-muted-foreground uppercase tracking-[0.14em] mt-0.5">
                 Peak
               </p>
               <p className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 truncate max-w-full px-1">
@@ -118,7 +118,7 @@ const MeridianClock = () => {
               </div>
               {nextChannel && !hoveredId && (
                 <div className="text-right">
-                  <p className="text-[7px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center justify-end gap-1">
+                  <p className="text-[7px] font-semibold text-muted-foreground uppercase tracking-[0.14em] flex items-center justify-end gap-1">
                     Next <ArrowRight size={8} />
                   </p>
                   <p className="text-[10px] font-bold text-muted-foreground">{nextChannel.name}</p>
@@ -128,11 +128,11 @@ const MeridianClock = () => {
 
             <div className="grid grid-cols-1 gap-2">
               <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-900/30 relative overflow-hidden">
-                <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider mb-1">Partner</p>
+                <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-[0.14em] mb-1">Partner</p>
                 <p className="text-xs font-semibold text-indigo-900 dark:text-indigo-100">{oppositeChannel?.name}</p>
               </div>
               <div className="p-3 bg-rose-50 dark:bg-rose-900/20 rounded-xl border border-rose-100 dark:border-rose-900/30">
-                <p className="text-[10px] font-semibold text-rose-400 uppercase tracking-wider mb-1">Emotions</p>
+                <p className="text-[10px] font-semibold text-rose-400 uppercase tracking-[0.14em] mb-1">Emotions</p>
                 <div className="flex flex-wrap gap-1">
                   {displayChannel.emotions.slice(0, 3).map(e => (
                     <Badge key={e} variant="outline" className="bg-card border-rose-100 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 text-[7px] font-bold px-1.5 py-0">

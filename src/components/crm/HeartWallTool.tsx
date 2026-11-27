@@ -527,7 +527,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                               i <= scanStep ? "bg-rose-500" : "bg-muted",
                             )} />
                             <span className={cn(
-                              "text-[10px] font-semibold uppercase tracking-wider",
+                              "text-[10px] font-semibold uppercase tracking-[0.14em]",
                               i === scanStep ? "text-rose-700" : "text-muted-foreground/60",
                             )}>{label}</span>
                           </div>

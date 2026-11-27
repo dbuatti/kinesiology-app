@@ -66,13 +66,13 @@ const BrainstemToneMap = ({ priorityPattern, activeFilter, onSelectNuclei }: Bra
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <Badge variant="outline" className={cn(
-                      "font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 border-none rounded-full flex items-center gap-1",
+                      "font-semibold text-[10px] uppercase tracking-[0.14em] px-2 py-0.5 border-none rounded-full flex items-center gap-1",
                       nuclei.toneEffect === 'Flexors' ? "bg-primary/10 text-primary-strong" : "bg-destructive/10 text-destructive-strong"
                     )}>
                       {nuclei.toneEffect === 'Flexors' ? <ArrowDownCircle size={10} /> : <ArrowUpCircle size={10} />}
                       {nuclei.toneEffect}
                     </Badge>
-                    <span className="text-[7px] font-semibold text-muted-foreground uppercase tracking-wider">Tone Effect</span>
+                    <span className="text-[7px] font-semibold text-muted-foreground uppercase tracking-[0.14em]">Tone Effect</span>
                   </div>
                 </div>
 
@@ -82,7 +82,7 @@ const BrainstemToneMap = ({ priorityPattern, activeFilter, onSelectNuclei }: Bra
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex justify-between text-[10px] font-semibold uppercase tracking-wider">
+                  <div className="flex justify-between text-[10px] font-semibold uppercase tracking-[0.14em]">
                     <span className="text-muted-foreground">Threat Level</span>
                     <span className={cn(isHighThreat ? "text-destructive" : "text-indigo-600")}>{nuclei.threatLevel}%</span>
                   </div>

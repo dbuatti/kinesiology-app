@@ -55,7 +55,7 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
         <div className="lg:col-span-1 space-y-6">
           <Card className="border border-border shadow-md rounded-2xl bg-card overflow-hidden">
             <CardHeader className="bg-muted/50 border-b border-border/50">
-              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <CardTitle className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground flex items-center gap-2">
                 <Zap size={16} className="text-amber-500" /> The Challenge
               </CardTitle>
             </CardHeader>
@@ -68,7 +68,7 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
               </div>
               
               <div className="space-y-1 pt-4 border-t border-border/30">
-                <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider flex items-center gap-1">
+                <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-[0.14em] flex items-center gap-1">
                   <Activity size={10} /> Felt Sense
                 </p>
                 <p className="text-sm font-bold text-foreground/80">{session.felt_sense || 'Not specified'}</p>
@@ -79,14 +79,14 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
           <div className="space-y-4">
             <Card className="border-none shadow-lg rounded-2xl bg-rose-900 text-primary-foreground overflow-hidden">
               <CardContent className="p-8 text-center space-y-4">
-                <p className="text-[10px] font-semibold text-rose-300 uppercase tracking-wider">Limiting Belief</p>
+                <p className="text-[10px] font-semibold text-rose-300 uppercase tracking-[0.14em]">Limiting Belief</p>
                 <h3 className="text-2xl font-serif font-bold italic">"I am {session.limiting_belief}"</h3>
               </CardContent>
             </Card>
 
             <Card className="border-none shadow-lg rounded-2xl bg-primary text-primary-foreground overflow-hidden">
               <CardContent className="p-8 text-center space-y-4">
-                <p className="text-[10px] font-semibold text-primary uppercase tracking-wider">Positive Belief</p>
+                <p className="text-[10px] font-semibold text-primary uppercase tracking-[0.14em]">Positive Belief</p>
                 <h3 className="text-2xl font-serif font-bold italic">"I am {session.positive_belief}"</h3>
               </CardContent>
             </Card>
@@ -94,7 +94,7 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
 
           <Card className="border border-border shadow-md rounded-2xl bg-card overflow-hidden">
             <CardHeader className="bg-muted/50 border-b border-border/50">
-              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <CardTitle className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground flex items-center gap-2">
                 <CheckCircle2 size={16} className="text-indigo-500" /> Verification
               </CardTitle>
             </CardHeader>
@@ -131,7 +131,7 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
                 <div key={index} className="space-y-3 p-6 bg-card rounded-2xl border border-border/50 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
                     <Badge className={cn(
-                      "font-semibold uppercase tracking-wider",
+                      "font-semibold uppercase tracking-[0.14em]",
                       log.type === 'A' ? "bg-rose-100 text-rose-700" : "bg-primary/15 text-primary-strong"
                     )}>
                       Part {log.type}: {log.type === 'A' ? "Limiting" : "Positive"}
@@ -168,7 +168,7 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="border-none shadow-md rounded-2xl bg-primary/10 border-2 border-primary/25">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-[10px] font-semibold text-primary-strong uppercase tracking-wider">New Awareness</CardTitle>
+                  <CardTitle className="text-[10px] font-semibold text-primary-strong uppercase tracking-[0.14em]">New Awareness</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm font-bold text-primary-strong leading-relaxed">
@@ -179,7 +179,7 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
 
               <Card className="border-none shadow-md rounded-2xl bg-indigo-50 border-2 border-indigo-100">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider">Integration Action</CardTitle>
+                  <CardTitle className="text-[10px] font-semibold text-indigo-600 uppercase tracking-[0.14em]">Integration Action</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm font-bold text-indigo-900 leading-relaxed">
@@ -195,7 +195,7 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
               <Quote size={24} className="text-rose-300" />
             </div>
             <div className="space-y-1">
-              <h4 className="text-sm font-semibold text-rose-400 uppercase tracking-wider">Clinical Reflection</h4>
+              <h4 className="text-sm font-semibold text-rose-400 uppercase tracking-[0.14em]">Clinical Reflection</h4>
               <p className="text-muted-foreground/60 text-sm font-medium leading-relaxed italic">
                 "The shift occurs when the client can distinguish between the 'me' (the observer) and the 'not-me' (the identity). By alternating between the limiting and positive identities, we create the flexibility needed for this realization."
               </p>

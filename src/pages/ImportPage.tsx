@@ -122,8 +122,8 @@ const ImportPage = () => {
  </CardDescription>
  </CardHeader>
  <CardContent className="grid grid-cols-2 gap-4">
- <div className="flex items-center gap-3 p-4 bg-chart-emerald/10 rounded-xl border border-border">
- <CheckCircle size={24} className="text-chart-emerald flex-shrink-0" />
+ <div className="flex items-center gap-3 p-4 bg-primary/10 rounded-xl border border-border">
+ <CheckCircle size={24} className="text-primary-strong flex-shrink-0" />
  <div>
  <p className="text-sm font-medium text-primary-strong">Successfully Imported</p>
  <p className="text-2xl font-medium text-primary-strong">{results.success}</p>

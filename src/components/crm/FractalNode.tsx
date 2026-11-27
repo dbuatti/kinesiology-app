@@ -113,12 +113,12 @@ const FractalNode = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             {item.is_primary_primary && (
-              <Badge className="bg-amber-500 text-primary-foreground border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0.5 rounded-md flex items-center gap-1">
+              <Badge className="bg-amber-500 text-primary-foreground border-none font-semibold text-[7px] uppercase tracking-[0.14em] px-2 py-0.5 rounded-md flex items-center gap-1">
                 <Star size={8} className="fill-current" /> Primary Root
               </Badge>
             )}
             <Badge className={cn(
-              "border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0.5 rounded-md",
+              "border-none font-semibold text-[7px] uppercase tracking-[0.14em] px-2 py-0.5 rounded-md",
               tierInfo.color,
               tierInfo.tier < 2 && "text-muted-foreground"
             )}>

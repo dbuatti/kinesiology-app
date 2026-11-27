@@ -202,7 +202,7 @@ export function QuizTool({ embedded = false, onExit }: QuizToolProps = {}) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary-strong rounded-full border border-primary/20">
             {currentQuestion.id.startsWith('ai') ? <Sparkles size={14} /> : <BrainCircuit size={14} />}
-            <span className="text-[10px] font-semibold uppercase tracking-wider">{currentQuestion.category}</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.14em]">{currentQuestion.category}</span>
           </div>
           <span className="text-xs font-medium text-muted-foreground">Question {totalAnswered + 1}</span>
         </div>
@@ -211,7 +211,7 @@ export function QuizTool({ embedded = false, onExit }: QuizToolProps = {}) {
           {isLoadingAi && (
             <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center gap-4">
               <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-              <p className="text-xs font-semibold uppercase tracking-wider text-primary animate-pulse">Consulting AI Oracle...</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary animate-pulse">Consulting AI Oracle...</p>
             </div>
           )}
 
@@ -228,7 +228,7 @@ export function QuizTool({ embedded = false, onExit }: QuizToolProps = {}) {
                 <div className="flex items-start gap-3">
                   {isCorrect ? <CheckCircle2 className="text-primary-strong mt-1" size={20} /> : <XCircle className="text-rose-600 mt-1" size={20} />}
                   <div>
-                    <AlertTitle className={`font-semibold text-sm uppercase tracking-wider ${isCorrect ? "text-primary-strong dark:text-primary" : "text-rose-700 dark:text-rose-400"}`}>
+                    <AlertTitle className={`font-semibold text-sm uppercase tracking-[0.14em] ${isCorrect ? "text-primary-strong dark:text-primary" : "text-rose-700 dark:text-rose-400"}`}>
                       {isCorrect ? "Correct!" : "Not quite..."}
                     </AlertTitle>
                     <AlertDescription className="text-muted-foreground mt-2 leading-relaxed">

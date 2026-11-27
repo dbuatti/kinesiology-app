@@ -185,7 +185,7 @@ function SessionEntry({ session, latest }: { session: SessionLog; latest: boolea
           {format(appointment.date, "EEE d MMM yyyy")}
         </Link>
         {cancelled && (
-          <span className="inline-flex items-center rounded-full bg-muted-foreground/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <span className="inline-flex items-center rounded-full bg-muted-foreground/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
             Cancelled
           </span>
         )}

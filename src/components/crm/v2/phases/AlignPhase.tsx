@@ -266,12 +266,12 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                                   <span>{item.name}</span>
                                   {item.side && <span className="font-normal text-muted-foreground">({item.side})</span>}
                                   {isPrimary && (
-                                    <span className="rounded bg-gold/15 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-gold-strong ring-1 ring-gold/40">
+                                    <span className="rounded bg-gold/15 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-strong ring-1 ring-gold/40">
                                       Primary priority
                                     </span>
                                   )}
                                   {isPathway && (
-                                    <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-primary-strong ring-1 ring-primary/20">
+                                    <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary-strong ring-1 ring-primary/20">
                                       Pathway
                                     </span>
                                   )}

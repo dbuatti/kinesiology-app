@@ -56,8 +56,8 @@ const UpcomingMarquee = ({ className }: { className?: string }) => {
       title="Open next session"
     >
       <span className="relative flex h-2 w-2 shrink-0">
-        {next.soon && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-chart-emerald opacity-60" />}
-        <span className="relative inline-flex h-2 w-2 rounded-full bg-chart-emerald" />
+        {next.soon && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />}
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
       </span>
       <span className="shrink-0 whitespace-nowrap text-muted-foreground">Up next</span>
       <span className="truncate font-medium text-foreground blur-sensitive">{next.name}</span>

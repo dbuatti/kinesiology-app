@@ -42,13 +42,13 @@ export default function NeedsAttentionWidget({ onOpenFollowUp }: Props) {
       onClick={onOpenFollowUp}
       className={cn(
         "w-full flex items-center justify-between gap-3 rounded-xl border bg-card px-4 py-2.5 mb-4 text-left transition-colors",
-        quickWins.length > 0 ? "border-chart-emerald/40 hover:border-chart-emerald/60" : "border-border hover:border-chart-destructive/40"
+        quickWins.length > 0 ? "border-primary/40 hover:border-primary/60" : "border-border hover:border-chart-destructive/40"
       )}
     >
       <div className="flex items-center gap-3 min-w-0">
         {quickWins.length > 0 ? (
           <>
-            <Zap className="h-4 w-4 text-chart-emerald shrink-0" />
+            <Zap className="h-4 w-4 text-primary-strong shrink-0" />
             <span className="text-sm font-semibold text-foreground shrink-0">{quickWins.length} quick win{quickWins.length > 1 ? "s" : ""}</span>
             <span className="text-xs text-muted-foreground truncate hidden sm:inline">
               {quickWins.slice(0, 3).map((c) => c.name.split(" ")[0]).join(", ")} — normally consistent, just cancelled recently. Easy rebooks.

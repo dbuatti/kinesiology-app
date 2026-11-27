@@ -37,7 +37,7 @@ const STORAGE_KEY = "rk_morning_program";
 const RITUAL_STEPS = [
   { id: 'grounding', label: 'Grounding & Presence', icon: Wind, color: 'text-primary', bg: 'bg-primary/10', desc: '60s centering to shift into a neutral clinical state.' },
   { id: 'physiology', label: 'Physiological Readiness', icon: Coffee, color: 'text-primary', bg: 'bg-primary/10', desc: 'L-Theanine, hydration, and nutritional support.' },
-  { id: 'movement', label: 'Neurological Wake-up', icon: Activity, color: 'text-chart-emerald', bg: 'bg-chart-emerald/10', desc: 'Qigong: Dragon Whips Its Tail (2-3 mins).' },
+  { id: 'movement', label: 'Neurological Wake-up', icon: Activity, color: 'text-primary-strong', bg: 'bg-primary/10', desc: 'Qigong: Dragon Whips Its Tail (2-3 mins).' },
   { id: 'centering', label: 'Switching Check', icon: Zap, color: 'text-chart-destructive', bg: 'bg-chart-destructive/10', desc: 'Check K27 points to ensure you are not neurologically switched.' },
   { id: 'coherence', label: 'Heart-Brain Coherence', icon: Sparkles, color: 'text-chart-primary', bg: 'bg-chart-primary/10', desc: '4/6 HeartMath rhythm to sync your autonomic system.' },
   { id: 'vitals', label: 'Self-Monitoring', icon: Target, color: 'text-chart-primary', bg: 'bg-chart-primary/10', desc: 'Log your own BOLT and Coherence scores.' },
@@ -152,14 +152,14 @@ const MorningProgramPage = () => {
                   className={cn(
                     "p-6 rounded-xl border-2 transition-all duration-500 cursor-pointer flex items-center justify-between group",
                     completedTasks.includes(step.id) 
-                      ? "bg-chart-emerald/10 border-chart-emerald/30 shadow-sm" 
+                      ? "bg-primary/10 border-primary/30 shadow-sm" 
                       : "bg-card border-border hover:border-primary/30"
                   )}
                 >
                   <div className="flex items-center gap-5">
                     <div className={cn(
                       "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500 shadow-sm",
-                      completedTasks.includes(step.id) ? "bg-chart-emerald text-primary-foreground" : cn("bg-muted", step.color)
+                      completedTasks.includes(step.id) ? "bg-primary text-primary-foreground" : cn("bg-muted", step.color)
                     )}>
                       <step.icon size={24} />
                     </div>
@@ -187,7 +187,7 @@ const MorningProgramPage = () => {
                     )}
                     <div className={cn(
                       "w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all",
-                      completedTasks.includes(step.id) ? "bg-chart-emerald border-chart-emerald text-primary-foreground" : "border-border group-hover:border-primary"
+                      completedTasks.includes(step.id) ? "bg-primary border-primary text-primary-foreground" : "border-border group-hover:border-primary"
                     )}>
                       {completedTasks.includes(step.id) && <CheckCircle2 size={18} />}
                     </div>
@@ -201,12 +201,12 @@ const MorningProgramPage = () => {
               <div className="relative z-10 space-y-4">
                 <div className="flex items-center gap-3 text-primary">
                   <Activity size={20} />
-                  <h4 className="font-semibold text-xs uppercase tracking-wider">Qigong: Dragon Whips Its Tail</h4>
+                  <h4 className="font-semibold text-xs uppercase tracking-[0.14em]">Qigong: Dragon Whips Its Tail</h4>
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed font-medium">
                   Stand with feet shoulder-width apart. Gently rotate your torso from side to side, letting your arms swing freely and tap your lower back and abdomen. This stimulates the kidneys and wakes up the spinal cord.
                 </p>
-                <div className="pt-2 flex items-center gap-2 text-[10px] font-semibold text-chart-emerald uppercase tracking-wider">
+                <div className="pt-2 flex items-center gap-2 text-[10px] font-semibold text-primary-strong uppercase tracking-[0.14em]">
                   <CheckCircle2 size={12} /> 2-3 Minutes Recommended
                 </div>
               </div>
@@ -225,7 +225,7 @@ const MorningProgramPage = () => {
                   className="space-y-8"
                 >
                   <div className="flex items-center justify-between px-2">
-                    <h3 className="text-sm font-semibold text-primary uppercase tracking-wider">Active Ritual Tool</h3>
+                    <h3 className="text-sm font-semibold text-primary uppercase tracking-[0.14em]">Active Ritual Tool</h3>
                     <Button variant="ghost" size="sm" onClick={() => setRitualMode(null)} className="text-muted-foreground hover:text-chart-destructive">
                       <XIcon className="w-4 h-4 mr-2" /> Exit Tool
                     </Button>

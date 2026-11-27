@@ -47,8 +47,8 @@ export function HubTabs({
                 {active && (
                   <motion.span
                     layoutId={`hub-underline-${scope}`}
-                    className="absolute inset-x-2 -bottom-px h-[2px] rounded-full bg-foreground"
-                    transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                    className="absolute inset-x-2 -bottom-px h-[2px] rounded-full bg-primary"
+                    transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                   />
                 )}
               </button>

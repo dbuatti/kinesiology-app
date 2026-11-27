@@ -528,7 +528,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
               title="Copy all visible appointments to clipboard (paste into a spreadsheet)"
             >
               {copiedAll ? (
-                <CheckCircle2 size={14} className="mr-1 text-chart-emerald" />
+                <CheckCircle2 size={14} className="mr-1 text-primary-strong" />
               ) : (
                 <Copy size={14} className="mr-1" />
               )}
@@ -595,8 +595,8 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                 className={cn(
                   "tabular-nums transition-all rounded-full px-3 py-1 border font-semibold",
                   statusFilter === "paid"
-                    ? "bg-chart-emerald text-primary-foreground border-chart-emerald shadow-sm"
-                    : "bg-chart-emerald/10 text-chart-emerald border-chart-emerald/20 hover:bg-chart-emerald/15"
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                    : "bg-primary/10 text-primary-strong border-primary/20 hover:bg-primary/15"
                 )}
               >
                 ${summary.collected} collected
@@ -788,7 +788,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                 <div className="flex items-center gap-1.5">
                   {discipline && (
                     <Badge className={cn(
-                      "text-[10px] font-semibold uppercase tracking-wider border-none px-1.5 py-0",
+                      "text-[10px] font-semibold uppercase tracking-[0.14em] border-none px-1.5 py-0",
                       discipline === "piano"
                         ? "bg-chart-primary/10 text-chart-primary"
                         : "bg-chart-destructive/10 text-chart-destructive"
@@ -805,7 +805,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                 {item.isFree ? (
                   <span className="text-xs font-bold text-muted-foreground">Free</span>
                 ) : item.amount != null ? (
-                  <span className={cn("text-sm font-bold tabular-nums", item.paid ? "text-chart-emerald" : "text-chart-destructive")}>${item.amount}</span>
+                  <span className={cn("text-sm font-bold tabular-nums", item.paid ? "text-primary-strong" : "text-chart-destructive")}>${item.amount}</span>
                 ) : (
                   <span className="text-xs text-muted-foreground">—</span>
                 )}
@@ -865,7 +865,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                       </DropdownMenuItem>
                     ) : (
                       <DropdownMenuItem onClick={(e) => { e.stopPropagation(); togglePaid(item, true); }}>
-                        <CheckCircle2 size={14} className="mr-2 text-chart-emerald" /> Mark as paid
+                        <CheckCircle2 size={14} className="mr-2 text-primary-strong" /> Mark as paid
                       </DropdownMenuItem>
                     )
                   )}
@@ -952,7 +952,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
             </DialogDescription>
           </DialogHeader>
           <div className="py-2 text-center">
-            <div className="text-5xl font-serif font-bold tabular-nums text-foreground">${payTarget?.amount ?? "—"}</div>
+            <div className="font-serif text-[32px] font-medium tabular-nums text-foreground tracking-[-0.02em]">${payTarget?.amount ?? "—"}</div>
             <div className="text-xs text-muted-foreground mt-1">
               {payTarget?.source === "voice"
                 ? "Generates a Stripe checkout link and copies it to your clipboard."

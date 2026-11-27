@@ -170,22 +170,22 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
             {isFinished ? (
               <div className="flex items-center gap-1 text-success">
                 <CheckCircle2 size={12} />
-                <span className="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline">Session Complete</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] hidden sm:inline">Session Complete</span>
               </div>
             ) : isOvertime ? (
               <div className="flex items-center gap-1 text-destructive">
                 <AlertCircle size={12} />
-                <span className="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline">Time Elapsed</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] hidden sm:inline">Time Elapsed</span>
               </div>
             ) : isUpcoming ? (
               <div className="flex items-center gap-1 text-primary">
                 <Clock size={12} />
-                <span className="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline">Upcoming</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] hidden sm:inline">Upcoming</span>
               </div>
             ) : (
               <div className="flex items-center gap-1 text-success">
                 <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                <span className="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline">Live</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] hidden sm:inline">Live</span>
               </div>
             )}
           </div>
@@ -216,7 +216,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
 
           {!isFinished && (
             <div className="hidden sm:flex items-center gap-2 shrink-0">
-              <Badge className={cn("border-none font-semibold text-[7px] md:text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-md", activePhase.color, "text-primary-foreground")}>
+              <Badge className={cn("border-none font-semibold text-[7px] md:text-[10px] uppercase tracking-[0.14em] px-1.5 py-0.5 rounded-md", activePhase.color, "text-primary-foreground")}>
                 {activePhase.name}
               </Badge>
             </div>

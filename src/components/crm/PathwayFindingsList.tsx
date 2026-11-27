@@ -182,7 +182,7 @@ const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = t
             </div>
             <span
               className={cn(
-                "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider",
+                "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em]",
                 tone === "cleared" && "bg-cleared/10 text-cleared",
                 tone === "primary" && "bg-primary/10 text-primary-strong",
                 tone === "warning" && "bg-warning/10 text-warning-strong"

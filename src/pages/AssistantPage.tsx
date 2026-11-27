@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
-import { useSearchParams, Link as RouterLink } from "react-router-dom";
+import { useSearchParams, Link as RouterLink, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from "@/utils/toast";
 import { useAssistantConversation } from "@/hooks/useAssistantConversation";
@@ -25,7 +25,7 @@ import { Bot, ChevronLeft, ChevronUp, ChevronDown, MessageCircle, Mail, AlertCir
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-type AssistantTab = "chat" | "followup" | "inbox" | "launch";
+type AssistantTab = "chat" | "launch";
 
 interface ClientOption {
   id: string;
@@ -33,9 +33,10 @@ interface ClientOption {
   email: string | null;
 }
 
-// `initialTab` lets /inbox and /follow-up open this page on those tabs (the
-// Business zone lists them as their own destinations).
-export default function AssistantPage({ initialTab }: { initialTab?: AssistantTab } = {}) {
+// `initialTab` lets /inbox open this page as the Inbox destination (the
+// Business zone lists it as its own destination).
+export default function AssistantPage({ initialTab }: { initialTab?: AssistantTab | "inbox" | "followup" } = {}) {
+  const navigate = useNavigate();
   // Deep-link entry point, e.g. from the Needs Attention widget: /assistant?client=<id>&prompt=<text>
   const [searchParams] = useSearchParams();
   const initialClientId = searchParams.get("client");
@@ -43,7 +44,7 @@ export default function AssistantPage({ initialTab }: { initialTab?: AssistantTa
   const viewParam = searchParams.get("view");
   const initialView = viewParam === "email" ? "email" : "chat";
 
-  const [activeTab, setActiveTab] = useState<AssistantTab>(initialTab ?? (viewParam === "inbox" || viewParam === "followup" ? viewParam : "chat"));
+  const [activeTab, setActiveTab] = useState<AssistantTab>("chat");
   const [clients, setClients] = useState<ClientOption[]>([]);
   // Everyone, one entry per person, whatever they do (Phase 5) — the picker's list.
   const [people, setPeople] = useState<PersonOption[]>([]);
@@ -277,8 +278,8 @@ selectConversation: selectConversationBase, startNewChat: startNewChatBase, hand
             reaching any actual chat content, on a real iPhone. */}
         {!metricsCollapsed && !focusedClientId && (
           <div className="mt-6">
-            <KeyMetricsBar onOpenFollowUp={() => setActiveTab("followup")} />
-            <NeedsAttentionWidget onOpenFollowUp={() => setActiveTab("followup")} />
+            <KeyMetricsBar onOpenFollowUp={() => navigate("/follow-up")} />
+            <NeedsAttentionWidget onOpenFollowUp={() => navigate("/follow-up")} />
           </div>
         )}
       </div>
@@ -303,17 +304,16 @@ selectConversation: selectConversationBase, startNewChat: startNewChatBase, hand
         <div className="mb-3 mt-6 flex flex-wrap items-center justify-between gap-2">
           <TabsList className="min-w-0 overflow-x-auto">
             <TabsTrigger value="chat" className="gap-1.5 whitespace-nowrap"><MessageCircle className="h-3.5 w-3.5" /> Chat</TabsTrigger>
-            <TabsTrigger value="followup" className="gap-1.5 whitespace-nowrap"><AlertCircle className="h-3.5 w-3.5" /> Follow-up</TabsTrigger>
-            <TabsTrigger value="inbox" className="gap-1.5 whitespace-nowrap"><Mail className="h-3.5 w-3.5" /> Inbox</TabsTrigger>
             <TabsTrigger value="launch" className="gap-1.5 whitespace-nowrap"><Rocket className="h-3.5 w-3.5" /> Launch</TabsTrigger>
           </TabsList>
-          {/* Not a true embedded tab — the Timetable Simulator is a large, separate
-              page (2600+ lines) that doesn't yet follow this app's pane-extraction
-              convention, so embedding it inline safely needs its own pass. This
-              link is styled to sit alongside the tabs rather than pretending to be one. */}
-          <Button asChild variant="outline" size="sm" className="hidden gap-1.5 sm:inline-flex">
-            <RouterLink to="/timetable"><CalendarRange className="h-3.5 w-3.5" /> Timetable Simulator <ArrowUpRight className="h-3 w-3" /></RouterLink>
-          </Button>
+          <div className="hidden items-center gap-2 sm:flex">
+            <Button asChild variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
+              <RouterLink to="/inbox"><Mail className="h-3.5 w-3.5" /> Inbox <ArrowUpRight className="h-3 w-3" /></RouterLink>
+            </Button>
+            <Button asChild variant="ghost" size="sm" className="gap-1.5 text-muted-foreground">
+              <RouterLink to="/follow-up"><AlertCircle className="h-3.5 w-3.5" /> Follow-up <ArrowUpRight className="h-3 w-3" /></RouterLink>
+            </Button>
+          </div>
         </div>
 
         <TabsContent value="chat" className="flex-1 min-h-0 m-0">
@@ -466,22 +466,6 @@ selectConversation: selectConversationBase, startNewChat: startNewChatBase, hand
               </aside>
             )}
           </div>
-        </TabsContent>
-
-        <TabsContent value="followup" className="m-0">
-          {/* Deliberately no card/border/rounded box here — Chat, Follow-up, and
-              Inbox are real working surfaces, not widgets, so each gets the full
-              tab area as its own page-like space. (flex lives on this inner
-              wrapper, not TabsContent itself — Tailwind's `.flex{display:flex}`
-              beats Radix's [hidden] attribute at equal specificity when applied
-              directly to TabsContent, which made all panels render at once.)
-              No fixed height/overflow here — this flows in the page's own
-              scroll, same as Inbox/Launch below. */}
-          <FollowUpTab />
-        </TabsContent>
-
-        <TabsContent value="inbox" className="m-0">
-          <CommsInbox clients={clients} voiceStudents={voiceStudents} people={people} />
         </TabsContent>
 
         <TabsContent value="launch" className="m-0">

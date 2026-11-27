@@ -161,7 +161,7 @@ export default function FollowUpTab() {
               className={cn(
                 "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium transition-colors",
                 filter === f.id ? "bg-foreground/[0.07] text-foreground" : "text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground",
-                f.id === "quick_win" && filter !== f.id && "text-chart-emerald"
+                f.id === "quick_win" && filter !== f.id && "text-primary-strong"
               )}
             >
               {f.icon && <f.icon className="h-3.5 w-3.5" />}
@@ -219,7 +219,7 @@ export default function FollowUpTab() {
                   >
                     {initials}
                     {c.isQuickWin && (
-                      <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-chart-emerald text-white ring-2 ring-card">
+                      <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-white ring-2 ring-card">
                         <Zap className="h-2.5 w-2.5" />
                       </span>
                     )}
@@ -245,7 +245,7 @@ export default function FollowUpTab() {
                   <div className="hidden w-28 md:block" title={days != null ? `${days} days since last session` : "No sessions yet"}>
                     <div className="h-1 overflow-hidden rounded-full bg-foreground/[0.07]">
                       <div
-                        className={cn("h-full rounded-full", drift > 0.66 ? "bg-chart-destructive" : drift > 0.33 ? "bg-chart-amber" : "bg-chart-emerald")}
+                        className={cn("h-full rounded-full", drift > 0.66 ? "bg-chart-destructive" : drift > 0.33 ? "bg-chart-amber" : "bg-primary")}
                         style={{ width: `${Math.max(drift * 100, 6)}%` }}
                       />
                     </div>

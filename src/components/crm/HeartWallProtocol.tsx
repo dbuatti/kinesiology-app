@@ -81,10 +81,10 @@ const HeartWallProtocol = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
         <div className="space-y-2">
-          <Badge className="bg-chart-destructive/10 text-chart-destructive border-none font-semibold text-[10px] uppercase tracking-wider px-4 py-1 rounded-full">
+          <Badge className="bg-chart-destructive/10 text-chart-destructive border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-4 py-1 rounded-full">
             Clinical Reference
           </Badge>
-          <h1 className="text-4xl font-medium text-foreground tracking-tight">Heart Wall Protocol</h1>
+          <h1 className="font-serif text-[26px] font-medium text-foreground tracking-[-0.02em]">Heart Wall Protocol</h1>
           <p className="text-lg text-muted-foreground">Subconscious Barrier Release Process</p>
         </div>
         <Button asChild variant="outline" className="rounded-xl h-12 px-6 font-medium border-chart-destructive/20 text-chart-destructive hover:bg-muted">
@@ -121,7 +121,7 @@ const HeartWallProtocol = () => {
             </div>
             <div className="p-5 bg-destructive/5 rounded-xl border border-destructive/20">
               <p className="text-xs font-bold text-rose-800 leading-relaxed">
-                <span className="uppercase tracking-wider text-[10px]">Tip:</span> If the client is unaware of what the Heart Wall is, briefly explain:
+                <span className="uppercase tracking-[0.14em] text-[10px]">Tip:</span> If the client is unaware of what the Heart Wall is, briefly explain:
                 "You know when you've been through something and you can feel yourself shut down so it doesn't happen again?
                 Those physiological responses take a lot of bandwidth from the nervous system. We can calibrate that so your system doesn't have to compensate."
                 I haven't met anyone yet that didn't resonate with this explanation.
@@ -300,9 +300,9 @@ const HeartWallProtocol = () => {
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="bg-card text-card-foreground">
-                <th className="p-4 text-left uppercase tracking-wider text-[10px] border-r border-border w-1/4">Organ</th>
-                <th className="p-4 text-left uppercase tracking-wider text-[10px] border-r border-border w-1/2">Emotions</th>
-                <th className="p-4 text-left uppercase tracking-wider text-[10px] w-1/4">Muscles</th>
+                <th className="p-4 text-left uppercase tracking-[0.14em] text-[10px] border-r border-border w-1/4">Organ</th>
+                <th className="p-4 text-left uppercase tracking-[0.14em] text-[10px] border-r border-border w-1/2">Emotions</th>
+                <th className="p-4 text-left uppercase tracking-[0.14em] text-[10px] w-1/4">Muscles</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -350,7 +350,7 @@ const HeartWallProtocol = () => {
             <div className="absolute top-0 right-0 p-4 opacity-10"><Sparkles size={80} /></div>
             <div className="flex items-center justify-between mb-4 relative z-10">
               <div className="space-y-0.5">
-                <p className="text-[10px] font-semibold text-chart-primary uppercase tracking-wider">Active Focus</p>
+                <p className="text-[10px] font-semibold text-chart-primary uppercase tracking-[0.14em]">Active Focus</p>
                 <h4 className="text-2xl font-medium">{ROW_DATA[selectedRow].organ}</h4>
               </div>
               <button onClick={() => setSelectedRow(null)} className="text-chart-primary/60 hover:text-card-foreground h-8 flex items-center gap-2">
@@ -503,7 +503,7 @@ const HeartWallProtocol = () => {
           </div>
           <div className="space-y-4">
             <div className="p-6 bg-muted rounded-xl border border-border space-y-4">
-              <h4 className="text-[10px] font-semibold text-chart-destructive uppercase tracking-wider">Primary Referral Areas</h4>
+              <h4 className="text-[10px] font-semibold text-chart-destructive uppercase tracking-[0.14em]">Primary Referral Areas</h4>
               <ul className="space-y-2 text-base font-medium text-foreground">
                 <li className="flex items-center gap-3"><div className="w-1.5 h-1.5 rounded-full bg-chart-destructive" /> Left Chest / Precordium</li>
                 <li className="flex items-center gap-3"><div className="w-1.5 h-1.5 rounded-full bg-chart-destructive" /> Left Shoulder & Upper Back</li>
@@ -526,7 +526,7 @@ const HeartWallProtocol = () => {
         <SectionTitle icon={Sparkles} color="bg-amber-500">Somatic Responses & Aftercare</SectionTitle>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="p-6 bg-muted rounded-xl border border-border space-y-4">
-            <h4 className="text-[10px] font-semibold text-chart-amber uppercase tracking-wider">What Clients May Feel</h4>
+            <h4 className="text-[10px] font-semibold text-chart-amber uppercase tracking-[0.14em]">What Clients May Feel</h4>
             <ul className="space-y-2 text-sm font-medium text-foreground">
               <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" /> A wave or energy moving through the body</li>
               <li className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" /> Feeling of something "leaving"</li>
@@ -566,14 +566,14 @@ const HeartWallProtocol = () => {
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 bg-card rounded-lg space-y-2">
-              <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Timeline</p>
+              <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.14em]">Timeline</p>
               <p className="text-xs text-indigo-800 font-medium leading-relaxed">
                 Hidden Heart Wall will not show for a few days, maybe weeks afterwards.
                 Screen for it in follow-up sessions using the same protocol.
               </p>
             </div>
             <div className="p-4 bg-card rounded-lg space-y-2">
-              <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Why It Exists</p>
+              <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.14em]">Why It Exists</p>
               <p className="text-xs text-indigo-800 font-medium leading-relaxed">
                 The subconscious may hold deeper layers back until the system is ready.
                 "At the point of recording this, I still had one layer of the hidden Heart Wall left."
@@ -645,7 +645,7 @@ const HeartWallProtocol = () => {
           <Lightbulb size={24} />
         </div>
         <div className="space-y-1 relative z-10">
-          <p className="text-[10px] font-semibold text-chart-primary uppercase tracking-wider">Clinical Mastery Note</p>
+          <p className="text-[10px] font-semibold text-chart-primary uppercase tracking-[0.14em]">Clinical Mastery Note</p>
           <p className="text-base text-muted-foreground/60 font-medium leading-relaxed">
             "The shift occurs when the client can distinguish between the 'me' (the observer) and the 'not-me' (the identity/emotion). Dismantle the wall with respect — it was built for a reason."
           </p>

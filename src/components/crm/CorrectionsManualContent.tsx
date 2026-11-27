@@ -555,7 +555,7 @@ const CorrectionsManualContent = ({
     const filtered = filteredBrainZones(points);
     return (
       <div>
-        <h4 className={cn("text-[11px] font-semibold uppercase tracking-wider mb-2", accent)}>{label}</h4>
+        <h4 className={cn("text-[11px] font-semibold uppercase tracking-[0.14em] mb-2", accent)}>{label}</h4>
         <div className="flex flex-wrap gap-1">
           {filtered.map((p) => (
             <button
@@ -621,7 +621,7 @@ const CorrectionsManualContent = ({
               <div className="space-y-4">
                 {/* NLP Eye Position Reference */}
                 <div className="panel p-4">
-                  <h3 className={cn("text-[10px] font-bold uppercase tracking-wider mb-3", PATHWAY_DIRECTION.efferent.strong)}>NLP Eye Accessing Cues</h3>
+                  <h3 className={cn("text-[10px] font-bold uppercase tracking-[0.14em] mb-3", PATHWAY_DIRECTION.efferent.strong)}>NLP Eye Accessing Cues</h3>
                   <div className="mb-3 overflow-hidden rounded-lg border border-border bg-white">
                     <ReferenceImage
                       src="/images/eye-modes.png"
@@ -665,7 +665,7 @@ const CorrectionsManualContent = ({
 
                 {/* Organ Pulse Point Reference */}
                 <div className="panel p-4">
-                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-primary-strong dark:text-primary mb-3">Organ Pulse Points</h3>
+                  <h3 className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary-strong dark:text-primary mb-3">Organ Pulse Points</h3>
                   <div className="mb-3 overflow-hidden rounded-lg border border-border bg-white">
                     <ReferenceImage
                       src="/images/pulse-points.png"
@@ -823,7 +823,7 @@ const CorrectionsManualContent = ({
         {/* Progress bar */}
         <div className="w-full">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Progress</span>
+            <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-[0.14em]">Progress</span>
             <span className="text-[11px] font-medium text-foreground">
               {Math.round(((aeFilled + checkpointsAnswered + (belief ? 1 : 0)) / total) * 100)}%
             </span>
@@ -907,7 +907,7 @@ const CorrectionsManualContent = ({
             <div className="w-full border-t border-dashed border-border/40" />
           </div>
           <div className="relative flex justify-center">
-            <span className="bg-background px-3 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wider">Then Check</span>
+            <span className="bg-background px-3 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-[0.14em]">Then Check</span>
           </div>
         </div>
 
@@ -965,7 +965,7 @@ const CorrectionsManualContent = ({
                             )}
                           >
                             <div className="flex items-center gap-1 mb-0.5">
-                              <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Yes</span>
+                              <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-rose-600 dark:text-rose-400">Yes</span>
                               <ArrowRightCircle size={11} className="text-rose-500" />
                             </div>
                             <p className="text-[11px] text-rose-700 dark:text-rose-300 leading-relaxed">
@@ -987,7 +987,7 @@ const CorrectionsManualContent = ({
                             )}
                           >
                             <div className="flex items-center gap-1 mb-0.5">
-                              <span className="text-[11px] font-bold uppercase tracking-wider text-primary-strong dark:text-primary">No</span>
+                              <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary-strong dark:text-primary">No</span>
                               <ArrowRightCircle size={11} className="text-primary/70" />
                             </div>
                             <p className="text-[10px] text-foreground/80 dark:text-foreground/70 leading-relaxed">{cp.noAdvance}</p>
@@ -1082,7 +1082,7 @@ const CorrectionsManualContent = ({
               </button>
             )}
             {compact && !instructionsOpen && (
-              <span className="text-[11px] font-medium text-muted-foreground/50 uppercase tracking-wider">
+              <span className="text-[11px] font-medium text-muted-foreground/50 uppercase tracking-[0.14em]">
                 Keys 1–9
               </span>
             )}
@@ -1113,7 +1113,7 @@ const CorrectionsManualContent = ({
               return groups.map((g, gi) => (
                 <div key={g.group ?? gi} className="space-y-1">
                   {g.group && (
-                    <p className="px-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40">{g.group}</p>
+                    <p className="px-1 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/40">{g.group}</p>
                   )}
                   <div className={cn("gap-0.5", instructionsOpen ? "flex flex-col" : "flex flex-wrap")}>
                     {g.items.map((item) => {

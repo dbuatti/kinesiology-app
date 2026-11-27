@@ -36,10 +36,10 @@ const BaGuaReference = () => {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <div className="flex gap-2 mb-2">
-                    <Badge className="bg-card/80 text-foreground border-none font-semibold text-[10px] uppercase tracking-wider">
+                    <Badge className="bg-card/80 text-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em]">
                       Number {profile.number}
                     </Badge>
-                    <Badge className="bg-card/40 text-foreground/80 border-none font-semibold text-[10px] uppercase tracking-wider">
+                    <Badge className="bg-card/40 text-foreground/80 border-none font-semibold text-[10px] uppercase tracking-[0.14em]">
                       {profile.element}
                     </Badge>
                   </div>

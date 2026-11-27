@@ -33,7 +33,7 @@ const QuizSetup = ({ onStart }: QuizSetupProps) => {
         <div className="w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-2xl shadow-indigo-200">
           <GraduationCap size={40} className="text-primary-foreground" />
         </div>
-        <h1 className="text-4xl md:text-5xl font-semibold tracking-tighter text-foreground">Knowledge Oracle</h1>
+        <h1 className="font-serif text-[26px] font-medium tracking-[-0.02em] text-foreground sm:text-[34px]">Knowledge Oracle</h1>
         <p className="text-lg text-muted-foreground font-medium max-w-xl mx-auto">
           Sharpen your clinical intuition with infinite practice questions.
         </p>

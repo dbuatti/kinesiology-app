@@ -49,13 +49,13 @@ const CranialNerveReference = () => {
           )}>
             <CardContent className="p-5 space-y-2">
               <div className="flex items-center justify-between">
-                <h4 className="font-semibold text-sm uppercase tracking-wider">{key}</h4>
+                <h4 className="font-semibold text-sm uppercase tracking-[0.14em]">{key}</h4>
                 <Badge variant="outline" className="text-[10px] font-medium border-current/20">Housing</Badge>
               </div>
               <p className="text-[10px] font-medium leading-relaxed opacity-80">{data.description}</p>
               <div className="pt-2 flex items-center gap-2">
                 <Zap size={12} className="text-muted-foreground" />
-                <span className="text-[10px] font-medium uppercase tracking-wider">Stim: {data.stim}</span>
+                <span className="text-[10px] font-medium uppercase tracking-[0.14em]">Stim: {data.stim}</span>
               </div>
             </CardContent>
           </Card>
@@ -124,7 +124,7 @@ const CranialNerveReference = () => {
                   <div className="space-y-1">
                     <div className="flex gap-2 mb-2">
                       <Badge className={cn(
-                        "border-none font-medium text-[10px] uppercase tracking-wider",
+                        "border-none font-medium text-[10px] uppercase tracking-[0.14em]",
                         nerve.nuclei === 'Cortex' ? "bg-chart-primary/10 text-chart-primary" :
                         nerve.nuclei === 'Midbrain' ? "bg-muted text-muted-foreground" :
                         nerve.nuclei === 'Pons' ? "bg-chart-primary/10 text-chart-primary" :
@@ -140,7 +140,7 @@ const CranialNerveReference = () => {
                       {nerve.name}: {nerve.latinName}
                     </CardTitle>
                     {nerve.acupoint && (
-                      <p className="text-[10px] font-medium text-chart-primary uppercase tracking-wider">{nerve.acupoint}</p>
+                      <p className="text-[10px] font-medium text-chart-primary uppercase tracking-[0.14em]">{nerve.acupoint}</p>
                     )}
                   </div>
                   <div className={cn(
@@ -160,7 +160,7 @@ const CranialNerveReference = () => {
                     <p className="text-sm font-medium text-foreground leading-relaxed">{nerve.reflexPoint}</p>
                   </div>
                   <div className="p-4 bg-muted/50 rounded-xl border border-border">
-                    <p className="text-[10px] font-medium text-chart-primary uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <p className="text-[10px] font-medium text-chart-primary uppercase tracking-[0.14em] mb-1 flex items-center gap-1">
                       <PlayCircle size={12} /> Stim Protocol
                     </p>
                     <p className="text-sm font-medium text-foreground leading-relaxed">{nerve.stimulus}</p>
@@ -171,7 +171,7 @@ const CranialNerveReference = () => {
                   <div className="p-5 bg-muted/50 rounded-3xl border-2 border-border animate-in fade-in slide-in-from-top-2 duration-500">
                     <div className="flex items-center gap-2 mb-2">
                       <ArrowRightLeft size={16} className="text-chart-primary" />
-                      <span className="text-[10px] font-medium uppercase tracking-wider text-chart-primary">Delineation Guide</span>
+                      <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-chart-primary">Delineation Guide</span>
                     </div>
                     <p className="text-xs font-medium text-foreground leading-relaxed">
                       {nerve.delineationGuide}

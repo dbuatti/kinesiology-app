@@ -75,15 +75,15 @@ export default function PendingBookingsPanel({ clientId, email, contained, class
   const names = [...new Set(bookings.map((b) => b.client_name.split(" ")[0]))];
 
   return (
-    <div className={cn("rounded-xl border border-chart-emerald/40 bg-chart-emerald/5", className)}>
+    <div className={cn("rounded-xl border border-primary/40 bg-primary/5", className)}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm"
         aria-expanded={open}
       >
-        <CalendarClock className="h-4 w-4 shrink-0 text-chart-emerald" />
-        <span className="font-semibold text-chart-emerald">Pending bookings · {bookings.length}</span>
+        <CalendarClock className="h-4 w-4 shrink-0 text-primary-strong" />
+        <span className="font-semibold text-primary-strong">Pending bookings · {bookings.length}</span>
         <span className="min-w-0 flex-1 truncate text-muted-foreground">
           to confirm — {names.slice(0, 4).join(", ")}{names.length > 4 ? ` +${names.length - 4}` : ""}
         </span>

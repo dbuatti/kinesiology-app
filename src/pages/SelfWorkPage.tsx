@@ -235,7 +235,7 @@ function StepCard({ title, subtitle, children, className = "" }: { title: string
 }
 
 const SMALL_BTN =
-  "rounded-xl py-3 px-4 text-sm font-medium uppercase tracking-wider transition-all min-h-[48px] touch-manipulation select-none [-webkit-tap-highlight-color:transparent]";
+  "rounded-xl py-3 px-4 text-sm font-medium uppercase tracking-[0.14em] transition-all min-h-[48px] touch-manipulation select-none [-webkit-tap-highlight-color:transparent]";
 
 function newId() {
   try {
@@ -391,7 +391,7 @@ function HomeContent({
           <button
             key={t}
             onClick={() => { haptic(); setRefTab(t); goTo("reference", 1); }}
-            className={cn("rounded-xl py-3 px-2 text-[11px] font-medium uppercase tracking-wider transition-all min-h-[48px]", C.muted, C.mutedHover, "active:scale-[0.98]")}
+            className={cn("rounded-xl py-3 px-2 text-[11px] font-medium uppercase tracking-[0.14em] transition-all min-h-[48px]", C.muted, C.mutedHover, "active:scale-[0.98]")}
           >
             {t === "esr" ? "ESR" : t === "organs" ? "Organs" : "Eyes"}
           </button>
@@ -401,13 +401,13 @@ function HomeContent({
       <div className="grid grid-cols-2 gap-2">
         <button
           onClick={() => { haptic(); goTo("history", 1); }}
-          className={cn("rounded-xl py-3 px-3 text-sm font-medium uppercase tracking-wider transition-all min-h-[48px] flex items-center justify-center gap-2", C.muted, C.mutedHover, "active:scale-[0.98]")}
+          className={cn("rounded-xl py-3 px-3 text-sm font-medium uppercase tracking-[0.14em] transition-all min-h-[48px] flex items-center justify-center gap-2", C.muted, C.mutedHover, "active:scale-[0.98]")}
         >
           <History size={14} /> History{history.length > 0 ? ` · ${history.length}` : ""}
         </button>
         <button
           onClick={() => { haptic(); onShowExport(); }}
-          className={cn("rounded-xl py-3 px-3 text-sm font-medium uppercase tracking-wider transition-all min-h-[48px] flex items-center justify-center gap-2", C.muted, C.mutedHover, "active:scale-[0.98]")}
+          className={cn("rounded-xl py-3 px-3 text-sm font-medium uppercase tracking-[0.14em] transition-all min-h-[48px] flex items-center justify-center gap-2", C.muted, C.mutedHover, "active:scale-[0.98]")}
         >
           <Download size={14} /> Export
         </button>
@@ -685,7 +685,7 @@ export default function SelfWorkPage() {
           <StepCard title={`Emotion: ${emotion.label}`} subtitle="Select the priority organ holding this emotion:">
             <div className="grid grid-cols-2 gap-2">
               {emotion.organs?.map((o: string) => (
-                <button key={o} onClick={() => { haptic(); setOrgan(o); setPhase("eyes"); }} className="rounded-xl py-3 px-3 text-sm font-medium uppercase tracking-wider transition-all min-h-[52px] bg-primary/15 border border-primary/40 text-primary hover:bg-primary/30 active:bg-primary/40 active:scale-[0.98]">{o}</button>
+                <button key={o} onClick={() => { haptic(); setOrgan(o); setPhase("eyes"); }} className="rounded-xl py-3 px-3 text-sm font-medium uppercase tracking-[0.14em] transition-all min-h-[52px] bg-primary/15 border border-primary/40 text-primary hover:bg-primary/30 active:bg-primary/40 active:scale-[0.98]">{o}</button>
               ))}
             </div>
             <p className="mt-3 text-[11px] text-center" style={{ color: "rgba(110,231,183,0.5)" }}><em>Tap an organ to continue</em></p>
@@ -716,7 +716,7 @@ export default function SelfWorkPage() {
                 ...(timeline ? [["Timeline", `${timeline}${age ? ` — age ${age}` : ""}`]] : []),
               ].map(([k, v]) => (
                 <div key={k} className="flex items-center justify-between px-4 py-3 rounded-xl" style={{ background: "rgba(255,255,255,0.03)" }}>
-                  <span className="text-[11px] uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.5)" }}>{k}</span>
+                  <span className="text-[11px] uppercase tracking-[0.14em]" style={{ color: "rgba(255,255,255,0.5)" }}>{k}</span>
                   <span className="font-medium">{v}</span>
                 </div>
               ))}
@@ -764,7 +764,7 @@ export default function SelfWorkPage() {
         </p>
         <p className="text-[11px] mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>Note any shifts in awareness, emotion, or physical sensation.</p>
         <button onClick={() => { haptic(); if (isIntegration) startIntegration(); else goTo("beliefs", 1); }} className={cn(SMALL_BTN, "w-full", C.accentSolid, C.accentHover)}>Another Session</button>
-        <button onClick={() => { haptic(); goTo("history", 1); }} className="mt-3 w-full rounded-xl py-3 px-4 text-sm font-medium uppercase tracking-wider transition-all min-h-[48px] bg-white/10 border border-white/20 hover:bg-white/15 active:bg-white/20">View History</button>
+        <button onClick={() => { haptic(); goTo("history", 1); }} className="mt-3 w-full rounded-xl py-3 px-4 text-sm font-medium uppercase tracking-[0.14em] transition-all min-h-[48px] bg-white/10 border border-white/20 hover:bg-white/15 active:bg-white/20">View History</button>
       </StepCard>
     );
   }
@@ -866,7 +866,7 @@ export default function SelfWorkPage() {
               <button
                 key={t.id}
                 onClick={() => { haptic("light"); setRefTab(t.id); }}
-                className={cn("relative rounded-xl py-3 text-[12px] font-semibold uppercase tracking-wider transition-all min-h-[48px] active:scale-[0.98]", active ? "text-primary" : "text-white/50")}
+                className={cn("relative rounded-xl py-3 text-[12px] font-semibold uppercase tracking-[0.14em] transition-all min-h-[48px] active:scale-[0.98]", active ? "text-primary" : "text-white/50")}
               >
                 {active && (
                   <motion.span

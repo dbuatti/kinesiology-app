@@ -24,6 +24,7 @@ import {
   Wallet,
   ClipboardList,
   CalendarRange,
+  CalendarClock,
   Megaphone,
   Sunrise,
   MessageSquare,
@@ -60,6 +61,7 @@ const ASSISTANT: NavItem = { label: "Assistant", icon: Bot, path: "/assistant" }
 const MONEY: NavItem = { label: "Money", icon: Wallet, path: "/money" };
 const AUDIT: NavItem = { label: "Rates & audit", icon: ClipboardList, path: "/audit" };
 const TIMETABLE: NavItem = { label: "Availability", icon: CalendarRange, path: "/timetable" };
+const OPEN_HOURS: NavItem = { label: "Open hours", icon: CalendarClock, path: "/availability" };
 const MARKETING: NavItem = { label: "Marketing", icon: Megaphone, path: "/marketing" };
 const MORNING: NavItem = { label: "Morning Program", icon: Sunrise, path: "/morning-program" };
 const JOURNAL: NavItem = { label: "Journal", icon: MessageSquare, path: "/journal" };
@@ -67,7 +69,6 @@ const PRACTICE_HUB: NavItem = { label: "Practice Hub", icon: Heart, path: "/prac
 const IDENTITY: NavItem = { label: "Identity Work", icon: Brain, path: "/identity" };
 const LIBRARY: NavItem = { label: "Library", icon: BookOpen, path: "/library" };
 const WORKSHEETS: NavItem = { label: "Worksheets", icon: FileText, path: "/worksheets" };
-const LIMITING_BELIEFS: NavItem = { label: "Limiting Beliefs", icon: Brain, path: "/identity?tool=limiting" };
 
 export const ZONES: Record<Zone, ZoneDef> = {
   practice: {
@@ -81,7 +82,7 @@ export const ZONES: Record<Zone, ZoneDef> = {
     groups: [
       { label: "Practice", items: [TODAY, CALENDAR, SESSIONS, PEOPLE] },
     ],
-    more: [LIMITING_BELIEFS],
+    more: [OPEN_HOURS],
     tabs: [TODAY, CALENDAR, SESSIONS, PEOPLE],
   },
   business: {
@@ -107,7 +108,7 @@ export const ZONES: Record<Zone, ZoneDef> = {
     groups: [
       { label: "Growth", items: [MORNING, JOURNAL, PRACTICE_HUB, IDENTITY, LIBRARY] },
     ],
-    more: [WORKSHEETS, LIMITING_BELIEFS],
+    more: [WORKSHEETS],
     tabs: [MORNING, JOURNAL, PRACTICE_HUB, LIBRARY],
   },
 };
@@ -126,8 +127,8 @@ const startsWithAny = (pathname: string, prefixes: string[]) =>
 // Reachable from more than one zone (they appear in several navs, or are
 // system pages): visiting them keeps whichever zone you were in, so the
 // sidebar never flips out from under you mid-task.
-const SHARED = ["/assistant", "/clients", "/calendar", "/settings", "/availability"];
-const BUSINESS = ["/inbox", "/follow-up", "/money", "/audit", "/marketing", "/business", "/timetable"];
+const SHARED = ["/clients", "/calendar", "/settings", "/availability"];
+const BUSINESS = ["/inbox", "/follow-up", "/assistant", "/money", "/audit", "/marketing", "/business", "/timetable"];
 const GROWTH = ["/morning-program", "/journal", "/identity", "/library", "/worksheets", "/resources", "/peace-framework", "/lab", "/limiting-beliefs"];
 
 /** The zone a URL belongs to, or null when it's shared and the zone should stay as it is. */
@@ -160,7 +161,7 @@ export const BREADCRUMBS: Record<string, [string, string, string]> = {
   appointments: ["Session", "Sessions", "/sessions"],
   clients: ["People", "Practice", "/"],
   voice: ["Students", "People", "/clients"],
-  availability: ["Availability", "Calendar", "/calendar"],
+  availability: ["Open hours", "Calendar", "/calendar"],
   inbox: ["Inbox", "Business", "/inbox"],
   "follow-up": ["Follow-up", "Business", "/inbox"],
   assistant: ["Assistant", "Business", "/inbox"],

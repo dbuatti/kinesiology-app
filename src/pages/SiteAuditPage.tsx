@@ -239,7 +239,7 @@ const SiteAuditPage = () => {
                   <div className="space-y-3 flex-1">
                     <div className="flex items-center gap-3 flex-wrap">
                       <Badge className={cn(
-                        "border-none font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full",
+                        "border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-2 py-0.5 rounded-full",
                         page.category === 'Clinical' ? "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300" :
                         page.category === 'Practice' ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300" :
                         page.category === 'Business' ? "bg-primary/15 text-primary-strong dark:bg-primary/20 dark:text-primary" :

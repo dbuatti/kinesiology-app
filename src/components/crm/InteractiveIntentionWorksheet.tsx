@@ -185,10 +185,10 @@ const InteractiveIntentionWorksheet = () => {
             <Compass size={32} className="text-indigo-400" />
           </div>
           <div className="space-y-2">
-            <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 font-semibold text-[10px] uppercase tracking-wider px-4 py-1">
+            <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 font-semibold text-[10px] uppercase tracking-[0.14em] px-4 py-1">
               Practitioner Development
             </Badge>
-            <h1 className="text-4xl font-semibold tracking-tighter">Setting Your North Star</h1>
+            <h1 className="font-serif text-[26px] font-medium tracking-[-0.02em]">Setting Your North Star</h1>
             <p className="text-lg text-muted-foreground font-medium max-w-xl mx-auto italic">
               "Clarity of intention is the foundation of transformation."
             </p>
@@ -259,7 +259,7 @@ const InteractiveIntentionWorksheet = () => {
                </div>
                
                <div className="space-y-4">
-                 <p className="text-[10px] font-semibold uppercase tracking-wider opacity-60">Practitioner Tips</p>
+                 <p className="text-[10px] font-semibold uppercase tracking-[0.14em] opacity-60">Practitioner Tips</p>
                  <div className="flex gap-3">
                    <div className="w-8 h-8 rounded-lg bg-primary-foreground/20 flex items-center justify-center shrink-0">
                      <Target size={14} />
@@ -411,7 +411,7 @@ const InteractiveIntentionWorksheet = () => {
               <div className="pt-4 border-t border-primary-foreground/10">
                 <div className="flex items-center gap-2 text-amber-400 mb-2">
                   <Share2 size={16} />
-                  <span className="text-xs font-semibold uppercase tracking-wider">Sharing (Optional)</span>
+                  <span className="text-xs font-semibold uppercase tracking-[0.14em]">Sharing (Optional)</span>
                 </div>
                 <p className="text-[10px] text-muted-foreground leading-relaxed">
                   Sharing creates accountability and gives others permission to be vulnerable. However, some intentions are sacred and personal—honor what feels right for you.

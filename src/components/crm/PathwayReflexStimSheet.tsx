@@ -172,9 +172,9 @@ const PathwayReflexStimSheet = ({
       <div className="border-2 border-black mb-2 flex justify-between items-end px-3 py-2">
         <div>
           <h1 className="text-xl font-semibold uppercase tracking-tight leading-none">Pathway / Reflex / Stim</h1>
-          <p className="text-[10px] font-bold uppercase tracking-wider mt-1">Reference Grid — Prototype</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] mt-1">Reference Grid — Prototype</p>
         </div>
-        <div className="text-right text-[10px] font-bold uppercase tracking-wider">
+        <div className="text-right text-[10px] font-bold uppercase tracking-[0.14em]">
           <p>A4 Portrait</p>
           <p className="mt-0.5">Reflexes · Cranial Nerves · Intrinsic Muscles</p>
         </div>
@@ -194,7 +194,7 @@ const PathwayReflexStimSheet = ({
         </thead>
         <tbody>
           <tr key="primitive-reflexes" id="primitive-reflexes">
-            <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-semibold uppercase tracking-wider sticky top-[34px] z-[5]">
+            <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-semibold uppercase tracking-[0.14em] sticky top-[34px] z-[5]">
               Primitive Reflexes
             </td>
           </tr>
@@ -227,7 +227,7 @@ const PathwayReflexStimSheet = ({
                         {ri === 0 && si === 0 ? (
                           <td
                             rowSpan={track.reflexes.reduce((acc, r) => acc + primitiveStimCount(r), 0)}
-                            className={`${track.color} text-white p-1 pl-2 align-top font-semibold uppercase tracking-wider border-2 border-black border-t-0`}
+                            className={`${track.color} text-white p-1 pl-2 align-top font-semibold uppercase tracking-[0.14em] border-2 border-black border-t-0`}
                           >
                             {track.title}
                           </td>
@@ -242,12 +242,12 @@ const PathwayReflexStimSheet = ({
                                 </Link>
                               </TooltipTrigger>
                               <TooltipContent side="right" className="rounded-xl max-w-[260px] text-[10px] leading-relaxed bg-foreground text-background border-none shadow-xl">
-                                <p className="font-semibold uppercase tracking-wider text-[10px] mb-1">{reflex.short} — Inhibition</p>
+                                <p className="font-semibold uppercase tracking-[0.14em] text-[10px] mb-1">{reflex.short} — Inhibition</p>
                                 <p className="font-medium">{reflex.inhibition}</p>
                               </TooltipContent>
                             </Tooltip>
                           ) : (
-                            <span className="font-semibold text-[10px] uppercase tracking-wider text-black/30">{reflex.short} · {si + 1}</span>
+                            <span className="font-semibold text-[10px] uppercase tracking-[0.14em] text-black/30">{reflex.short} · {si + 1}</span>
                           )}
                         </td>
                         <td className="border-2 border-black border-t-0 p-1 align-middle">
@@ -272,7 +272,7 @@ const PathwayReflexStimSheet = ({
             )
           )}
           <tr key="cranial-nerves" id="cranial-nerves">
-            <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-semibold uppercase tracking-wider sticky top-[34px] z-[5]">
+            <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-semibold uppercase tracking-[0.14em] sticky top-[34px] z-[5]">
               Cranial Nerves
             </td>
           </tr>
@@ -315,7 +315,7 @@ const PathwayReflexStimSheet = ({
                         <td
                           rowSpan={nerveGroupRowSpan(group.items)}
                           style={group.label === "Medulla" ? { backgroundColor: "#000", color: "#fff" } : undefined}
-                          className={`${NUCLEI_COLORS[group.label]} text-white p-1 pl-2 align-top font-semibold uppercase tracking-wider border-2 border-black border-t-0`}
+                          className={`${NUCLEI_COLORS[group.label]} text-white p-1 pl-2 align-top font-semibold uppercase tracking-[0.14em] border-2 border-black border-t-0`}
                         >
                           {group.label}
                         </td>
@@ -333,7 +333,7 @@ const PathwayReflexStimSheet = ({
                               </Link>
                             </TooltipTrigger>
                             <TooltipContent side="right" className="rounded-xl max-w-[260px] text-[10px] leading-relaxed bg-foreground text-background border-none shadow-xl">
-                              <p className="font-semibold uppercase tracking-wider text-[10px] mb-1">{nerve.name} — Reflex Point</p>
+                              <p className="font-semibold uppercase tracking-[0.14em] text-[10px] mb-1">{nerve.name} — Reflex Point</p>
                               <p className="font-medium">{nerve.reflexPoint}</p>
                             </TooltipContent>
                           </Tooltip>
@@ -378,7 +378,7 @@ const PathwayReflexStimSheet = ({
                             <span className="block cursor-help">{line}</span>
                           </TooltipTrigger>
                           <TooltipContent side="right" className="rounded-xl max-w-[260px] text-[10px] leading-relaxed bg-foreground text-background border-none shadow-xl">
-                            <p className="font-semibold uppercase tracking-wider text-[10px] mb-1">{nerve.name} — Reflex Point</p>
+                            <p className="font-semibold uppercase tracking-[0.14em] text-[10px] mb-1">{nerve.name} — Reflex Point</p>
                             <p className="font-medium">{nerve.reflexPoint}</p>
                           </TooltipContent>
                         </Tooltip>
@@ -398,7 +398,7 @@ const PathwayReflexStimSheet = ({
             </React.Fragment>
           ))}
           <tr key="intrinsic-muscles" id="intrinsic-muscles">
-            <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-semibold uppercase tracking-wider sticky top-[34px] z-[5]">
+            <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-semibold uppercase tracking-[0.14em] sticky top-[34px] z-[5]">
               Intrinsic Muscles
             </td>
           </tr>
@@ -410,11 +410,11 @@ const PathwayReflexStimSheet = ({
             return (
               <tr key={muscle.name} className="break-inside-avoid">
                 <td className="border-2 border-black border-t-0 p-1 pl-2 align-middle">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-black/40">{muscle.group}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-black/40">{muscle.group}</span>
                 </td>
                 <td className="border-2 border-black border-t-0 p-1 pl-2 align-middle font-semibold">
                   {muscle.name}
-                  <div className="text-[7px] font-bold uppercase tracking-wider text-black/40">{info.meridian}</div>
+                  <div className="text-[7px] font-bold uppercase tracking-[0.14em] text-black/40">{info.meridian}</div>
                 </td>
                 <td className="border-2 border-black border-t-0 p-1 align-middle">
                   {info.testingPosition || info.description || "Standard muscle test"}
@@ -432,7 +432,7 @@ const PathwayReflexStimSheet = ({
         </tbody>
       </table>
 
-      <div className="mt-2 pt-1 border-t-2 border-black flex justify-between text-[10px] font-semibold uppercase tracking-wider">
+      <div className="mt-2 pt-1 border-t-2 border-black flex justify-between text-[10px] font-semibold uppercase tracking-[0.14em]">
         <p>Resonance Clinical Infrastructure • Prototype Grid v0.5</p>
         <p className="text-right">L / R = per-side showing • ↓ Hypo · ✕ Inhib · ↑ Hyper</p>
       </div>

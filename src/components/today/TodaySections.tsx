@@ -133,7 +133,7 @@ export function TodayList({ items, goals, now }: { items: CalendarItem[]; goals:
                   <span className={cn("h-2 w-2 shrink-0 rounded-full", PRACTICE_DOT[practice])} />
                   <span className={cn("truncate text-sm font-medium blur-sensitive", done ? "text-muted-foreground" : "text-foreground")}>{itemName(i)}</span>
                   <span className="shrink-0 text-xs text-muted-foreground">{PRACTICE_LABEL[practice]}</span>
-                  {i.paid && <span className="inline-flex shrink-0 items-center gap-0.5 text-[11px] font-medium text-chart-emerald"><Check size={11} /> Paid</span>}
+                  {i.paid && <span className="inline-flex shrink-0 items-center gap-0.5 text-[11px] font-medium text-primary-strong"><Check size={11} /> Paid</span>}
                 </div>
                 {i.source === "kinesiology" && (
                   <p className={cn("mt-0.5 line-clamp-2 text-[13px] leading-snug", goal ? "text-muted-foreground" : "text-muted-foreground/60")}>
@@ -165,7 +165,7 @@ const NEED_ICON = {
   reply: { Icon: Mail, tone: "text-chart-destructive" },
   unpaid: { Icon: CircleDollarSign, tone: "text-chart-amber" },
   pencil: { Icon: PencilLine, tone: "text-chart-primary" },
-  followup: { Icon: UserRoundCheck, tone: "text-chart-emerald" },
+  followup: { Icon: UserRoundCheck, tone: "text-primary-strong" },
   alert: { Icon: ShieldAlert, tone: "text-destructive" },
 } as const;
 

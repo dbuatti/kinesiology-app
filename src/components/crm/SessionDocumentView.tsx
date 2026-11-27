@@ -45,7 +45,7 @@ const SECTION_META: Record<string, { letter: string; color: string; bg: string; 
   "e-sec":  { letter: "E", color: "text-chart-primary",    bg: "bg-muted",    focus: "T1 reset · Diaphragm · Vagus nerve stimulation · Harmonic rocking" },
   "a-sec":  { letter: "A", color: "text-muted-foreground", bg: "bg-muted", focus: "Primitive reflexes · Cranial nerves · Muscle assessment · Pattern mapping" },
   "c-sec":  { letter: "C", color: "text-muted-foreground",  bg: "bg-muted",  focus: "LOFI calibration · Afferent / Efferent pathways · Emotional protocol" },
-  "e2-sec": { letter: "E", color: "text-chart-emerald", bg: "bg-muted", focus: "Re-challenge all findings · Verify cleared · Prescribe homework" },
+  "e2-sec": { letter: "E", color: "text-primary-strong", bg: "bg-muted", focus: "Re-challenge all findings · Verify cleared · Prescribe homework" },
 };
 
 const SectionHeader = ({ id, title, subtitle }: { id: string; title: string; subtitle?: string }) => {
@@ -386,7 +386,7 @@ const SessionDocumentView = ({
 
           {/* Footer */}
           <div className="pt-32 border-t-2 border-foreground/20 text-center space-y-4">
-            <div className="flex justify-center gap-12 text-[10px] font-semibold uppercase tracking-wider">
+            <div className="flex justify-center gap-12 text-[10px] font-semibold uppercase tracking-[0.14em]">
               <div className="flex items-center gap-2"><div className="w-2 h-2 bg-foreground" /> Verified</div>
               <div className="flex items-center gap-2"><div className="w-2 h-2 bg-foreground" /> Integrated</div>
               <div className="flex items-center gap-2"><div className="w-2 h-2 bg-foreground" /> Encrypted</div>

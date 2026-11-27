@@ -156,16 +156,16 @@ const MuscleReference = () => {
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-muted-foreground/60">
                     <ImageIcon size={32} className="mb-2 opacity-20" />
-                    <p className="text-[10px] font-semibold uppercase tracking-wider">No Main Image</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.14em]">No Main Image</p>
                   </div>
                 )}
                 <div className="absolute top-3 right-3 flex gap-1">
                   {hasImages && (
-                    <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0.5">
+                    <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[7px] uppercase tracking-[0.14em] px-2 py-0.5">
                       Custom
                     </Badge>
                   )}
-                  <Badge className="bg-card/80 backdrop-blur-sm text-foreground border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0.5">
+                  <Badge className="bg-card/80 backdrop-blur-sm text-foreground border-none font-semibold text-[7px] uppercase tracking-[0.14em] px-2 py-0.5">
                     {info.meridian}
                   </Badge>
                 </div>

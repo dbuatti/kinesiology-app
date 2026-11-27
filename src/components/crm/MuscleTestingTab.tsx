@@ -360,7 +360,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
 
       <div className="space-y-4">
         <div className="flex items-center justify-between px-2">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-[0.14em] flex items-center gap-2">
             <Filter size={14} className="text-chart-primary" /> Filters & Smart Suggestions
           </h3>
           {currentPeakMeridian && (

@@ -226,7 +226,7 @@ const CorrectionDock = () => {
                       return groupOrder.map((phase) => (
                         <div key={phase} className="mb-1">
                           {groupOrder.length > 1 && (
-                            <p className="px-5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/40">
+                            <p className="px-5 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground/40">
                               {groupLabels[phase] || phase}
                             </p>
                           )}
@@ -330,7 +330,7 @@ const CorrectionDock = () => {
                 ) : (
                   <div className="flex items-center justify-center py-10">
                     <div className="flex flex-col items-center gap-2.5">
-                      <span className="text-4xl text-muted-foreground/15">∅</span>
+                      <span className="text-2xl text-muted-foreground/15">∅</span>
                       <p className="text-[12px] text-muted-foreground/50 italic">No inhibited pathways found</p>
                       <p className="text-[10px] text-muted-foreground/40">Run an assessment first</p>
                     </div>

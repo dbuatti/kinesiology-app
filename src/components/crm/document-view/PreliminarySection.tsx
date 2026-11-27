@@ -197,7 +197,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
         <div className="space-y-10">
           <div className="flex items-center justify-between p-5 bg-muted border border-border">
             <div className="space-y-0.5">
-              <p className="text-[11px] font-semibold uppercase tracking-wider">Hydration Check</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em]">Hydration Check</p>
               <p className="text-xs font-medium text-muted-foreground">Systemic Conductivity</p>
             </div>
             <Checkbox 
@@ -225,7 +225,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
           <label className="text-xs font-medium text-muted-foreground">BOLT Score Assessment</label>
           <div className="border border-foreground/20 p-6 bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div className="space-y-2 flex-1">
-              <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground">Body Oxygen Level Test</h4>
+              <h4 className="text-sm font-semibold uppercase tracking-[0.14em] text-foreground">Body Oxygen Level Test</h4>
               <p className="text-xs text-muted-foreground leading-relaxed max-w-md">
                 Measure comfortable breath-hold time after a normal exhalation to assess CO2 tolerance.
               </p>
@@ -275,13 +275,13 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
               <div className="text-right">
                 <p className="text-xs font-medium text-muted-foreground">Score</p>
                 <div className="flex items-baseline gap-0.5">
-                  <span className="text-5xl font-semibold tabular-nums">{boltTime}</span>
+                  <span className="text-3xl font-semibold tabular-nums">{boltTime}</span>
                   <span className="text-sm font-medium text-muted-foreground">s</span>
                 </div>
               </div>
               {appointment.bolt_score && (
                 <Badge className={cn(
-                  "border-none font-semibold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-sm",
+                  "border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-2.5 py-1 rounded-sm",
                   appointment.bolt_score >= 25 ? "bg-primary text-primary-foreground" : "bg-destructive text-destructive-foreground"
                 )}>
                   {appointment.bolt_score >= 25 ? "Functional" : "Below Target"}
@@ -355,10 +355,10 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
               <div className="flex items-center gap-6 shrink-0 border-l border-border/50 pl-6">
                 <div className="text-right">
                   <p className="text-xs font-medium text-muted-foreground">Coherence Ratio</p>
-                  <p className="text-5xl font-semibold tabular-nums">{coherenceScore.toFixed(2)}</p>
+                  <p className="text-3xl font-semibold tabular-nums">{coherenceScore.toFixed(2)}</p>
                 </div>
                 <Badge className={cn(
-                  "border-none font-semibold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-sm",
+                  "border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-2.5 py-1 rounded-sm",
                   isCoherent ? "bg-primary text-primary-foreground" : "bg-destructive text-destructive-foreground"
                 )}>
                   {isCoherent ? "Coherent" : "Discordant"}
@@ -375,7 +375,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
           <div className="w-8 h-8 rounded-lg bg-foreground text-primary-foreground flex items-center justify-center">
             <Brain size={18} />
           </div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider">Neurological Global Assessments</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-[0.14em]">Neurological Global Assessments</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -383,8 +383,8 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
           <div className="p-6 border border-foreground/20 space-y-4 bg-card">
             <div className="flex items-center justify-between border-b border-border/50 pb-2">
               <div className="flex items-center gap-2">
-                <Footprints size={16} className="text-chart-emerald" />
-                <h4 className="text-xs font-semibold uppercase tracking-wider">Fukuda Step Test</h4>
+                <Footprints size={16} className="text-primary-strong" />
+                <h4 className="text-xs font-semibold uppercase tracking-[0.14em]">Fukuda Step Test</h4>
               </div>
               <DocToggle 
                 options={[
@@ -457,7 +457,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
             <div className="flex items-center justify-between border-b border-border/50 pb-2">
               <div className="flex items-center gap-2">
                 <Activity size={16} className="text-purple-600" />
-                <h4 className="text-xs font-semibold uppercase tracking-wider">Sharpened Romberg's</h4>
+                <h4 className="text-xs font-semibold uppercase tracking-[0.14em]">Sharpened Romberg's</h4>
               </div>
               <DocToggle 
                 options={[
@@ -530,7 +530,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
             <div className="flex items-center justify-between border-b border-border/50 pb-2">
               <div className="flex items-center gap-2">
                 <Hand size={16} className="text-chart-primary" />
-                <h4 className="text-xs font-semibold uppercase tracking-wider">Frontal Lobe</h4>
+                <h4 className="text-xs font-semibold uppercase tracking-[0.14em]">Frontal Lobe</h4>
               </div>
               <DocToggle 
                 options={[
@@ -603,7 +603,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
             <div className="flex items-center justify-between border-b border-border/50 pb-2">
               <div className="flex items-center gap-2">
                 <RefreshCw size={16} className="text-primary" />
-                <h4 className="text-xs font-semibold uppercase tracking-wider">Righting Reflexes</h4>
+                <h4 className="text-xs font-semibold uppercase tracking-[0.14em]">Righting Reflexes</h4>
               </div>
               <DocToggle 
                 options={[

@@ -656,7 +656,7 @@ const ClientDetailPage = () => {
                         <span className="text-xs font-medium text-foreground">Stripe</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={cn("text-[10px] font-semibold uppercase tracking-wider", client.stripe_customer_id ? "text-chart-emerald" : "text-muted-foreground/70")}>
+                        <span className={cn("text-[10px] font-semibold uppercase tracking-[0.14em]", client.stripe_customer_id ? "text-primary-strong" : "text-muted-foreground/70")}>
                           {client.stripe_customer_id ? "Linked" : "Not linked"}
                         </span>
                         <Button
@@ -680,7 +680,7 @@ const ClientDetailPage = () => {
                         <span className="text-xs font-medium text-foreground">Notion</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={cn("text-[10px] font-semibold uppercase tracking-wider", client.notion_link ? "text-chart-emerald" : "text-muted-foreground/70")}>
+                        <span className={cn("text-[10px] font-semibold uppercase tracking-[0.14em]", client.notion_link ? "text-primary-strong" : "text-muted-foreground/70")}>
                           {client.notion_link ? "Linked" : "Not linked"}
                         </span>
                         {client.notion_link && (
@@ -709,12 +709,12 @@ const ClientDetailPage = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-chart-emerald">
+                        <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-primary-strong">
                           <ShieldCheck size={14} />
                         </div>
                         <span className="text-xs font-medium text-foreground">Onboarding</span>
                       </div>
-                      <Badge className="bg-chart-emerald/10 text-chart-emerald border-none font-semibold text-[10px] uppercase tracking-wider">
+                      <Badge className="bg-primary/10 text-primary-strong border-none font-semibold text-[10px] uppercase tracking-[0.14em]">
                         Complete
                       </Badge>
                     </div>
@@ -786,7 +786,7 @@ const ClientDetailPage = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="text-xs font-medium text-muted-foreground">Next Session</h3>
-                          <Badge className="bg-chart-emerald/10 text-chart-emerald border-none font-semibold text-[10px] uppercase tracking-wider">
+                          <Badge className="bg-primary/10 text-primary-strong border-none font-semibold text-[10px] uppercase tracking-[0.14em]">
                             {daysUntil(nextAppointment.date)}
                           </Badge>
                         </div>
@@ -822,13 +822,13 @@ const ClientDetailPage = () => {
                   <Card className="border border-border shadow-sm rounded-xl bg-card">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2 text-foreground">
-                        <FlaskConical size={16} className="text-chart-emerald" /> Latest BOLT
+                        <FlaskConical size={16} className="text-primary-strong" /> Latest BOLT
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className={cn(
                         "text-3xl font-semibold",
-                        appointments.find(a => a.bolt_score)?.bolt_score ? (appointments.find(a => a.bolt_score)!.bolt_score! >= 25 ? "text-chart-emerald" : "text-chart-destructive") : "text-muted-foreground/60"
+                        appointments.find(a => a.bolt_score)?.bolt_score ? (appointments.find(a => a.bolt_score)!.bolt_score! >= 25 ? "text-primary-strong" : "text-chart-destructive") : "text-muted-foreground/60"
                       )}>
                         {appointments.find(a => a.bolt_score)?.bolt_score ? `${appointments.find(a => a.bolt_score)!.bolt_score}s` : "N/A"}
                       </p>
@@ -862,8 +862,8 @@ const ClientDetailPage = () => {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="space-y-1">
                         <span className="text-xs font-medium text-muted-foreground">Status</span>
-                        <Badge className={cn("text-[10px] font-semibold uppercase tracking-wider border-none w-fit",
-                          client.status === 'Active' ? "bg-chart-emerald/10 text-chart-emerald" :
+                        <Badge className={cn("text-[10px] font-semibold uppercase tracking-[0.14em] border-none w-fit",
+                          client.status === 'Active' ? "bg-primary/10 text-primary-strong" :
                           client.status === 'On Hold' ? "bg-yellow-500/10 text-yellow-600" :
                           client.status === 'Completed Programme' ? "bg-chart-primary/10 text-chart-primary" :
                           client.status === 'Inactive' ? "bg-muted text-muted-foreground" :
@@ -889,8 +889,8 @@ const ClientDetailPage = () => {
                       <div className="mt-4 pt-4 border-t border-border">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-medium text-muted-foreground">Corrections Holding:</span>
-                          <Badge className={cn("text-[10px] font-semibold uppercase tracking-wider border-none",
-                            client.corrections_holding?.includes('holding well') ? "bg-chart-emerald/10 text-chart-emerald" :
+                          <Badge className={cn("text-[10px] font-semibold uppercase tracking-[0.14em] border-none",
+                            client.corrections_holding?.includes('holding well') ? "bg-primary/10 text-primary-strong" :
                             client.corrections_holding?.includes('Partially') ? "bg-yellow-500/10 text-yellow-600" :
                             "bg-chart-destructive/10 text-chart-destructive"
                           )}>
@@ -943,7 +943,7 @@ const ClientDetailPage = () => {
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-sm font-medium text-foreground">{format(l.date, "EEE, MMM d, yyyy")}</span>
                                 {l.discipline && (
-                                  <Badge className={cn("text-[10px] font-semibold uppercase tracking-wider border-none px-1.5 py-0",
+                                  <Badge className={cn("text-[10px] font-semibold uppercase tracking-[0.14em] border-none px-1.5 py-0",
                                     l.discipline === "piano" ? "bg-chart-primary/10 text-chart-primary" : "bg-chart-destructive/10 text-chart-destructive")}>
                                     {l.discipline}
                                   </Badge>
@@ -952,7 +952,7 @@ const ClientDetailPage = () => {
                               {l.time && <p className="text-xs text-muted-foreground">{l.time}</p>}
                             </div>
                             <div className="text-right shrink-0">
-                              <div className={cn("text-sm font-bold tabular-nums", l.free ? "text-muted-foreground" : l.paid ? "text-chart-emerald" : "text-chart-destructive")}>
+                              <div className={cn("text-sm font-bold tabular-nums", l.free ? "text-muted-foreground" : l.paid ? "text-primary-strong" : "text-chart-destructive")}>
                                 {l.free ? "Free" : `$${l.cost ?? ""}`}
                               </div>
                               <div className="text-xs font-medium text-muted-foreground">
@@ -993,7 +993,7 @@ const ClientDetailPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
                       <CardHeader className="bg-muted/50 border-b border-border">
-                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-chart-destructive flex items-center gap-2">
+                        <CardTitle className="text-xs font-semibold uppercase tracking-[0.14em] text-chart-destructive flex items-center gap-2">
                           <Activity size={14} /> Medical History & Injuries
                         </CardTitle>
                       </CardHeader>
@@ -1019,7 +1019,7 @@ const ClientDetailPage = () => {
 
                     <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
                       <CardHeader className="bg-muted/50 border-b border-border">
-                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-chart-primary flex items-center gap-2">
+                        <CardTitle className="text-xs font-semibold uppercase tracking-[0.14em] text-chart-primary flex items-center gap-2">
                           <ShieldAlert size={14} /> Emergency Contact
                         </CardTitle>
                       </CardHeader>
@@ -1037,7 +1037,7 @@ const ClientDetailPage = () => {
 
                     <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
                       <CardHeader className="bg-muted/50 border-b border-border">
-                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-chart-emerald flex items-center gap-2">
+                        <CardTitle className="text-xs font-semibold uppercase tracking-[0.14em] text-primary-strong flex items-center gap-2">
                           <TrendingUp size={14} /> Baseline Health Vitals
                         </CardTitle>
                       </CardHeader>                      <CardContent className="p-6">

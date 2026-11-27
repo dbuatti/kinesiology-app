@@ -312,7 +312,7 @@ const LimitingBeliefsTool = () => {
         <div className="flex items-center gap-2">
           {hasSession && (
             <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full",
-              phase === 'complete' ? "bg-chart-emerald/10 text-chart-emerald" : "bg-amber-500/10 text-amber-500"
+              phase === 'complete' ? "bg-primary/10 text-primary-strong" : "bg-amber-500/10 text-amber-500"
             )}>
               {phase === 'complete' ? "Resolved" : `Round ${activeRound + 1}`}
             </span>
@@ -376,7 +376,7 @@ const LimitingBeliefsTool = () => {
                 </button>
               ))}
               {phase === 'complete' && (
-                <span className="text-[10px] text-chart-emerald font-semibold ml-2">✓ Complete</span>
+                <span className="text-[10px] text-primary-strong font-semibold ml-2">✓ Complete</span>
               )}
             </div>
           )}
@@ -405,7 +405,7 @@ const LimitingBeliefsTool = () => {
                       <p className="text-[10px] text-muted-foreground">{getCyclePrompt(stepIdx, limitingBelief)}</p>
                     </div>
                     {filled && (
-                      <Check size={14} className="text-chart-emerald shrink-0 ml-auto" />
+                      <Check size={14} className="text-primary-strong shrink-0 ml-auto" />
                     )}
                   </div>
                   <div className="px-4 py-3">

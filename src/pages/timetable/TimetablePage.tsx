@@ -1272,7 +1272,7 @@ const TimetablePage = () => {
         <span className={cn("flex items-center gap-1.5 text-xs font-semibold text-muted-foreground")}>
           <RefreshCw
             size={14}
-            className={cn(pullDist >= PULL_THRESHOLD && "text-chart-emerald", loading && "animate-spin")}
+            className={cn(pullDist >= PULL_THRESHOLD && "text-chart-primary", loading && "animate-spin")}
           />
           {pullDist >= PULL_THRESHOLD ? "Release to refresh" : loading ? "Refreshing…" : "Pull to refresh"}
         </span>
@@ -1280,8 +1280,8 @@ const TimetablePage = () => {
       {/* Header */}
       <PageHeader
         icon={CalendarRange}
-        title="Timetable Simulator"
-        subtitle="Mock up your fortnight, pencil in proposals, then confirm to Cal.com."
+        title="Availability"
+        subtitle="Plan the fortnight, pencil in proposals, then confirm bookings."
         actions={
           <>
             <Badge className="bg-chart-primary/10 text-chart-primary border-none" variant="outline">
@@ -1729,7 +1729,7 @@ const TimetablePage = () => {
                     className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-base font-semibold text-white"
                     style={{
                       background: appointmentFor.source === "voice"
-                        ? "hsl(var(--chart-emerald))"
+                        ? "hsl(var(--chart-primary))"
                         : "hsl(var(--chart-primary))",
                     }}
                   >
@@ -1889,7 +1889,7 @@ const TimetablePage = () => {
                     <div key={label} className="flex items-center gap-1.5 flex-1">
                       <div className={cn(
                         "flex-1 rounded-full text-center text-[11px] font-bold py-1.5 border",
-                        i < stage && "bg-chart-emerald/15 text-chart-emerald border-chart-emerald/30",
+                        i < stage && "bg-chart-primary/15 text-chart-primary border-chart-primary/30",
                         i === stage && "bg-foreground text-background border-foreground",
                         i > stage && "text-muted-foreground border-border",
                       )}>
@@ -1990,7 +1990,7 @@ const TimetablePage = () => {
                       <Button
                         size="sm"
                         disabled={workflowBusy}
-                        className="gap-1.5 bg-chart-emerald hover:bg-primary text-white"
+                        className="gap-1.5 bg-chart-primary hover:bg-primary text-white"
                         onClick={async () => {
                           setWorkflowBusy(true);
                           try { await confirmProposal(p); showSuccess("Locked in to Cal.com."); setWorkflowFor({ ...p, status: "confirmed" }); fetchData(); }
@@ -2002,7 +2002,7 @@ const TimetablePage = () => {
                       </Button>
                     )}
                     {stage === 2 && (
-                      <span className="text-sm font-semibold text-chart-emerald flex items-center gap-1.5"><Check size={16} /> Locked in</span>
+                      <span className="text-sm font-semibold text-chart-primary flex items-center gap-1.5"><Check size={16} /> Locked in</span>
                     )}
                   </div>
                 </DialogFooter>
@@ -2475,7 +2475,7 @@ function FortnightMockup({
                 bookings={bookings[zonedDateKey(d)] || []}
                 // Confirmed proposals already exist as real Cal.com bookings (that's
                 // what confirming does), so they'd otherwise render twice — once as
-                // the rose "booking" chip from `bookings`, once as this emerald chip.
+                // the rose "booking" chip from `bookings`, once as this primary chip.
                 proposals={proposals.filter((p) => practiceSameDay(new Date(p.slot_start), d) && p.status !== "confirmed")}
                 icloudEvents={icloudEvents.filter((ev) => {
                   if (!ev.start || ev.transparent) return false;

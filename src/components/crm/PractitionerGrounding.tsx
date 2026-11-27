@@ -123,7 +123,7 @@ const PractitionerGrounding = ({ onComplete, onCancel }: PractitionerGroundingPr
                 <CheckCircle2 size={48} />
               </div>
               <div className="space-y-2">
-                <h3 className="text-4xl font-semibold tracking-tight">State Shifted</h3>
+                <h3 className="font-serif text-[26px] font-medium tracking-[-0.02em]">State Shifted</h3>
                 <p className="text-indigo-200 text-xl font-medium">You are centered, present, and ready.</p>
               </div>
               <Button variant="ghost" onClick={resetGrounding} className="text-indigo-300 hover:text-white hover:bg-white/5 font-medium text-[13px] h-9 px-3.5 rounded-lg border border-white/10">
@@ -142,7 +142,7 @@ const PractitionerGrounding = ({ onComplete, onCancel }: PractitionerGroundingPr
                   <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shadow-inner border border-white/10">
                     <Timer size={20} className="text-indigo-400" />
                   </div>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-indigo-400">Centering in Progress</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-indigo-400">Centering in Progress</span>
                 </div>
                 <span className="text-sm font-semibold tabular-nums text-white/55 tracking-wider">{60 - totalElapsed}s</span>
               </div>
@@ -163,7 +163,7 @@ const PractitionerGrounding = ({ onComplete, onCancel }: PractitionerGroundingPr
                     "w-56 h-56 rounded-full border-2 border-white/10 flex flex-col items-center justify-center transition-all duration-1000 shadow-2xl relative z-10 bg-foreground/50 backdrop-blur-sm",
                     phase === 'inhale' ? "scale-110 border-indigo-500/50" : "scale-100"
                   )}>
-                    <p className="text-4xl font-semibold uppercase tracking-wider text-white">
+                    <p className="text-2xl font-semibold uppercase tracking-[0.14em] text-white">
                       {phase}
                     </p>
                     <p className="text-2xl font-semibold text-indigo-400 tabular-nums mt-2">{timeLeft}s</p>
@@ -179,7 +179,7 @@ const PractitionerGrounding = ({ onComplete, onCancel }: PractitionerGroundingPr
                       transition={{ duration: 1, ease: "linear" }}
                     />
                   </div>
-                  <div className="flex justify-between text-[10px] font-semibold uppercase tracking-wider text-white/55">
+                  <div className="flex justify-between text-[10px] font-semibold uppercase tracking-[0.14em] text-white/55">
                     <span>{phase === 'inhale' ? '4s In' : phase === 'hold' ? '4s Hold' : '6s Out'}</span>
                     <span>Total: {totalElapsed}s / 60s</span>
                   </div>

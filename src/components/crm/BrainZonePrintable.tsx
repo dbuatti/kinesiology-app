@@ -170,7 +170,7 @@ const BrainZonePrintable = () => {
         <div className="space-y-3">
           <div className={cn("flex items-center gap-2 border-b-2 pb-1", PATHWAY_DIRECTION.efferent.border)}>
             <Brain size={14} className={PATHWAY_DIRECTION.efferent.strong} />
-            <h2 className={cn("text-[11px] font-semibold uppercase tracking-wider", PATHWAY_DIRECTION.efferent.strong)}>Cortical Zones (Contralateral)</h2>
+            <h2 className={cn("text-[11px] font-semibold uppercase tracking-[0.14em]", PATHWAY_DIRECTION.efferent.strong)}>Cortical Zones (Contralateral)</h2>
           </div>
           <div className={cn(
             "grid gap-3 grid-cols-1 sm:grid-cols-2",
@@ -193,7 +193,7 @@ const BrainZonePrintable = () => {
         <div className="space-y-3">
           <div className={cn("flex items-center gap-2 border-b-2 pb-1", PATHWAY_DIRECTION.efferent.border)}>
             <Layers size={14} className={PATHWAY_DIRECTION.efferent.text} />
-            <h2 className={cn("text-[11px] font-semibold uppercase tracking-wider", PATHWAY_DIRECTION.efferent.text)}>Subcortical Zones (Ipsilateral)</h2>
+            <h2 className={cn("text-[11px] font-semibold uppercase tracking-[0.14em]", PATHWAY_DIRECTION.efferent.text)}>Subcortical Zones (Ipsilateral)</h2>
           </div>
           <div className={cn(
             "grid gap-3 grid-cols-1 sm:grid-cols-2",

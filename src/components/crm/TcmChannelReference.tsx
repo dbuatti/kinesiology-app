@@ -82,7 +82,7 @@ const TcmChannelReference = () => {
               <CardHeader className={cn("pb-6 border-b transition-colors relative", channel.color)}>
                 {isPeak && (
                   <div className="absolute top-4 right-4 animate-pulse">
-                    <Badge className="bg-card text-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5">
+                    <Badge className="bg-card text-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-2 py-0.5">
                       <Zap size={10} className="mr-1 fill-amber-400 text-amber-400" /> Peak Now
                     </Badge>
                   </div>
@@ -90,17 +90,17 @@ const TcmChannelReference = () => {
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex gap-2 mb-2">
-                      <Badge className="bg-card/20 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider">
+                      <Badge className="bg-card/20 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em]">
                         {channel.element}
                       </Badge>
-                      <Badge className="bg-card/20 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider">
+                      <Badge className="bg-card/20 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em]">
                         {channel.yinYang}
                       </Badge>
                     </div>
                     <CardTitle className="text-3xl font-semibold tracking-tight">
                       {channel.name}
                     </CardTitle>
-                    <p className="text-xs font-bold opacity-80 uppercase tracking-wider">{channel.code} Meridian</p>
+                    <p className="text-xs font-bold opacity-80 uppercase tracking-[0.14em]">{channel.code} Meridian</p>
                   </div>
                   <div className="w-14 h-14 rounded-2xl bg-card/20 backdrop-blur-md flex items-center justify-center shadow-inner">
                     <Activity size={28} />

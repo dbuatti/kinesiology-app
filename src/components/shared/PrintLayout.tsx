@@ -22,7 +22,7 @@ const PrintLayout = ({ title, children }: PrintLayoutProps) => {
           <ChevronLeft size={16} className="mr-1 sm:mr-2" /> Back
         </Button>
 
-        <h1 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+        <h1 className="text-sm font-semibold text-foreground uppercase tracking-[0.14em]">
           {title}
         </h1>
 

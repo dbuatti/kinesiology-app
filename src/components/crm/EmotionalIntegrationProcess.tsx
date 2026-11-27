@@ -344,7 +344,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
               <div className="p-4 bg-card rounded-lg border border-border space-y-3">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-medium text-muted-foreground">The Context</p>
-                  <Badge className="bg-primary text-primary-foreground border-none font-medium text-[10px] uppercase tracking-wider">
+                  <Badge className="bg-primary text-primary-foreground border-none font-medium text-[10px] uppercase tracking-[0.14em]">
                     {timeline === 'Historic' ? `Age ${age}` : 'Current'}
                   </Badge>
                 </div>
@@ -361,7 +361,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
                   <div className="p-4 bg-primary/10 text-foreground rounded-lg space-y-2">
                     <div className="flex items-center gap-2">
                       <Target size={16} className="text-primary" />
-                      <p className="text-[10px] font-medium uppercase tracking-wider text-primary">The Process</p>
+                      <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary">The Process</p>
                     </div>
                     <p className="text-xs font-medium leading-relaxed">
                       {selectedEyePos.prompt}
@@ -392,7 +392,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
                       key={shift} 
                       onClick={() => toggleShift(shift)}
                       className={cn(
-                        "cursor-pointer transition-all border-none font-medium text-[10px] uppercase tracking-wider px-2 py-1",
+                        "cursor-pointer transition-all border-none font-medium text-[10px] uppercase tracking-[0.14em] px-2 py-1",
                         observedShifts.includes(shift) ? "bg-success text-primary-foreground" : "bg-muted text-muted-foreground"
                       )}
                     >
@@ -439,7 +439,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
               <div className="p-4 bg-primary/10 text-foreground rounded-lg space-y-2">
                 <div className="flex items-center gap-2">
                   <Target size={16} className="text-primary" />
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-primary">The Process</p>
+                  <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-primary">The Process</p>
                 </div>
                 <p className="text-xs font-medium leading-relaxed">
                   Maintain the same eye position ({selectedEyePos.pos} — {selectedEyePos.label}) and hold the points. Focus entirely on the feeling of <span className="underline decoration-primary underline-offset-4">{positiveState || 'the positive state'}</span>.

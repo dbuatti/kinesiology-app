@@ -64,7 +64,7 @@ const AcupointReference = () => {
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
-                  <Badge className="bg-indigo-50 text-indigo-700 border-none font-semibold text-[10px] uppercase tracking-wider mb-2">
+                  <Badge className="bg-indigo-50 text-indigo-700 border-none font-semibold text-[10px] uppercase tracking-[0.14em] mb-2">
                     {point.category} Meridian
                   </Badge>
                   <CardTitle className="text-2xl font-semibold text-foreground group-hover:text-indigo-600 transition-colors">
@@ -85,7 +85,7 @@ const AcupointReference = () => {
                 <p className="text-xs text-foreground/80 font-medium leading-relaxed">{point.location}</p>
               </div>
               <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
-                <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-[0.14em] mb-1 flex items-center gap-1">
                   <Info size={10} /> Clinical Function
                 </p>
                 <p className="text-xs text-foreground font-bold leading-relaxed">{point.function}</p>

@@ -184,8 +184,8 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
             <div className="text-xl font-bold text-foreground font-serif">{stats.total}</div>
             <div className="text-xs text-muted-foreground mt-0.5">This week</div>
           </div>
-          <div className="text-center p-3 rounded-2xl bg-chart-emerald/10 border border-chart-emerald/20">
-            <div className="text-xl font-bold text-chart-emerald font-serif">{stats.sent}</div>
+          <div className="text-center p-3 rounded-2xl bg-primary/10 border border-primary/20">
+            <div className="text-xl font-bold text-primary-strong font-serif">{stats.sent}</div>
             <div className="text-xs text-muted-foreground mt-0.5">Reminded</div>
           </div>
           <div className="text-center p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20">
@@ -259,7 +259,7 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
             <span>Covers FNH + voice sessions in the next 7 days</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <CheckCircle className="h-3 w-3 text-chart-emerald" />
+            <CheckCircle className="h-3 w-3 text-primary-strong" />
             <span>Sends automatically every Sunday at 4pm</span>
           </div>
         </div>

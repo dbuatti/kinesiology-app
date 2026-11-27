@@ -14,7 +14,7 @@ import LimitingBeliefsAnalysis from "@/components/crm/LimitingBeliefsAnalysis";
 import FractalTool from "@/components/crm/FractalTool";
 
 const TAB_TRIGGER_CLS =
-  "rounded-md px-3 h-7 data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all font-medium text-[10px] uppercase tracking-wider";
+  "rounded-md px-3 h-7 data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all font-medium text-[10px] uppercase tracking-[0.14em]";
 const TABS_LIST_CLS = "bg-muted p-0.5 rounded-lg h-8";
 
 const TONE_CLASSES: Record<"primary" | "chart-primary" | "destructive", { wrap: string; badge: string; icon: string; title: string; body: string }> = {
@@ -49,7 +49,7 @@ const PractitionerNote = ({ tone, title, children }: { tone: "primary" | "chart-
         <Info size={14} className={c.icon} />
       </div>
       <div className="space-y-1">
-        <h4 className={`font-semibold text-[10px] uppercase tracking-wider ${c.title}`}>{title}</h4>
+        <h4 className={`font-semibold text-[10px] uppercase tracking-[0.14em] ${c.title}`}>{title}</h4>
         <p className={`text-xs ${c.body} leading-relaxed font-medium`}>{children}</p>
       </div>
     </div>
@@ -85,8 +85,8 @@ const IdentityWorkspacePage = () => {
                   </p>
                 </div>
               </div>
-              <div className="p-5 bg-chart-emerald/5 rounded-2xl border-2 border-chart-emerald/10 flex items-start gap-5">
-                <div className="w-12 h-12 rounded-xl bg-chart-emerald text-primary-foreground flex items-center justify-center shadow-xl shrink-0">
+              <div className="p-5 bg-primary/5 rounded-2xl border-2 border-primary/10 flex items-start gap-5">
+                <div className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-xl shrink-0">
                   <Layers size={32} />
                 </div>
                 <div className="space-y-2">

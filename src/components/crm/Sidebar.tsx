@@ -120,7 +120,13 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
   const [moreOpen, setMoreOpen] = useState(false);
 
   // Most specific match wins, so "/clients/x" lights up People rather than Today.
-  const activePath = activeNavPath(groups.flatMap((g) => g.items.map((i) => i.path)), location.pathname);
+  // Include secondary destinations so "More" can reflect the current page.
+  const activePath = activeNavPath([...groups.flatMap((g) => g.items.map((i) => i.path)), ...more.map((i) => i.path)], location.pathname);
+  const activeInMore = more.some((item) => item.path === activePath);
+
+  useEffect(() => {
+    if (activeInMore) setMoreOpen(true);
+  }, [activeInMore]);
 
   const email = session?.user?.email ?? "";
   const displayName =
@@ -156,7 +162,7 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
             onClick={close}
             aria-current={active ? "page" : undefined}
             className={cn(
-              cn("group relative flex items-center gap-2.5 rounded-[7px] font-medium outline-none", rowH),
+              cn("group relative flex items-center gap-2.5 rounded-lg font-medium outline-none", rowH),
               isRail ? "justify-center px-0" : "px-2.5",
               active ? "text-foreground" : "text-muted-foreground hover:bg-foreground/[0.045] hover:text-foreground"
             )}
@@ -164,8 +170,8 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
             {active && (
               <motion.span
                 layoutId={`nav-pill-${scope}`}
-                className="absolute inset-0 rounded-[7px] bg-sidebar-active shadow-sm ring-1 ring-border/70"
-                transition={{ type: "spring", stiffness: 520, damping: 42 }}
+                className="absolute inset-0 rounded-lg bg-sidebar-active shadow-sm ring-1 ring-border/70"
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
               />
             )}
             <item.icon
@@ -242,7 +248,7 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
           </div>
         ) : (
           <LayoutGroup id={`ws-${scope}`}>
-            <div className="relative grid grid-cols-3 rounded-[9px] bg-foreground/[0.045] p-[3px] dark:bg-muted/50">
+            <div className="relative grid grid-cols-3 rounded-lg bg-foreground/[0.045] p-[3px] dark:bg-muted/50">
               {WORKSPACES.map((w) => {
                 const on = activeWorkspace === w.id;
                 return (
@@ -251,7 +257,7 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
                     to={w.home}
                     onClick={close}
                     className={cn(
-                      "relative z-10 flex min-w-0 items-center justify-center gap-1.5 rounded-[7px] font-medium",
+                      "relative z-10 flex min-w-0 items-center justify-center gap-1.5 rounded-lg font-medium",
                       isDrawer ? "h-9 text-[13px]" : "h-7 text-[12px]",
                       on ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                     )}
@@ -259,8 +265,8 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
                     {on && (
                       <motion.span
                         layoutId={`ws-pill-${scope}`}
-                        className="absolute inset-0 -z-10 rounded-[7px] bg-sidebar-active shadow-sm ring-1 ring-border/70"
-                        transition={{ type: "spring", stiffness: 520, damping: 40 }}
+                        className="absolute inset-0 -z-10 rounded-lg bg-sidebar-active shadow-sm ring-1 ring-border/70"
+                        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                       />
                     )}
                     <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", w.dot, !on && "opacity-60")} />
@@ -281,7 +287,7 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
               {isRail ? (
                 gi > 0 && <div className="mx-auto mb-3 h-px w-5 bg-border" />
               ) : (
-                <div className="mb-1 px-2.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/70">{group.label}</div>
+                <div className="mb-1 px-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">{group.label}</div>
               )}
               <div className="space-y-px">{group.items.map(renderItem)}</div>
             </div>
@@ -296,11 +302,13 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
                 onClick={() => setMoreOpen((v) => !v)}
                 aria-expanded={moreOpen}
                 className={cn(
-                  "flex w-full items-center gap-2.5 rounded-[7px] font-medium text-muted-foreground/80 transition-colors hover:bg-foreground/[0.045] hover:text-foreground",
+                  "flex w-full items-center gap-2.5 rounded-lg font-medium transition-colors hover:bg-foreground/[0.045] hover:text-foreground",
                   rowH,
-                  isRail ? "justify-center" : "px-2.5"
+                  isRail ? "justify-center" : "px-2.5",
+                  activeInMore ? "bg-sidebar-active text-foreground shadow-sm ring-1 ring-border/70" : "text-muted-foreground/80"
                 )}
                 title={isRail ? "More destinations" : undefined}
+                aria-label={isRail ? "More destinations" : undefined}
               >
                 <MoreHorizontal size={16} strokeWidth={1.75} className="shrink-0" />
                 {!isRail && (
@@ -322,8 +330,11 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
         <RailTip show={isRail} label={isPrivate ? "Privacy on" : "Privacy off"}>
           <button
             onClick={togglePrivacy}
+            aria-label={isPrivate ? "Turn privacy mode off" : "Turn privacy mode on"}
+            aria-pressed={isPrivate}
+            title={isPrivate ? "Privacy on" : "Privacy off"}
             className={cn(
-              cn("flex w-full items-center gap-2.5 rounded-[7px] font-medium", rowH),
+              cn("flex w-full items-center gap-2.5 rounded-lg font-medium", rowH),
               isRail ? "justify-center" : "px-2.5",
               isPrivate ? "text-chart-destructive" : "text-muted-foreground hover:bg-foreground/[0.045] hover:text-foreground"
             )}
@@ -349,7 +360,7 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
             to="/settings"
             onClick={close}
             className={cn(
-              cn("flex items-center gap-2.5 rounded-[7px] font-medium", rowH),
+              cn("flex items-center gap-2.5 rounded-lg font-medium", rowH),
               isRail ? "justify-center" : "px-2.5",
               location.pathname.startsWith("/settings")
                 ? "bg-sidebar-active text-foreground shadow-sm ring-1 ring-border/70"
@@ -365,14 +376,15 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
+              aria-label="Account menu"
               className={cn(
-                "mt-1 flex w-full items-center gap-2.5 rounded-[9px] py-1.5 text-left outline-none hover:bg-foreground/[0.045] data-[state=open]:bg-foreground/[0.06]",
+                "mt-1 flex w-full items-center gap-2.5 rounded-lg py-1.5 text-left outline-none hover:bg-foreground/[0.045] data-[state=open]:bg-foreground/[0.06]",
                 isRail ? "justify-center px-0" : "px-1.5"
               )}
             >
               <Avatar className="h-7 w-7 shrink-0">
                 <AvatarImage src={PROFILE_IMAGE_URL} alt={displayName} className="object-cover" />
-                <AvatarFallback className="bg-gradient-to-br from-indigo-400 to-indigo-700 text-[11px] font-semibold text-white">
+                <AvatarFallback className="bg-primary/10 text-[11px] font-semibold text-primary-strong">
                   {initials || "DB"}
                 </AvatarFallback>
               </Avatar>
@@ -436,7 +448,7 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
           <RailTip show label="Expand  ⌘\">
             <button
               onClick={toggleCollapsed}
-              className="mt-1 flex h-8 w-full items-center justify-center rounded-[7px] text-muted-foreground hover:bg-foreground/[0.045] hover:text-foreground"
+              className="mt-1 flex h-8 w-full items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/[0.045] hover:text-foreground"
               aria-label="Expand sidebar"
             >
               <PanelLeftOpen size={16} strokeWidth={1.75} />

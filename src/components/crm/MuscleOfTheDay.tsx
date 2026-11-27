@@ -66,19 +66,19 @@ const MuscleOfTheDay = ({ onViewDetails }: MuscleOfTheDayProps) => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div className="space-y-6 flex-1">
             <div className="flex flex-wrap items-center gap-3">
-              <Badge className="bg-amber-400 text-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-4 py-1.5 shadow-lg">
+              <Badge className="bg-amber-400 text-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-4 py-1.5 shadow-lg">
                 <Sparkles size={12} className="mr-2 fill-current" /> Featured Muscle
               </Badge>
-              <Badge className="bg-card/10 text-primary-foreground border-primary-foreground/20 font-semibold text-[10px] uppercase tracking-wider px-4 py-1.5 backdrop-blur-sm">
+              <Badge className="bg-card/10 text-primary-foreground border-primary-foreground/20 font-semibold text-[10px] uppercase tracking-[0.14em] px-4 py-1.5 backdrop-blur-sm">
                 Daily Rotation
               </Badge>
             </div>
             
             <div className="space-y-2">
-              <h2 className="text-5xl md:text-6xl font-semibold tracking-tighter leading-none">
+              <h2 className="font-serif text-[26px] font-medium tracking-[-0.02em] leading-none sm:text-[34px]">
                 {muscleName}
               </h2>
-              <p className="text-xl font-medium text-indigo-300 uppercase tracking-wider">
+              <p className="text-xl font-medium text-indigo-300 uppercase tracking-[0.14em]">
                 {info.meridian} Meridian • {info.brainstemControl || 'General Control'}
               </p>
             </div>

@@ -37,13 +37,13 @@ const DataIntegrityCheck = ({ clients }: DataIntegrityCheckProps) => {
 
   if (clientsWithMissingData.length === 0) {
     return (
-      <Card className="border-none shadow-lg rounded-2xl bg-chart-emerald/10 border-2 border-chart-emerald/20">
+      <Card className="border-none shadow-lg rounded-2xl bg-primary/10 border-2 border-primary/20">
         <CardContent className="p-10 text-center space-y-4">
           <div className="w-16 h-16 bg-card rounded-2xl flex items-center justify-center mx-auto shadow-sm">
-            <CheckCircle2 size={32} className="text-chart-emerald" />
+            <CheckCircle2 size={32} className="text-primary-strong" />
           </div>
-          <h3 className="text-xl font-semibold text-chart-emerald">Data Integrity: 100%</h3>
-          <p className="text-chart-emerald/80 font-medium">All clients have complete pivotal data profiles.</p>
+          <h3 className="text-xl font-semibold text-primary-strong">Data Integrity: 100%</h3>
+          <p className="text-primary-strong/80 font-medium">All clients have complete pivotal data profiles.</p>
         </CardContent>
       </Card>
     );
@@ -59,7 +59,7 @@ const DataIntegrityCheck = ({ clients }: DataIntegrityCheckProps) => {
             </CardTitle>
             <CardDescription className="font-medium">Identifying profiles missing pivotal contact or clinical data.</CardDescription>
           </div>
-          <Badge className="bg-amber-500 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1">
+          <Badge className="bg-amber-500 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-3 py-1">
             {clientsWithMissingData.length} Profiles
           </Badge>
         </div>
@@ -76,7 +76,7 @@ const DataIntegrityCheck = ({ clients }: DataIntegrityCheckProps) => {
                   <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{client.name}</p>
                   <div className="flex flex-wrap gap-2 mt-1.5">
                     {client.missingFields.map((field: any) => (
-                      <span key={field.label} className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-destructive-strong bg-destructive/5 px-2 py-0.5 rounded-md border border-destructive/20">
+                      <span key={field.label} className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-destructive-strong bg-destructive/5 px-2 py-0.5 rounded-md border border-destructive/20">
                         <field.icon size={8} /> Missing {field.label}
                       </span>
                     ))}

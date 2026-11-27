@@ -265,7 +265,7 @@ export function PlanningTool() {
                     <td className="py-2 pr-4 text-right tabular-nums text-muted-foreground">{money(w.steady)}</td>
                     <td className="py-2 pr-4 text-right tabular-nums text-muted-foreground">{money(w.plan)}</td>
                     <td className="py-2 pr-4 text-right font-medium tabular-nums text-foreground">{money(w.total)}</td>
-                    <td className={cn("py-2 text-right tabular-nums", w.total >= floor ? "text-chart-emerald" : "text-muted-foreground")}>{w.total >= floor ? "+" : "−"}{money(Math.abs(w.total - floor))}</td>
+                    <td className={cn("py-2 text-right tabular-nums", w.total >= floor ? "text-primary-strong" : "text-muted-foreground")}>{w.total >= floor ? "+" : "−"}{money(Math.abs(w.total - floor))}</td>
                   </tr>
                 ))}
               </tbody>

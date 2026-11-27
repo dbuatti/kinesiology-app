@@ -54,7 +54,7 @@ export const ShowingLog = ({ corrections, onStatusChange, onDelete, compact }: S
               </Badge>
             )}
             {cleared.length > 0 && (
-              <Badge className="bg-chart-emerald/10 text-chart-emerald border-none text-[10px] px-1.5 py-0 rounded-full">
+              <Badge className="bg-primary/10 text-primary-strong border-none text-[10px] px-1.5 py-0 rounded-full">
                 {cleared.length} cleared
               </Badge>
             )}
@@ -90,7 +90,7 @@ export const ShowingLog = ({ corrections, onStatusChange, onDelete, compact }: S
                 key={i}
                 className={cn(
                   "p-2.5 rounded-lg border transition-all",
-                  isCleared && "bg-chart-emerald/5 border-chart-emerald/20",
+                  isCleared && "bg-primary/5 border-primary/20",
                   isShowing && "bg-amber-500/5 border-amber-500/20",
                   isPending && "bg-muted/30 border-border"
                 )}
@@ -98,12 +98,12 @@ export const ShowingLog = ({ corrections, onStatusChange, onDelete, compact }: S
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 mb-0.5">
-                      {isCleared && <CheckCircle2 size={10} className="text-chart-emerald shrink-0" />}
+                      {isCleared && <CheckCircle2 size={10} className="text-primary-strong shrink-0" />}
                       {isShowing && <AlertCircle size={10} className="text-amber-500 shrink-0" />}
                       {isPending && <Clock size={10} className="text-muted-foreground shrink-0" />}
                       <span className={cn(
                         "text-[10px] font-bold truncate",
-                        isCleared && "text-chart-emerald line-through",
+                        isCleared && "text-primary-strong line-through",
                         isShowing && "text-amber-600 dark:text-amber-300",
                         isPending && "text-foreground"
                       )}>
@@ -132,7 +132,7 @@ export const ShowingLog = ({ corrections, onStatusChange, onDelete, compact }: S
                           variant="ghost"
                           size="sm"
                           onClick={() => onStatusChange(realIndex, 'cleared')}
-                          className="h-6 px-2 text-[10px] font-medium text-chart-emerald hover:bg-chart-emerald/10 rounded-md"
+                          className="h-6 px-2 text-[10px] font-medium text-primary-strong hover:bg-primary/10 rounded-md"
                         >
                           <CheckCircle2 size={10} className="mr-1" /> Clear
                         </Button>

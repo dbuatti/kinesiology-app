@@ -30,11 +30,11 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
     <div className="flex items-center justify-between p-3 bg-muted/50 dark:bg-card rounded-xl border border-border">
       <span className="text-xs font-bold text-muted-foreground dark:text-muted-foreground">{label}</span>
       {value === true ? (
-        <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider">Passed</Badge>
+        <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em]">Passed</Badge>
       ) : value === false ? (
-        <Badge className="bg-rose-50 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider">Failed</Badge>
+        <Badge className="bg-rose-50 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em]">Failed</Badge>
       ) : (
-        <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wider">N/A</Badge>
+        <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-[0.14em]">N/A</Badge>
       )}
     </div>
   );
@@ -107,11 +107,11 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
             <div className="flex items-center justify-between p-3 bg-muted/50 dark:bg-card rounded-xl border border-border">
               <span className="text-xs font-bold text-muted-foreground dark:text-muted-foreground">Scenario Stability</span>
               {session.scenario_stability === false ? (
-                <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider">Stable</Badge>
+                <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em]">Stable</Badge>
               ) : session.scenario_stability === true ? (
-                <Badge className="bg-rose-500 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider">Unstable</Badge>
+                <Badge className="bg-rose-500 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em]">Unstable</Badge>
               ) : (
-                <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wider">N/A</Badge>
+                <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-[0.14em]">N/A</Badge>
               )}
             </div>
           </CardContent>
@@ -136,7 +136,7 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
                     <div className="space-y-3">
                       <div>
-                        <h4 className="text-[10px] font-semibold uppercase tracking-wider text-rose-600 mb-1 flex items-center gap-1.5">
+                        <h4 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-rose-600 mb-1 flex items-center gap-1.5">
                           <ShieldAlert size={12} /> Waypoint 1: The Block
                         </h4>
                         <p className="text-sm font-bold italic">"{entry.block}"</p>
@@ -148,11 +148,11 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
                     </div>
                     <div className="space-y-3">
                       <div>
-                        <h4 className="text-[10px] font-semibold uppercase tracking-wider text-indigo-600 mb-1">Waypoint 3: The Alternative</h4>
+                        <h4 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-indigo-600 mb-1">Waypoint 3: The Alternative</h4>
                         <p className="text-sm font-bold italic">"{entry.alternative}"</p>
                       </div>
                       <div>
-                        <h4 className="text-[10px] font-semibold uppercase tracking-wider text-primary-strong mb-1 flex items-center gap-1.5">
+                        <h4 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-strong mb-1 flex items-center gap-1.5">
                           <CheckCircle2 size={12} /> Waypoint 4: Replacement State
                         </h4>
                         <p className="text-sm font-bold text-primary-strong">{entry.replacement}</p>
@@ -179,14 +179,14 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
         <CardContent className="p-8 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="p-4 bg-card/5 rounded-2xl border border-primary-foreground/10">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-indigo-300 mb-2">Maintenance Capacity</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-indigo-300 mb-2">Maintenance Capacity</p>
               <div className="flex items-center gap-2">
                 {session.maintenance_capacity ? <CheckCircle2 className="text-primary" size={18} /> : <XCircle className="text-rose-400" size={18} />}
                 <span className="text-sm font-bold">{session.maintenance_capacity ? "Confirmed Capacity" : "Capacity Not Confirmed"}</span>
               </div>
             </div>
             <div className="p-4 bg-card/5 rounded-2xl border border-primary-foreground/10">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-indigo-300 mb-2">Goal Inevitability</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-indigo-300 mb-2">Goal Inevitability</p>
               <div className="flex items-center gap-2">
                 {session.goal_inevitable ? <CheckCircle2 className="text-primary" size={18} /> : <XCircle className="text-rose-400" size={18} />}
                 <span className="text-sm font-bold">{session.goal_inevitable ? "Inevitable" : "Not Yet Inevitable"}</span>
@@ -195,7 +195,7 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
           </div>
           
           <div className="p-6 bg-card rounded-2xl text-indigo-900 shadow-xl">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-indigo-400 mb-2 flex items-center gap-2">
+            <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-indigo-400 mb-2 flex items-center gap-2">
               <Sparkles size={14} /> Somatic Anchor
             </h4>
             <p className="text-xl font-semibold italic">"{session.final_anchor || 'No anchor recorded.'}"</p>

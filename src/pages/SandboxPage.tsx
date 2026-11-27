@@ -70,7 +70,7 @@ const TOOLS = [
       desc: "Reconsolidate neural pathways to align with your target identity.",
       icon: Target,
       path: "/identity-alignment",
-      color: "text-chart-emerald",
+      color: "text-primary-strong",
       bgColor: "bg-muted",
       category: "Integration"
     },
@@ -308,7 +308,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
 
   const getRecommendation = (item: any) => {
     if (item.type === 'alignment') {
-      return { tool: 'Identity Alignment', path: '/identity-alignment', icon: Target, color: 'text-chart-emerald', bg: 'bg-muted' };
+      return { tool: 'Identity Alignment', path: '/identity-alignment', icon: Target, color: 'text-primary-strong', bg: 'bg-muted' };
     }
     if (item.type === 'belief') {
       return { tool: 'Limiting Beliefs', path: '/limiting-beliefs', icon: ShieldAlert, color: 'text-chart-destructive', bg: 'bg-muted' };
@@ -342,7 +342,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
               isIntegrated ? "bg-primary text-primary-foreground" :
               isSuggested ? "bg-chart-primary/10 text-chart-primary" :
               rec.tool === 'Limiting Beliefs' ? "bg-muted text-chart-destructive" :
-              rec.tool === 'Identity Alignment' ? "bg-muted text-chart-emerald" : "bg-muted text-chart-primary"
+              rec.tool === 'Identity Alignment' ? "bg-muted text-primary-strong" : "bg-muted text-chart-primary"
             )}>
               {isScanning ? <Loader2 size={28} className="animate-spin" /> :
                isIntegrated ? <CheckCircle size={28} /> :
@@ -361,7 +361,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
             <div className="flex items-center gap-3">
               <p className={cn("font-semibold text-xl text-foreground truncate", isIntegrated && "text-muted-foreground")}>"{item.content}"</p>
               {isWIP && <Badge className="bg-muted text-muted-foreground border-none font-medium text-xs px-3 py-1 rounded-full animate-pulse">Work in Progress</Badge>}
-              {isSuggested && <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">AI Insight</Badge>}
+              {isSuggested && <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-3 py-1 rounded-full">AI Insight</Badge>}
             </div>
             
             {isSuggested ? (
@@ -375,7 +375,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
                     <span>{progressLabel}</span>
                     <span>{count} Sessions</span>
                   </div>
-                  <Progress value={progressValue} className={cn("h-1.5 bg-muted", isIntegrated ? "[&>div]:bg-chart-emerald" : "[&>div]:bg-chart-primary")} />
+                  <Progress value={progressValue} className={cn("h-1.5 bg-muted", isIntegrated ? "[&>div]:bg-primary" : "[&>div]:bg-chart-primary")} />
                 </div>
                 <div className="h-6 w-px bg-border" />
                 <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
@@ -428,7 +428,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
               {!isIntegrated && (
                 <div className={cn("hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl border border-transparent", rec.bg)}>
                   <rec.icon size={14} className={rec.color} />
-                  <span className={cn("text-[10px] font-semibold uppercase tracking-wider", rec.color)}>{rec.tool}</span>
+                  <span className={cn("text-[10px] font-semibold uppercase tracking-[0.14em]", rec.color)}>{rec.tool}</span>
                 </div>
               )}
               
@@ -449,7 +449,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
                         <DropdownMenuItem onClick={() => handleRescanItem(item)} disabled={isScanning} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4">
                           <Wand2 size={18} className="text-chart-primary" /> Rescan with AI
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setConfirmAction({callback: () => executeMarkIntegrated(item.id), title: "Mark Integrated", description: "Are you sure you have truly processed this for good? It will move to your Archive."})} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4 text-chart-emerald font-medium">
+                        <DropdownMenuItem onClick={() => setConfirmAction({callback: () => executeMarkIntegrated(item.id), title: "Mark Integrated", description: "Are you sure you have truly processed this for good? It will move to your Archive."})} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4 text-primary-strong font-medium">
                           <CheckCircle2 size={18} /> Mark Integrated
                         </DropdownMenuItem>
                       </>
@@ -576,7 +576,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 rounded-xl p-2 shadow-3xl border-none bg-card">
                     <DropdownMenuItem onClick={() => setSortBy('priority')} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4"><TrendingUp size={18} className="text-chart-primary" /> AI Priority</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortBy('progress')} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4"><Activity size={18} className="text-chart-emerald" /> Most Worked</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortBy('progress')} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4"><Activity size={18} className="text-primary-strong" /> Most Worked</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setSortBy('newest')} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4"><Calendar size={18} className="text-chart-primary" /> Newest First</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setSortBy('type')} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4"><Layers size={18} className="text-muted-foreground" /> By Tool Type</DropdownMenuItem>
                   </DropdownMenuContent>

@@ -136,7 +136,7 @@ export const RecheckSection = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => onMarkResolved(item.name)}
-                  className="h-6 px-2 text-[10px] font-medium text-chart-emerald hover:bg-chart-emerald/10 rounded-md"
+                  className="h-6 px-2 text-[10px] font-medium text-primary-strong hover:bg-primary/10 rounded-md"
                 >
                   <CheckCircle2 size={10} className="mr-1" /> Resolved
                 </Button>

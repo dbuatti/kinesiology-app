@@ -177,8 +177,8 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
   if (createdClientId) {
     return (
       <div className="flex flex-col items-center text-center space-y-8 py-8">
-        <div className="w-20 h-20 rounded-3xl bg-chart-emerald/10 flex items-center justify-center">
-          <CheckCircle2 size={40} className="text-chart-emerald" />
+        <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center">
+          <CheckCircle2 size={40} className="text-primary-strong" />
         </div>
         <div className="space-y-2">
           <h3 className="text-2xl font-bold text-foreground dark:text-foreground tracking-tight">

@@ -55,7 +55,7 @@ const MuscleTestItem = ({
             <h3 className="text-sm font-bold text-foreground truncate">
               {name}
             </h3>
-            <Badge variant="outline" className="border-border text-muted-foreground font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0 rounded-none">
+            <Badge variant="outline" className="border-border text-muted-foreground font-semibold text-[7px] uppercase tracking-[0.14em] px-1.5 py-0 rounded-none">
               {info.meridian}
             </Badge>
           </div>
@@ -67,7 +67,7 @@ const MuscleTestItem = ({
 
         <div className="flex items-center gap-3 shrink-0 print:hidden">
           <div className="flex items-center gap-1.5 border-r border-border pr-2">
-            <span className="text-[8px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider">Inhib</span>
+            <span className="text-[8px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-[0.14em]">Inhib</span>
             {isLateralized ? (
               <div className="flex items-center gap-1">
                 <div className="flex flex-col items-center gap-0.5">
@@ -100,7 +100,7 @@ const MuscleTestItem = ({
           </div>
 
           <div className="flex items-center gap-1.5 border-r border-border pr-2">
-            <span className="text-[8px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Hyper</span>
+            <span className="text-[8px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-[0.14em]">Hyper</span>
             {isLateralized ? (
               <div className="flex items-center gap-1">
                 <div className="flex flex-col items-center gap-0.5">
@@ -133,7 +133,7 @@ const MuscleTestItem = ({
           </div>
 
           <div className="flex items-center gap-2 pr-2">
-            <span className="text-[7px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Norm</span>
+            <span className="text-[7px] font-semibold text-muted-foreground/60 uppercase tracking-[0.14em]">Norm</span>
             {isLateralized ? (
               <div className="flex items-center gap-1.5">
                 <Checkbox

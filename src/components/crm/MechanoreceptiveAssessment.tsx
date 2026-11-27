@@ -49,7 +49,7 @@ const MechanoreceptiveAssessment = ({ appointmentId: _appointmentId, onSave }: M
 
   const SectionHeader = ({ title, subtitle }: { title: string, subtitle?: string }) => (
     <div className="border-b border-foreground/20 pb-1 mb-4 mt-8 first:mt-0">
-      <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">{title}</h3>
+      <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-foreground">{title}</h3>
       {subtitle && <p className="text-xs font-medium text-muted-foreground">{subtitle}</p>}
     </div>
   );
@@ -58,7 +58,7 @@ const MechanoreceptiveAssessment = ({ appointmentId: _appointmentId, onSave }: M
     return (
       <div className="animate-in fade-in duration-500">
         <div className="flex items-center justify-between mb-6">
-          <Badge className="bg-indigo-600 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1">
+          <Badge className="bg-indigo-600 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-3 py-1">
             Interactive Calibration Active
           </Badge>
           <Button variant="ghost" size="sm" onClick={() => setShowWizard(false)} className="text-muted-foreground hover:text-rose-600 font-bold text-xs">
@@ -84,7 +84,7 @@ const MechanoreceptiveAssessment = ({ appointmentId: _appointmentId, onSave }: M
       {/* Document Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-4 border-foreground/20 pb-8 mb-12">
         <div className="space-y-1">
-          <h1 className="text-4xl font-semibold tracking-tighter uppercase leading-none">Mechanoreceptive Protocol</h1>
+          <h1 className="font-serif text-[26px] font-medium tracking-[-0.02em] leading-none">Mechanoreceptive Protocol</h1>
           <p className="text-xs font-medium text-muted-foreground">Resonance Clinical Infrastructure • Section IV.A</p>
         </div>
         <div className="flex gap-3 print:hidden">
@@ -115,7 +115,7 @@ const MechanoreceptiveAssessment = ({ appointmentId: _appointmentId, onSave }: M
               <div className="p-6 border border-foreground/20 space-y-4">
                 <div className="flex items-center gap-2 text-primary">
                   <Brain size={18} />
-                  <h4 className="font-semibold text-[11px] uppercase tracking-wider">Conscious (DCML)</h4>
+                  <h4 className="font-semibold text-[11px] uppercase tracking-[0.14em]">Conscious (DCML)</h4>
                 </div>
                 <p className="text-xs leading-relaxed font-medium text-foreground/80">
                   Targets the <strong>15%</strong> of afferent input processed by the contralateral Sensory Cortex (S1). Used for "smudged" sensory maps and chronic pain patterns.
@@ -129,7 +129,7 @@ const MechanoreceptiveAssessment = ({ appointmentId: _appointmentId, onSave }: M
               <div className="p-6 border border-foreground/20 space-y-4">
                 <div className="flex items-center gap-2 text-primary-strong">
                   <Activity size={18} />
-                  <h4 className="font-semibold text-[11px] uppercase tracking-wider">Unconscious (SC)</h4>
+                  <h4 className="font-semibold text-[11px] uppercase tracking-[0.14em]">Unconscious (SC)</h4>
                 </div>
                 <p className="text-xs leading-relaxed font-medium text-foreground/80">
                   Targets the <strong>85%</strong> of afferent input processed by the Cerebellum via Spinocerebellar tracts. Used for ligamentous threat and stability issues.
@@ -150,8 +150,8 @@ const MechanoreceptiveAssessment = ({ appointmentId: _appointmentId, onSave }: M
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-muted/50 border-b border-foreground/20">
-                      <th className="p-4 font-semibold text-[10px] uppercase tracking-wider border-r border-foreground/20 w-1/3">Step</th>
-                      <th className="p-4 font-semibold text-[10px] uppercase tracking-wider">Clinical Logic</th>
+                      <th className="p-4 font-semibold text-[10px] uppercase tracking-[0.14em] border-r border-foreground/20 w-1/3">Step</th>
+                      <th className="p-4 font-semibold text-[10px] uppercase tracking-[0.14em]">Clinical Logic</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-black/10">
@@ -185,7 +185,7 @@ const MechanoreceptiveAssessment = ({ appointmentId: _appointmentId, onSave }: M
                 { p: "Transverse", m: "Internal / External Rot", c: "text-orange-600" }
               ].map(plane => (
                 <div key={plane.p} className="p-4 border border-foreground/20 text-center space-y-1">
-                  <p className={cn("font-semibold text-[10px] uppercase tracking-wider", plane.c)}>{plane.p}</p>
+                  <p className={cn("font-semibold text-[10px] uppercase tracking-[0.14em]", plane.c)}>{plane.p}</p>
                   <p className="text-[10px] font-bold text-foreground">{plane.m}</p>
                 </div>
               ))}
@@ -198,7 +198,7 @@ const MechanoreceptiveAssessment = ({ appointmentId: _appointmentId, onSave }: M
           <div className="p-8 border-2 border-foreground/20 space-y-6 bg-muted/50">
             <div className="flex items-center gap-3">
               <ShieldAlert size={20} className="text-foreground" />
-              <h4 className="font-semibold text-xs uppercase tracking-wider">Practitioner Note</h4>
+              <h4 className="font-semibold text-xs uppercase tracking-[0.14em]">Practitioner Note</h4>
             </div>
             <p className="text-xs font-medium leading-relaxed italic text-muted-foreground">
               "Always re-test the original stimulus after each layer. If the IM remains inhibited, there is a deeper layer of compensation. Expect 5-15 layers in complex cases."
@@ -206,18 +206,18 @@ const MechanoreceptiveAssessment = ({ appointmentId: _appointmentId, onSave }: M
             <div className="pt-4 border-t border-foreground/10 space-y-4">
               <div className="flex items-center gap-3">
                 <CheckCircle2 size={16} className="text-primary-strong" />
-                <span className="text-[10px] font-semibold uppercase tracking-wider">Nasal Breathing Required</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em]">Nasal Breathing Required</span>
               </div>
               <div className="flex items-center gap-3">
                 <CheckCircle2 size={16} className="text-primary-strong" />
-                <span className="text-[10px] font-semibold uppercase tracking-wider">30-40% Effort Only</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em]">30-40% Effort Only</span>
               </div>
             </div>
           </div>
 
           <Card className="border-none shadow-sm bg-foreground text-primary-foreground rounded-none overflow-hidden">
             <CardHeader className="p-6 pb-2">
-              <CardTitle className="text-[10px] font-semibold uppercase tracking-wider text-indigo-400 flex items-center gap-2">
+              <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.14em] text-indigo-400 flex items-center gap-2">
                 <ImageIcon size={14} /> Visual Reference
               </CardTitle>
             </CardHeader>

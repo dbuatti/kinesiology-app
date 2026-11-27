@@ -363,7 +363,7 @@ const PracticeNotes = () => {
 
  {/* Document Header */}
  <header className="mb-16 text-center">
- <h1 className="text-4xl font-serif font-medium mb-2 tracking-tight">Clinical Practice Notes</h1>
+ <h1 className="font-serif text-[26px] font-medium tracking-[-0.02em] mb-2">Clinical Practice Notes</h1>
  <div className="mt-10 grid grid-cols-3 gap-8 text-xs font-medium border-y border-foreground/20 py-6">
  <div className="flex items-center gap-2">
  <span>Date:</span>
@@ -519,7 +519,7 @@ const PracticeNotes = () => {
  <p>• Confirm with K27 Priority Check.</p>
  </div>
  <div className="space-y-1">
- <p className="font-medium uppercase text-[10px] text-chart-emerald">Correction</p>
+ <p className="font-medium uppercase text-[10px] text-primary-strong">Correction</p>
  <p>• Move tissue into 'Position of Ease'.</p>
  <p>• Hold for 45-90s (Counterstrain).</p>
  <p>• Re-test suture glide & tenderness.</p>
@@ -660,10 +660,10 @@ const PracticeNotes = () => {
  <table className="w-full text-left border-collapse">
  <thead>
  <tr className="bg-muted border-b border-foreground/20">
- <th className="p-3 font-medium text-[10px] uppercase tracking-wider border-r border-foreground/20">Segment</th>
- <th className="p-3 font-medium text-[10px] uppercase tracking-wider border-r border-foreground/20">Partner</th>
- <th className="p-3 font-medium text-[10px] uppercase tracking-wider border-r border-foreground/20">Associated Muscle</th>
- <th className="p-3 font-medium text-[10px] uppercase tracking-wider">Organ / Gland</th>
+ <th className="p-3 font-medium text-[10px] uppercase tracking-[0.14em] border-r border-foreground/20">Segment</th>
+ <th className="p-3 font-medium text-[10px] uppercase tracking-[0.14em] border-r border-foreground/20">Partner</th>
+ <th className="p-3 font-medium text-[10px] uppercase tracking-[0.14em] border-r border-foreground/20">Associated Muscle</th>
+ <th className="p-3 font-medium text-[10px] uppercase tracking-[0.14em]">Organ / Gland</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-black/10 text-[11px]">

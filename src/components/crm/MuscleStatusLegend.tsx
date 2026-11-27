@@ -17,7 +17,7 @@ const MuscleStatusLegend = () => {
               <div key={status.value} className={cn("p-4 rounded-2xl border-2 transition-all", status.color)}>
                 <div className="flex items-center gap-2 mb-2">
                   <Icon size={18} className={status.color.split(' ')[0]} />
-                  <span className="font-semibold text-xs text-foreground uppercase tracking-wider">{status.label}</span>
+                  <span className="font-semibold text-xs text-foreground uppercase tracking-[0.14em]">{status.label}</span>
                 </div>
                 <p className="text-[10px] text-foreground/80 font-medium leading-relaxed">{status.description}</p>
               </div>

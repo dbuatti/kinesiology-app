@@ -59,7 +59,7 @@ const MuscleRow = ({ name, statusL, statusR, statusMidline, isLateralized, info,
             {name}
           </button>
           {info.meridian && (
-            <span className="text-[8px] font-semibold uppercase tracking-wider text-muted-foreground/50 shrink-0">{info.meridian}</span>
+            <span className="text-[8px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/50 shrink-0">{info.meridian}</span>
           )}
           {info.testingPosition && (
             <Popover>
@@ -161,7 +161,7 @@ export function MuscleAssessment({
     <>
       {/* Progress summary */}
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border/60 bg-muted/30 px-4 py-2.5">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">Progress</span>
+        <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60">Progress</span>
         <div className="flex items-center gap-3 text-[11px]">
           <span className="text-foreground font-medium">{progress.assessed}<span className="text-muted-foreground/50">/{progress.total}</span></span>
           <span className="text-muted-foreground/40">·</span>
@@ -194,7 +194,7 @@ export function MuscleAssessment({
           {Object.entries(filteredGroups).map(([group, muscles]) => (
             <div key={group} className="contents">
               <div className="col-span-2 px-3 py-2 bg-muted/40 border-b border-border/40">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">{group}</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60">{group}</span>
               </div>
               {muscles.map(muscle => {
                 const isLateralized = !MIDLINE_MUSCLES.includes(muscle);

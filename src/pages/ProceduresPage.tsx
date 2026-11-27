@@ -230,7 +230,7 @@ export function ProceduresTool() {
                         <CardTitle className="text-xl font-semibold flex items-center gap-3 text-foreground">
                           <Lightbulb size={24} className="text-chart-primary" /> Focus on this week
                         </CardTitle>
-                        <Badge className="bg-chart-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
+                        <Badge className="bg-chart-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-3 py-1 rounded-full">
                           Study Priority
                         </Badge>
                       </div>
@@ -283,7 +283,7 @@ export function ProceduresTool() {
               <div className="grid grid-cols-2 lg:grid-cols-4">
                 {[
                   { label: "Components", value: summary.total, sub: "Everything you can log", icon: Sparkles, tone: "text-foreground" },
-                  { label: "Mastered", value: summary.masters, sub: "11+ logs recorded", icon: ShieldCheck, tone: "text-chart-emerald" },
+                  { label: "Mastered", value: summary.masters, sub: "11+ logs recorded", icon: ShieldCheck, tone: "text-primary-strong" },
                   { label: "Unpracticed", value: summary.novices, sub: "0–2 logs so far", icon: AlertCircle, tone: "text-chart-destructive" },
                   { label: "Clinical logs", value: summary.totalLogs, sub: "Cumulative experience", icon: Activity, tone: "text-foreground" },
                 ].map((t, i) => (
@@ -300,11 +300,11 @@ export function ProceduresTool() {
               {summary.total > 0 && (
                 <div className="border-t border-border px-4 py-3 sm:px-5">
                   <div className="flex h-2 overflow-hidden rounded-full bg-foreground/[0.06]">
-                    <div className="bg-chart-emerald transition-[width] duration-700 ease-out-expo" style={{ width: `${(summary.masters / summary.total) * 100}%` }} />
+                    <div className="bg-primary transition-[width] duration-700 ease-out-expo" style={{ width: `${(summary.masters / summary.total) * 100}%` }} />
                     <div className="bg-primary/70 transition-[width] duration-700 ease-out-expo" style={{ width: `${(Math.max(0, summary.total - summary.masters - summary.novices) / summary.total) * 100}%` }} />
                   </div>
                   <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11.5px] text-muted-foreground">
-                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-chart-emerald" /> Mastered {Math.round((summary.masters / summary.total) * 100)}%</span>
+                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> Mastered {Math.round((summary.masters / summary.total) * 100)}%</span>
                     <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary/70" /> Learning {Math.round((Math.max(0, summary.total - summary.masters - summary.novices) / summary.total) * 100)}%</span>
                     <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-foreground/15" /> Unpracticed {Math.round((summary.novices / summary.total) * 100)}%</span>
                   </div>
@@ -391,7 +391,7 @@ export function ProceduresTool() {
                   <h2 className="text-3xl font-semibold text-foreground tracking-tight">Protocol Practice</h2>
                   <p className="text-muted-foreground font-medium">Interactive reference for clinical assessments. (Practice Mode: No data is saved to a client).</p>
                 </div>
-                <Badge className="bg-chart-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-4 py-1.5 rounded-full shadow-sm">
+                <Badge className="bg-chart-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-4 py-1.5 rounded-full shadow-sm">
                   Reference Only
                 </Badge>
               </div>

@@ -165,7 +165,7 @@ export default function KeyMetricsBar({ onOpenFollowUp }: Props) {
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
       <Tile icon={DollarSign} label="Revenue this month">
         <div className="text-xl font-semibold text-foreground">{formatCurrency(metrics.revenue.thisMonth)}</div>
-        <div className={cn("flex items-center gap-1 text-[11px]", revenueDelta >= 0 ? "text-chart-emerald" : "text-chart-destructive")}>
+        <div className={cn("flex items-center gap-1 text-[11px]", revenueDelta >= 0 ? "text-primary-strong" : "text-chart-destructive")}>
           {revenueDelta >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
           {formatCurrency(Math.abs(revenueDelta))} vs last month
         </div>
@@ -190,7 +190,7 @@ export default function KeyMetricsBar({ onOpenFollowUp }: Props) {
 
       <Tile icon={CalendarDays} label="Booking load this week">
         <div className="text-xl font-semibold text-foreground">{metrics.booking.thisWeek} sessions</div>
-        <div className={cn("flex items-center gap-1 text-[11px]", bookingDelta >= 0 ? "text-chart-emerald" : "text-muted-foreground")}>
+        <div className={cn("flex items-center gap-1 text-[11px]", bookingDelta >= 0 ? "text-primary-strong" : "text-muted-foreground")}>
           {bookingDelta >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
           {Math.abs(bookingDelta)} vs last week ({metrics.booking.lastWeek})
         </div>

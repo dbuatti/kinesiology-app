@@ -164,7 +164,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
         <div className="space-y-6">
           <div className="p-6 border border-foreground/20 space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="text-[11px] font-semibold uppercase tracking-wider">Harmonic Rocking</h4>
+              <h4 className="text-[11px] font-semibold uppercase tracking-[0.14em]">Harmonic Rocking</h4>
               <Checkbox 
                 checked={harmonicRockingDone}
                 onCheckedChange={() => toggleCompletion(harmonicRockingDone, setHarmonicRockingDone, 'harmonic_rocking_notes')}
@@ -182,7 +182,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
           
           <div className="p-6 border border-foreground/20 space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="text-[11px] font-semibold uppercase tracking-wider">T1 Sympathetic Reset</h4>
+              <h4 className="text-[11px] font-semibold uppercase tracking-[0.14em]">T1 Sympathetic Reset</h4>
               <Checkbox 
                 checked={t1ResetDone}
                 onCheckedChange={() => toggleCompletion(t1ResetDone, setT1ResetDone, 't1_reset_notes')}
@@ -200,7 +200,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
 
           <div className="p-6 border border-foreground/20 space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="text-[11px] font-semibold uppercase tracking-wider">Lymphatic Cranial Reflex Zone</h4>
+              <h4 className="text-[11px] font-semibold uppercase tracking-[0.14em]">Lymphatic Cranial Reflex Zone</h4>
               <Checkbox 
                 checked={lymphaticDone}
                 onCheckedChange={() => toggleCompletion(lymphaticDone, setLymphaticDone, 'lymphatic_notes')}
@@ -221,7 +221,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
         <div className="space-y-6">
           <div className="p-6 border border-foreground/20 space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="text-[11px] font-semibold uppercase tracking-wider">Diaphragm Reset</h4>
+              <h4 className="text-[11px] font-semibold uppercase tracking-[0.14em]">Diaphragm Reset</h4>
               <Checkbox 
                 checked={diaphragmResetDone}
                 onCheckedChange={() => toggleCompletion(diaphragmResetDone, setDiaphragmResetDone, 'diaphragm_reset_notes')}
@@ -241,8 +241,8 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
           <div className="p-6 border border-foreground/20 space-y-6 bg-muted/50">
             <div className="flex items-center justify-between border-b border-foreground/10 pb-2">
               <div className="flex items-center gap-2">
-                <h4 className="text-[11px] font-semibold uppercase tracking-wider">Vagus Nerve Process</h4>
-                <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-sm bg-foreground text-background">Screen</span>
+                <h4 className="text-[11px] font-semibold uppercase tracking-[0.14em]">Vagus Nerve Process</h4>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] px-1.5 py-0.5 rounded-sm bg-foreground text-background">Screen</span>
               </div>
               <div className="flex items-center gap-2">
                 <button type="button" onClick={() => setShowResetConfirm(true)} className="text-[11px] font-semibold text-chart-destructive hover:underline">

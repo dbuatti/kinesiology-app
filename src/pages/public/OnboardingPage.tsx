@@ -106,7 +106,7 @@ const OnboardingPage = () => {
           <div className="w-16 h-16 md:w-20 md:h-20 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground font-semibold text-2xl md:text-3xl shadow-3xl mx-auto mb-8">
             ✦
           </div>
-          <Badge className="bg-muted text-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-6 py-2 rounded-full">
+          <Badge className="bg-muted text-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-6 py-2 rounded-full">
             Client Onboarding
           </Badge>
           <h1 className="text-4xl md:text-6xl font-serif font-bold tracking-tighter text-foreground">Welcome, {client.name}</h1>
@@ -146,11 +146,11 @@ const OnboardingPage = () => {
           <div className="flex flex-wrap justify-center items-center gap-10 opacity-30 grayscale">
             <div className="flex items-center gap-3">
               <ShieldCheck size={20} />
-              <span className="text-[10px] font-semibold uppercase tracking-wider">HIPAA Compliant</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.14em]">HIPAA Compliant</span>
             </div>
             <div className="flex items-center gap-3">
               <CheckCircle2 size={20} />
-              <span className="text-[10px] font-semibold uppercase tracking-wider">SSL Secure</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.14em]">SSL Secure</span>
             </div>
           </div>
         </div>

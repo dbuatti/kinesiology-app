@@ -875,7 +875,7 @@ export default function AutoDraftPanel({
       {/* Capacity insights */}
       {insights.length > 0 && (
         <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-rose-500/5 p-4 space-y-2">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-amber-600">
             <Lightbulb size={14} /> Where to open up
           </div>
           {insights.map((ins) => (
@@ -986,7 +986,7 @@ export default function AutoDraftPanel({
                       <span className="text-sm font-semibold text-foreground truncate">{c.name}</span>
                       <span
                         className={cn(
-                          "text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0 rounded-full shrink-0",
+                          "text-[10px] font-semibold uppercase tracking-[0.14em] px-1.5 py-0 rounded-full shrink-0",
                           c.kind === "voice" ? "bg-rose-500/10 text-rose-500" : "bg-indigo-500/10 text-indigo-500",
                         )}
                       >
@@ -1013,7 +1013,7 @@ export default function AutoDraftPanel({
                             {timeText}
                             {c.pastSessions.length > 0 && ` · ${c.pastSessions.length}×`}
                             {(c.upcomingSessions?.length ?? 0) > 0 && (
-                              <span className="text-chart-emerald"> · {c.upcomingSessions!.length} booked</span>
+                              <span className="text-primary-strong"> · {c.upcomingSessions!.length} booked</span>
                             )}
                           </span>
                         </>
@@ -1274,7 +1274,7 @@ export default function AutoDraftPanel({
                   size="sm"
                   onClick={acceptAll}
                   disabled={accepting}
-                  className="rounded-full h-8 text-xs bg-chart-emerald/90 hover:bg-chart-emerald text-white border-none"
+                  className="rounded-full h-8 text-xs bg-primary/90 hover:bg-primary text-white border-none"
                 >
                   {accepting ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Check className="h-3.5 w-3.5 mr-1.5" />}
                   Pencil in all ({pendingCount})
@@ -1291,15 +1291,15 @@ export default function AutoDraftPanel({
                 key={a.clientId}
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-2xl border transition-colors",
-                  accepted ? "border-chart-emerald/30 bg-chart-emerald/5" : "border-border/60 bg-card",
+                  accepted ? "border-primary/30 bg-primary/5" : "border-border/60 bg-card",
                 )}
               >
-                <CalendarClock size={16} className={cn("shrink-0", a.lowConfidence ? "text-amber-500" : "text-chart-emerald")} />
+                <CalendarClock size={16} className={cn("shrink-0", a.lowConfidence ? "text-amber-500" : "text-primary-strong")} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-foreground truncate">{a.name}</span>
                     {a.lowConfidence && (
-                      <Badge className="text-[10px] font-semibold uppercase tracking-wider border-none px-1.5 py-0 rounded-full bg-amber-500/10 text-amber-600">
+                      <Badge className="text-[10px] font-semibold uppercase tracking-[0.14em] border-none px-1.5 py-0 rounded-full bg-amber-500/10 text-amber-600">
                         guess
                       </Badge>
                     )}
@@ -1350,7 +1350,7 @@ export default function AutoDraftPanel({
                     </button>
                   )}
                   {accepted ? (
-                    <span className="text-[10px] font-semibold text-chart-emerald flex items-center gap-1">
+                    <span className="text-[10px] font-semibold text-primary-strong flex items-center gap-1">
                       <Check size={12} /> Penciled
                     </span>
                   ) : (
@@ -1358,7 +1358,7 @@ export default function AutoDraftPanel({
                       onClick={() => pencilOne(a)}
                       disabled={pencilingKey === a.clientId}
                       title="Pencil this session in"
-                      className="flex items-center gap-1 text-[10px] font-semibold text-chart-emerald hover:text-primary-strong rounded-full border border-chart-emerald/30 px-2 py-0.5 disabled:opacity-50"
+                      className="flex items-center gap-1 text-[10px] font-semibold text-primary-strong hover:text-primary-strong rounded-full border border-primary/30 px-2 py-0.5 disabled:opacity-50"
                     >
                       {pencilingKey === a.clientId ? <Loader2 size={11} className="animate-spin" /> : <PenLine size={11} />}
                       Pencil in
@@ -1387,7 +1387,7 @@ export default function AutoDraftPanel({
 
           {result.unplaced.length > 0 && (
             <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-amber-600">
                 <AlertTriangle size={13} /> Couldn't place
               </div>
               {Object.values(

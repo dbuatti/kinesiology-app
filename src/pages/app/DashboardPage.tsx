@@ -163,7 +163,7 @@ const TodayPage = () => {
               <span className="mx-1.5 text-muted-foreground/40">·</span>
               <span className="tabular-nums">{format(now, "h:mm a")}</span>
             </p>
-            <h1 className="mt-1 font-serif text-[30px] font-medium leading-[1.1] tracking-[-0.025em] text-foreground sm:text-[34px]">
+            <h1 className="mt-1 font-serif text-[26px] font-medium leading-[1.1] tracking-[-0.02em] text-foreground">
               {greeting}, Daniele
             </h1>
             <p className="mt-1.5 text-sm text-muted-foreground blur-sensitive">{itemsQ.isLoading ? "Loading your day…" : summary}</p>
@@ -172,14 +172,14 @@ const TodayPage = () => {
             <Button
               onClick={openSelfCheck}
               variant="outline"
-              className="h-10 gap-2 rounded-xl px-4 text-sm font-medium"
+              className="h-9 gap-2 rounded-xl px-3 text-[13px] font-medium"
             >
               <Activity size={16} className="shrink-0" />
               Self-check
             </Button>
             <Button
               onClick={() => setQuickSessionOpen(true)}
-              className="h-10 gap-2 rounded-xl px-4 text-sm font-medium shadow-[inset_0_1px_0_hsl(0_0%_100%/0.16),0_1px_2px_hsl(var(--shadow-color)/0.2),0_8px_20px_-8px_hsl(var(--primary)/0.5)]"
+              className="h-9 gap-2 rounded-xl px-3 text-[13px] font-medium shadow-xs"
             >
               <Zap size={16} className="shrink-0" />
               Start quick session

@@ -69,7 +69,7 @@ type Status = "needs_reply" | "awaiting_client" | "done" | "booked";
 const STATUS_META: Record<Status, { label: string; dotClass: string }> = {
   needs_reply: { label: "Needs reply", dotClass: "bg-chart-destructive" },
   awaiting_client: { label: "Waiting on them", dotClass: "bg-chart-amber" },
-  done: { label: "Done", dotClass: "bg-chart-emerald" },
+  done: { label: "Done", dotClass: "bg-primary" },
   booked: { label: "Booked in", dotClass: "bg-chart-primary" },
 };
 
@@ -516,12 +516,12 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
         const lastMsg = messages[messages.length - 1];
         if (!lastMsg || lastMsg.direction !== "inbound" || !TIME_HINTS.test(splitQuotedReply(lastMsg.body || "").main || lastMsg.body || "")) return null;
         return (
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-chart-emerald/40 bg-chart-emerald/5 px-3 py-2">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/40 bg-primary/5 px-3 py-2">
             <p className="flex items-center gap-1.5 text-xs text-foreground">
-              <CalendarClock className="h-3.5 w-3.5 text-chart-emerald" />
+              <CalendarClock className="h-3.5 w-3.5 text-primary-strong" />
               {firstName || clientName} may have picked a time.
             </p>
-            <Button size="sm" className="h-7 gap-1.5 bg-chart-emerald text-[11px] hover:bg-chart-emerald/90" onClick={handleBookFromEmail} disabled={bookingFromEmail}>
+            <Button size="sm" className="h-7 gap-1.5 bg-primary text-[11px] hover:bg-primary/90" onClick={handleBookFromEmail} disabled={bookingFromEmail}>
               {bookingFromEmail ? <Loader2 className="h-3 w-3 animate-spin" /> : <CalendarPlus className="h-3 w-3" />}
               Book the time they asked for
             </Button>
@@ -542,11 +542,11 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
                 {bookedFrom.available === false && (
                   <span className="font-semibold text-chart-destructive">That time isn't open in Cal.com — check the calendar before confirming.</span>
                 )}
-                {bookedFrom.available === true && <span className="text-chart-emerald">It's free in Cal.com.</span>}
+                {bookedFrom.available === true && <span className="text-primary-strong">It's free in Cal.com.</span>}
               </p>
             )}
             {looksConfirmed && !bookedFrom && (
-              <p className="flex items-center gap-1.5 text-[11px] font-semibold text-chart-emerald mb-2">
+              <p className="flex items-center gap-1.5 text-[11px] font-semibold text-primary-strong mb-2">
                 <Zap className="h-3 w-3" /> Their last reply looks like a yes — confirm below if so.
               </p>
             )}

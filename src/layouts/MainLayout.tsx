@@ -24,12 +24,16 @@ const MainLayout = () => {
 
   const segments = location.pathname.split("/").filter(Boolean);
   const routeSegment = segments[0] ?? "";
-  const fallbackTitle = routeSegment.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()) || "Home";
+  const fallbackTitle = sentenceCase(routeSegment.replace(/-/g, " ")) || "Home";
   let [currentTitle, section, sectionTo] = BREADCRUMBS[routeSegment] ?? [fallbackTitle, "", "/"];
-  // Deeper pages read as children of their hub: People › Client, Lessons › Students
-  if (routeSegment === "clients" && segments[1]) [currentTitle, section, sectionTo] = ["Client", "People", "/clients"];
+  // Deeper pages read as children of their hub: People › Client profile/hub/log.
+  if (routeSegment === "clients" && segments[1]) {
+    const clientSection = segments[2];
+    const clientTitle = clientSection === "hub" ? "Client hub" : clientSection === "log" ? "Client log" : "Client profile";
+    [currentTitle, section, sectionTo] = [clientTitle, "People", "/clients"];
+  }
   if (routeSegment === "voice" && segments[1] === "clients") [currentTitle, section, sectionTo] = [segments[2] === "new" ? "New student" : "Students", "People", "/clients"];
-  if (routeSegment === "settings" && segments[1]) [currentTitle, section, sectionTo] = [fallbackTitleFor(segments[1]), "Settings", "/settings"];
+  if (routeSegment === "settings" && segments[1]) [currentTitle, section, sectionTo] = [sentenceCase(segments[1].replace(/-/g, " ")), "Settings", "/settings"];
 
   // Per-route browser tab title, so tabs, history and bookmarks are distinguishable.
   useEffect(() => {
@@ -133,7 +137,7 @@ const MainLayout = () => {
           title="Exit iPad Mode — restore the full sidebar"
           className="fixed bottom-20 left-5 z-40 flex h-10 lg:bottom-5 items-center gap-2 rounded-full border border-border bg-card/90 pl-3 pr-4 text-[13px] font-medium text-foreground shadow-lg backdrop-blur-xl hover:bg-card print:hidden"
         >
-          <Tablet size={15} className="text-chart-emerald" />
+          <Tablet size={15} className="text-primary" />
           Exit iPad mode
         </button>
       )}
@@ -200,8 +204,8 @@ const MainLayout = () => {
   );
 };
 
-function fallbackTitleFor(seg: string) {
-  return seg.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+function sentenceCase(value: string) {
+  return value ? value.charAt(0).toUpperCase() + value.slice(1) : value;
 }
 
 export default MainLayout;

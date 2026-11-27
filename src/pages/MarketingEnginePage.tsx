@@ -156,7 +156,7 @@ Please provide the final output ready to be reviewed.`;
  <div className="flex flex-wrap gap-3 shrink-0">
  <Button asChild className="bg-card text-foreground hover:bg-muted h-9 px-3.5 rounded-lg font-medium text-[13px] shadow-md border border-border">
  <a href={CLAUDE_MARKETING_CHAT} target="_blank" rel="noopener noreferrer">
- <MessageSquare size={18} className="mr-2 text-chart-emerald" /> Claude
+ <MessageSquare size={18} className="mr-2 text-primary-strong" /> Claude
  </a>
  </Button>
  <Button asChild className="bg-card text-foreground hover:bg-muted h-9 px-3.5 rounded-lg font-medium text-[13px] shadow-md border border-border">
@@ -185,9 +185,9 @@ Please provide the final output ready to be reviewed.`;
  <Card className="shadow-sm rounded-xl bg-muted border border-border overflow-hidden">
  <CardHeader className="p-8 pb-4">
  <CardTitle className="text-2xl font-semibold flex items-center gap-3 text-foreground">
- <Mic size={28} className="text-chart-emerald" /> The Thought Catcher
+ <Mic size={28} className="text-primary-strong" /> The Thought Catcher
  </CardTitle>
- <CardDescription className="text-chart-emerald font-medium text-lg">
+ <CardDescription className="text-primary-strong font-medium text-lg">
  Capture raw insights or voice-to-text ideas for future content.
  </CardDescription>
  </CardHeader>
@@ -228,7 +228,7 @@ Please provide the final output ready to be reviewed.`;
  <span className="text-xs font-medium text-muted-foreground/60">{format(new Date(win.date), "MMM d")}</span>
  </div>
  <div>
- <p className={cn("text-[10px] font-semibold text-chart-primary uppercase tracking-wider mb-1", isPrivate && "blur-sm")}>{win.clients?.name}</p>
+ <p className={cn("text-[10px] font-semibold text-chart-primary uppercase tracking-[0.14em] mb-1", isPrivate && "blur-sm")}>{win.clients?.name}</p>
  <h3 className="font-semibold text-lg text-foreground line-clamp-2 leading-tight">{win.issue}</h3>
  </div>
  </CardContent>
@@ -258,7 +258,7 @@ Please provide the final output ready to be reviewed.`;
  <span className="text-xs font-medium text-muted-foreground/60">{format(new Date(win.created_at), "MMM d")}</span>
  </div>
  <div>
- <p className="text-[10px] font-semibold text-chart-destructive uppercase tracking-wider mb-1">{win.client_name}</p>
+ <p className="text-[10px] font-semibold text-chart-destructive uppercase tracking-[0.14em] mb-1">{win.client_name}</p>
  <p className="text-sm font-medium text-muted-foreground italic line-clamp-3">"{win.content}"</p>
  </div>
  </CardContent>
@@ -275,7 +275,7 @@ Please provide the final output ready to be reviewed.`;
  <Card className="shadow-sm rounded-xl bg-card border border-border/50">
  <CardHeader className="p-6 pb-4 border-b border-border bg-muted/30">
  <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
- <Target size={20} className="text-chart-emerald" /> Prompt Configuration
+ <Target size={20} className="text-primary-strong" /> Prompt Configuration
  </CardTitle>
  </CardHeader>
  <CardContent className="p-6 space-y-6">
@@ -354,7 +354,7 @@ Please provide the final output ready to be reviewed.`;
  <Card className="shadow-sm rounded-xl bg-card text-card-foreground border border-border overflow-hidden h-full flex flex-col">
  <CardHeader className="p-6 pb-4 border-b border-border flex flex-row items-center justify-between">
  <div className="flex items-center gap-3">
- <div className="w-10 h-10 rounded-xl bg-muted/20 text-chart-emerald flex items-center justify-center">
+ <div className="w-10 h-10 rounded-xl bg-muted/20 text-primary-strong flex items-center justify-center">
  <Wand2 size={20} />
  </div>
  <div>
@@ -362,7 +362,7 @@ Please provide the final output ready to be reviewed.`;
  <CardDescription className="text-muted-foreground/60 text-xs">Copy and paste this into Claude/ChatGPT.</CardDescription>
  </div>
  </div>
- <Button onClick={handleCopy} className={cn("h-9 px-4 rounded-lg font-medium text-[13px] transition-all", copied ? "bg-chart-emerald/10 text-chart-emerald" : "bg-muted text-muted-foreground")}>
+ <Button onClick={handleCopy} className={cn("h-9 px-4 rounded-lg font-medium text-[13px] transition-all", copied ? "bg-primary/10 text-primary-strong" : "bg-muted text-muted-foreground")}>
  {copied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />} {copied ? "Copied!" : "Copy Prompt"}
  </Button>
  </CardHeader>
@@ -390,14 +390,14 @@ Please provide the final output ready to be reviewed.`;
  <CardDescription className="font-medium">The "Antigravity Clinical Standard" layout.</CardDescription>
  </div>
  </div>
- <Button onClick={handleCopyTemplate} className={cn("h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all", templateCopied ? "bg-chart-emerald/10 text-chart-emerald" : "bg-primary text-primary-foreground")}>
+ <Button onClick={handleCopyTemplate} className={cn("h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all", templateCopied ? "bg-primary/10 text-primary-strong" : "bg-primary text-primary-foreground")}>
  {templateCopied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />} Copy HTML
  </Button>
  </div>
  </CardHeader>
  <CardContent className="p-8 space-y-6">
  <div className="p-4 bg-muted rounded-xl border border-border">
- <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider mb-2">How to use:</h4>
+ <h4 className="text-[11px] font-semibold text-foreground uppercase tracking-[0.14em] mb-2">How to use:</h4>
  <ol className="text-xs text-muted-foreground space-y-2 list-decimal pl-4 font-medium">
  <li>Copy the HTML code using the button above.</li>
  <li>In Kit, go to <strong>Send {" > "} Email Templates</strong>.</li>

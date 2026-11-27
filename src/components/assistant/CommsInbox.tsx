@@ -68,7 +68,7 @@ const SECTIONS: { id: PersonStatus; title: string; hint: string; dot: string }[]
   { id: "needs_reply", title: "Needs your reply", hint: "They wrote last.", dot: "bg-chart-destructive" },
   { id: "follow_up", title: "Follow up", hint: `You wrote last and haven't heard back in ${FOLLOW_UP_AFTER_DAYS}+ days.`, dot: "bg-chart-amber" },
   { id: "waiting", title: "Waiting on them", hint: "You replied recently, or they're already booked in.", dot: "bg-chart-primary" },
-  { id: "done", title: "Done", hint: "Marked done or booked, or nothing outstanding. Reopens if they email again.", dot: "bg-chart-emerald" },
+  { id: "done", title: "Done", hint: "Marked done or booked, or nothing outstanding. Reopens if they email again.", dot: "bg-primary" },
 ];
 
 const FILTER_LABELS: Record<Filter, string> = {
@@ -120,7 +120,7 @@ function statusLine(p: InboxPerson): { text: string; className: string } {
   if (p.status === "needs_reply" && p.waitingSince) return { text: `Waiting on you · ${ago(p.waitingSince)}`, className: "text-chart-destructive" };
   if (p.status === "follow_up" && p.waitingSince) return { text: `No reply for ${ago(p.waitingSince)}`, className: "text-chart-amber" };
   if (p.status === "waiting" && p.waitingSince) return { text: `You replied ${ago(p.waitingSince)} ago`, className: "text-muted-foreground" };
-  if (p.mark) return { text: p.mark.state === "booked" ? "Marked booked" : "Marked done", className: "text-chart-emerald" };
+  if (p.mark) return { text: p.mark.state === "booked" ? "Marked booked" : "Marked done", className: "text-primary-strong" };
   return { text: "Nothing outstanding", className: "text-muted-foreground" };
 }
 
@@ -272,7 +272,7 @@ export default function CommsInbox({ clients, voiceStudents, people: peopleOptio
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
               <span className={cn("text-[11px] font-medium", line.className)}>{line.text}</span>
               {p.upcoming && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-chart-emerald">
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-primary-strong">
                   <CalendarCheck className="h-3 w-3" /> Booked {upcomingLabel(p.upcoming)}
                 </span>
               )}
@@ -287,7 +287,7 @@ export default function CommsInbox({ clients, voiceStudents, people: peopleOptio
             )}
             {p.status === "needs_reply" && !isOpen && TIME_HINTS.test(p.focus.last.snippet || "") && (
               // They may have picked a time — open straight onto "Book the time they asked for".
-              <Button size="sm" className="h-7 gap-1 bg-chart-emerald text-[11px] hover:bg-chart-emerald/90" onClick={() => setExpandedEmail(p.email)} title="They may have picked a time — open to book it">
+              <Button size="sm" className="h-7 gap-1 bg-primary text-[11px] hover:bg-primary/90" onClick={() => setExpandedEmail(p.email)} title="They may have picked a time — open to book it">
                 <CalendarPlus className="h-3 w-3" /> <span className="hidden sm:inline">Book</span>
               </Button>
             )}
@@ -305,10 +305,10 @@ export default function CommsInbox({ clients, voiceStudents, people: peopleOptio
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem onClick={() => mark(p, "booked")} className="gap-2 text-xs">
-                    <CalendarCheck className="h-3.5 w-3.5 text-chart-emerald" /> Booked in
+                    <CalendarCheck className="h-3.5 w-3.5 text-primary-strong" /> Booked in
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => mark(p, "done")} className="gap-2 text-xs">
-                    <Check className="h-3.5 w-3.5 text-chart-emerald" /> Sorted, no reply needed
+                    <Check className="h-3.5 w-3.5 text-primary-strong" /> Sorted, no reply needed
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

@@ -166,7 +166,7 @@ const T1SympatheticReset = ({
                       </div>
                     </div>
                     {timeLeft !== null && (
-                      <div className="text-5xl font-semibold text-foreground tabular-nums tracking-tighter">
+                      <div className="text-3xl font-semibold text-foreground tabular-nums tracking-tight">
                         {formatTime(timeLeft)}
                       </div>
                     )}

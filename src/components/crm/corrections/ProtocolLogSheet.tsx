@@ -310,7 +310,7 @@ const ProtocolLogSheet = ({
     <div data-protocol-sheet={processId} className="rounded-xl border border-border bg-muted/20">
       <div className="sticky top-0 z-10 flex items-center justify-between gap-2 rounded-t-xl border-b border-border bg-muted/90 px-3 py-2 backdrop-blur supports-[backdrop-filter]:bg-muted/75">
         <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
             {heading ?? "Log"}
           </p>
           {(zonePair || summary.length > 0) && (
@@ -336,7 +336,7 @@ const ProtocolLogSheet = ({
         <>
           {savedCount > 0 && (
             <div className="flex items-center justify-between border-b border-border/60 px-3 py-1.5">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Current correction</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Current correction</p>
               <button
                 type="button"
                 onClick={() => setShowLive(false)}
@@ -462,7 +462,7 @@ const ProtocolEntryList = ({
 
   return (
     <div className={cn("px-1.5 py-1", className)}>
-      <p className="px-1 pb-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+      <p className="px-1 pb-1 text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
         Saved · {entries.length}
       </p>
       <ul className="max-h-28 space-y-px overflow-y-auto">
@@ -480,7 +480,7 @@ const ProtocolEntryList = ({
                   reading in full when you check what you already did. */}
               <span className="min-w-0 flex-1">
                 {entry.pathway && (
-                  <span className="block truncate text-[11px] font-bold uppercase tracking-wider text-primary-strong">
+                  <span className="block truncate text-[11px] font-bold uppercase tracking-[0.14em] text-primary-strong">
                     {entry.pathway}
                   </span>
                 )}
@@ -536,7 +536,7 @@ export const ProtocolLogBar = ({
           className="min-w-0 flex-1 truncate text-[11px]"
           title={bits.length > 0 ? bits.join(" · ") : undefined}
         >
-          <span className="font-bold uppercase tracking-wider text-muted-foreground">{heading}</span>
+          <span className="font-bold uppercase tracking-[0.14em] text-muted-foreground">{heading}</span>
           {savedCount > 0 && (
             <span className="ml-1.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[11px] font-bold text-primary-strong">
               {savedCount} saved

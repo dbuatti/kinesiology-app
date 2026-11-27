@@ -41,7 +41,7 @@ const PROTOCOLS = [
   { id: "cranial-nerves", label: "Nerves", icon: Zap, color: "text-chart-destructive", bg: "bg-chart-destructive/10" },
   { id: "primitive-reflexes", label: "Reflexes", icon: RefreshCw, color: "text-chart-primary", bg: "bg-chart-primary/10" },
   { id: "brain-zones", label: "Zones", icon: Brain, color: "text-chart-primary", bg: "bg-chart-primary/10" },
-  { id: "muscles", label: "Muscles", icon: Dumbbell, color: "text-chart-emerald", bg: "bg-chart-emerald/10" },
+  { id: "muscles", label: "Muscles", icon: Dumbbell, color: "text-primary-strong", bg: "bg-primary/10" },
   { id: "mechanoreceptive", label: "Mechano", icon: Activity, color: "text-chart-primary", bg: "bg-chart-primary/10" },
   { id: "emotions", label: "Emotions", icon: Heart, color: "text-chart-destructive", bg: "bg-chart-destructive/10" },
   { id: "heart-wall", label: "Heart Wall", icon: Shield, color: "text-muted-foreground", bg: "bg-muted" },

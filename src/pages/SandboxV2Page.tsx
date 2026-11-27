@@ -240,7 +240,7 @@ const SandboxV2Page = () => {
               <ArrowLeft size={14} /> Back
             </button>
             <span className="h-4 w-px bg-border/60" />
-            <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Sandbox</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.14em] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Sandbox</span>
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground hidden sm:flex">
               <Database size={12} className="text-muted-foreground" />
               <span className="font-medium">No data saved</span>

@@ -35,7 +35,7 @@ const ClinicalCheatSheet = () => {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <Badge className={cn(
-                    "border-none font-semibold text-[10px] uppercase tracking-wider mb-2",
+                    "border-none font-semibold text-[10px] uppercase tracking-[0.14em] mb-2",
                     item.category === 'Structural' ? "bg-primary/10 text-primary-strong" :
                     item.category === 'Emotional' ? "bg-rose-100 text-rose-700" :
                     item.category === 'Neurological' ? "bg-purple-100 text-purple-700" :
@@ -82,7 +82,7 @@ const ClinicalCheatSheet = () => {
 
               <div className="p-5 bg-amber-50 rounded-3xl border border-amber-100 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-10"><Brain size={40} className="text-amber-600" /></div>
-                <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-wider mb-2 flex items-center gap-2">
+                <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-[0.14em] mb-2 flex items-center gap-2">
                   <Info size={14} /> Clinical Insight
                 </p>
                 <p className="text-sm text-amber-900 font-bold leading-relaxed">

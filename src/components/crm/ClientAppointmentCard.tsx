@@ -56,7 +56,7 @@ export const ClientAppointmentCard = ({
                   )}
                   <span className={cn(
                     "px-2 py-0.5 rounded-full text-xs font-medium",
-                    app.status === 'Completed' ? "bg-muted text-chart-emerald" : "bg-muted text-muted-foreground"
+                    app.status === 'Completed' ? "bg-muted text-primary-strong" : "bg-muted text-muted-foreground"
                   )}>
                     {app.status}
                   </span>

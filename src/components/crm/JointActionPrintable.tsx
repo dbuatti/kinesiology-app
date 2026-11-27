@@ -125,13 +125,13 @@ const JointActionPrintable = () => {
       {/* Clinical Logic Footer */}
       <div className="mt-3 grid grid-cols-3 gap-4">
         <div className="p-2 border border-foreground/20 bg-muted/50">
-          <h4 className="text-[10px] font-semibold uppercase tracking-wider border-b border-foreground/10 pb-0.5 mb-1">Localization Hierarchy</h4>
+          <h4 className="text-[10px] font-semibold uppercase tracking-[0.14em] border-b border-foreground/10 pb-0.5 mb-1">Localization Hierarchy</h4>
           <p className="text-[7px] font-bold text-muted-foreground leading-tight">
             1. Region • 2. Laterality • 3. Skeleton • 4. Specific Joint & Plane
           </p>
         </div>
         <div className="p-2 border border-foreground/20 bg-muted/50">
-          <h4 className="text-[10px] font-semibold uppercase tracking-wider border-b border-foreground/10 pb-0.5 mb-1">Correction Logic</h4>
+          <h4 className="text-[10px] font-semibold uppercase tracking-[0.14em] border-b border-foreground/10 pb-0.5 mb-1">Correction Logic</h4>
           <p className="text-[7px] font-bold text-muted-foreground leading-tight">
             <strong>Conscious:</strong> Contra S1 + Iso (60s). <strong>Unconscious:</strong> Ipsi GV16 + Stretch + Fork.
           </p>
@@ -144,7 +144,7 @@ const JointActionPrintable = () => {
       </div>
 
       <div className="mt-4 pt-1 border-t border-border text-center">
-        <p className="text-[7px] font-semibold text-muted-foreground/60 uppercase tracking-wider">
+        <p className="text-[7px] font-semibold text-muted-foreground/60 uppercase tracking-[0.14em]">
           Confidential Practitioner Resource • Resonance Clinical Infrastructure
         </p>
       </div>

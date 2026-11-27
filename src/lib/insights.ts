@@ -33,7 +33,11 @@ export interface IncomeLedgerRow {
   date: string;
   time: string | null;
   name: string;
+  /** What was charged for this individual session (historical, immutable). */
   amount: number;
+  /** The client's standing rate today. Separate from the session amount. */
+  currentRate: number | null;
+  clientId: string | null;
   discipline: "fnh" | "voice";
   paid: boolean;
   status: string;
@@ -101,7 +105,10 @@ export function weeklyIncome(items: CalendarItem[], year: number): IncomeWeek[] 
   return weeks;
 }
 
-export function incomeLedger(items: CalendarItem[]): IncomeLedgerRow[] {
+export function incomeLedger(
+  items: CalendarItem[],
+  currentRateById: Map<string, number | null> = new Map(),
+): IncomeLedgerRow[] {
   return items
     .filter(countedForIncome)
     .map((item): IncomeLedgerRow => ({
@@ -110,6 +117,8 @@ export function incomeLedger(items: CalendarItem[]): IncomeLedgerRow[] {
       time: item.time,
       name: item.subtitle || item.title,
       amount: item.amount ?? 0,
+      currentRate: item.clientId ? currentRateById.get(item.clientId) ?? null : null,
+      clientId: item.clientId ?? null,
       discipline: item.source === "voice" ? "voice" : "fnh",
       paid: item.paid === true,
       status: item.status || "",
@@ -246,5 +255,6 @@ export async function loadInsights(): Promise<InsightData> {
     };
   });
 
-  return { weeks: weeklyIncome(items, year), ledger: incomeLedger(items), clients, year };
+  const currentRateById = new Map(clientRows.map((c) => [c.id, c.standard_rate]));
+  return { weeks: weeklyIncome(items, year), ledger: incomeLedger(items, currentRateById), clients, year };
 }

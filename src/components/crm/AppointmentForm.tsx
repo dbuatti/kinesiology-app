@@ -469,7 +469,7 @@ const AppointmentForm = ({
                   )}
                 >
                   {isClientRate && !isSelected && (
-                    <span className="absolute -top-2 right-2 bg-chart-emerald text-primary-foreground text-[7px] font-semibold px-1.5 py-0.5 rounded-full z-10">
+                    <span className="absolute -top-2 right-2 bg-primary text-primary-foreground text-[7px] font-semibold px-1.5 py-0.5 rounded-full z-10">
                       Rate
                     </span>
                   )}
@@ -510,7 +510,7 @@ const AppointmentForm = ({
                   )}
                 >
                   {isCurrentRate && !isSelected && (
-                    <span className="absolute -top-2 right-2 bg-chart-emerald text-primary-foreground text-[7px] font-semibold px-1.5 py-0.5 rounded-full z-10">
+                    <span className="absolute -top-2 right-2 bg-primary text-primary-foreground text-[7px] font-semibold px-1.5 py-0.5 rounded-full z-10">
                       Rate
                     </span>
                   )}
@@ -533,12 +533,12 @@ const AppointmentForm = ({
               <FormItem 
                 className={cn(
                   "flex flex-row items-center justify-between rounded-2xl border-2 p-5 transition-all cursor-pointer",
-                  field.value ? "bg-chart-emerald/10 border-chart-emerald/20" : "bg-card border-border/50 hover:border-chart-emerald/10"
+                  field.value ? "bg-primary/10 border-primary/20" : "bg-card border-border/50 hover:border-primary/10"
                 )}
                 onClick={() => field.onChange(!field.value)}
               >
                 <div className="flex items-center gap-4">
-                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-colors", field.value ? "bg-chart-emerald text-primary-foreground" : "bg-muted text-chart-emerald")}>
+                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-colors", field.value ? "bg-primary text-primary-foreground" : "bg-muted text-primary-strong")}>
                     <Mail size={20} />
                   </div>
                   <div className="space-y-0.5">
@@ -546,7 +546,7 @@ const AppointmentForm = ({
                     <p className="text-xs text-muted-foreground font-medium">Automatically email the intake form</p>
                   </div>
                 </div>
-                <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all", field.value ? "bg-chart-emerald border-chart-emerald" : "border-border")}>
+                <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all", field.value ? "bg-primary border-primary" : "border-border")}>
                   {field.value && <CheckCircle2 size={16} className="text-primary-foreground" />}
                 </div>
               </FormItem>

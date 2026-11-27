@@ -27,7 +27,7 @@ const NotFound = () => {
 
         <div className="space-y-3">
           <p className="text-xs font-medium text-muted-foreground">Error 404</p>
-          <h1 className="text-5xl md:text-7xl font-serif font-bold text-foreground tracking-tighter">
+          <h1 className="font-serif text-[40px] font-medium text-foreground tracking-[-0.03em] sm:text-[56px]">
             Lost in space.
           </h1>
           <p className="text-base text-muted-foreground font-medium leading-relaxed">

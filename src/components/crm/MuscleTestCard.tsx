@@ -61,7 +61,7 @@ const MuscleTestCard = ({
             )}
             {isTested && (
               <div className={cn(
-                "px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1.5 animate-in fade-in zoom-in-95 duration-300", 
+                "px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-[0.14em] flex items-center gap-1.5 animate-in fade-in zoom-in-95 duration-300", 
                 statusDetails?.color
               )}>
                 {statusDetails?.label}
@@ -158,7 +158,7 @@ const MuscleTestCard = ({
               </button>
             </div>
             {proficiencyCount > 0 && (
-              <p className="text-[10px] font-semibold text-indigo-500 uppercase tracking-wider mt-0.5">
+              <p className="text-[10px] font-semibold text-indigo-500 uppercase tracking-[0.14em] mt-0.5">
                 Mastery: {proficiencyCount}x Tested
               </p>
             )}
@@ -169,7 +169,7 @@ const MuscleTestCard = ({
           <Badge 
             variant="outline" 
             className={cn(
-              "text-[10px] font-semibold uppercase tracking-wider border-none px-3 py-1 rounded-full shadow-sm", 
+              "text-[10px] font-semibold uppercase tracking-[0.14em] border-none px-3 py-1 rounded-full shadow-sm", 
               channel.color
             )}
           >

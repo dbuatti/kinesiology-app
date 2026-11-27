@@ -46,7 +46,7 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
           <h2 className="text-[15px] font-semibold text-foreground">
             {point.name}
           </h2>
-          <Badge variant="outline" className="border-border text-muted-foreground font-semibold text-[7px] uppercase tracking-wider px-2 py-0 rounded-full">
+          <Badge variant="outline" className="border-border text-muted-foreground font-semibold text-[7px] uppercase tracking-[0.14em] px-2 py-0 rounded-full">
             {point.category} • {point.lateralization}
           </Badge>
         </div>

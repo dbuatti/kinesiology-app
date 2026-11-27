@@ -65,7 +65,7 @@ import { Client, Appointment } from "@/types/crm";
 import { parseClientJournal, stringifyClientJournal } from "@/utils/journal-helper";
 import { formatDateLine } from "@/utils/availability";
 
-interface ClientWithAppointments extends Client {
+export interface ClientWithAppointments extends Client {
  appointments: Appointment[];
  lastSeenDate: Date | null;
  preferredTimeAnalyzed: { text: string; isLowData: boolean };
@@ -221,7 +221,7 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
  id: 'check_in',
  label: 'Session Check-in',
  icon: Smile,
- color: 'text-chart-emerald',
+ color: 'text-primary-strong',
  bg: 'hover:bg-muted',
  body: `Hi ${firstName}, just checking in to see how you're going since our last session. Hope you're feeling well! 😊`,
  preview: `Checking in on how you're going since your last session`,
@@ -284,10 +284,11 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
  className={cn(
  "relative h-8 w-8 rounded-xl flex items-center justify-center transition-colors",
  recentlySmsed
- ? "text-chart-emerald bg-muted"
- : "text-chart-emerald hover:bg-muted"
+ ? "text-primary-strong bg-muted"
+ : "text-primary-strong hover:bg-muted"
  )}
  title="Send message template"
+ aria-label={`Message templates for ${client.name}`}
  >
  <MessageCircle size={15} />
  {recentlySmsed && (
@@ -303,8 +304,8 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
  {/* Header */}
  <div className="px-4 pt-4 pb-3 bg-muted border-b border-border">
  <div className="flex items-center gap-3">
- <div className="w-9 h-9 rounded-xl bg-chart-emerald/10 flex items-center justify-center shrink-0">
- <MessageCircle size={16} className="text-chart-emerald" />
+ <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+ <MessageCircle size={16} className="text-primary-strong" />
  </div>
  <div>
  <p className="text-sm font-semibold text-foreground">Message {firstName}</p>
@@ -315,7 +316,7 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
  <div className={cn(
  "mt-2.5 flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-medium",
  recentlySmsed
- ? "bg-muted text-chart-emerald"
+ ? "bg-muted text-primary-strong"
  : "bg-muted text-muted-foreground"
  )}>
  <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", recentlySmsed ? "bg-muted0" : "bg-muted-foreground/40")} />
@@ -522,6 +523,85 @@ function AvailabilityPopover({
 
 // ────────────────────────────────────────────────────────────────────────────
 
+// Mobile counterpart to the dense desktop table row. Keeps the same data and
+// rate handlers, but stacks the workflow so nothing needs sideways scrolling.
+export const ClientRowMobileCard = ({
+ client,
+ handleRateChange,
+ onSetTargetRate,
+ onQuickBook,
+}: ClientRowProps) => {
+ const isCustomRate = client.standard_rate !== null && client.standard_rate !== undefined && ![0, 30, 50, 70, 80, 90, 95, 100, 120, 150].includes(client.standard_rate);
+ const currentRateValue = isCustomRate ? -1 : (client.standard_rate ?? 50);
+ const targetRate = client.target_rate ?? (client.standard_rate ?? 50);
+ const futureApps = client.appointments.filter((app) => new Date(app.date) > new Date());
+ const nextApp = futureApps.length > 0 ? [...futureApps].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] : null;
+ const sessionPrices = [...new Set(
+  (client.appointments || [])
+   .map((a: any) => a.price_amount == null ? NaN : Number(a.price_amount))
+   .filter((n: number) => Number.isFinite(n) && n >= 0)
+ )].sort((a, b) => a - b);
+
+ return (
+  <article className="rounded-xl border border-border bg-card p-4">
+   <div className="flex items-start justify-between gap-3">
+    <div className="min-w-0">
+     <Link to={`/clients/${client.id}`} className="break-words text-[15px] font-semibold text-foreground hover:text-primary-strong">
+      {client.name}
+     </Link>
+     <p className="mt-0.5 text-[11px] text-muted-foreground">
+      {client.lastSeenDate ? `Last seen ${format(client.lastSeenDate, "d MMM yyyy")}` : "No sessions yet"}
+      {nextApp ? ` · Next ${format(new Date(nextApp.date), "d MMM")}` : ""}
+     </p>
+    </div>
+    <Button variant="outline" size="sm" onClick={() => onQuickBook(client.id)} className="h-8 shrink-0 gap-1.5 rounded-lg text-[11px]">
+     <CalendarPlusIcon size={13} /> Book
+    </Button>
+   </div>
+
+   <div className="mt-4 grid grid-cols-2 gap-3">
+    <div className="space-y-1">
+     <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">Current rate</span>
+     <Select value={currentRateValue.toString()} onValueChange={(val) => handleRateChange(client.id, parseInt(val))}>
+      <SelectTrigger aria-label={`Current rate for ${client.name}`} className="h-8 w-full rounded-lg border-border/60 bg-muted/30 text-[12px]">
+       <SelectValue />
+      </SelectTrigger>
+      <SelectContent className="rounded-xl bg-card border border-border shadow-sm">
+       {RATE_OPTIONS.map((opt) => <SelectItem key={opt.value} value={opt.value.toString()}>{opt.label}</SelectItem>)}
+      </SelectContent>
+     </Select>
+    </div>
+    <div className="space-y-1">
+     <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60">Target rate</span>
+     <Select value={targetRate.toString()} onValueChange={(val) => onSetTargetRate(client.id, parseInt(val))}>
+      <SelectTrigger aria-label={`Target rate for ${client.name}`} className="h-8 w-full rounded-lg border-border bg-muted/30 text-primary-strong text-[12px] font-semibold">
+       <SelectValue />
+      </SelectTrigger>
+      <SelectContent className="rounded-xl bg-card border border-border shadow-sm">
+       {RATE_OPTIONS.filter((opt) => opt.value !== -1).map((opt) => <SelectItem key={opt.value} value={opt.value.toString()}>{opt.label}</SelectItem>)}
+      </SelectContent>
+     </Select>
+    </div>
+   </div>
+
+   {sessionPrices.length > 1 && (
+    <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
+     Historical sessions: {sessionPrices.length <= 3
+      ? sessionPrices.map((p) => p === 0 ? "Free ($0)" : `$${p}`).join(", ")
+      : `$${sessionPrices[0]}–$${sessionPrices[sessionPrices.length - 1]}`} per session.
+    </p>
+   )}
+
+   <div className="mt-3 flex items-center justify-between border-t border-border/60 pt-3">
+    <span className="text-[11px] text-muted-foreground">{client.followUpStatus}</span>
+    <Link to={`/clients/${client.id}`} className="inline-flex items-center gap-1 text-[11px] font-medium text-primary-strong hover:underline">
+     Open profile <ArrowRight size={12} />
+    </Link>
+   </div>
+  </article>
+ );
+};
+
 export const ClientRow = ({
   client,
   calculateAge,
@@ -555,6 +635,17 @@ export const ClientRow = ({
 
  const isCustomRate = client.standard_rate !== null && client.standard_rate !== undefined && ![0, 30, 50, 70, 80, 90, 95, 100, 120, 150].includes(client.standard_rate);
  const currentRateValue = isCustomRate ? -1 : (client.standard_rate ?? 50);
+
+ // Historical prices actually charged across this client's sessions. When more
+ // than one distinct price exists the client's rate has varied over time, so
+ // the "current rate" (standard_rate) must not be confused with an older
+ // session price. Surface this so the practitioner can see it at a glance.
+ const sessionPrices = [...new Set(
+  (client.appointments || [])
+   .map((a: any) => a.price_amount == null ? NaN : Number(a.price_amount))
+   .filter((n: number) => Number.isFinite(n) && n >= 0)
+ )].sort((a, b) => a - b);
+ const hasVariedRate = sessionPrices.length > 1;
 
  // Rate Tracking & Vision Calculations
  const targetRate = client.target_rate ?? (client.standard_rate ?? 50);
@@ -854,7 +945,7 @@ Daniele`;
   <tr className={cn(
   "hover:bg-muted/10 transition-colors group",
   isSelectedInSimulator ? "bg-muted/20" : "",
-  journalData.reengagement_status === 'booked' ? "bg-chart-emerald/[0.02]" : "",
+  journalData.reengagement_status === 'booked' ? "bg-primary/[0.02]" : "",
   journalData.reengagement_status === 'sent' ? "bg-chart-primary/[0.02]" : "",
   compact && "text-xs"
   )}>
@@ -862,6 +953,8 @@ Daniele`;
   <td className={cn("pl-6", compact ? "py-1.5" : "p-4")}>
  <button
  onClick={() => onToggleWeeklyClient(client.id)}
+ aria-label={isSelectedInSimulator ? `Remove ${client.name} from simulator` : `Add ${client.name} to simulator`}
+ aria-pressed={isSelectedInSimulator}
  className="text-muted-foreground/60 hover:text-chart-primary transition-colors"
  >
  {isSelectedInSimulator ? (
@@ -882,7 +975,7 @@ Daniele`;
   >
   {client.name}
   {journalData.reengagement_status === 'sent' && <span className="w-1.5 h-1.5 rounded-full bg-chart-primary shrink-0" title="Nudge sent" />}
-  {journalData.reengagement_status === 'booked' && <span className="w-1.5 h-1.5 rounded-full bg-chart-emerald shrink-0" title="Replied / Booked" />}
+  {journalData.reengagement_status === 'booked' && <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" title="Replied / Booked" />}
   {journalData.reengagement_status === 'no_reply' && <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 shrink-0" title="No reply" />}
   <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity text-chart-primary" />
   </Link>
@@ -925,7 +1018,7 @@ Daniele`;
  </div>
  {nextAppText && (
  <div className="flex flex-col pt-1 border-t border-border/30 mt-1">
- <span className="text-xs text-chart-primary font-semibold uppercase tracking-wider text-[10px]">Next Booked:</span>
+ <span className="text-xs text-chart-primary font-semibold uppercase tracking-[0.14em] text-[10px]">Next Booked:</span>
  <span className="text-sm font-semibold text-chart-primary">{nextAppText}</span>
  {nextAppRelative && (
  <span className="text-[10px] text-chart-primary font-medium">
@@ -945,7 +1038,7 @@ Daniele`;
  value={currentRateValue.toString()}
  onValueChange={(val) => handleRateChange(client.id, parseInt(val))}
  >
- <SelectTrigger className="w-[82px] h-7 rounded-lg border-border/60 bg-muted/30 text-[11px] font-medium">
+ <SelectTrigger aria-label="Current rate" title="Current rate — the client's standard rate today. Older sessions may have been charged differently." className="w-[82px] h-7 rounded-lg border-border/60 bg-muted/30 text-[11px] font-medium">
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-xl bg-card border border-border shadow-sm">
@@ -966,7 +1059,7 @@ Daniele`;
  value={targetRate.toString()}
  onValueChange={(val) => onSetTargetRate(client.id, parseInt(val))}
  >
- <SelectTrigger className="w-[82px] h-7 rounded-lg border-border bg-muted/30 text-chart-primary text-[11px] font-semibold">
+ <SelectTrigger aria-label="Target rate" title="Target rate — the rate you are working towards." className="w-[82px] h-7 rounded-lg border-border bg-muted/30 text-chart-primary text-[11px] font-semibold">
  <SelectValue />
  </SelectTrigger>
  <SelectContent className="rounded-xl bg-card border border-border shadow-sm">
@@ -981,11 +1074,11 @@ Daniele`;
 
  <div className="flex items-center gap-1.5 flex-wrap">
  <span className="text-[10px] text-muted-foreground font-medium">
- Set {monthsSinceUpdate === 0 ? "this month" : `${monthsSinceUpdate}mo ago`}
+ Current rate set {monthsSinceUpdate === 0 ? "this month" : `${monthsSinceUpdate}mo ago`}
  </span>
  {needsReview ? (
  <>
- <Badge className="bg-muted text-muted-foreground border-none font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0 flex items-center gap-0.5 animate-pulse h-4">
+ <Badge className="bg-muted text-muted-foreground border-none font-semibold text-[7px] uppercase tracking-[0.14em] px-1.5 py-0 flex items-center gap-0.5 animate-pulse h-4">
  <AlertTriangle size={8} /> Review
  </Badge>
  <button
@@ -1000,6 +1093,13 @@ Daniele`;
  </>
  ) : null}
  </div>
+ {hasVariedRate && (
+  <p className="text-[10px] leading-snug text-muted-foreground">
+   Historical sessions: {sessionPrices.length <= 3
+    ? sessionPrices.map((p) => p === 0 ? "Free ($0)" : `$${p}`).join(", ")
+    : `$${sessionPrices[0]}–$${sessionPrices[sessionPrices.length - 1]}`} per session.
+  </p>
+ )}
  </div>
  </td>
 
@@ -1015,7 +1115,7 @@ Daniele`;
  <div className="flex items-center gap-2">
  <Badge className={cn(
  "font-semibold text-xs px-2.5 py-1 rounded-xl border-none",
- priorityScore >= 70 ? "bg-chart-emerald/10 text-chart-emerald" :
+ priorityScore >= 70 ? "bg-primary/10 text-primary-strong" :
  priorityScore >= 40 ? "bg-muted text-muted-foreground" :
  "bg-muted text-muted-foreground"
  )}>
@@ -1051,7 +1151,7 @@ Daniele`;
   <div className="flex items-center gap-1">
   {(['sent', 'booked', 'no_reply'] as const).map(status => {
   const isActive = journalData.reengagement_status === status;
-  const colorMap = { sent: 'text-chart-primary', booked: 'text-chart-emerald', no_reply: 'text-muted-foreground' };
+  const colorMap = { sent: 'text-chart-primary', booked: 'text-primary-strong', no_reply: 'text-muted-foreground' };
   return (
   <button
   key={status}
@@ -1079,7 +1179,7 @@ Daniele`;
  {client.preferred_time ? (
  <div className="flex items-center gap-1.5">
  <span className="text-sm font-medium text-foreground">{client.preferred_time}</span>
- <Badge className="bg-muted text-chart-primary border-none font-medium text-[10px] uppercase tracking-wider px-1.5 py-0">
+ <Badge className="bg-muted text-chart-primary border-none font-medium text-[10px] uppercase tracking-[0.14em] px-1.5 py-0">
  Manual
  </Badge>
  </div>
@@ -1100,6 +1200,8 @@ Daniele`;
  variant="ghost"
  size="icon"
  onClick={() => handleOpenOverrideModal(client)}
+ aria-label={`Edit preferred time for ${client.name}`}
+ title="Edit preferred time"
  className="w-7 h-7 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted"
  >
  <Edit2 size={12} className="text-muted-foreground" />
@@ -1119,7 +1221,7 @@ Daniele`;
 
  if (client.followUpStatus === "Booked") {
  return (
- <Badge className="bg-chart-emerald/10 text-chart-emerald border-none font-medium text-xs px-2.5 py-0.5 rounded-full">
+ <Badge className="bg-primary/10 text-primary-strong border-none font-medium text-xs px-2.5 py-0.5 rounded-full">
  Booked
  </Badge>
  );
@@ -1146,7 +1248,7 @@ Daniele`;
   {journalData.reengagement_status && (
   <p className={cn(
   "text-[10px] font-medium",
-  journalData.reengagement_status === 'booked' ? "text-chart-emerald" :
+  journalData.reengagement_status === 'booked' ? "text-primary-strong" :
   journalData.reengagement_status === 'sent' ? "text-chart-primary" :
   "text-muted-foreground"
   )}>
@@ -1213,7 +1315,7 @@ Daniele`;
  variant="outline"
  size="sm"
  onClick={() => setConfirmUpgrade(true)}
- className="h-8 rounded-xl border-border text-chart-emerald hover:bg-muted font-semibold text-[11px] flex items-center gap-1"
+ className="h-8 rounded-xl border-border text-primary-strong hover:bg-muted font-semibold text-[11px] flex items-center gap-1"
  >
  <ArrowUpRight size={12} />
  Upgrade
@@ -1261,7 +1363,7 @@ Daniele`;
  size="icon"
  onClick={handleLogContact}
  disabled={updatingStatus}
- className="h-8 w-8 rounded-xl text-chart-emerald hover:bg-muted"
+ className="h-8 w-8 rounded-xl text-primary-strong hover:bg-muted"
  >
  {updatingStatus ? <Loader2 size={14} className="animate-spin" /> : <PhoneCall size={14} />}
  </Button>
@@ -1287,14 +1389,14 @@ Daniele`;
   {/* More Actions Dropdown */}
  <DropdownMenu>
  <DropdownMenuTrigger asChild>
- <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground/60 hover:text-foreground">
+ <Button variant="ghost" size="icon" aria-label={`More actions for ${client.name}`} title="More actions" className="h-8 w-8 rounded-xl text-muted-foreground/60 hover:text-foreground">
  <MoreHorizontal size={16} />
  </Button>
  </DropdownMenuTrigger>
  <DropdownMenuContent align="end" className="rounded-xl p-2 shadow-sm border-none bg-card">
  {client.email && (
  <DropdownMenuItem onClick={handleSendOnboarding} disabled={sendingOnboarding} className="rounded-xl py-2 px-4 cursor-pointer flex items-center gap-3">
- {sendingOnboarding ? <Loader2 className="animate-spin" size={14} /> : <Send size={14} className="text-chart-emerald" />}
+ {sendingOnboarding ? <Loader2 className="animate-spin" size={14} /> : <Send size={14} className="text-primary-strong" />}
  <span className="font-medium text-xs">Send Onboarding</span>
  </DropdownMenuItem>
  )}
@@ -1338,10 +1440,10 @@ Daniele`;
  <div className="space-y-6 py-4">
  <div className="p-4 bg-muted rounded-xl border border-border flex items-center justify-between">
  <div className="space-y-0.5">
- <p className="text-[10px] font-semibold text-chart-destructive uppercase tracking-wider">Introductory Offer</p>
+ <p className="text-[10px] font-semibold text-chart-destructive uppercase tracking-[0.14em]">Introductory Offer</p>
  <p className="text-lg font-semibold text-foreground">3 sessions for $150 · then ${ongoingRate}/session</p>
  </div>
- <Badge className="bg-destructive text-destructive-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
+ <Badge className="bg-destructive text-destructive-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-3 py-1 rounded-full">
  Re-engagement
  </Badge>
  </div>
@@ -1401,10 +1503,10 @@ Daniele`;
  <div className="space-y-6 py-4">
  <div className="p-4 bg-muted rounded-xl border border-border flex items-center justify-between">
  <div className="space-y-0.5">
- <p className="text-[10px] font-semibold text-chart-primary uppercase tracking-wider">Rate Change</p>
+ <p className="text-[10px] font-semibold text-chart-primary uppercase tracking-[0.14em]">Rate Change</p>
  <p className="text-lg font-semibold text-foreground">$${currentRateNum} → $${targetRate} / session</p>
  </div>
- <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
+ <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-3 py-1 rounded-full">
  Effective: {nextMonthName}
  </Badge>
  </div>

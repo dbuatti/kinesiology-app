@@ -46,11 +46,11 @@ const AssessmentSection = ({ id, title, description, icon: Icon, children, count
           <div className="flex items-center gap-2 md:gap-4">
             {count > 0 && (
               <div className="hidden sm:flex gap-2">
-                <Badge variant="outline" className="bg-chart-emerald/10 text-chart-emerald border-chart-emerald/20 font-medium text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
+                <Badge variant="outline" className="bg-primary/10 text-primary-strong border-primary/20 font-medium text-[10px] uppercase tracking-[0.14em] px-3 py-1 rounded-full">
                   {count - inhibitedCount} Clear
                 </Badge>
                 <Badge className={cn(
-                  "border-none font-medium text-[10px] uppercase tracking-wider px-3 py-1 rounded-full transition-all duration-500",
+                  "border-none font-medium text-[10px] uppercase tracking-[0.14em] px-3 py-1 rounded-full transition-all duration-500",
                   inhibitedCount > 0 ? "bg-destructive text-destructive-foreground shadow-sm" : "bg-muted text-muted-foreground"
                 )}>
                   {inhibitedCount} Inhibited

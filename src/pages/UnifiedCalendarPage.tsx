@@ -495,7 +495,7 @@ const UnifiedCalendarPage = () => {
  <div className="w-16 h-16 rounded-full bg-destructive/20 flex items-center justify-center">
  <span className="text-2xl font-semibold text-destructive">!</span>
  </div>
- <p className="text-destructive font-semibold text-xs uppercase tracking-wider text-center">Failed to load calendar data</p>
+ <p className="text-destructive font-semibold text-xs uppercase tracking-[0.14em] text-center">Failed to load calendar data</p>
  <Button
  onClick={() => { refetchVoice(); refetchKinesiology(); }}
  className="bg-destructive hover:bg-destructive/80 rounded-xl font-medium text-xs"
@@ -619,9 +619,9 @@ const UnifiedCalendarPage = () => {
 
    ) : viewMode === "month" ? (
 
-   <div className="bg-card rounded-2xl border border-border/60 shadow-[0_4px_30px_-12px_rgba(120,90,40,0.18)] overflow-hidden animate-in fade-in duration-500">
+   <div className="bg-card rounded-2xl border border-border/60 shadow-xs overflow-hidden animate-in fade-in duration-500">
    {/* Legend */}
-   <div className="px-8 pt-6 pb-0 flex flex-wrap items-center gap-x-6 gap-y-2">
+   <div className="px-4 sm:px-8 pt-6 pb-0 flex flex-wrap items-center gap-x-6 gap-y-2">
    <div className="flex items-center gap-2">
    <div className="w-3 h-3 rounded-full bg-primary" />
    <span className="text-[10px] font-medium text-muted-foreground">Kinesiology</span>
@@ -636,7 +636,7 @@ const UnifiedCalendarPage = () => {
     </div>
    <div className="w-px h-3 bg-border" />
    <div className="flex items-center gap-1.5">
-   <span className="w-2 h-2 rounded-full bg-chart-emerald" />
+   <span className="w-2 h-2 rounded-full bg-primary" />
    <span className="text-[10px] font-medium text-muted-foreground">Paid</span>
    </div>
    <div className="flex items-center gap-1.5">
@@ -650,9 +650,9 @@ const UnifiedCalendarPage = () => {
    </div>
 
    {/* Calendar Header */}
-   <div className="p-8 border-b border-border flex items-center justify-between bg-muted/30">
+   <div className="p-4 sm:p-8 border-b border-border flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-muted/30">
    <div>
-   <h2 className="text-3xl font-semibold text-foreground tracking-tight">
+   <h2 className="font-serif text-[26px] font-medium tracking-[-0.02em] text-foreground">
    {format(currentMonth, "MMMM yyyy")}
    </h2>
     <p className="text-muted-foreground font-medium text-sm mt-1">
@@ -668,11 +668,11 @@ const UnifiedCalendarPage = () => {
    <span className="inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-2.5 py-1 bg-chart-primary/10 text-chart-primary border border-chart-primary/20">
    <User size={10} /> FNH ${monthSummary.fnhIncome.toLocaleString()}
    </span>
-   <span className="inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-2.5 py-1 bg-chart-emerald/10 text-chart-emerald border border-chart-emerald/20">
+   <span className="inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-2.5 py-1 bg-primary/10 text-primary-strong border border-primary/20">
    <CheckCircle2 size={10} /> ${monthSummary.collected.toLocaleString()} collected
    </span>
    {monthSummary.outstanding > 0 && (
-   <span className="inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-2.5 py-1 bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/40">
+   <span className="inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-2.5 py-1 border bg-warning/10 text-warning-strong border-warning/20">
    <Circle size={10} /> ${monthSummary.outstanding.toLocaleString()} outstanding
    </span>
    )}
@@ -684,17 +684,31 @@ const UnifiedCalendarPage = () => {
    </div>
    </div>
    <div className="flex gap-2 items-center">
-   <Button variant="outline" size="icon" onClick={prevMonth} className="rounded-xl h-12 w-12">
-   <ChevronLeft size={24} />
+   <Button variant="outline" size="icon" onClick={prevMonth} aria-label="Previous month" title="Previous month" className="rounded-xl h-9 w-9">
+   <ChevronLeft size={16} />
    </Button>
-   <Button variant="outline" size="icon" onClick={nextMonth} className="rounded-xl h-12 w-12">
-   <ChevronRight size={24} />
+   <Button variant="outline" size="icon" onClick={nextMonth} aria-label="Next month" title="Next month" className="rounded-xl h-9 w-9">
+   <ChevronRight size={16} />
    </Button>
    </div>
    </div>
 
+   {/* Mobile: the month grid becomes an agenda list. Seven columns of
+       truncated names are not usable on a phone. */}
+   <div className="md:hidden">
+     <BookingsList
+       items={calendarItems.filter((item) => {
+         const d = parseISO(item.date);
+         return isValid(d) && d >= monthStart && d <= monthEnd;
+       })}
+       onChanged={() => { refetchVoice(); refetchKinesiology(); refetchVoiceBookings(); }}
+       onNewBooking={handleNewBooking}
+       onRebook={handleRebook}
+     />
+   </div>
+
    {/* Days of Week */}
-   <div className="grid grid-cols-7 border-b border-border">
+   <div className="hidden md:grid grid-cols-7 border-b border-border">
    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
    <div
    key={day}
@@ -713,7 +727,7 @@ const UnifiedCalendarPage = () => {
    )}
 
    {/* Calendar Grid */}
-   <div className="grid grid-cols-7">
+   <div className="hidden md:grid grid-cols-7">
    {calendarDays.map((day) => {
    const dayItems = getItemsForDay(day);
    const isCurrent = isSameMonth(day, monthStart);
@@ -762,7 +776,7 @@ const UnifiedCalendarPage = () => {
    </div>
 
    {dayItems.length > 0 && (
-   <div className="text-[10px] font-bold text-chart-emerald mb-1">
+   <div className="text-[10px] font-bold text-primary-strong mb-1">
      ${dayIncome}
    </div>
    )}
@@ -778,7 +792,7 @@ const UnifiedCalendarPage = () => {
      rel={item.source === "voice" ? "noopener noreferrer" : undefined}
      onClick={!item.source || item.source === "kinesiology" ? (e) => { e.preventDefault(); navigate(item.url!); } : undefined}
     className={cn(
-   "block p-1.5 rounded-lg text-[10px] font-medium truncate transition-all hover:scale-[1.02] border",
+   "block p-1.5 rounded-lg text-[10px] font-medium truncate transition-colors border",
    item.source === "voice" && item.discipline === "piano"
    ? "bg-chart-primary/10 text-chart-primary border-border "
    : item.source === "voice"
@@ -787,7 +801,7 @@ const UnifiedCalendarPage = () => {
    )}
    >
    <div className="flex items-center gap-1">
-    <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-muted" : item.paid ? "bg-chart-emerald" : "bg-amber-500")} />
+    <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-muted" : item.paid ? "bg-primary" : "bg-warning")} />
     {item.source === "voice" && item.discipline === "piano" ? (
     <BookOpen size={9} className="shrink-0 opacity-60" />
       ) : item.source === "voice" ? (
@@ -820,7 +834,7 @@ const UnifiedCalendarPage = () => {
      )}
      >
      <div className="flex items-center gap-1">
-      <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-muted" : item.paid ? "bg-chart-emerald" : "bg-amber-500")} />
+      <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-muted" : item.paid ? "bg-primary" : "bg-warning")} />
       {item.source === "voice" && item.discipline === "piano" ? (
       <BookOpen size={9} className="shrink-0 opacity-60" />
       ) : item.source === "voice" ? (
@@ -873,7 +887,7 @@ const UnifiedCalendarPage = () => {
     </Badge>
    <Badge className={cn("text-[10px] font-semibold border-none",
       item.isFree ? "bg-muted text-muted-foreground dark:bg-card dark:text-foreground"
-     : item.paid ? "bg-chart-emerald/10 text-chart-emerald"
+     : item.paid ? "bg-primary/10 text-primary-strong"
      : "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400")}>
    {item.isFree ? "Free" : item.paid ? `Paid · $${item.amount ?? ""}` : `Unpaid · $${item.amount ?? ""}`}
    </Badge>
@@ -899,7 +913,7 @@ const UnifiedCalendarPage = () => {
     "inline-flex items-center gap-1 text-[10px] font-semibold rounded-md px-2 py-1 border transition-colors",
     item.paid
     ? "border-border text-muted-foreground hover:text-foreground"
-    : "border-chart-emerald/30 bg-chart-emerald/10 text-chart-emerald hover:bg-chart-emerald/15"
+    : "border-primary/30 bg-primary/10 text-primary-strong hover:bg-primary/15"
     )}
     >
     <CheckCircle2 size={10} /> {item.paid ? "Mark unpaid" : "Mark paid"}

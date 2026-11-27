@@ -1,5 +1,15 @@
 # AGENTS.md
 
+## Coach agent
+
+The `coach` agent moved to the global config on 27 Nov 2026 so it is available from any folder:
+
+```
+~/.config/opencode/agents/coach.md
+```
+
+Its brain and memory stay here: `docs/coaching/coach-brain.md` and `docs/coaching/memory/`. The agent reads them by absolute path.
+
 ## UI work — read DESIGN.md first
 
 Before modifying any UI (pages, components, styles), read **`DESIGN.md`** at the

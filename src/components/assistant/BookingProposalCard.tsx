@@ -78,7 +78,7 @@ function SlotEvidence({ tools, bookings, bare }: { tools: AssistantToolCall[]; b
   const title = suggested.length ? "Why this slot?" : "What the assistant checked";
 
   return (
-    <div className={bare ? "pt-1" : "border-t border-chart-emerald/20 pt-2"}>
+    <div className={bare ? "pt-1" : "border-t border-primary/20 pt-2"}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -121,12 +121,12 @@ function SlotEvidence({ tools, bookings, bare }: { tools: AssistantToolCall[]; b
                 return (
                   <li key={s.iso} className="flex items-start gap-1.5">
                     <span
-                      className={`mt-1 h-1.5 w-1.5 shrink-0 rounded-full ${picked ? "bg-chart-emerald" : "bg-muted-foreground/40"}`}
+                      className={`mt-1 h-1.5 w-1.5 shrink-0 rounded-full ${picked ? "bg-primary" : "bg-muted-foreground/40"}`}
                       aria-hidden
                     />
                     <span className={picked ? "font-semibold text-foreground" : "text-foreground"}>
                       {s.label}
-                      {picked && <span className="ml-1.5 font-medium text-chart-emerald">picked</span>}
+                      {picked && <span className="ml-1.5 font-medium text-primary-strong">picked</span>}
                       {s.reason && <span className="text-muted-foreground"> — {s.reason}</span>}
                     </span>
                   </li>
@@ -203,23 +203,23 @@ export default function BookingProposalCard({ bookings, onResolved, bare, tools 
   const busy = confirmingAll || working.size > 0;
 
   return (
-    <div className={bare ? "space-y-3" : "rounded-xl border border-chart-emerald/40 bg-chart-emerald/5 p-3 sm:p-4 space-y-3"}>
+    <div className={bare ? "space-y-3" : "rounded-xl border border-primary/40 bg-primary/5 p-3 sm:p-4 space-y-3"}>
       <div className={bare && bookings.length < 2 ? "hidden" : "flex flex-wrap items-center justify-between gap-2"}>
-        <p className={bare ? "text-xs text-muted-foreground" : "flex items-center gap-2 text-sm font-semibold text-chart-emerald"}>
+        <p className={bare ? "text-xs text-muted-foreground" : "flex items-center gap-2 text-sm font-semibold text-primary-strong"}>
           {!bare && <CalendarPlus className="h-4 w-4" />}
           {bare
             ? "Not booked in Cal.com until you confirm."
             : bookings.length === 1 ? "Proposed booking — not confirmed yet" : `${bookings.length} proposed bookings — not confirmed yet`}
         </p>
         {bookings.length > 1 && (
-          <Button size="sm" onClick={confirmAll} disabled={busy} className="bg-chart-emerald hover:bg-chart-emerald/90">
+          <Button size="sm" onClick={confirmAll} disabled={busy} className="bg-primary hover:bg-primary/90">
             {confirmingAll ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
             Confirm all {bookings.length}
           </Button>
         )}
       </div>
 
-      <ul className="divide-y divide-chart-emerald/20">
+      <ul className="divide-y divide-chart-primary/20">
         {bookings.map((b) => {
           const isVoice = !!b.voice_student_email;
           const isPiano = isVoice && (b.discipline || "").toLowerCase() === "piano";
@@ -248,7 +248,7 @@ export default function BookingProposalCard({ bookings, onResolved, bare, tools 
                   <X className="h-4 w-4 mr-1" /> Discard
                 </Button>
                 <Button size="sm" variant={bookings.length > 1 ? "outline" : "default"} onClick={() => confirmOne(b)} disabled={busy}
-                  className={bookings.length > 1 ? "" : "bg-chart-emerald hover:bg-chart-emerald/90"}>
+                  className={bookings.length > 1 ? "" : "bg-primary hover:bg-primary/90"}>
                   {rowBusy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
                   {b.reschedule_uid ? "Confirm move" : "Confirm"}
                 </Button>

@@ -370,7 +370,7 @@ export function PathwayReflexStimGrid({
                 <span className="text-chart-primary font-semibold"> · Saving…</span>
               )}
               {saveState === "saved" && (
-                <span className="text-chart-emerald font-semibold"> · Saved ✓</span>
+                <span className="text-primary-strong font-semibold"> · Saved ✓</span>
               )}
             </p>
           </div>
@@ -476,7 +476,7 @@ export function PathwayReflexStimGrid({
                 variant={confirmClear ? "destructive" : "ghost"}
                 size="sm"
                 onClick={handleClearClick}
-                className={`h-11 px-3 text-xs font-medium uppercase tracking-wider rounded-lg ${
+                className={`h-11 px-3 text-xs font-medium uppercase tracking-[0.14em] rounded-lg ${
                   confirmClear
                     ? "text-white"
                     : "text-destructive-strong hover:bg-destructive/10"

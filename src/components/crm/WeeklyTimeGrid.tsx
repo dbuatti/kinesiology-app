@@ -69,7 +69,7 @@ const DEFAULT_FNH_RATE = 50;
 const BUFFER_MIN_PER_EVENT = 60;
 
 const paymentStyles: Record<string, string> = {
-  "Paid (Stripe)": "bg-chart-emerald/10 text-chart-emerald border-chart-emerald/20",
+  "Paid (Stripe)": "bg-primary/10 text-primary-strong border-primary/20",
   "Paid on Day": "bg-chart-primary/10 text-chart-primary border-chart-primary/20",
   "Pending payment": "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
   "Unpaid": "bg-muted/40 text-muted-foreground border-border/30",
@@ -245,12 +245,12 @@ export function EarningsPanel({ summary, voiceRate, fnhRate, label }: EarningsPa
     ? "from-destructive/90 to-destructive/60"
     : highLoad
     ? "from-amber-500/90 to-amber-400/60"
-    : "from-chart-emerald/90 to-chart-emerald/60";
+    : "from-primary/90 to-primary/60";
   const loadColor = overworked
     ? "text-destructive"
     : highLoad
     ? "text-amber-500"
-    : "text-chart-emerald";
+    : "text-primary-strong";
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -556,15 +556,15 @@ const WeeklyTimeGrid = ({
                           key={hour}
                           className={cn(
                             "border-t border-border/30",
-                            slotClickable && "cursor-pointer hover:bg-chart-emerald/10 transition-colors"
+                            slotClickable && "cursor-pointer hover:bg-primary/10 transition-colors"
                           )}
                           style={{ height: HOUR_HEIGHT }}
                           {...(slotClickable && onSlotClick ? clickableProps(() => onSlotClick(day, hour)) : {})}
                         >
                           {slotClickable && (
                             <div className="flex items-center justify-center h-full gap-1">
-                              <Plus size={14} className="text-chart-emerald/60 shrink-0" />
-                              <span className="text-[10px] font-medium text-chart-emerald/60">Available</span>
+                              <Plus size={14} className="text-primary-strong/60 shrink-0" />
+                              <span className="text-[10px] font-medium text-primary-strong/60">Available</span>
                             </div>
                           )}
                         </div>
@@ -650,7 +650,7 @@ const WeeklyTimeGrid = ({
                               )}
                               <div className="flex items-center justify-between text-[10px] pt-1 border-t border-border/50">
                                 <span className="text-muted-foreground">Rate</span>
-                                <span className="font-semibold text-chart-emerald">{rateLabel}</span>
+                                <span className="font-semibold text-primary-strong">{rateLabel}</span>
                               </div>
                               <div className="flex items-center justify-between text-[10px]">
                                 <span className="text-muted-foreground">Duration</span>

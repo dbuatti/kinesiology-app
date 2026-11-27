@@ -49,9 +49,9 @@ export default function DraftEmailCard({ draft, onSent, onDiscard }: Props) {
 
   if (sent) {
     return (
-      <Card className="border-chart-emerald/40 bg-chart-emerald/5">
+      <Card className="border-primary/40 bg-primary/5">
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-chart-emerald">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-primary-strong">
             <CheckCircle2 className="h-4 w-4" /> Email sent successfully
           </CardTitle>
         </CardHeader>

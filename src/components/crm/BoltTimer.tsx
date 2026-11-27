@@ -111,7 +111,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
         </div>
         {!isRunning && displayTime > 0 && (
           <span className={cn(
-            "text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded",
+            "text-[10px] font-semibold uppercase tracking-[0.14em] px-2 py-1 rounded",
             displayTime >= 40 ? "bg-success/10 text-success-strong" :
             displayTime >= 25 ? "bg-primary/10 text-primary-strong" :
             "bg-warning/10 text-warning-strong"

@@ -379,9 +379,9 @@ function HeartWallSubModal({ onClose, saveSelection }: { onClose: () => void; sa
                                 className={cn(
                                   "px-2.5 py-1 rounded-md text-[11px] font-medium border transition-colors",
                                   organSel?.organ === organ && muscleSel?.muscle === muscle
-                                    ? "bg-chart-emerald text-white border-chart-emerald"
+                                    ? "bg-primary text-white border-primary"
                                     : organSel?.organ === organ
-                                      ? "border-chart-emerald/50 bg-chart-emerald/5 text-chart-emerald"
+                                      ? "border-primary/50 bg-primary/5 text-primary-strong"
                                       : "border-border bg-card text-foreground/80 hover:bg-muted"
                                 )}
                               >
@@ -460,7 +460,7 @@ function BrainZonesSubModal({ onClose, saveSelection }: { onClose: () => void; s
                     onClick={() => { select(zone.label, { brainZone: zone.label, kind: "subcortical" }); saveSelection({ brainZone: zone.label }); }}
                     className={cn(
                       "text-left bg-card border rounded-lg px-2 py-1.5 text-[11px] font-medium leading-tight transition-all",
-                      active ? "border-chart-emerald/50 ring-1 ring-chart-emerald/20 bg-chart-emerald/5 text-chart-emerald font-bold" : "border-border text-foreground/90 hover:bg-muted"
+                      active ? "border-primary/50 ring-1 ring-primary/20 bg-primary/5 text-primary-strong font-bold" : "border-border text-foreground/90 hover:bg-muted"
                     )}
                   >
                     {zone.label}
@@ -551,7 +551,7 @@ function OrgansSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
             <button
               type="button"
               onClick={() => setZoom("/images/organ-referral-chart-v7_943feb3e.png")}
-              className="relative flex h-48 w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in hover:ring-2 hover:ring-chart-emerald/40 transition-all"
+              className="relative flex h-48 w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in hover:ring-2 hover:ring-primary/40 transition-all"
             >
               <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] text-muted-foreground/60">
                 Organ referral chart unavailable
@@ -577,7 +577,7 @@ function OrgansSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
             <button
               type="button"
               onClick={() => setZoom("/images/pulse-points.png")}
-              className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in hover:ring-2 hover:ring-chart-emerald/40 transition-all"
+              className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-white cursor-zoom-in hover:ring-2 hover:ring-primary/40 transition-all"
             >
               <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] text-muted-foreground/60">
                 Pulse point chart unavailable
@@ -607,7 +607,7 @@ function OrgansSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
                   onClick={() => { select(organ.label, { organ: organ.label, pair: organ.pair, element: organ.element, muscle: organ.muscle }); saveSelection({ organ: organ.label }); }}
                   className={cn(
                     "text-left bg-card border rounded-lg p-2 text-sm transition-all",
-                    active ? "border-chart-emerald/50 ring-1 ring-chart-emerald/20 bg-chart-emerald/5 text-chart-emerald font-bold" : "border-border text-foreground/90 hover:bg-muted"
+                    active ? "border-primary/50 ring-1 ring-primary/20 bg-primary/5 text-primary-strong font-bold" : "border-border text-foreground/90 hover:bg-muted"
                   )}
                 >
                   <div className="font-bold">{organ.label}</div>
@@ -630,8 +630,8 @@ function OrgansSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
           </div>
 
           {selected?.organ && (
-            <div className="bg-chart-emerald/5 border border-chart-emerald/20 rounded-lg p-3">
-              <p className="text-[10px] font-bold text-chart-emerald mb-1">Confirmed</p>
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+              <p className="text-[10px] font-bold text-primary-strong mb-1">Confirmed</p>
               <p className="text-xs text-foreground/70">{selected?.organ} — {selected?.pair} · {selected?.element} · {selected?.muscle}</p>
             </div>
           )}
@@ -772,7 +772,7 @@ function JointsSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
                 >
                   <div className="flex items-center justify-between">
                     <div className="font-bold text-foreground">{joint.name}</div>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${joint.type === 'Axial' ? 'text-chart-primary bg-chart-primary/10' : 'text-chart-emerald bg-chart-emerald/10'}`}>{joint.type}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${joint.type === 'Axial' ? 'text-chart-primary bg-chart-primary/10' : 'text-primary-strong bg-primary/10'}`}>{joint.type}</span>
                   </div>
                   <div className="text-[8px] text-muted-foreground">{joint.region} · {joint.pearl}</div>
                   {firstAction && (
@@ -934,7 +934,7 @@ function FasciaSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
                   onClick={() => { select(option.label, { fascia: option.label, technique: option.desc }); saveSelection({ fascia: option.label }); }}
                   className={cn(
                     "text-left bg-card border rounded-lg p-3 text-sm transition-all",
-                    active ? "border-chart-emerald/50 ring-1 ring-chart-emerald/20 bg-chart-emerald/5 text-chart-emerald font-bold" : "border-border text-foreground/90 hover:bg-muted"
+                    active ? "border-primary/50 ring-1 ring-primary/20 bg-primary/5 text-primary-strong font-bold" : "border-border text-foreground/90 hover:bg-muted"
                   )}
                 >
                   <div className="font-bold">{option.label}</div>
@@ -944,8 +944,8 @@ function FasciaSubModal({ onClose, saveSelection }: { onClose: () => void; saveS
             })}
           </div>
 
-          <div className="bg-chart-emerald/5 border border-chart-emerald/20 rounded-lg p-3">
-            <p className="text-[10px] font-bold text-chart-emerald mb-1">Technique</p>
+          <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+            <p className="text-[10px] font-bold text-primary-strong mb-1">Technique</p>
             <p className="text-xs text-foreground/70">Swipe bilaterally from PSIS to ASIS — a posterior-to-anterior sweep across the iliac crest on both sides simultaneously. Piezoelectric bioelectrical system distinct from the nervous system.</p>
           </div>
         </div>
@@ -1196,7 +1196,7 @@ export function CTMModal({
 
               {/* Dropdown pathway list */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Inhibition / Pathway State (from session)</label>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.14em]">Inhibition / Pathway State (from session)</label>
                 <div className="flex flex-wrap gap-2">
                   {pathways.length === 0 ? (
                     <span className="text-xs text-muted-foreground italic">No pathway state saved for this demo session.</span>
@@ -1343,8 +1343,8 @@ export function CTMModal({
               </div>
 
               {Object.keys(ctmState).length > 0 && (
-                <div className="bg-chart-emerald/5 border border-chart-emerald/20 rounded-xl p-4">
-                  <h4 className="text-sm font-bold text-chart-emerald mb-3">CTM Stack Summary</h4>
+                <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
+                  <h4 className="text-sm font-bold text-primary-strong mb-3">CTM Stack Summary</h4>
                   <dl className="space-y-1 text-xs text-foreground/80">
                     {selectedNode && (
                       <div className="flex gap-2">
@@ -1383,7 +1383,7 @@ export function CTMModal({
                       showSuccess("CTM stack saved to session");
                     }
                   }}
-                  className="rounded-full h-9 px-4 bg-chart-emerald hover:bg-chart-emerald/90 text-white text-[11px] font-semibold shadow-sm"
+                  className="rounded-full h-9 px-4 bg-primary hover:bg-primary/90 text-white text-[11px] font-semibold shadow-sm"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" /> Submit CTM Stack
                 </Button>
@@ -1410,7 +1410,7 @@ export function CTMModal({
               onClick={() => { onSaveCTMState?.({ ...ctmState }); onOpenChange(false); }}
               disabled={Object.keys(ctmState).length === 0}
               title={Object.keys(ctmState).length === 0 ? "Select at least one system first" : "Submit and close"}
-              className="rounded-full h-8 px-4 bg-chart-emerald hover:bg-chart-emerald/90 text-white text-[11px] font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded-full h-8 px-4 bg-primary hover:bg-primary/90 text-white text-[11px] font-semibold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Submit &amp; Close
             </Button>

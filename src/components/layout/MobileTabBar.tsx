@@ -31,10 +31,10 @@ export function MobileTabBar({ onMore }: { onMore: () => void }) {
                   <motion.span
                     layoutId="mobile-tab-pill"
                     className="absolute inset-x-3 top-1.5 h-8 rounded-full bg-primary/10"
-                    transition={{ type: "spring", stiffness: 500, damping: 38 }}
+                    transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                   />
                 )}
-                <t.icon size={20} strokeWidth={on ? 2.1 : 1.8} className={cn("relative mt-1.5 h-8", on ? "text-primary" : "text-muted-foreground")} />
+                <t.icon size={16} strokeWidth={on ? 2.1 : 1.8} className={cn("relative mt-2 h-7", on ? "text-primary" : "text-muted-foreground")} />
                 <span className={cn("relative -mt-0.5 text-[11px] font-medium", on ? "text-foreground" : "text-muted-foreground")}>{t.label}</span>
               </>
             );

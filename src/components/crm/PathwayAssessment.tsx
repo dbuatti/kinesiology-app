@@ -205,7 +205,7 @@ const PathwayAssessment = ({
               { id: 'primitive', label: 'Reflexes', icon: Baby, count: getCounts('primitiveReflexes').inhibitedCount, color: 'text-chart-primary' },
               { id: 'cranial', label: 'Nerves', icon: Zap, count: getCounts('cranialNerves').inhibitedCount, color: 'text-chart-destructive' },
               { id: 'brain', label: 'Zones', icon: Brain, count: getCounts('brainZones').inhibitedCount, color: 'text-chart-primary' },
-              { id: 'muscles', label: 'Muscles', icon: Dumbbell, count: getCounts('muscles').inhibitedCount, color: 'text-chart-emerald' },
+              { id: 'muscles', label: 'Muscles', icon: Dumbbell, count: getCounts('muscles').inhibitedCount, color: 'text-primary-strong' },
             ].map((cat, i) => (
               <Button
                 key={cat.id}
@@ -270,7 +270,7 @@ const PathwayAssessment = ({
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="h-8 w-8 rounded-xl text-chart-emerald hover:bg-muted"
+                      className="h-8 w-8 rounded-xl text-primary-strong hover:bg-muted"
                       onClick={() => onUpdateItem(item.catKey, item.name, 'Clear')}
                     >
                       <RefreshCw size={16} />

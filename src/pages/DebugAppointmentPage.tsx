@@ -243,7 +243,7 @@ const DebugAppointmentPage = () => {
  <Beaker size={28} className="text-primary-foreground" />
  </div>
  <div>
- <Badge className="bg-primary/20 text-primary-strong border-primary/30 font-semibold text-[10px] uppercase tracking-wider mb-1 rounded-full">Automation Lab</Badge>
+ <Badge className="bg-primary/20 text-primary-strong border-primary/30 font-semibold text-[10px] uppercase tracking-[0.14em] mb-1 rounded-full">Automation Lab</Badge>
  <CardTitle className="text-3xl font-semibold">Integration Debug Suite</CardTitle>
  </div>
  </div>
@@ -256,7 +256,7 @@ const DebugAppointmentPage = () => {
  <div className="space-y-6">
  <div className="space-y-4">
  <div className="space-y-2">
- <Label className="text-[10px] font-semibold uppercase tracking-wider text-primary/70">Test Client Name</Label>
+ <Label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary/70">Test Client Name</Label>
  <Input 
  value={testName} 
  onChange={e => setTestName(e.target.value)}
@@ -265,7 +265,7 @@ const DebugAppointmentPage = () => {
  />
  </div>
  <div className="space-y-2">
- <Label className="text-[10px] font-semibold uppercase tracking-wider text-primary/70">Test Email Address</Label>
+ <Label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary/70">Test Email Address</Label>
  <Input 
  value={testEmail} 
  onChange={e => setTestEmail(e.target.value)}
@@ -286,7 +286,7 @@ const DebugAppointmentPage = () => {
  {debugClient && (
  <div className="p-6 bg-primary-foreground/5 rounded-xl border border-primary-foreground/10 space-y-4 animate-in fade-in zoom-in-95">
  <div className="flex items-center justify-between">
- <h4 className="font-semibold text-xs uppercase tracking-wider text-primary/50">Active Test Environment</h4>
+ <h4 className="font-semibold text-xs uppercase tracking-[0.14em] text-primary/50">Active Test Environment</h4>
  <Button variant="ghost" size="sm" onClick={cleanupTestData} className="h-7 text-[10px] text-destructive/70 hover:text-rose-300 hover:bg-muted0/10">
  <Trash2 size={12} className="mr-1" /> Purge Test Data
  </Button>
@@ -304,7 +304,7 @@ const DebugAppointmentPage = () => {
  {debugApp && (
  <div className="pt-2 border-t border-primary-foreground/5">
  <p className="text-xs font-medium text-muted-foreground mb-1">Current App Time</p>
- <p className="text-sm font-medium text-chart-emerald/60">{format(new Date(debugApp.date), "EEEE, MMM d @ h:mm a")}</p>
+ <p className="text-sm font-medium text-primary-strong/60">{format(new Date(debugApp.date), "EEEE, MMM d @ h:mm a")}</p>
  </div>
  )}
  </div>
@@ -313,7 +313,7 @@ const DebugAppointmentPage = () => {
 
  <div className="space-y-6">
  <div className="space-y-4">
- <Label className="text-[10px] font-semibold uppercase tracking-wider text-primary/70">Cal.com Integration Lab</Label>
+ <Label className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary/70">Cal.com Integration Lab</Label>
  <div className="grid grid-cols-1 gap-3">
  <Button 
  variant="outline" 
@@ -384,7 +384,7 @@ const DebugAppointmentPage = () => {
  <div className="p-6 bg-muted/10 rounded-xl border border-border/20 flex items-start gap-4">
  <Info size={20} className="text-amber-400 shrink-0 mt-0.5" />
  <div className="space-y-1">
- <p className="text-xs font-semibold text-amber-400 uppercase tracking-wider">How to Debug</p>
+ <p className="text-xs font-semibold text-amber-400 uppercase tracking-[0.14em]">How to Debug</p>
  <p className="text-sm text-muted-foreground/60 leading-relaxed">
  After clicking a trigger button, open your **Supabase Console {' > '} Edge Functions**, select the corresponding function, and check the **Logs** tab. Any API errors from Kit, Stripe, or Gmail will appear there in real-time.
  </p>
@@ -424,14 +424,14 @@ const DebugAppointmentPage = () => {
  <div className="absolute top-0 right-0 p-8 opacity-10"><ShieldCheck size={120} /></div>
  <CardHeader className="p-8 pb-4">
  <CardTitle className="text-2xl font-semibold flex items-center gap-3">
- <RefreshCw size={28} className="text-chart-emerald/60" /> Stripe Webhook Simulator
+ <RefreshCw size={28} className="text-primary-strong/60" /> Stripe Webhook Simulator
  </CardTitle>
  </CardHeader>
  <CardContent className="p-8 pt-0 space-y-6">
  <Button 
  onClick={simulateWebhook} 
  disabled={loading || !debugApp}
- className="w-full h-14 rounded-xl bg-chart-emerald hover:bg-chart-emerald/80 text-primary-foreground font-semibold text-xs shadow-sm"
+ className="w-full h-14 rounded-xl bg-primary hover:bg-primary/80 text-primary-foreground font-semibold text-xs shadow-sm"
  >
  {loading ? <Loader2 className="mr-2 animate-spin" /> : <Zap size={18} className="mr-2" />}
  Simulate Payment

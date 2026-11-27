@@ -205,7 +205,7 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  const protocols = [
  { name: "BOLT Test", icon: FlaskConical, color: "bg-primary", goal: "Practice BOLT timing and recovery breathing" },
  { name: "Coherence", icon: Activity, color: "bg-destructive", goal: "Practice heart-brain synchronization" },
- { name: "Neuro Drills", icon: Brain, color: "bg-chart-emerald", goal: "Practice Fakuda and Rhombergs assessments" },
+ { name: "Neuro Drills", icon: Brain, color: "bg-primary", goal: "Practice Fakuda and Rhombergs assessments" },
  { name: "Cogs/ROM", icon: Move, color: "bg-chart-primary", goal: "Practice 3-plane mobility assessment" },
  { name: "Heart Wall", icon: Heart, color: "bg-rose-600", goal: "Heart Wall Procedure", isHeartWall: true },
  ];
@@ -262,7 +262,7 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  <div className="flex gap-3">
  <div className="text-right">
  <p className="text-xs font-medium text-muted-foreground">Latest BOLT</p>
- <p className={cn("text-2xl font-semibold", lastBolt && lastBolt >= 25 ? "text-chart-emerald" : "text-muted-foreground")}>
+ <p className={cn("text-2xl font-semibold", lastBolt && lastBolt >= 25 ? "text-primary-strong" : "text-muted-foreground")}>
  {lastBolt ? `${lastBolt}s` : 'N/A'}
  </p>
  </div>
@@ -345,16 +345,16 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  </CardHeader>
  <CardContent className="space-y-4">
  <div className="flex gap-3">
- <div className="w-6 h-6 rounded-full bg-chart-emerald/10 flex items-center justify-center shrink-0">
- <CheckCircle2 size={14} className="text-chart-emerald " />
+ <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+ <CheckCircle2 size={14} className="text-primary-strong " />
  </div>
  <p className="text-xs text-muted-foreground leading-relaxed font-medium">
  Use the <strong>Session Timer</strong> to pace your practice. Aim for 20 mins of focused drill work.
  </p>
  </div>
  <div className="flex gap-3">
- <div className="w-6 h-6 rounded-full bg-chart-emerald/10 flex items-center justify-center shrink-0">
- <CheckCircle2 size={14} className="text-chart-emerald " />
+ <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+ <CheckCircle2 size={14} className="text-primary-strong " />
  </div>
  <p className="text-xs text-muted-foreground leading-relaxed font-medium">
  Self-sessions count towards your <strong>Procedure Tracker</strong> progress!

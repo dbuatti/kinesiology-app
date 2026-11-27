@@ -225,11 +225,11 @@ const QuickNotesDialog = ({
           {/* Session notes */}
           <section className="space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
                 Session notes
               </p>
               {copied && (
-                <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-chart-emerald/10 text-chart-emerald text-[10px] font-semibold animate-in fade-in">
+                <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary-strong text-[10px] font-semibold animate-in fade-in">
                   Copied
                 </span>
               )}
@@ -257,7 +257,7 @@ const QuickNotesDialog = ({
                 <Loader2 size={10} className="animate-spin" /> Saving…
               </span>
             ) : saveState === "saved" ? (
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-chart-emerald animate-in fade-in">
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-primary-strong animate-in fade-in">
                 <CheckCircle2 size={10} /> Saved ✓
               </span>
             ) : saveState === "error" ? (

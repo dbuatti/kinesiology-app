@@ -70,14 +70,14 @@ const FiveElementCycle = () => {
             <div className="flex flex-wrap gap-3">
               {ELEMENTS.map((el, i) => (
                 <Fragment key={el.name}>
-                  <div className={cn("px-4 py-2 rounded-xl font-semibold text-xs uppercase tracking-wider shadow-lg", el.color)}>
+                  <div className={cn("px-4 py-2 rounded-xl font-semibold text-xs uppercase tracking-[0.14em] shadow-lg", el.color)}>
                     {el.name}
                   </div>
                   {i < ELEMENTS.length - 1 && <ArrowRight size={16} className="mt-2 text-indigo-400" />}
                 </Fragment>
               ))}
               <ArrowRight size={16} className="mt-2 text-indigo-400" />
-              <div className="px-4 py-2 rounded-xl font-semibold text-xs uppercase tracking-wider shadow-lg bg-primary">Wood</div>
+              <div className="px-4 py-2 rounded-xl font-semibold text-xs uppercase tracking-[0.14em] shadow-lg bg-primary">Wood</div>
             </div>
             <p className="text-sm text-indigo-100 leading-relaxed italic pt-4">
               "Wood feeds Fire, Fire creates Earth (ash), Earth bears Metal, Metal carries Water (minerals), Water nourishes Wood."

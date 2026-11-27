@@ -239,8 +239,8 @@ const CoherenceAssessment = ({
               {calculatedScore !== null && (
                 <div className="text-center animate-in zoom-in-95 duration-300">
                   <p className="text-xs font-medium text-muted-foreground mb-1">Ratio</p>
-                  <div className="text-4xl font-semibold text-foreground">{calculatedScore.toFixed(2)}</div>
-                  <Badge className={cn("mt-2 border-none font-semibold text-[10px] uppercase tracking-wider", isCoherent ? "bg-success/50" : "bg-destructive")}>
+                  <div className="text-2xl font-semibold text-foreground tabular-nums">{calculatedScore.toFixed(2)}</div>
+                  <Badge className={cn("mt-2 border-none font-semibold text-[10px] uppercase tracking-[0.14em]", isCoherent ? "bg-success/50" : "bg-destructive")}>
                     {isCoherent ? "Coherent" : "Discordant"}
                   </Badge>
                 </div>

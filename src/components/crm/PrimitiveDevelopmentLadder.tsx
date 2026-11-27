@@ -28,7 +28,7 @@ const PrimitiveDevelopmentLadder = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between px-2">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-[0.14em] flex items-center gap-2">
           <TrendingUp size={16} className="text-indigo-500" /> Developmental Hierarchy
         </h3>
       </div>

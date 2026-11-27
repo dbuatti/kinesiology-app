@@ -383,12 +383,12 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
             <div className="w-7 h-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
               <History size={12} />
             </div>
-            <h4 className="text-xs font-semibold text-foreground dark:text-primary-strong uppercase tracking-wider">Source Context</h4>
+            <h4 className="text-xs font-semibold text-foreground dark:text-primary-strong uppercase tracking-[0.14em]">Source Context</h4>
           </div>
           <div className="space-y-3 relative z-10">
             {backlogItem.practitioner_reflections?.content && (
               <div className="space-y-1">
-                <p className="text-[10px] font-semibold text-chart-emerald uppercase tracking-wider">Original Journal Entry</p>
+                <p className="text-[10px] font-semibold text-primary-strong uppercase tracking-[0.14em]">Original Journal Entry</p>
                 <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground leading-relaxed line-clamp-4 italic">
                   "{backlogItem.practitioner_reflections.content}"
                 </p>
@@ -397,7 +397,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
 
             {backlogItem.priority_reasoning && (
               <div className="space-y-1">
-                <p className="text-[10px] font-semibold text-chart-emerald uppercase tracking-wider">AI Reasoning</p>
+                <p className="text-[10px] font-semibold text-primary-strong uppercase tracking-[0.14em]">AI Reasoning</p>
                 <p className="text-sm font-medium text-foreground dark:text-primary leading-relaxed">
                   {backlogItem.priority_reasoning}
                 </p>
@@ -406,9 +406,9 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
             
             {backlogItem.polarity_insight && (
               <div className="flex items-start gap-2 p-3 bg-card/50 dark:bg-muted/50 rounded-xl border border-border dark:border-primary/40">
-                <ArrowRightLeft size={14} className="text-chart-emerald shrink-0 mt-0.5" />
+                <ArrowRightLeft size={14} className="text-primary-strong shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-[10px] font-semibold text-chart-emerald uppercase tracking-wider mb-0.5">Polarity Insight</p>
+                  <p className="text-[10px] font-semibold text-primary-strong uppercase tracking-[0.14em] mb-0.5">Polarity Insight</p>
                   <p className="text-xs font-medium text-foreground dark:text-primary-strong">{backlogItem.polarity_insight}</p>
                 </div>
               </div>
@@ -601,8 +601,8 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
             variant="outline"
             onClick={() => onChange(false)}
             className={cn(
-              "flex-1 h-7 rounded-lg border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-[11px]",
-              value === false && "bg-chart-emerald/30"
+              "flex-1 h-7 rounded-lg border-primary bg-primary/10 text-primary-strong font-semibold text-[11px]",
+              value === false && "bg-primary/30"
             )}
           >NO</Button>
         </div>
@@ -638,7 +638,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
   const renderPhase5 = () => (
     <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-700 py-1">
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center justify-center w-7 h-7 bg-muted rounded-lg text-chart-emerald">
+        <div className="inline-flex items-center justify-center w-7 h-7 bg-muted rounded-lg text-primary-strong">
           <Anchor size={14} />
         </div>
         <h3 className="text-base font-serif font-medium">Final Anchoring</h3>
@@ -661,8 +661,8 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
               variant="outline"
               onClick={() => { setFormData({...formData, goalInevitable: false}); saveProgress(false, { goalInevitable: false }); }}
               className={cn(
-                "flex-1 h-7 rounded-lg border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-[11px]",
-                formData.goalInevitable === false && "bg-chart-emerald/30"
+                "flex-1 h-7 rounded-lg border-primary bg-primary/10 text-primary-strong font-semibold text-[11px]",
+                formData.goalInevitable === false && "bg-primary/30"
               )}
             >NO</Button>
           </div>
@@ -780,7 +780,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
         <div className="mb-6 space-y-3">
           <div className="flex justify-between items-end">
             <div className="space-y-0.5">
-              <h2 className="text-[10px] font-semibold uppercase tracking-wider text-chart-primary">Phase {phase} of 5</h2>
+              <h2 className="text-[10px] font-semibold uppercase tracking-[0.14em] text-chart-primary">Phase {phase} of 5</h2>
               <p className="text-sm font-semibold text-foreground">
                 {phase === 1 && "Setup & Extraction"}
                 {phase === 2 && "Somatic Embodiment"}
@@ -815,35 +815,35 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
               <section id="align-phase-1">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">1</span>
-                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-wider">Setup &amp; Extraction</h3>
+                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-[0.14em]">Setup &amp; Extraction</h3>
                 </div>
                 {renderPhase1()}
               </section>
               <section id="align-phase-2">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">2</span>
-                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-wider">Somatic Embodiment</h3>
+                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-[0.14em]">Somatic Embodiment</h3>
                 </div>
                 {renderPhase2()}
               </section>
               <section id="align-phase-3">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">3</span>
-                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-wider">Reconsolidation Loop</h3>
+                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-[0.14em]">Reconsolidation Loop</h3>
                 </div>
                 {renderPhase3()}
               </section>
               <section id="align-phase-4">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">4</span>
-                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-wider">Time-Space Testing</h3>
+                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-[0.14em]">Time-Space Testing</h3>
                 </div>
                 {renderPhase4()}
               </section>
               <section id="align-phase-5">
                 <div className="flex items-center gap-1.5 mb-1">
                   <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">5</span>
-                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-wider">Final Anchoring</h3>
+                  <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-[0.14em]">Final Anchoring</h3>
                 </div>
                 {renderPhase5()}
               </section>

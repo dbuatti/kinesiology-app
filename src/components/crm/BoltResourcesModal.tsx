@@ -89,8 +89,8 @@ const BoltResourcesModal = ({ open, onOpenChange, currentScore, onStartBolt }: B
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-1">Current BOLT Score</p>
-                    <p className="text-4xl font-semibold text-foreground tabular-nums">{currentScore}s</p>
+                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-[0.14em] mb-1">Current BOLT Score</p>
+                    <p className="text-2xl font-semibold text-foreground tabular-nums">{currentScore}s</p>
                     <p className={`text-xs font-medium mt-1 ${scoreBanner.subClass}`}>{scoreBanner.sub}</p>
                   </div>
                   <div className="text-right">

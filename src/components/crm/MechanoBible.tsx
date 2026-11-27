@@ -94,7 +94,7 @@ const MechanoBible = () => {
                 <BookOpen size={32} className="text-primary-foreground" />
               </div>
               <div>
-                <CardTitle className="text-4xl font-semibold tracking-tight">The Mechano Bible</CardTitle>
+                <CardTitle className="font-serif text-[26px] font-medium tracking-[-0.02em]">The Mechano Bible</CardTitle>
                 <CardDescription className="text-muted-foreground text-xl font-medium mt-2">
                   Your definitive guide to joints, tissues, and the geometry of movement.
                 </CardDescription>
@@ -179,7 +179,7 @@ const MechanoBible = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-2 px-4">
               <Brain size={20} className="text-primary" />
-              <h4 className="font-semibold text-primary uppercase tracking-wider text-sm">Conscious (DCML)</h4>
+              <h4 className="font-semibold text-primary uppercase tracking-[0.14em] text-sm">Conscious (DCML)</h4>
             </div>
             {consciousExamples.map((ex, i) => (
               <Card key={i} className="border-none shadow-md rounded-2xl bg-card overflow-hidden border-l-4 border-primary">
@@ -205,7 +205,7 @@ const MechanoBible = () => {
                     </div>
                   </div>
                   <div className="pt-3 border-t border-border/30">
-                    <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-1">Protocol</p>
+                    <p className="text-[10px] font-semibold text-primary uppercase tracking-[0.14em] mb-1">Protocol</p>
                     <p className="text-xs text-muted-foreground leading-relaxed font-medium">{ex.protocol}</p>
                   </div>
                 </CardContent>
@@ -217,7 +217,7 @@ const MechanoBible = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-2 px-4">
               <Activity size={20} className="text-primary-strong" />
-              <h4 className="font-semibold text-primary-strong uppercase tracking-wider text-sm">Unconscious (Spinocerebellar)</h4>
+              <h4 className="font-semibold text-primary-strong uppercase tracking-[0.14em] text-sm">Unconscious (Spinocerebellar)</h4>
             </div>
             {unconsciousExamples.map((ex, i) => (
               <Card key={i} className="border-none shadow-md rounded-2xl bg-card overflow-hidden border-l-4 border-primary/50">
@@ -243,7 +243,7 @@ const MechanoBible = () => {
                     </div>
                   </div>
                   <div className="pt-3 border-t border-border/30">
-                    <p className="text-[10px] font-semibold text-primary-strong uppercase tracking-wider mb-1">Protocol</p>
+                    <p className="text-[10px] font-semibold text-primary-strong uppercase tracking-[0.14em] mb-1">Protocol</p>
                     <p className="text-xs text-muted-foreground leading-relaxed font-medium">{ex.protocol}</p>
                   </div>
                 </CardContent>
@@ -266,7 +266,7 @@ const MechanoBible = () => {
                 <CardTitle className="text-2xl font-semibold text-foreground">Ligaments</CardTitle>
                 <Shield size={32} className="text-primary-strong" />
               </div>
-              <p className="text-primary-strong font-semibold text-[10px] uppercase tracking-wider">Bone to Bone</p>
+              <p className="text-primary-strong font-semibold text-[10px] uppercase tracking-[0.14em]">Bone to Bone</p>
             </CardHeader>
             <CardContent className="p-8 pt-0 space-y-6">
               <div className="p-4 bg-primary/10 rounded-2xl border border-primary/25">
@@ -298,7 +298,7 @@ const MechanoBible = () => {
                 <CardTitle className="text-2xl font-semibold text-foreground">Tendons</CardTitle>
                 <LinkIcon size={32} className="text-rose-500" />
               </div>
-              <p className="text-rose-600 font-semibold text-[10px] uppercase tracking-wider">Muscle to Bone</p>
+              <p className="text-rose-600 font-semibold text-[10px] uppercase tracking-[0.14em]">Muscle to Bone</p>
             </CardHeader>
             <CardContent className="p-8 pt-0 space-y-6">
               <div className="p-4 bg-rose-50 rounded-2xl border border-rose-100">
@@ -370,7 +370,7 @@ const MechanoBible = () => {
               </div>
               <CardContent className="p-6 space-y-4">
                 <div className={cn("p-3 rounded-xl border", plane.light, plane.border)}>
-                  <p className={cn("text-[10px] font-semibold uppercase tracking-wider mb-1", plane.text)}>Core Logic</p>
+                  <p className={cn("text-[10px] font-semibold uppercase tracking-[0.14em] mb-1", plane.text)}>Core Logic</p>
                   <p className="text-sm font-bold text-foreground">{plane.logic}</p>
                 </div>
                 <div className="space-y-2">

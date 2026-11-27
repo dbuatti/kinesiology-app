@@ -13,8 +13,8 @@ const SchedulePage = () => {
     <AppLayout variant="workspace">
       <div className="space-y-5">
         <PageHeader
-          title="Availability"
-          subtitle="Manage your live open hours. Book and view sessions from the Calendar."
+          title="Open hours"
+          subtitle="Manage the weekly hours clients can book. View and schedule sessions from the Calendar."
           icon={CalendarDays}
           actions={
             <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">

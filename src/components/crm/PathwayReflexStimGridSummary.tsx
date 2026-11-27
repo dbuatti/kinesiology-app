@@ -41,7 +41,7 @@ const MuscleChip = ({ chip }: { chip: MuscleGridChip }) => (
     {chip.status === "Inhibited" && <StimXMark className="w-3 h-3" />}
     {chip.side && <span className="font-semibold">{chip.side}</span>}
     <span className="max-w-[260px] truncate leading-snug">{chip.label}</span>
-    <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">{MUSCLE_CHIP_LABEL[chip.status]}</span>
+    <span className="text-[10px] font-bold uppercase tracking-[0.14em] opacity-70">{MUSCLE_CHIP_LABEL[chip.status]}</span>
   </span>
 );
 
@@ -102,7 +102,7 @@ export function PathwayReflexStimGridSummary({
             <section key={section.title}>
               <header className="flex items-center gap-2 bg-muted/30 px-4 py-2.5">
                 <span className={cn("h-2.5 w-2.5 rounded-full", section.color)} />
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground/80">{section.title}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-foreground/80">{section.title}</p>
                 <span className="ml-auto text-[10px] font-bold tabular-nums text-muted-foreground">{section.total}</span>
               </header>
               <div className="divide-y divide-border/40">
@@ -125,7 +125,7 @@ export function PathwayReflexStimGridSummary({
             <section key={section.label}>
               <header className="flex items-center gap-2 bg-muted/30 px-4 py-2.5">
                 <span className={cn("h-2.5 w-2.5 rounded-full", section.color)} />
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground/80">{section.label} Nuclei</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-foreground/80">{section.label} Nuclei</p>
                 <span className="ml-auto text-[10px] font-bold tabular-nums text-muted-foreground">{section.total}</span>
               </header>
               <div className="divide-y divide-border/40">
@@ -148,7 +148,7 @@ export function PathwayReflexStimGridSummary({
             <section key={section.group}>
               <header className="flex items-center gap-2 bg-muted/30 px-4 py-2.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-foreground/80">{section.group}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-foreground/80">{section.group}</p>
                 <span className="ml-auto text-[10px] font-bold tabular-nums text-muted-foreground">{section.total}</span>
               </header>
               <div className="divide-y divide-border/40">

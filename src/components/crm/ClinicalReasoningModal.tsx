@@ -111,7 +111,7 @@ const ClinicalReasoningModal = ({ muscleName, status, open, onOpenChange }: Clin
           </div>
           <div className="flex items-center gap-3 p-4 bg-card/5 rounded-2xl border border-primary-foreground/10">
             <Badge className={cn(
-              "border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1",
+              "border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-3 py-1",
               status === 'Inhibition' ? "bg-rose-500" : status === 'Hypertonic' ? "bg-amber-500" : "bg-purple-500"
             )}>
               {status}
@@ -140,7 +140,7 @@ const ClinicalReasoningModal = ({ muscleName, status, open, onOpenChange }: Clin
           <div className="p-6 bg-amber-50 rounded-2xl border-2 border-amber-100">
             <div className="flex items-center gap-3 mb-3">
               <ShieldAlert size={20} className="text-amber-600" />
-              <h4 className="font-semibold text-amber-900 text-xs uppercase tracking-wider">Practitioner Note</h4>
+              <h4 className="font-semibold text-amber-900 text-xs uppercase tracking-[0.14em]">Practitioner Note</h4>
             </div>
             <p className="text-xs text-amber-800 leading-relaxed italic font-medium">
               "If multiple muscles in the {info.meridian || 'same'} meridian are {status.toLowerCase()}, prioritize the Meridian balance first. If this is the only dysfunctional muscle, look for local mechanical or reflex issues."

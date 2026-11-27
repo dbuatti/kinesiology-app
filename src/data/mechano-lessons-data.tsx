@@ -306,9 +306,9 @@ export const lessons: Lesson[] = [
               <p className="text-[10px] text-primary font-bold uppercase">Flexion / Extension</p>
               <p className="text-[11px] text-muted-foreground leading-relaxed">Forward and backward movement. E.g., nodding head, bending forward.</p>
             </div>
-            <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100 space-y-1">
-              <p className="font-bold text-emerald-900 text-xs">2. Frontal Plane</p>
-              <p className="text-[10px] text-emerald-700 font-bold uppercase">Abduction / Adduction</p>
+            <div className="p-4 bg-primary/5 rounded-xl border border-primary/20 space-y-1">
+              <p className="font-bold text-primary-strong text-xs">2. Frontal Plane</p>
+              <p className="text-[10px] text-primary-strong font-bold uppercase">Abduction / Adduction</p>
               <p className="text-[11px] text-muted-foreground leading-relaxed">Side-to-side movement. E.g., tilting head, raising arm to the side.</p>
             </div>
             <div className="p-4 bg-orange-50 rounded-xl border border-orange-100 space-y-1">

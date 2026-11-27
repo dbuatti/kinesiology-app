@@ -383,7 +383,7 @@ export function ImageReferenceModal({ open, onClose }: ImageReferenceModalProps)
                     { zone: "Popliteal", nodes: ["Popliteal nodes", "Lateral foot/posterolateral leg", "Deep lymphatic drainage", "Superior drainage"] },
                   ].map((g) => (
                     <div key={g.zone} className="rounded-lg border border-border/50 bg-muted/20 p-2.5">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-1.5">{g.zone}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60 mb-1.5">{g.zone}</p>
                       <div className="flex flex-wrap gap-1">
                         {g.nodes.map((node) => (
                           <span key={node} className="rounded-md bg-card border border-border/40 px-2 py-0.5 text-[11px] font-medium text-foreground/80">
@@ -434,7 +434,7 @@ export function ImageReferenceModal({ open, onClose }: ImageReferenceModalProps)
                   />
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">Group by:</span>
+                  <span className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-[0.14em]">Group by:</span>
                   {(["none", "organ", "meridian", "spinal"] as const).map((g) => (
                     <button
                       key={g}
@@ -587,7 +587,7 @@ export function ImageReferenceModal({ open, onClose }: ImageReferenceModalProps)
                   { label: "Acupoint", value: cn.acupoint },
                 ].filter((f) => f.value).map((field) => (
                   <div key={field.label} className="border-b border-border/30 pb-1.5">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50">{field.label}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/50">{field.label}</p>
                     <p className="text-[11px] text-foreground/90 mt-0.5 leading-relaxed">{field.value}</p>
                   </div>
                 ))}
@@ -657,7 +657,7 @@ export function ImageReferenceModal({ open, onClose }: ImageReferenceModalProps)
                 { label: "Description", value: muscleInfo.description },
               ].filter((f) => f.value).map((field) => (
                 <div key={field.label} className="border-b border-border/30 pb-1.5">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50">{field.label}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/50">{field.label}</p>
                   <p className="text-[11px] text-foreground/90 mt-0.5 leading-relaxed">{field.value}</p>
                 </div>
               ))}

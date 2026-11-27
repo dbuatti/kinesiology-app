@@ -186,7 +186,7 @@ const ReflexImageZone = ({
                   <X size={14} />
                 </Button>
               </div>
-              <p className="text-[10px] font-medium text-primary-foreground uppercase tracking-wider">Click to Change</p>
+              <p className="text-[10px] font-medium text-primary-foreground uppercase tracking-[0.14em]">Click to Change</p>
             </div>
           </div>
         </>
@@ -202,7 +202,7 @@ const ReflexImageZone = ({
               )}>
                 <Plus size={24} />
               </div>
-              <p className={cn("font-medium text-muted-foreground uppercase tracking-wider text-[10px]")}>
+              <p className={cn("font-medium text-muted-foreground uppercase tracking-[0.14em] text-[10px]")}>
                 {isPrimary ? "Click or Drop Main Image" : `Add ${type}`}
               </p>
             </>
@@ -299,11 +299,11 @@ const BrainReflexReference = () => {
           </div>
           <div className="flex gap-3">
             <div className={cn("px-4 py-2 bg-muted rounded-xl border border-border text-center", PATHWAY_DIRECTION.efferent.border)}>
-              <p className={cn("text-[10px] font-medium uppercase tracking-wider", PATHWAY_DIRECTION.efferent.strong)}>Cortical</p>
+              <p className={cn("text-[10px] font-medium uppercase tracking-[0.14em]", PATHWAY_DIRECTION.efferent.strong)}>Cortical</p>
               <p className={cn("text-xl font-semibold", PATHWAY_DIRECTION.efferent.strong)}>{corticalCount}</p>
             </div>
             <div className={cn("px-4 py-2 bg-muted rounded-xl border border-border text-center", PATHWAY_DIRECTION.efferent.border)}>
-              <p className={cn("text-[10px] font-medium uppercase tracking-wider", PATHWAY_DIRECTION.efferent.text)}>Sub-cortical</p>
+              <p className={cn("text-[10px] font-medium uppercase tracking-[0.14em]", PATHWAY_DIRECTION.efferent.text)}>Sub-cortical</p>
               <p className={cn("text-xl font-semibold", PATHWAY_DIRECTION.efferent.text)}>{subcorticalCount}</p>
             </div>
           </div>
@@ -414,7 +414,7 @@ const BrainReflexReference = () => {
                     <div className="space-y-1">
                       <div className="flex gap-2 mb-2">
                         <Badge className={cn(
-                          "border-none font-medium text-[10px] uppercase tracking-wider",
+                          "border-none font-medium text-[10px] uppercase tracking-[0.14em]",
                           point.category === 'Cortical' ? cn(PATHWAY_DIRECTION.efferent.soft, PATHWAY_DIRECTION.efferent.strong) :
                           point.category === 'Subcortical' ? cn(PATHWAY_DIRECTION.efferent.soft, PATHWAY_DIRECTION.efferent.text) :
                           "bg-muted text-muted-foreground"
@@ -488,7 +488,7 @@ const BrainReflexReference = () => {
                   </div>
 
                   <div className="pt-4 border-t border-border flex items-center justify-between">
-                    <span className="text-[10px] font-medium text-chart-primary uppercase tracking-wider">View full details</span>
+                    <span className="text-[10px] font-medium text-chart-primary uppercase tracking-[0.14em]">View full details</span>
                     <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                       <ChevronRight size={16} />
                     </div>

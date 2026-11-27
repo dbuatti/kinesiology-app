@@ -149,7 +149,7 @@ const GaitReflexAssessment = ({
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wider px-1">Left Foot Forward</p>
+                <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.14em] px-1">Left Foot Forward</p>
                 <div className="grid grid-cols-2 gap-3">
                   {GAIT_TESTS.leftForward.map(test => (
                     <TestButton key={test.id} {...test} />
@@ -158,7 +158,7 @@ const GaitReflexAssessment = ({
               </div>
 
               <div className="space-y-3">
-                <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wider px-1">Right Foot Forward</p>
+                <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.14em] px-1">Right Foot Forward</p>
                 <div className="grid grid-cols-2 gap-3">
                   {GAIT_TESTS.rightForward.map(test => (
                     <TestButton key={test.id} {...test} />
@@ -199,7 +199,7 @@ const GaitReflexAssessment = ({
                         <Move size={24} className="text-primary-foreground" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">The Fix</p>
+                        <p className="text-xs font-semibold text-amber-600 uppercase tracking-[0.14em]">The Fix</p>
                         <p className="text-xl font-semibold text-amber-900">{CORRECTIONS[eyePriority].fix}</p>
                         <p className="text-sm text-amber-800 leading-relaxed">{CORRECTIONS[eyePriority].detail}</p>
                         <div className="pt-3 flex items-center gap-2 text-[10px] font-bold text-primary-strong uppercase">

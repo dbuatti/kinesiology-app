@@ -160,14 +160,14 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-primary/5 border border-border">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] font-semibold text-primary uppercase tracking-wider">Latest BOLT Score</p>
-                  {boltTrend === "up" && <Badge className="bg-chart-emerald text-primary-foreground border-none text-[10px]"><ArrowUpRight size={10} className="mr-1" /> Improving</Badge>}
+                  <p className="text-[10px] font-semibold text-primary uppercase tracking-[0.14em]">Latest BOLT Score</p>
+                  {boltTrend === "up" && <Badge className="bg-primary text-primary-foreground border-none text-[10px]"><ArrowUpRight size={10} className="mr-1" /> Improving</Badge>}
                   {boltTrend === "down" && <Badge className="bg-destructive text-primary-foreground border-none text-[10px]"><ArrowDownRight size={10} className="mr-1" /> Declining</Badge>}
                 </div>
                 <div className="flex items-baseline gap-2">
                   <p className={cn(
-                    "text-4xl font-semibold",
-                    latestBolt === null ? "text-muted-foreground/60" : (latestBolt >= 25 ? "text-chart-emerald" : "text-destructive")
+                    "text-2xl font-semibold",
+                    latestBolt === null ? "text-muted-foreground/60" : (latestBolt >= 25 ? "text-primary-strong" : "text-destructive")
                   )}>
                     {latestBolt !== null ? `${latestBolt}s` : "—"}
                   </p>
@@ -175,10 +175,10 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-chart-emerald/10 border border-chart-emerald/20">
-                <p className="text-[10px] font-semibold text-chart-emerald uppercase tracking-wider mb-2">Neurological Resolution</p>
+              <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20">
+                <p className="text-[10px] font-semibold text-primary-strong uppercase tracking-[0.14em] mb-2">Neurological Resolution</p>
                 <div className="flex items-baseline gap-2">
-                  <p className="text-4xl font-semibold text-chart-emerald">{resolutionRate}%</p>
+                  <p className="text-2xl font-semibold text-primary-strong">{resolutionRate}%</p>
                   <span className="text-muted-foreground text-sm font-bold">Cleared</span>
                 </div>
               </div>
@@ -194,9 +194,9 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
                   </p>
                 </div>
               ) : latestBolt !== null ? (
-                <div className="flex gap-3 p-3 bg-chart-emerald/10 rounded-xl border border-chart-emerald/20">
-                  <CheckCircle2 className="text-chart-emerald shrink-0" size={18} />
-                  <p className="text-xs text-chart-emerald font-bold leading-tight">
+                <div className="flex gap-3 p-3 bg-primary/10 rounded-xl border border-primary/20">
+                  <CheckCircle2 className="text-primary-strong shrink-0" size={18} />
+                  <p className="text-xs text-primary-strong font-bold leading-tight">
                     BOLT score is functional. Continue monitoring for optimal (40s) goal.
                   </p>
                 </div>

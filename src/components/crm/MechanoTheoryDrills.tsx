@@ -49,7 +49,7 @@ const MechanoTheoryDrills = () => {
         )}>
           {/* Front */}
           <Card className="absolute inset-0 backface-hidden border border-border shadow-sm rounded-2xl bg-card flex flex-col items-center justify-center p-12 text-center border-2 border-border/30">
-            <Badge className="absolute top-8 left-8 bg-indigo-50 text-indigo-600 border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1">
+            <Badge className="absolute top-8 left-8 bg-indigo-50 text-indigo-600 border-none font-semibold text-[10px] uppercase tracking-[0.14em] px-3 py-1">
               {currentCard.category}
             </Badge>
             <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mb-8 text-indigo-200 group-hover:text-indigo-400 transition-colors">
@@ -71,7 +71,7 @@ const MechanoTheoryDrills = () => {
             <p className="text-2xl font-bold leading-relaxed">
               {currentCard.answer}
             </p>
-            <div className="mt-10 flex items-center gap-2 text-[10px] font-semibold text-indigo-300 uppercase tracking-wider">
+            <div className="mt-10 flex items-center gap-2 text-[10px] font-semibold text-indigo-300 uppercase tracking-[0.14em]">
               <CheckCircle2 size={12} /> Click to flip back
             </div>
           </Card>
@@ -117,7 +117,7 @@ const MechanoTheoryDrills = () => {
           <Lightbulb size={24} />
         </div>
         <div className="space-y-1">
-          <h5 className="font-semibold text-amber-900 text-xs uppercase tracking-wider">Study Tip</h5>
+          <h5 className="font-semibold text-amber-900 text-xs uppercase tracking-[0.14em]">Study Tip</h5>
           <p className="text-sm text-amber-800 font-medium leading-relaxed">
             "Mastering the theory is the first step to clinical intuition. Try to explain these concepts to a peer to solidify your understanding."
           </p>

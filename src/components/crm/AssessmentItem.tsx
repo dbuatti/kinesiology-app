@@ -93,7 +93,7 @@ export const AssessmentItem = ({
 
       {status && (
         <span className={cn(
-          "text-[7px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-sm shrink-0",
+          "text-[7px] font-semibold uppercase tracking-[0.14em] px-1.5 py-0.5 rounded-sm shrink-0",
           status === 'Inhibited' && "bg-rose-500/15 text-rose-600 dark:text-rose-300",
           status === 'Hypertonic' && "bg-amber-500/15 text-amber-600 dark:text-amber-300"
         )}>

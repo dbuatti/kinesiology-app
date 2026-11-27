@@ -58,7 +58,7 @@ const FillInTheBlank: FC<FillInTheBlankProps> = ({
               : "bg-rose-50 border-rose-500 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400"
           }`}>
             <div className="flex flex-col">
-              <span className="text-[10px] font-semibold uppercase tracking-wider opacity-60 mb-1">Your Answer</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.14em] opacity-60 mb-1">Your Answer</span>
               <span className="text-xl font-semibold">{selectedAnswer}</span>
             </div>
             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-primary-foreground shadow-lg ${isCorrect ? 'bg-primary' : 'bg-rose-500'}`}>
@@ -68,7 +68,7 @@ const FillInTheBlank: FC<FillInTheBlankProps> = ({
           
           {!isCorrect && (
             <div className="p-6 rounded-2xl border-2 border-primary/50 bg-primary/10 dark:bg-primary/10">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-primary-strong dark:text-primary opacity-70 mb-1 block">Correct Answer</span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-strong dark:text-primary opacity-70 mb-1 block">Correct Answer</span>
               <p className="text-xl font-semibold text-primary-strong dark:text-primary">{correctAnswer}</p>
             </div>
           )}

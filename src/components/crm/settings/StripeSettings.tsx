@@ -74,7 +74,7 @@ const StripeSettings = () => {
         <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-100 dark:border-amber-900/30 space-y-3">
           <div className="flex items-center gap-2">
             <Info size={16} className="text-amber-600" />
-            <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-wider">Automation Active</p>
+            <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-[0.14em]">Automation Active</p>
           </div>
           <p className="text-xs text-amber-800 dark:text-amber-200 font-medium">
             New bookings from Cal.com will now automatically create Stripe customers. Use the button above to sync your current database.

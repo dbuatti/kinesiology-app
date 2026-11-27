@@ -41,7 +41,7 @@ export function CogsLearningTool() {
         {/* What happens under stress */}
         <section className="p-6 rounded-xl border border-border bg-card space-y-3">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Eye size={18} className="text-chart-emerald" />
+            <Eye size={18} className="text-primary-strong" />
             What to Watch For
           </h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
@@ -90,9 +90,9 @@ export function CogsLearningTool() {
           </div>
 
           {/* Frontal */}
-          <div className="p-5 rounded-xl border border-chart-emerald/20 bg-chart-emerald/5 space-y-3">
+          <div className="p-5 rounded-xl border border-primary/20 bg-primary/5 space-y-3">
             <div className="flex items-center gap-2">
-              <Move size={18} className="text-chart-emerald" />
+              <Move size={18} className="text-primary-strong" />
               <h3 className="text-base font-semibold text-foreground">2. Frontal Plane — Side to Side</h3>
               <span className="text-xs text-muted-foreground">View from the front</span>
             </div>

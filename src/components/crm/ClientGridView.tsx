@@ -70,7 +70,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGri
           className="hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 border border-border shadow-sm rounded-2xl overflow-hidden group cursor-pointer bg-card h-full"
           onClick={() => navigate(profileHref)}
         >
-          <CardContent className="p-6 space-y-5">
+          <CardContent className="p-5 space-y-4">
             <div className="flex items-start justify-between">
               <div className="w-11 h-11 rounded-full bg-primary/10 text-primary-strong flex items-center justify-center text-base font-semibold uppercase shrink-0 ring-1 ring-primary/10">
                 {client.name.charAt(0)}
@@ -117,7 +117,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGri
                 {!isVoice && <IntakeStatusBadge client={client} />}
                 <NewInfoBadge submittedAt={(client as any).onboarding_submitted_at} />
                 {!isVoice && client.stripe_customer_id && (
-                  <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-medium uppercase border-primary/20 text-primary-strong bg-primary/5">
+                  <Badge variant="outline" className="h-4 px-1.5 text-[10px] font-medium uppercase border-primary/20 text-primary-strong bg-primary/5">
                     <CreditCard size={8} className="mr-1" /> Synced
                   </Badge>
                 )}
@@ -215,7 +215,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGri
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-amber-700 hover:bg-amber-500/10 focus-visible:ring-2 focus-visible:ring-ring/40"
+                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-amber-700 dark:hover:text-amber-300 hover:bg-amber-500/10 dark:hover:bg-amber-500/20 focus-visible:ring-2 focus-visible:ring-ring/40"
                         disabled={sendingId === client.id}
                         aria-label={`Send onboarding email to ${client.name}`}
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSendOnboarding(client); }}
@@ -258,7 +258,7 @@ function ActivityIndicator({ score }: { score?: number }) {
                 ? "bg-primary"
                 : i >= 3
                   ? "bg-primary/60"
-                  : "bg-amber-400"
+                  : "bg-amber-400 dark:bg-amber-300"
               : "bg-border"
           )}
         />

@@ -650,7 +650,7 @@ const UnifiedCalendarPage = () => {
    </div>
 
    {/* Calendar Header */}
-   <div className="p-4 sm:p-8 border-b border-border flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-muted/30">
+   <div className="p-4 sm:p-6 border-b border-border flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-muted/30">
    <div>
    <h2 className="font-serif text-[26px] font-medium tracking-[-0.02em] text-foreground">
    {format(currentMonth, "MMMM yyyy")}

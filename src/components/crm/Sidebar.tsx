@@ -349,7 +349,7 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
                     isPrivate ? "bg-chart-destructive" : "bg-foreground/15"
                   )}
                 >
-                  <span className={cn("h-3 w-3 rounded-full bg-white shadow-sm transition-transform duration-200 ease-out-expo", isPrivate && "translate-x-3")} />
+                  <span className={cn("h-3 w-3 rounded-full bg-white dark:bg-white shadow-sm transition-transform duration-200 ease-out-expo", isPrivate && "translate-x-3")} />
                 </span>
               </>
             )}

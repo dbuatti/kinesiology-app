@@ -156,7 +156,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
               <Activity size={20} className="text-primary" /> Clinical Status
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-6 space-y-6">
+          <CardContent className="p-5 space-y-5">
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-primary/5 border border-border">
                 <div className="flex items-center justify-between mb-2">
@@ -225,7 +225,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
               <LineChart size={24} className="text-muted-foreground/30" />
             </div>
           </CardHeader>
-          <CardContent className="p-6 space-y-8">
+          <CardContent className="p-5 space-y-6">
             {boltData.length > 1 ? (
               <div className="space-y-8">
                 <div className="h-[200px] w-full">
@@ -317,7 +317,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 relative z-10">
-              <div className="rounded-2xl bg-white/10 border border-white/15 p-4">
+              <div className="rounded-2xl bg-white/10 dark:bg-white/15 border border-white/15 dark:border-white/25 p-4">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-foreground/70 mb-2">Primary focus</p>
                 <p className="text-sm font-medium leading-relaxed">
                   {latestBolt !== null && latestBolt < 25
@@ -325,7 +325,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
                     : "Refine autonomic synchronisation and multi-planar mobility patterns."}
                 </p>
               </div>
-              <div className="rounded-2xl bg-white/10 border border-white/15 p-4">
+              <div className="rounded-2xl bg-white/10 dark:bg-white/15 border border-white/15 dark:border-white/25 p-4">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-foreground/70 mb-2">Shared responsibility</p>
                 <p className="text-[13px] leading-relaxed italic text-primary-foreground/90">
                   "There needs to be a balance of shared responsibility, but ultimately the client must drive their own healing process."

@@ -346,7 +346,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="relative z-10 border-t border-border">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-8 pb-[calc(2rem+env(safe-area-inset-bottom))] text-[13px] text-muted-foreground sm:flex-row sm:items-center sm:px-8">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-8 pb-[calc(6rem+env(safe-area-inset-bottom))] text-[13px] text-muted-foreground sm:flex-row sm:items-center sm:px-8 sm:pb-[calc(2rem+env(safe-area-inset-bottom))]">
           <span className="flex items-center gap-2">
             <BrandLogo className="text-[15px]" /> <span>· Daniele Buatti</span>
           </span>
